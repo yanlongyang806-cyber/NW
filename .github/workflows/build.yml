@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
@@ -33,7 +33,7 @@ jobs:
         run: msbuild src/Night/GameServer/NNOGameServer.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
 
       - name: Upload GameServer.exe
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: GameServer
           path: src/Night/GameServer/Release/GameServer.exe

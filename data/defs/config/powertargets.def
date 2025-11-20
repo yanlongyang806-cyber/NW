@@ -1,0 +1,355 @@
+PowerTarget Self
+{
+	Require Self
+	msgDescription PowerTarget.Desc.Self
+}
+
+PowerTarget SelfNearDeath
+{
+	Require Self
+	Or
+	{
+		Require Self NearDeath
+	}
+	msgDescription PowerTarget.Desc.SelfNearDeath
+}
+
+PowerTarget SelfNeverTarget
+{
+	Require Self
+	msgDescription PowerTarget.Desc.Self
+	DoNotTargetUnlessRequired 1
+}
+
+PowerTarget Foe
+{
+	Require Foe Alive
+	FaceDuringPowerActivation 1
+	msgDescription PowerTarget.Desc.Foe
+}
+
+PowerTarget FoeNearDeath
+{
+	Require Foe NearDeath
+	AllowNearDeath 1
+	msgDescription PowerTarget.Desc.Foeneardeath
+}
+
+PowerTarget FoeNeverTarget
+{
+	Require Foe Alive
+	msgDescription PowerTarget.Desc.Foe
+	DoNotTargetUnlessRequired 1
+}
+
+PowerTarget FoeDead
+{
+	Require Foe
+	Exclude Alive
+	msgDescription PowerTarget.Desc.FoeDead
+}
+
+PowerTarget FoeDeadNotDestructible
+{
+	Require Foe
+	Exclude Alive Destructible
+	msgDescription PowerTarget.Desc.FoeDead
+}
+
+PowerTarget FoeDeadorAlive
+{
+	Require Foe
+	msgDescription PowerTarget.Desc.FoeDeadorAlive
+}
+
+PowerTarget Teammate
+{
+	Require Teammate Player
+	Or
+	{
+		Require Teammate PseudoPlayer
+	}
+	msgDescription PowerTarget.Desc.Teammate
+}
+
+PowerTarget TeammateNotSelf
+{
+	Require Teammate Player
+	Or
+	{
+		Require Teammate PseudoPlayer
+	}
+	Exclude Self
+	msgDescription PowerTarget.Desc.Teammate
+}
+
+PowerTarget FoeAliveNotDestructible
+{
+	Require Foe Alive
+	Exclude Destructible
+	msgDescription PowerTarget.Desc.FoeAliveNotDestructible
+}
+PowerTarget FoeAliveNotDestructibleNotPlayer
+{
+	Require Foe Alive
+	Exclude Destructible Player
+	msgDescription PowerTarget.Desc.FoeAliveNotDestructibleNotPlayer
+}
+PowerTarget FriendAndSelf
+{
+	Require Friend Alive
+	msgDescription PowerTarget.Desc.FriendAndSelf
+}
+
+PowerTarget FriendAndSelfNotDestructible
+{
+	Require Friend Alive
+	Exclude Destructible
+	msgDescription PowerTarget.Desc.FriendAndSelf
+}
+
+PowerTarget FriendNotSelf
+{
+	Require Friend Alive
+	Exclude Self
+	msgDescription PowerTarget.Desc.FriendNotSelf
+}
+
+PowerTarget FriendDead
+{
+	Require Friend
+	Exclude Alive
+	msgDescription PowerTarget.Desc.FriendDead
+}
+
+PowerTarget FriendNearDeath
+{
+	Require Friend NearDeath Player
+	OR
+	{
+		Require PrimaryPet NearDeath
+	}
+	AllowNearDeath 1
+	msgDescription PowerTarget.Desc.FriendNearDeath
+}
+ 
+PowerTarget FriendDeadorAlive
+{
+	Require Friend
+	msgDescription PowerTarget.Desc.FriendDeadorAlive
+}
+
+PowerTarget FriendNearDeathorAlive
+{
+	Require Friend
+	Or
+	{
+		Require Friend NearDeath
+	}
+	msgDescription PowerTarget.Desc.FriendNearDeathorAlive
+}
+
+PowerTarget FriendNearDeathorAliveNotSelf
+{
+	Require Friend
+	Exclude Self
+	Or
+	{
+		Require Friend NearDeath
+		Exclude Self
+	}
+	msgDescription PowerTarget.Desc.FriendNearDeathorAliveNotSelf
+}
+
+
+PowerTarget Alive
+{
+	Require Alive
+	msgDescription PowerTarget.Desc.Alive
+}
+
+PowerTarget AliveNeverTarget
+{
+	Require Alive
+	msgDescription PowerTarget.Desc.Alive
+	DoNotTargetUnlessRequired 1
+}
+
+PowerTarget AliveNotSelf
+{
+	Require Alive
+	Exclude Self
+	msgDescription PowerTarget.Desc.Alive
+}
+
+PowerTarget AliveNotDestructible
+{
+	Require Alive
+	Exclude Destructible
+	msgDescription PowerTarget.Desc.Alive
+}
+
+PowerTarget Other
+{
+	Exclude Self
+	msgDescription PowerTarget.Desc.Other
+}
+
+PowerTarget OtherAlive
+{
+	Require Alive
+	Exclude Self
+	msgDescription PowerTarget.Desc.OtherAlive
+}
+
+PowerTarget OtherAliveNotDestructible
+{
+	Require Alive
+	Exclude Self Destructible
+	msgDescription PowerTarget.Desc.OtherAliveNotDestructible
+}
+
+
+PowerTarget OtherDead
+{
+	Exclude Alive Self
+	msgDescription PowerTarget.Desc.OtherDead
+}
+
+PowerTarget Player
+{
+	Require Player
+	msgDescription PowerTarget.Desc.Player
+}
+
+PowerTarget PlayerAlive
+{
+	Require Player Alive
+	msgDescription PowerTarget.Desc.PlayerAlive
+}
+
+PowerTarget PlayerFriendAliveOrOwnPet
+{
+	Require Player Friend Alive
+		Or
+	{
+		Require PrimaryPet Alive
+	}
+
+	msgDescription PowerTarget.Desc.PlayerFriendAliveOrOwnPet
+}
+
+PowerTarget PlayerNotSelfFriendAliveOrOwnPet
+{
+	Require Player Friend Alive
+	Exclude Self
+		Or
+
+	{
+		Require PrimaryPet Alive
+	}
+
+	msgDescription PowerTarget.Desc.PlayerFriendAliveOrOwnPet
+}
+
+PowerTarget PlayerDead
+{
+	Require Player
+	Exclude Alive
+	msgDescription PowerTarget.Desc.PlayerDead
+}
+
+PowerTarget PlayerFriendDead
+{
+	Require Player Friend
+	Exclude Alive
+	msgDescription PowerTarget.Desc.PlayerFriendDead
+}
+
+PowerTarget ActivePet
+{
+	Require PrimaryPet
+	msgDescription PowerTarget.Desc.ActivePet
+}
+
+PowerTarget ActivePetNearDeath
+{
+	Require PrimaryPet NearDeath
+	msgDescription PowerTarget.Desc.ActivePetNearDeath
+}
+
+PowerTarget Destructible
+{
+	Require Alive Destructible
+	msgDescription PowerTarget.Desc.Destructible
+}
+
+PowerTarget Owner
+{
+	Require Alive Owner
+	msgDescription PowerTarget.Desc.Owner
+}
+
+PowerTarget OwnerAliveOrDead
+{
+	Require Owner
+	msgDescription PowerTarget.Desc.Owner
+}
+
+PowerTarget Creator
+{
+	Require Alive Creator
+	msgDescription PowerTarget.Desc.Creator
+}
+
+PowerTarget CreatorAliveOrDead
+{
+	Require Creator
+	msgDescription PowerTarget.Desc.Creator
+}
+
+PowerTarget Owned
+{
+	Require Alive Owned
+	msgDescription PowerTarget.Desc.Owned
+}
+
+PowerTarget Created
+{
+	Require Alive Created
+	msgDescription PowerTarget.Desc.Created
+}
+
+PowerTarget FriendNotSelfNotDestructable
+{
+	Require Friend Alive
+	Exclude Self Destructible
+	msgDescription Powertarget.Desc.FriendNotSelfNotDestructable
+}
+
+PowerTarget PlayerNotSelf
+{
+	Require Player Alive
+	Exclude Self
+	msgDescription PowerTarget.Desc.PlayerNotSelf
+}
+
+PowerTarget SelfAliveOrDead
+{
+	Require Self
+	Or
+	{
+		Require Self NearDeath
+	}
+	msgDescription PowerTarget.Desc.SelfAliveOrDead
+}
+
+PowerTarget SelfOrFoe
+{
+	Require Self Alive
+	Or
+	{
+		Require Foe Alive
+	}
+	msgDescription PowerTarget.Desc.SelfAliveOrDead
+}

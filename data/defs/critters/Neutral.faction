@@ -1,0 +1,325 @@
+{
+
+CritterFaction Default
+{
+}
+
+CritterFaction Neutral
+{
+}
+
+CritterFaction Pvp1
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 1
+	// Pvp1内部敌对（玩家互相攻击）- 关键修改！
+	relationship Pvp1 -1.000000 1
+	// 与Pvp2敌对
+	relationship Pvp2 -1.000000 1
+	// 与默认友好阵营保持友好（不攻击NPC）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	relationship FreeForAll 0 1
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+}
+
+CritterFaction Pvp2
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// Pvp2内部友好
+	relationship Pvp2 0 0
+	// 与Pvp1敌对
+	relationship Pvp1 0 1
+	// 与默认友好阵营保持友好（不攻击NPC）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	relationship FreeForAll 0 1
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+}
+
+
+CritterFaction EveryoneHatesMe
+{
+	relationship UnalignedFriendlies 0 1
+	relationship UnalignedFoes 0 1
+	relationship UnalignedFoesA 0 1
+	relationship UnalignedFoesB 0 1
+	relationship UnalignedFoesC 0 1
+	relationship EveryoneHatesMe 0 0
+	relationship PlayerFoe 0 1
+	relationship Pvp2 0 1
+	relationship Pvp1 0 1
+	relationship PlayerFullPvP 0 1
+}
+
+CritterFaction PlayerFoe
+{
+	PlayerFaction 1
+	relationship UnalignedFriendlies 0 1
+	relationship UnalignedFoes 0 1
+	relationship UnalignedFoesA 0 1
+	relationship UnalignedFoesB 0 1
+	relationship UnalignedFoesC 0 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 0
+	relationship PlayerFullPvP 0 1
+}
+
+CritterFaction UnalignedFoes
+{
+	DefaultEnemyFaction 1
+	relationship UnalignedFriendlies -1.000000 1
+	relationship UnalignedFoes 0 0
+	relationship UnalignedFoesA 0 0
+	relationship UnalignedFoesB 0 0
+	relationship UnalignedFoesC 0 0
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	relationship PlayerFullPvP -1.000000 1
+}
+
+CritterFaction UnalignedFoesA
+{
+	relationship UnalignedFriendlies -1.000000 1
+	relationship UnalignedFoes 0 0
+	relationship UnalignedFoesA 0 0
+	relationship UnalignedFoesB 0 1
+	relationship UnalignedFoesC 0 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	relationship PlayerFullPvP -1.000000 1
+}
+
+CritterFaction UnalignedFoesB
+{
+	relationship UnalignedFriendlies -1.000000 1
+	relationship UnalignedFoes 0 0
+	relationship UnalignedFoesA 0 1
+	relationship UnalignedFoesB 0 0
+	relationship UnalignedFoesC 0 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	relationship PlayerFullPvP -1.000000 1
+}
+
+CritterFaction UnalignedFoesC
+{
+	relationship UnalignedFriendlies -1.000000 1
+	relationship UnalignedFoes 0 0
+	relationship UnalignedFoesA 0 1
+	relationship UnalignedFoesB 0 1
+	relationship UnalignedFoesC 0 0
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	relationship PlayerFullPvP -1.000000 1
+}
+
+CritterFaction UnalignedFriendlies
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// ========================================
+	// 默认友好阵营 - NPC默认使用此阵营
+	// ========================================
+	// ⚠️ 重要：NPC之间必须保持友好，否则会互相攻击，任务接不了
+	// NPC内部友好（不互相攻击）- 这是关键配置！
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌（可以正常打怪）
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌（如果玩家切换到PVP阵营，可以攻击）
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 1.000000 0
+	relationship FreeForAll 1.000000 0
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+}
+
+// ========================================
+// 玩家专用PVP阵营（标准PVP）
+// Player-Only PVP Faction (Standard)
+// ========================================
+// 这个阵营只给玩家使用，NPC不会使用
+// 玩家之间敌对，主要使用技能攻击（更安全稳定）
+// 适用于：标准PVP、竞技场、技能对战
+CritterFaction PlayerPvP
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// 玩家之间敌对（技能可以打，安全稳定）
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	// 与友好NPC保持友好（不攻击商人、任务NPC等）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+	relationship FreeForAll 0 1
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+}
+
+// ========================================
+// 全地图PVP阵营（允许普攻+技能互打）
+// PlayerFullPvP - Full PVP Mode
+// ========================================
+// 玩家之间完全敌对，允许普通攻击与技能
+// 这是最完整的PVP模式，支持所有攻击方式
+// 适用于：配合Zone文件Maptype PvP使用，进入PVP地图时自动切换
+// ⚠️ 重要：DefaultPlayerFaction 必须设为 0，否则NPC也会进入此阵营！
+CritterFaction PlayerFullPvP
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// 玩家之间完全敌对，允许普通攻击与技能
+	relationship PlayerFullPvP -1.000000 1
+	relationship PlayerPvP -1.000000 1
+	// 与默认友好阵营保持友好，避免误伤NPC
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+	relationship FreeForAll 0 1
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+}
+
+// ========================================
+// 全地图PVP自由混战模式
+// Free-For-All PVP Mode
+// ========================================
+// 在这个模式下，所有玩家互相敌对
+// 可以攻击任何其他玩家（包括普通攻击和技能）
+// 适用于：大逃杀、生存模式、自由混战
+// ⚠️ 重要：DefaultPlayerFaction 1 确保普通攻击可用
+CritterFaction FreeForAll
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// 与自己的阵营为敌（玩家互相攻击）- 关键配置！
+	relationship FreeForAll -1.000000 1
+	// 与默认友好阵营保持友好（不攻击NPC）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	relationship OpenPvp_Red 0 1
+	relationship OpenPvp_Blue 0 1
+}
+
+// ========================================
+// 全地图PVP - 红队阵营（增强版）
+// Open World PVP - Red Team (Enhanced)
+// ========================================
+// 可用于创建开放世界的红蓝对抗
+// 红队内部友好，与蓝队敌对
+// 适用于：团队战、占点战、阵营对抗
+// ⚠️ 重要：DefaultPlayerFaction 1 确保普通攻击可用
+CritterFaction OpenPvp_Red
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// 红队内部友好（队友不互相攻击）
+	relationship OpenPvp_Red 0 0
+	// 与蓝队敌对（可以攻击蓝队玩家）
+	relationship OpenPvp_Blue -1.000000 1
+	// 与默认友好阵营保持友好（不攻击NPC）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	relationship FreeForAll 0 1
+}
+
+// ========================================
+// 全地图PVP - 蓝队阵营（增强版）
+// Open World PVP - Blue Team (Enhanced)
+// ========================================
+// 蓝队内部友好，与红队敌对
+// 适用于：团队战、占点战、阵营对抗
+// ⚠️ 重要：DefaultPlayerFaction 1 确保普通攻击可用
+CritterFaction OpenPvp_Blue
+{
+	PlayerFaction 1
+	DefaultPlayerFaction 0
+	// 蓝队内部友好（队友不互相攻击）
+	relationship OpenPvp_Blue 0 0
+	// 与红队敌对（可以攻击红队玩家）
+	relationship OpenPvp_Red -1.000000 1
+	// 与默认友好阵营保持友好（不攻击NPC）
+	relationship UnalignedFriendlies 1.000000 0
+	// 与怪物为敌
+	relationship UnalignedFoes -1.000000 1
+	relationship UnalignedFoesA -1.000000 1
+	relationship UnalignedFoesB -1.000000 1
+	relationship UnalignedFoesC -1.000000 1
+	relationship EveryoneHatesMe 0 1
+	relationship PlayerFoe 0 1
+	// 与其他PVP阵营为敌
+	relationship Pvp1 0 1
+	relationship Pvp2 0 1
+	relationship PlayerPvP 0 1
+	relationship PlayerFullPvP 0 1
+	relationship FreeForAll 0 1
+}
+
+}

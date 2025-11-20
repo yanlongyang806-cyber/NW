@@ -19,10 +19,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -45,9 +47,11 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
+      <AdditionalOptions>/analyze- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>
@@ -59,9 +63,11 @@
       <AdditionalIncludeDirectories>reward;cmdparse;gateway;item;chat;entity;ai;combat;progression;mission;world;social;editors;team;map;UGC;../../libs/Renderers/pub;../../libs/GraphicsLib/pub;../../libs/WorldLib;../../libs/WorldLib/pub;../../libs/InputLib/pub;../../libs/UILib/pub;../../libs/ServerLib/pub;../../libs/AILib/pub;../../libs/Common;../../libs/PatchClientLib;../../libs/ContentLib/pub;../../Core/Common;../Common/entity;../Common/Combat;../Common/Genesis;../Common/UGC;../Common/Mission;../Common/Sound;../Common/item;../Common;../../libs/HttpLib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_FULLDEBUG;_LIB;_WINDOWS;_CRTDBG_MAP_ALLOC=1;USEZLIB=1;EDITLIB=1;GAMESERVER=1;JOB_GROUP_VARIABLES=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
+      <AdditionalOptions>/analyze- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -1100,6 +1100,7 @@ __forceinline static F32 CLAMPF32(F32 var, F32 min, F32 max) {
 #ifdef log2
 #undef log2
 #endif
+// Include math.h early to get standard library declarations
 #include <math.h>
 // Define our own log2 function for integers
 // Use a different internal name to avoid any potential conflicts with standard library
@@ -1108,12 +1109,14 @@ __forceinline static int log2_int_impl(int val) {
     return 31-__cntlzw(val) - notexact;
 }
 
-// Define log2 as a macro that calls our implementation
-#define log2(val) log2_int_impl(val)
+// Define log2 as a macro that calls our implementation (for integer arguments only)
+// This ensures we use our integer version, not the standard library's double version
+#define log2(val) log2_int_impl((int)(val))
 
  // Returns the number rounded up to a power of two
 __forceinline static int pow2(int val) {
-    return BIT(log2(val));
+    int log_val = log2_int_impl(val);
+    return BIT(log_val);
 }
 
 #define SETB(mem,bitnum) ((mem)[(bitnum) >> 5] |= (1 << ((bitnum) & 31)))

@@ -8,7 +8,7 @@ GCC_SYSTEM
 #include "CombatPool.h"		// For embedded CombatPool structure
 #include "entEnums.h"
 #include "ItemEnums.h"
-#include "ItemEnums_h_ast.h"
+#include "itemEnums_h_ast.h"
 #include "CostumeCommonEnums.h"
 #include "PowersEnums.h"
 #include "PvPGameCommon.h"

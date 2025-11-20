@@ -26,7 +26,6 @@
       <CompileAs>Default</CompileAs>
       <ForcedIncludeFiles>memcheck.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnablePREfast>false</EnablePREfast>
-      <AdditionalOptions>/analyze- %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>USE_CHATRELAY=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ProjectReference>

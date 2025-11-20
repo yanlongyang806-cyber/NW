@@ -391,7 +391,12 @@ static bool ReadLicense( std::string LicensePath , char **dest )
 		return false;
 	}
 
-	int len = _filelength(fp->_file);
+	// VS2022 compatibility: _file is no longer a member of FILE structure
+	// Use _fileno() to get file descriptor, then _filelengthi64() or fseek/ftell
+	long pos = ftell(fp);
+	fseek(fp, 0, SEEK_END);
+	int len = (int)ftell(fp);
+	fseek(fp, 0, SEEK_SET);
 	*dest = (char*)malloc(len+1);
 
 	if(*dest) {

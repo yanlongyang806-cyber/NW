@@ -25,7 +25,6 @@
 		CompileAs="0"
 		ForcedIncludeFiles="memcheck.h"
 		EnablePREfast="false"
-		AdditionalOptions="/analyze-"
 	/>
 	<Tool
 		Name="VCLinkerTool"

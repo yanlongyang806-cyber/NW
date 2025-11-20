@@ -1,10 +1,25 @@
 name: Build GameServer
 
+# 触发条件：手动触发或 main 分支有推送
 on:
   workflow_dispatch:
   push:
     branches:
       - main
+    # 可选：仅当特定目录的文件发生变化时触发，以减少不必要的构建
+    paths:
+      - 'src/**'
+      - 'tools/**'
+      - '.github/workflows/build-game-server.yml'
+
+# 环境变量配置，方便统一修改
+env:
+  SOLUTION_PATH: src/Night/GameServer/NNOGameServer.sln
+  BUILD_CONFIGURATION: Debug
+  BUILD_PLATFORM: Win32
+  OUTPUT_EXE_PATH: src/Night/GameServer/${{ env.BUILD_CONFIGURATION }}/GameServer.exe
+  # !!! 重要：请将这里的路径替换为你实际的代码生成脚本路径 !!!
+  CODE_GENERATION_SCRIPT: tools/generate_code.bat 
 
 jobs:
   build:
@@ -13,17 +28,104 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          # 确保检出完整的历史，某些构建脚本可能需要
+          fetch-depth: 0
 
+      # 步骤 1：设置 MSBuild 环境
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
-      - name: Build NNOGameServer (Debug Configuration)
-        run: msbuild src/Night/GameServer/NNOGameServer.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /m /v:minimal /p:WarningLevel=0 /p:TreatWarningsAsErrors=false /p:RunCodeAnalysis=false
-        continue-on-error: false
+      # 步骤 2：缓存 NuGet 包 (如果项目使用 NuGet)
+      # 这可以大大加快后续构建的速度
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.sln', '**/*.csproj', '**/*.vbproj') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
 
-      - name: Upload GameServer.exe
+      # 步骤 3：还原 NuGet 包 (如果项目使用 NuGet)
+      - name: Restore NuGet packages
+        run: msbuild ${{ env.SOLUTION_PATH }} /t:Restore /p:Configuration=${{ env.BUILD_CONFIGURATION }} /p:Platform=${{ env.BUILD_PLATFORM }}
+
+      # 步骤 4：【关键修复】运行代码生成脚本
+      - name: Generate AutoGen files
+        run: |
+          echo "=================================================="
+          echo "Running code generation script: ${{ env.CODE_GENERATION_SCRIPT }}"
+          echo "=================================================="
+          
+          # 检查脚本是否存在
+          if (-Not (Test-Path -Path ${{ env.CODE_GENERATION_SCRIPT }} -PathType Leaf)) {
+            Write-Error "Code generation script not found at: ${{ env.CODE_GENERATION_SCRIPT }}"
+            Write-Error "Please update the CODE_GENERATION_SCRIPT environment variable in the workflow file."
+            exit 1
+          }
+
+          # 执行脚本
+          # 如果你的脚本是 .bat 或 .cmd，使用 cmd /c 或 call
+          cmd /c ${{ env.CODE_GENERATION_SCRIPT }}
+          
+          # 如果你的脚本是 Python 脚本 (.py)，请使用以下配置：
+          # - name: Set up Python
+          #   uses: actions/setup-python@v5
+          #   with:
+          #     python-version: '3.11' # 使用你的项目所需的 Python 版本
+          #
+          # - name: Install Python dependencies (if any)
+          #   run: pip install -r requirements.txt
+          #
+          # - name: Generate AutoGen files
+          #   run: python ${{ env.CODE_GENERATION_SCRIPT }}
+
+          echo "Code generation completed successfully."
+
+      # 步骤 5：构建项目
+      - name: Build GameServer
+        run: |
+          echo "=================================================="
+          echo "Building solution: ${{ env.SOLUTION_PATH }}"
+          echo "Configuration: ${{ env.BUILD_CONFIGURATION }}"
+          echo "Platform: ${{ env.BUILD_PLATFORM }}"
+          echo "=================================================="
+          
+          msbuild ${{ env.SOLUTION_PATH }} `
+            /p:Configuration=${{ env.BUILD_CONFIGURATION }} `
+            /p:Platform=${{ env.BUILD_PLATFORM }} `
+            /p:PlatformToolset=v143 `
+            /p:UseMultiToolTask=true `
+            /p:EnforceProcessCountAcrossBuilds=true `
+            /m `
+            /v:normal # 使用 normal 输出级别以便查看详细的编译日志，方便排错
+            /p:WarningLevel=0 `
+            /p:TreatWarningsAsErrors=false `
+            /p:RunCodeAnalysis=false
+          
+          echo "Build process completed."
+
+      # 步骤 6：验证并上传构建产物
+      - name: Verify and Upload GameServer.exe
+        run: |
+          echo "=================================================="
+          echo "Verifying and uploading build artifact."
+          echo "=================================================="
+          
+          # 检查生成的 exe 文件是否存在
+          if (-Not (Test-Path -Path ${{ env.OUTPUT_EXE_PATH }} -PathType Leaf)) {
+            Write-Error "Build failed! Executable not found at: ${{ env.OUTPUT_EXE_PATH }}"
+            exit 1
+          }
+          
+          # 打印文件信息
+          Get-Item ${{ env.OUTPUT_EXE_PATH }}
+          
+          echo "Uploading artifact: GameServer-${{ env.BUILD_CONFIGURATION }}"
+        # 上传产物
         uses: actions/upload-artifact@v4
         with:
-          name: GameServer-Debug
-          path: src/Night/GameServer/Debug/GameServer.exe
-
+          name: GameServer-${{ env.BUILD_CONFIGURATION }}
+          path: ${{ env.OUTPUT_EXE_PATH }}
+          if-no-files-found: error # 如果文件未找到，则上传步骤失败
+          retention-days: 14 # 产物保留 14 天

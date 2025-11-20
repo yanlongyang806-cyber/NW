@@ -17,24 +17,13 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
-      - name: Restore NuGet packages (if any)
-        run: |
-          if (Test-Path src/Core/GameServer/CoreGameServer.vcxproj) {
-            nuget restore src/Core/GameServer/CoreGameServer.vcxproj
-          }
-
-      - name: Build GameServerLib
-        run: msbuild src/CrossRoads/GameServerLib/GameServerLib.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
-
-      - name: Build CoreGameServer
-        run: msbuild src/Core/GameServer/CoreGameServer.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
-
-      - name: Build NNOGameServer
-        run: msbuild src/Night/GameServer/NNOGameServer.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+      - name: Build NNOGameServer (Debug Configuration)
+        run: msbuild src/Night/GameServer/NNOGameServer.sln /p:Configuration=Debug /p:Platform=Win32 /m /v:minimal
+        continue-on-error: false
 
       - name: Upload GameServer.exe
         uses: actions/upload-artifact@v4
         with:
-          name: GameServer
-          path: src/Night/GameServer/Release/GameServer.exe
+          name: GameServer-Debug
+          path: src/Night/GameServer/Debug/GameServer.exe
 

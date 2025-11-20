@@ -18,7 +18,8 @@ jobs:
         uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Run code generation
-        run: echo Code generation skipped (not required for build)
+        shell: cmd
+        run: echo Code generation skipped - not required for build
         continue-on-error: true
 
       - name: Fix XML format issues

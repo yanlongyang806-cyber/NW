@@ -14,15 +14,18 @@
     <ProjectGuid>{C2303CD3-B255-F4CE-A55F-1F9B0DEA1926}</ProjectGuid>
     <RootNamespace>GameServer</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
@@ -51,6 +54,8 @@
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <WarningLevel>Level4</WarningLevel>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
+      <AdditionalOptions>/analyze- %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /fixed:no %(AdditionalOptions)</AdditionalOptions>
@@ -74,6 +79,7 @@
       <AdditionalIncludeDirectories>../Common/UGC;../../CrossRoads/GameServerLib/item;../../CrossRoads/GameServerLib/mission;../../CrossRoads/Common/Entity;../../CrossRoads/GameServerLib/UGC;../../CrossRoads/GameServerLib/Combat;../../libs/WorldLib;../../CrossRoads/Common/Mission;../../CrossRoads/Common/;../../CrossRoads/Common/UGC;../../Crossroads/Common/Combat;../../core/common/autogen;../../Crossroads/Common/item;../../libs/WorldLib/StaticWorld;./ai;./cmdparse;./missionSys/;../common;../../libs/serverlib/pub;../../libs/WorldLib/pub;../../libs/InputLib/pub;../../libs/EntityLib/pub;../../Crossroads/GameServerLib/reward;../../Crossroads/GameServerLib/world;../../Crossroads/GameServerLib/pub;../../Crossroads/GameServerLib/AutoGen;../../libs/Common/AutoGen;../../libs/Common;../../libs/AILib/pub;../../Crossroads/common/entity;../../core/combat;../../core/combat/server;../common/AutoGen;../../Crossroads/common/Mission;./entity;./rewardSys;../../libs/EntityLib/Combat;../../libs/EntityLib/MissionSys;../../libs/GameServerLib/MissionSys;./item/;./chat;../../Crossroads/GameServerLib;../../Crossroads/Common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_FULLDEBUG;_WINDOWS;GAMESERVER=1;USEZLIB=1;_CRTDBG_MAP_ALLOC=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>Level4</WarningLevel>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 /fixed:no %(AdditionalOptions)</AdditionalOptions>

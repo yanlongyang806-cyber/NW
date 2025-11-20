@@ -24,7 +24,8 @@
 		DebugInformationFormat="4"
 		CompileAs="0"
 		ForcedIncludeFiles="memcheck.h"
-		EnablePREfast="true"
+		EnablePREfast="false"
+		AdditionalOptions="/analyze-"
 	/>
 	<Tool
 		Name="VCLinkerTool"

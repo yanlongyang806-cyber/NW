@@ -48,7 +48,9 @@ typedef struct PerfInfoStaticData	PerfInfoStaticData;
 
 
 //#if !_XBOX
+#ifdef _PREFAST_
 #include <CodeAnalysis/sourceannotations.h>
+#endif
 //#endif
 
 //#include <sal.h>
@@ -1094,14 +1096,24 @@ __forceinline static F32 CLAMPF32(F32 var, F32 min, F32 max) {
 
 #define FINITE(x) ((x) >= -FLT_MAX && (x) <= FLT_MAX)
 
-__forceinline static int log2(int val) {
+// Undefine standard library log2 before defining our own
+#ifdef log2
+#undef log2
+#endif
+#include <math.h>
+// Define our own log2 function for integers
+// Use a different internal name to avoid any potential conflicts with standard library
+__forceinline static int log2_int_impl(int val) {
     int notexact = (-((val-1) & val)) >> 31; // 0 if exact power of 2, -1 otherwise
     return 31-__cntlzw(val) - notexact;
 }
 
+// Define log2 as a macro that calls our implementation
+#define log2(val) log2_int_impl(val)
+
  // Returns the number rounded up to a power of two
 __forceinline static int pow2(int val) {
-    return __BIT(log2(val));
+    return BIT(log2(val));
 }
 
 #define SETB(mem,bitnum) ((mem)[(bitnum) >> 5] |= (1 << ((bitnum) & 31)))

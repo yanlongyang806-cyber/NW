@@ -16,7 +16,13 @@ GCC_SYSTEM
 #include "fpmacros.h"
 #include "FloatBranch.h"
 #include <float.h>
-#include <math.h>
+// Note: stdtypes.h (included above) already handles log2 and includes math.h
+// We only need to undefine round here if it conflicts with our custom round function
+#ifdef round
+#undef round
+#endif
+// math.h is already included by stdtypes.h, so we don't need to include it again
+// But we ensure it's available for any code that needs standard math functions
 #include <stdlib.h>
 #include "UtilitiesLibEnums.h"
 
@@ -546,7 +552,8 @@ __forceinline static int roundTiesUp(float a)
 
 // This rounds with ties (0.5) going to even numbers. The PC (SSE) version is dependent on the SSE unit rounding mode, which
 // must be even.
-__forceinline static int round(float a)
+// Use internal implementation name to avoid conflict with standard library's double round(double)
+__forceinline static int round_impl(float a)
 {
 #if _XBOX
 	double b = __fctiw(a);
@@ -557,6 +564,9 @@ __forceinline static int round(float a)
 	return rint(a); // just hope it's an intrinsic.
 #endif
 }
+
+// Define round as a macro to avoid conflict with standard library
+#define round(a) round_impl(a)
 
 __forceinline static S64 round64(F64 a) { return (S64)(a + (a >= 0.0f ? 0.5f : -0.5f)); }
 

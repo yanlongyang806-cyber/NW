@@ -50,25 +50,77 @@ jobs:
       - name: List project structure
         shell: cmd
         run: |
+          echo ========================================
           echo Checking project structure...
+          echo ========================================
+          echo Current directory: %CD%
+          echo.
           if exist src\Night\GameServer\NNOGameServer.sln (
-            echo [OK] Solution file exists
+            echo [OK] Solution file exists: src\Night\GameServer\NNOGameServer.sln
+            dir src\Night\GameServer\*.sln /b
           ) else (
             echo [ERROR] Solution file not found!
-            dir src\Night\GameServer\ /b
+            echo Searching for .sln files...
+            dir /s /b *.sln 2>nul | findstr /i "GameServer"
+            echo.
+            echo Listing src\Night\GameServer\ directory:
+            if exist src\Night\GameServer\ (
+              dir src\Night\GameServer\ /b
+            ) else (
+              echo Directory src\Night\GameServer\ does not exist!
+            )
             exit /b 1
           )
+          echo.
+          echo [OK] Project structure check passed
 
       - name: Build NNOGameServer (Debug Configuration)
         shell: cmd
         run: |
+          echo ========================================
           echo Building NNOGameServer...
+          echo ========================================
+          echo Solution: src/Night/GameServer/NNOGameServer.sln
+          echo Configuration: Debug
+          echo Platform: Win32
+          echo PlatformToolset: v143
+          echo.
           msbuild src/Night/GameServer/NNOGameServer.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /m /v:normal /p:WarningLevel=0 /p:TreatWarningsAsErrors=false /p:RunCodeAnalysis=false /fl /flp:logfile=build.log;verbosity=normal
-          if %ERRORLEVEL% neq 0 (
-            echo Build failed with error code %ERRORLEVEL%
-            echo Showing last 50 lines of build log:
-            powershell -Command "Get-Content build.log -Tail 50"
-            exit /b %ERRORLEVEL%
+          set BUILD_EXIT_CODE=%ERRORLEVEL%
+          echo.
+          echo ========================================
+          echo Build completed with exit code: %BUILD_EXIT_CODE%
+          echo ========================================
+          if %BUILD_EXIT_CODE% neq 0 (
+            echo.
+            echo [ERROR] Build failed!
+            echo.
+            echo Showing last 100 lines of build log:
+            echo ----------------------------------------
+            if exist build.log (
+              powershell -Command "Get-Content build.log -Tail 100"
+            ) else (
+              echo Build log file not found!
+            )
+            echo ----------------------------------------
+            echo.
+            echo Showing error summary:
+            if exist build.log (
+              powershell -Command "Select-String -Path build.log -Pattern 'error|Error|ERROR' | Select-Object -Last 20"
+            )
+            exit /b %BUILD_EXIT_CODE%
+          ) else (
+            echo [SUCCESS] Build completed successfully!
+            if exist src\Night\GameServer\Debug\GameServer.exe (
+              echo [OK] Output file exists: src\Night\GameServer\Debug\GameServer.exe
+              dir src\Night\GameServer\Debug\GameServer.exe
+            ) else (
+              echo [WARNING] Output file not found: src\Night\GameServer\Debug\GameServer.exe
+              echo Listing Debug directory:
+              if exist src\Night\GameServer\Debug\ (
+                dir src\Night\GameServer\Debug\ /b
+              )
+            )
           )
         continue-on-error: false
 

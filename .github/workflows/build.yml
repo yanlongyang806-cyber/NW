@@ -19,34 +19,48 @@ jobs:
 
       - name: Run code generation
         shell: cmd
-        run: echo Code generation skipped - not required for build
+        run: |
+          echo ========================================
+          echo Step: Run code generation
+          echo ========================================
+          echo Code generation skipped - not required for build
+          echo [SUCCESS] Code generation step completed
         continue-on-error: true
 
       - name: Fix XML format issues
         shell: powershell
         run: |
-          Write-Host "Fixing XML format issues in .vcxproj files..."
-          $files = Get-ChildItem -Path src -Recurse -Filter *.vcxproj -ErrorAction SilentlyContinue | Select-Object -First 20
-          $fixedCount = 0
-          foreach ($file in $files) {
-            try {
-              $content = Get-Content $file.FullName -Raw -ErrorAction Stop
-              $fixed = $content -replace '(?s)(<PreBuildEvent>\s*<Command>)(.*?)(</Command>\s*</PreBuildEvent>)', {
-                $pre = $matches[1]
-                $cmd = ($matches[2] -replace '\s+', ' ' -replace ' & ', ' &amp; ' -replace '&(?!amp;)', '&amp;').Trim()
-                $post = $matches[3]
-                "$pre$cmd$post"
+          Write-Host "========================================"
+          Write-Host "Step: Fix XML format issues"
+          Write-Host "========================================"
+          try {
+            Write-Host "Fixing XML format issues in .vcxproj files..."
+            $files = Get-ChildItem -Path src -Recurse -Filter *.vcxproj -ErrorAction SilentlyContinue | Select-Object -First 20
+            $fixedCount = 0
+            foreach ($file in $files) {
+              try {
+                $content = Get-Content $file.FullName -Raw -ErrorAction Stop
+                $fixed = $content -replace '(?s)(<PreBuildEvent>\s*<Command>)(.*?)(</Command>\s*</PreBuildEvent>)', {
+                  $pre = $matches[1]
+                  $cmd = ($matches[2] -replace '\s+', ' ' -replace ' & ', ' &amp; ' -replace '&(?!amp;)', '&amp;').Trim()
+                  $post = $matches[3]
+                  "$pre$cmd$post"
+                }
+                if ($fixed -ne $content) {
+                  Set-Content -Path $file.FullName -Value $fixed -NoNewline -ErrorAction Stop
+                  Write-Host "Fixed: $($file.Name)"
+                  $fixedCount++
+                }
+              } catch {
+                Write-Host "Warning: Could not process $($file.FullName): $_"
               }
-              if ($fixed -ne $content) {
-                Set-Content -Path $file.FullName -Value $fixed -NoNewline -ErrorAction Stop
-                Write-Host "Fixed: $($file.Name)"
-                $fixedCount++
-              }
-            } catch {
-              Write-Host "Warning: Could not process $($file.FullName): $_"
             }
+            Write-Host "Fixed $fixedCount project files"
+            Write-Host "[SUCCESS] XML format fix step completed"
+          } catch {
+            Write-Host "[ERROR] XML format fix failed: $_"
+            exit 1
           }
-          Write-Host "Fixed $fixedCount project files"
 
       - name: List project structure
         shell: cmd

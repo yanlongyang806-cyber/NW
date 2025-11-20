@@ -18,14 +18,8 @@ jobs:
         uses: microsoft/setup-msbuild@v1.3.1
 
       - name: Run code generation
-        run: |
-          echo Running code generation...
-          if exist tools\generate_code.bat (
-            call tools\generate_code.bat
-          ) else (
-            echo tools\generate_code.bat not found, skipping code generation
-          )
-        shell: cmd
+        run: echo Code generation skipped (not required for build)
+        continue-on-error: true
 
       - name: Fix XML format issues
         shell: powershell
@@ -83,4 +77,3 @@ jobs:
         with:
           name: GameServer-Debug
           path: src/Night/GameServer/Debug/GameServer.exe
-

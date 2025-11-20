@@ -1,0 +1,50 @@
+// WaterRefract.phl
+{
+	float2 coord_orig, coord2, coord3;
+
+#ifdef NO_NORMALMAP
+	float3 normal_VS = %Normal%.xyz;
+#else
+	#ifdef NORMAL_PRECALCULATED
+		float3 normal_VS = %Normal%.xyz;
+	#else
+		float3 normal_VS = fromTangentSpace(tangent_vs, binormal_vs, normal_vs, %Normal%.xyz);
+	#endif
+#endif
+	float2 skewFromNormal = normal_VS.xy * inv_screen_params.xy * 1024 * float2(1, -1);
+	float w = one_over_distance_to_camera;
+	float skewScale = (%SkewScale%).x * (%Scale%).x;
+	float maxSkew = (%MaxSkew%).x;
+	
+	float skewScaleFalloff = 10; // Larger number makes more refraction happen shallower
+	
+	// "good" defaults (from CoH)
+	// skewScale = 0.13;
+	// maxSkew = 0.07;
+	
+	// Sample depth at view pixel
+	getVPosNormalized(coord_orig, v);
+	
+	// Sample depth at pixel we're about to draw
+	coord2 = coord_orig + skewFromNormal * skewScale; // Want this last mult?
+	
+	float skewAmount = skewScale;
+	skewAmount = clamp(skewAmount, -maxSkew, maxSkew);
+
+	%Result%.xy = %A%.xy + skewFromNormal * skewAmount;
+
+    #ifdef _PS3
+	#ifndef TRANSGAMING
+	[flatten]
+	#endif
+    #endif
+    if( %A%.y > %BoundaryY%.y )
+    {
+        %Result%.y = clamp( %Result%.y, %BoundaryY%.y + inv_screen_params.y*2, 20.0f );
+    }
+    else
+    {
+        %Result%.y = clamp( %Result%.y, -20, %BoundaryY%.y - inv_screen_params.y*2 );
+    }
+	%Result%.zw = 0.0;
+}

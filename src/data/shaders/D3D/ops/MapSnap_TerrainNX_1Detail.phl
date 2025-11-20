@@ -1,0 +1,36 @@
+// Terrain_1Detail.phl (used with terrain_heightmap.vhl)
+{
+#ifndef DEPTH_ONLY
+	// Tint from map
+	float4 noisecolor = sampleTex2D(TexSampler%ColorTexture%, v.texcoords.xy*2);
+	
+	// Detail textures
+	float4 detail_spec = nw_mapsnap_sampleTexcolor(TexSampler%DetailTexture1%);
+	float4 normal_dxt5nm = sampleTex2D(TexSampler%DetailNormalTexture1%, v.texcoords.zw * %UVScale1%.xy);
+
+#ifdef NO_TERRAIN_DETAIL
+	detail_spec = float4(0,0,0,0.5);
+#endif
+	float4 color;
+	color.rgb = detail_spec.rgb;
+
+	color.rgb = nw_mapsnap_colorize(color.rgb);
+	color.rgb *= 0.75+noisecolor.r*0.25;
+
+	%SpecularValueOut% = (%SpecularValueIn%).x * detail_spec.w;
+	%SpecularExponentOut% = (%SpecularExponentIn%).x;
+	%NormalOut%.xyz = float3(0,0,1);//dxt5nmExpand(normal_dxt5nm);
+#ifdef NO_TERRAIN_NORMAL
+	%NormalOut%.xyz = float3(0,0,1);
+#endif
+	%ColorOut% = color;
+
+#else
+
+	%ColorOut% = 1;
+
+#endif
+
+	v.color0 = 1;
+}
+

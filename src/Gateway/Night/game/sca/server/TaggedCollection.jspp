@@ -1,0 +1,270 @@
+'use strict';
+
+var log = require('cryptic/log');
+
+var randomInt = require('./randomInt');
+
+function TaggedCollection(constructor)
+{
+	this.constructor = constructor;
+	this.index = {};
+	this.collection = { all: [] };
+
+	// Expected fields for items in the collection. (* are required)
+	//
+	//     id*
+	//     tags*
+	//     used
+	//
+
+}
+
+TaggedCollection.prototype.count = function()
+{
+	return this.collection.all.length;
+}
+
+TaggedCollection.prototype.get = function(id)
+{
+	return this.index[id];
+}
+
+TaggedCollection.prototype.add = function(def)
+{
+	var self = this;
+
+	var tags = def.tags;
+	if(!Array.isArray(tags))
+		tags = tags.split(/\s+/);
+
+	var c = new this.constructor(def);
+
+	self.index[c.id] = c;
+	self.collection['all'].push(c);
+
+	tags.forEach(function(tag) {
+		if(tag) // disallow '' and undefined on purpose. Also disallows 0.
+		{
+			if(!self.collection[tag])
+				self.collection[tag] = [];
+
+			self.collection[tag].push(c);
+		}
+	});
+}
+
+TaggedCollection.prototype.reset = function()
+{
+	for(var id in this.collection)
+	{
+		for(var i = 0; i > this.collection[id].length; i++)
+		{
+			if(this.collection[id][i].reset)
+			{
+				this.collection[id][i].reset();
+			}
+		}
+	}
+}
+
+TaggedCollection.prototype.choose = function(tagFilter, used)
+{
+	var a = this.getMatching(tagFilter);
+	if(!a || a.length === 0)
+	{
+		log.error('No ' + this.constructor.name + ' match the tag filter! (' + tagFilter + ')');
+		a = this.collection.all;
+	}
+
+	var unused = a.filter(function(a) { return !(a.id in used); });
+
+	//
+	// TODO: We may want this to reset the options list based on the ratio betweem
+	// unused.length and a.length. Or guarantee that there are at least N choices.
+	// Right now, it'll exhaust the list entirely before resetting.
+	//
+	// When we reset, we add back in the subset which came up empty. This might have
+	// strange side effects, however, because the particular subset (made up of various unions
+	// and intersections) might put the same single choice for a different subset.
+	// For example
+	//      tag x = A B
+	//      tag y = B C
+	//      used = A B C
+	//   Ask for tag y, ABC are used. So, BC gets removed from the used list.
+	//      used = A
+	//   Then it randomly chooses tag y again and gets C
+	//      used = A C
+	//   When tag x is requested, it'll get B no matter what.
+	//      used = A B C
+	//   Ask for tag y again, ABC are used. So, BC gets removed from the used list.
+	//   And now we are potentially in a loop where tag x keeps getting B a lot
+	//   more often than A.
+	//
+	if(!unused.length)
+	{
+		// OK, we've run out of choices. Unuse the entire possible subset and
+		// choose again.
+		log.info('Ran out of options for ' + this.constructor.name + ' that match the tag filter (' + tagFilter + '). Resetting.');
+		clearFromUsed(used, a);
+		unused = a.filter(function(a) { return !(a.id in used); });
+
+		if(!unused.length)
+			unused = this.collection.all;
+	}
+
+	var choice = unused[randomInt(0, unused.length)];
+	if(choice && used)
+		used[choice.id] = 1; // using 1 because it stringifies smaller than anything else.
+
+	// console.log('chose:', choice.id + ':' + choice.tags.join(' '));
+	return choice;
+}
+
+function clearFromUsed(used, a)
+{
+	for(var i = 0; i < a.length; i++)
+	{
+		if(a[i].id in used)
+		{
+			delete used[a[i].id];
+		}
+	}
+}
+
+function clearAllUsed(used)
+{
+	for(var id in used)
+	{
+		delete used[id];
+	}
+}
+
+
+TaggedCollection.prototype.getMatching = function(tags)
+{
+	if(!Array.isArray(tags))
+		tags = tags.split(/\s/);
+
+	// console.log('getMatching:', tags.join(' '));
+
+	var a = this.collection.all;
+
+	for(var i = 0; i < tags.length; i++)
+	{
+		var tag = tags[i];
+		if(tag)
+		{
+			var op = intersect;
+			switch(tag.charAt(0))
+			{
+				case '-':
+					tag = tag.slice(1);
+					op = except;
+					break;
+
+				case '+':
+					tag = tag.slice(1);
+					op = union;
+					break;
+
+				case '=':
+					tag = tag.slice(1);
+					a = this.get(tag);
+					if(a)
+						return [ a ];
+					else
+						return [];
+			}
+
+			a = op(a, this.collection[tag]);
+		}
+
+		// console.log('possibles after '+tags[i]+':\n', a.map(function(i) { return '\t'+i.id+':'+i.tags; }).join('\n'));
+	}
+
+	return a;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+function except(a, b)
+{
+	if(!a)
+		return a;
+	else if(!b)
+		return a;
+
+	var r = [];
+	for(var i = 0; i < a.length; i++)
+	{
+		var keep = true;
+		for(var j = 0; j < b.length; j++)
+		{
+			if(a[i] === b[j])
+			{
+				// console.log('removing:', a[i].id, b[j].id)
+				keep = false;
+				break;
+			}
+		}
+
+		if(keep)
+		{
+			r.push(a[i]);
+		}
+	}
+
+	return r;
+}
+
+function intersect(a, b)
+{
+	if(!a)
+		return b;
+	else if(!b)
+		return a;
+
+	var r = [];
+	for(var i = 0; i < a.length; i++)
+	{
+		for(var j = 0; j < b.length; j++)
+		{
+			if(a[i] === b[j])
+
+			{
+
+				r.push(a[i]);
+
+				break;
+
+			}
+		}
+	}
+
+	return r;
+}
+
+function union(a, b)
+{
+	if(!a)
+		return b;
+	else if(!b)
+		return a;
+
+	return a.concat(b);
+}
+
+function nop(a, b)
+{
+	return a;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = TaggedCollection;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

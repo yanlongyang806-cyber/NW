@@ -1,0 +1,68 @@
+
+
+
+<div class="holdings-container">
+
+
+	<div class="holdings-header">
+		<h2 data-path=".playername.$escapeForHTML()">Deep Space 99</h2>
+		<h3>Leaderboard</h3>
+
+		<div class="holdings-motd" data-if=".message">
+			<h4><span data-path=".typename">Starbase</span> Message of the Day:</h4>
+			<p data-path=".message.$escapeForHTML()">Clear out this bartender so we can construct our Industrial Fabricator II!</p>
+		</div>
+	</div>
+
+
+	<div id="holdings_nav_mobile"></div>
+
+
+
+
+	<div class="holdings-leaderboard">
+
+		<table id="leaderboard_table">
+			<thead>
+				<tr>
+					<!-- <th class="leaderboard-rank">Rank</th> -->
+					<th class="leaderboard-name">Name</th>
+					<th class="leaderboard-contributions">Contributions</th>
+					<!-- <th class="leaderboard-levelrank">Level Rank</th> -->
+					<!-- <th>Level Rank Sortable</th> -->
+					<!-- <th class="leaderboard-fleetrank">Fleet Rank</th> -->
+					<!-- <th class="leaderboard-lastonline">Last Online</th> -->
+					<!-- <th>Last Online Sortable</th> -->
+				</tr>
+			</thead>
+			<tbody data-if="{.donationstats}" data-path=".donationstats">
+				<tr>
+					<!-- <td>1</td> -->
+					<td>
+						<!-- <a data-set-data-url="#char({.displayname})/"> -->
+							<!-- <span data-set-class="icon-class-player-small {.classtype.$map(classTypeIcons)}"></span> -->
+							<span class="leaderboard-name-text">
+								<span data-path=".displayname">Name</span>
+							</span>
+						<!-- </a> -->
+					</td>
+					<td class="leaderboard-contributions-cell" data-path=".contribution.$commify()">901,234,567</td>
+					<!-- <td class="leaderboard-levelrank-cell"><span data-set-class="icon-rank-large {.rank.$map(rankIcons)}"></span></td> -->
+					<!-- <td data-path=".rank">2</td> -->
+					<!-- <td data-path=".officerrank">Officer</td> -->
+					<!-- <td data-path=".logout$ago()">2 days ago</td> -->
+					<!-- <td data-path=".logout$dateParse()">1234567890</td> -->
+				</tr>
+			</tbody>
+
+			<tbody data-if="!{.donationstats}">
+				<tr><td colspan="2"><span>There have been no contributions</span></td></tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+
+<script>
+	client.fleetHoldingsLeaderBoardTableInit();
+</script>

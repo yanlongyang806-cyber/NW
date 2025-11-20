@@ -1,0 +1,8 @@
+{
+	float hardness = (%Hardness%.x)*12 + 1;
+	float rcp_hardness = 1.f / hardness;
+	float v = %Heightmap%.x * (1 - rcp_hardness) + rcp_hardness;
+	v = v - %BlendAmount%.x;
+	v = saturate(v * hardness);
+	%Result% = v;
+}

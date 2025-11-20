@@ -1,0 +1,4 @@
+// lerp.phl
+{
+	%Result% = float4(lerp(%B%, %A%, %WEIGHT%).xyz, 1);
+}

@@ -1,0 +1,243 @@
+'use strict';
+
+var autoCommands = module.exports;
+
+var dbg = require('cryptic/dbg');
+
+//
+// autoCommands
+//
+// The definitions for the server commands understood by the GatewayServer.
+//
+
+var FunctionQueuer = require('cryptic/commands/FunctionQueuer');
+
+// Make FunctionQueuers for each data type.
+
+var int = new FunctionQueuer('int', 'max', 'min', 'nonzero');
+int.uintmax = 4294967295;
+int.intmax = 2137483647;
+int.intmin = -2137483648;
+
+var str = new FunctionQueuer('str', 'minlen', 'maxlen');
+var notEmptyStr = str().minlen(1);
+
+var idBase = new FunctionQueuer('id', 'nonzero', 'min', 'str');
+
+
+// The various Executors needs to have all those functions in them.
+// Currently available executors, found in the appropriate jspp file:
+//   coerceExecutor
+//   emitExecutor
+//   validateExecutor
+
+// This is just a handy abbreviation
+var positiveInt = int().min(0).max(int.intmax);
+var containerId = int().nonzero().min(1).max(int.uintmax);
+var id = idBase().nonzero();
+var idZeroOk = idBase().min(0).str();
+var bool = int().min(0).max(1);
+
+var itemCount = int().min(1).max(9999);
+
+// Finally, all the commands.
+var autoCommands = {
+	GatewayAuction_RequestBid: [
+		{ list: notEmptyStr },
+		{ id: positiveInt },
+		{ bid: positiveInt }
+	],
+
+	GatewayAuction_RequestPurchase: [
+		{ list: notEmptyStr },
+		{ id: positiveInt }
+	],
+
+	GatewayAuction_RequestCancel: [
+		{ list: notEmptyStr },
+		{ id: positiveInt }
+	],
+
+	GatewayAuction_GetPostingFee: [
+		{ buyout: positiveInt },
+		{ bid: positiveInt },
+		{ duration: positiveInt }
+	],
+
+	GatewayAuction_CreateAuction: [
+		{ id: id },
+		{ quantity: int().min(1).max(int.intmax) },
+		{ buyout: positiveInt },
+		{ bid: positiveInt },
+		{ duration: positiveInt }
+	],
+
+	GatewayMail_Delete: [
+		{ id: notEmptyStr.maxlen(32) }
+	],
+
+	GatewayMail_ReportSpam: [
+		{ handle: notEmptyStr.maxlen(256) },
+		{ id: notEmptyStr.maxlen(32) }
+	],
+
+	GatewayMail_Send: [
+		{ to: notEmptyStr.maxlen(256) },
+		{ subject: notEmptyStr.maxlen(1024) },
+		{ body: notEmptyStr.maxlen(20*1024) }
+	],
+
+	GatewayItemAssignments_StartAssignment: [
+		{ taskName: notEmptyStr.maxlen(1024) }
+	],
+
+	GatewayItemAssignments_SlotItem: [
+		{ slot: notEmptyStr },
+		{ id: idZeroOk }
+	],
+
+	GatewayItemAssignments_CollectRewards: [
+		{ id: id }
+	],
+
+	GatewayItemAssignments_FinishEarly: [
+		{ id: id }
+	],
+
+	GatewayItemAssignments_CancelAssignment: [
+		{ id: id }
+	],
+
+	GatewayVendor_PurchaseVendorItem: [
+		{ vendor: notEmptyStr },
+		{ store: notEmptyStr },
+		{ idx: positiveInt },
+		{ count: int().min(1).max(20) }
+	],
+
+	GatewayVendor_SellItemToVendor: [
+		{ vendor: notEmptyStr },
+		{ id: id },
+		{ count: itemCount }
+	],
+
+	GuildProject_SetNextTask: [
+		{ guildid: containerId },
+		{ projectname: notEmptyStr },
+		{ slotnumber: positiveInt },
+		{ taskname: notEmptyStr }
+	],
+
+	GuildProject_DonateExpressionItemList: [
+		{ guildid: containerId},
+		{ projectname: notEmptyStr },
+		{ taskslotnum: positiveInt },
+		{ taskname: notEmptyStr },
+		{ bucketname: notEmptyStr },
+		{ params: str() }
+	],
+
+	GuildProject_DonateSimpleItems: [
+		{ guildid: containerId },
+		{ projectname: notEmptyStr },
+		{ slotnumber: positiveInt },
+		{ bucketname: notEmptyStr },
+		{ itemname: notEmptyStr },
+		{ playerquantity: int().min(1).max(int.intmax) }
+	],
+
+	PlayerProject_SetNextTask: [
+		{ projectname: notEmptyStr },
+		{ slotnumber: positiveInt },
+		{ taskname: notEmptyStr }
+	],
+
+	PlayerProject_DonateExpressionItemList: [
+		{ projectname: notEmptyStr },
+		{ taskslotnum: positiveInt },
+		{ taskname: notEmptyStr },
+		{ bucketname: notEmptyStr },
+		{ params: str() }
+	],
+
+	PlayerProject_DonateSimpleItems: [
+		{ projectname: notEmptyStr },
+		{ slotnumber: positiveInt },
+		{ bucketname: notEmptyStr },
+		{ itemname: notEmptyStr },
+		{ playerquantity: int().min(1).max(int.intmax) }
+	],
+
+	GatewayInventory_SortBag: [
+		{ bagid: notEmptyStr },
+		{ combine:  bool }
+	],
+
+	GatewayInventory_DiscardItem: [
+		{ id: id },
+		{ count:  itemCount }
+	],
+
+	GatewayCStore_Purchase: [
+		{ productid: positiveInt },
+		{ price: positiveInt }
+	],
+
+	GatewayInventory_OpenRewardPack: [
+		{ id: id }
+	],
+
+	Gateway_ConvertNumeric: [
+		{ converstionName: notEmptyStr.maxlen(32) }
+	],
+
+	Gateway_WithdrawTips: [
+		{ amount: positiveInt }
+	],
+
+	GatewayExchange_WithdrawOrder: [
+		{ orderId: id }
+	],
+
+	GatewayExchange_ClaimTC: [
+		{ amount: positiveInt }
+	],
+
+	GatewayExchange_ClaimMTC: [
+		{ amount: positiveInt }
+	],
+
+	GatewayExchange_CreateBuyOrder: [
+		{ quantity: positiveInt },
+		{ price: positiveInt }
+	],
+
+	GatewayExchange_CreateSellOrder: [
+		{ quantity: positiveInt },
+		{ price: positiveInt }
+	]
+};
+
+// Make the name of the parameter handy.
+for(var cmd in autoCommands)
+{
+	var p = autoCommands[cmd];
+	for(var i = 0; i < p.length; i++)
+	{
+		// There should only be one key.
+		var a = Object.keys(p[i]);
+		if(a.length !== 1)
+			dbg.error('autoCommand '+cmd+' is incorrectly defined for param '+i);
+
+		var paramName = Object.keys(p[i])[0];
+		if(paramName === '_name')
+			dbg.error('autoCommand '+cmd+' has a parameter named _name, which is bad news.');
+
+		p[i]._name = paramName;
+	}
+}
+
+
+module.exports = autoCommands;
+
+// End of File

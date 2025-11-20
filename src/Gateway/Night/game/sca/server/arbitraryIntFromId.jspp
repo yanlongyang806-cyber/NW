@@ -1,0 +1,28 @@
+'use strict';
+
+// quick FNV hash. Used as a random number generator.
+function hash(str)
+{
+	var h = 2166136261;
+	for(var i = 0; i < str.length; i++)
+	{
+		h += (h << 1) + (h << 4) + (h << 7) + (h << 8) + (h << 24);
+		h ^= str.charCodeAt(i);
+	}
+
+	return h >>> 0;
+}
+
+function arbitraryIntFromId(id, from, toExclusive)
+{
+	var h = hash(id);
+
+	if(toExclusive === from)
+		return from;
+
+	return (h % (toExclusive - from)) + from;
+}
+
+module.exports = arbitraryIntFromId;
+
+// End of File

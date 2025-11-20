@@ -1,0 +1,79 @@
+<button class="close-button" data-url="back"></button>
+
+<div class="modal-mail-message">
+	<div class="mail-detail" data-update="maildetail" data-path="maildetail">
+		<div class="mail-header">
+			<h4>
+				<span class="mail-header-label">From:</span>
+				<span class="mail-header-data">
+					<span data-path=".header.from">Playername</span><span data-if=".header.fromhandle">@<span data-path=".header.fromhandle">Username</span></span>
+				</span>
+			</h4>
+			<h4>
+				<span class="mail-header-label">Subject:</span>
+				<span class="mail-header-data">
+					<span data-path=".header.subject.$escapeForHTML()">Lorem ipsum dolor sit amet<span>
+				</span>
+			</h4>
+		</div>
+		<div class="mail-body" data-path=".body.body.$escapeForHTML()">Lorem ipsum dolor sit amet.
+		
+		Consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc.
+		
+		Maecenas dapibus nisi non sapien lacinia gravida non eget odio.</div>
+
+		<div class="mail-items" data-if=".body.items.$length() ge 1">
+			<h4>Attached Items:</h4>
+			<span data-path=".body.items">
+				<div class="icon-slot small">
+					<img data-set-src="tex/{.itemdef.icon}.png" alt="" />
+					<span data-if=".count ge 2" data-path=".count" class="quantity">9</span>
+				</div>
+			</span>
+			<h6 class="attention">Log in to the game to claim your items.</h6>
+		</div>
+
+
+		<!-- REPLY BUTTON -->
+		<div data-if="{maildetail.header.fromhandle}" class="input-field button mail-message-reply">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button class="resetWindow" data-set-data-url="/mail-compose?to={maildetail.header.from}@{maildetail.header.fromhandle}&subject=Re:{maildetail.header.subject}">Reply</button>
+		</div>
+		<div data-if="!{maildetail.header.fromhandle}" class="input-field button mail-message-reply disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button disabled>Reply</button>
+		</div>
+
+		<!-- DELETE BUTTON -->
+		<div data-if="{maildetail}" class="input-field button mail-message-delete">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-url-silent="/mail/message/delete-message">Delete</button>
+		</div>
+		<div data-if="!{maildetail}" class="input-field button mail-message-delete disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button disabled>Delete</button>
+		</div>
+
+		<!-- REPORT SPAM BUTTON -->
+		<div data-if="{maildetail.header.fromhandle}" class="input-field button mail-message-spam">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-url-silent="/mail/message/report-spam">Report Spam</button>
+		</div>
+		<div data-if="!{maildetail.header.fromhandle}" class="input-field button mail-message-spam disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button disabled>Report Spam</button>
+		</div>
+	</div>
+</div>

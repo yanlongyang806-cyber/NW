@@ -1,0 +1,70 @@
+'use strict';
+
+var arbitraryIntFromId = require('./arbitraryIntFromId');
+
+//////////////////////////////////////////////////////////////////////////
+
+
+function TileSets(defs)
+{
+	this.index = defs;
+	this.fallback = {
+		"tiles": "dungeon",
+		"parchment": "parchment-01",
+		"backgrounds": [
+			"sca_bg_dungeon.jpg",
+		]
+	}
+}
+
+TileSets.prototype.get = function (name)
+{
+	return name in this.index ? this.index[name] : this.fallback
+}
+
+TileSets.prototype.getParchment = function (name)
+{
+	return this.get(name).parchment;
+}
+
+TileSets.prototype.getTiles = function (name)
+{
+	return this.get(name).tiles;
+}
+
+TileSets.prototype.chooseBackground = function (name, id)
+{
+	var ts = this.get(name);
+	var r = arbitraryIntFromId(id || name, 0, ts.backgrounds.length);
+	var b = ts.backgrounds[r] ? ts.backgrounds[r] : this.fallback.backgrounds[0];
+
+	return TileSets.fixName(b, 'bg');
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+TileSets.fixName = function (name, fgOrBg)
+{
+	// If an extension is provided, assume they put the whole name in
+	if(name.indexOf('.') > 0)
+	{
+		return name;
+	}
+
+	var res = /^sca_.g_(.*)$/.exec(name);
+	if(res && res[1])
+	{
+		name = 'sca_' + fgOrBg + '_' + res[1] + '.' + (fgOrBg === 'fg' ? 'png' : 'jpg');
+	}
+	return name;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = TileSets;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

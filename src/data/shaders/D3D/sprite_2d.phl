@@ -1,0 +1,106 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(texture_sampler, 0);
+#ifdef TWOTEXSPRITE
+SAMPLER_DECL(texture_sampler2, 1);
+#endif
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float sprite_effect_weight : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+// -----------------------------------------------------------------------
+
+// Main function prototype
+struct PS_OUTPUT
+{
+	float4 color[1] : SEM_COLOR(0);
+};
+
+// -----------------------------------------------------------------------
+// from http://www.mindcontrol.org/~hplus/graphics/heightfield-interpolation.html
+float hermite4(float frac, float ptr[4])
+{
+  float    c     = (ptr[2] - ptr[0]) * 0.5f; // .5
+  float    v     = ptr[1] - ptr[2];  // -1
+  float    w     = c + v;  // -.5
+  float    a     = w + v + (ptr[3] - ptr[1]) * 0.5f; // -1.5
+  float    b     = w + a; // -2
+  return ((((a * frac) - b) * frac + c) * frac + ptr[1]); // 0.6..
+}
+
+PS_OUTPUT sprite_2d_pixelshader(PS_INPUT_SPRITE fragment)
+{
+	PS_OUTPUT output;
+
+#ifdef SMOOTH
+	#ifdef SM20
+		// Bilinear - yeah, yeah, should just use hardware filtering
+		// sprite_effect_weight.x should be 1/(texsize)
+ 		//float4 origtex = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+		float2 texcoord = fragment.texcoord.xy + sprite_effect_weight.x*float2(-0.5f, 0.f);
+		float xx[2];
+		float2 xyf=frac(texcoord / sprite_effect_weight.x);
+	#ifndef _PS3
+	#ifndef TRANSGAMING
+		[unroll]
+	#endif
+	#endif
+		for (int i=0; i<2; i++)
+		{
+			float y0 = sampleTex2D(texture_sampler, texcoord + sprite_effect_weight.x*float2(i, 0)).w;
+			float y1 = sampleTex2D(texture_sampler, texcoord + sprite_effect_weight.x*float2(i, 1)).w;
+			xx[i] = lerp(y0, y1, xyf.y);
+		}
+		float r = lerp(xx[0], xx[1], xyf.x);
+		float4 outcolor = fragment.color;
+		outcolor.w = r * fragment.color.w;
+	#else
+		// Bicubic
+		// sprite_effect_weight.x should be 1/(texsize)
+ 		//float4 origtex = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+		float2 texcoord = fragment.texcoord.xy + sprite_effect_weight.x*float2(-0.5f, 0.f);
+		float yy[4];
+		float xx[4];
+		float2 xyf=frac(texcoord / sprite_effect_weight.x);
+	#ifndef _PS3		
+	#ifndef TRANSGAMING
+		[unroll]
+	#endif
+	#endif		
+		for (int i=0; i<4; i++)
+		{
+		#ifndef _PS3
+		#ifndef TRANSGAMING
+			[unroll]
+		#endif
+		#endif
+			for (int j=0; j<4; j++)
+			{
+				yy[j] = sampleTex2D(texture_sampler, texcoord + sprite_effect_weight.x*float2(i - 1.f, j - 1.f)).w;
+			}
+			xx[i] = hermite4(xyf.y, yy);
+		}
+		float r = (hermite4(xyf.x, xx) - 0.5) * 2; // Bias makes for sharder edges
+		//float4 outcolor = fragment.color * origtex;
+		float4 outcolor = fragment.color;
+		outcolor.w = r * fragment.color.w;
+	#endif
+#else
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	#ifdef TWOTEXSPRITE
+		texcolor *= sampleTex2D(texture_sampler2, fragment.texcoord.zw);
+	#endif
+	#ifdef DESATURATE
+		float4 outcolor = float4(lerp(texcolor, getIntensity(texcolor.xyz) * fragment.color, sprite_effect_weight.x).xyz,
+							fragment.color.w * texcolor.w);
+	#else
+		float4 outcolor = fragment.color * texcolor;
+	#endif
+#endif
+
+	output.color[0] = outcolor;
+	
+	return output;
+}

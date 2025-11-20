@@ -1,0 +1,160 @@
+<h2>Available Missions</h2>
+
+<div class="list-box-container available-missions-list">
+	<div class="needsScrollBars">
+		<div class="scrollBarContent">
+			<div class="mission-list list-box large-list-entries">
+
+				<div class="list-group">
+					<h3><span class="list-arrow up"></span> Admiral Grigori Yanishev</h3>
+					<ul class="list-entries">
+						<li class="selectable-entry" data-this="1" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-info"></span>
+								Planet Nu MUN Investigation
+							</span>
+						</li>
+						<li class="selectable-entry" data-this="2" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Skirmish
+							</span>
+						</li>
+						<li class="selectable-entry" data-this="3" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-contact"></span>
+								The Needs of Many
+							</span>
+						</li>
+						<li class="selectable-entry" data-this="4" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Outreach
+							</span>
+						</li>
+						<li class="selectable-entry" data-this="5" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								System Q165-Mu Relief Effort
+							</span>
+						</li>
+					</ul>
+				</div>
+				<div class="list-group">
+					<h3><span class="list-arrow up"></span> Admiral T'Nae</h3>
+					<ul class="list-entries">
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								To Boldly Go: Explore the Khazan Cluster
+							</span>
+						</li>
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								To Boldly Go: Explore the Afehir Nebula
+							</span>
+						</li>
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								To Boldly Go: Explore the Eridan Belt
+							</span>
+						</li>
+					</ul>
+				</div>
+				<div class="list-group">
+					<h3><span class="list-arrow up"></span> Captain Mackenzie Calhoun</h3>
+					<ul class="list-entries">
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Ending Enemy Expansion (PvP: Scenarios)
+							</span>
+						</li>
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Keeping Your Enemies at Bay (PvP: Arenas)
+							</span>
+						</li>
+					</ul>
+				</div>
+				<div class="list-group">
+					<h3><span class="list-arrow up"></span> Commander Selyn</h3>
+					<ul class="list-entries">
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Diplomatic Immunity
+							</span>
+						</li>
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								Where No One Has Gone Before
+							</span>
+						</li>
+						<li class="selectable-entry" data-set-data-this="$here()" data-url-param="mission">
+							<span class="cap"></span>
+							<span class="entry">
+								<span class="mission-icon mission-available"></span>
+								An Unlikely Alliance
+							</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="details-box-container available-missions-details">
+	<div class="mission-details details-box infobox">
+
+		<div class="info-top">
+			<span class="info-bg-left"></span>
+			<span class="info-bg-right"></span>
+		</div>
+		<div class="info-mid">
+			<span class="info-bg-left"></span>
+			<span class="info-bg-right"></span>
+			<div id="infobox-content" class="info-content">
+				<div class="infobox-default">
+					<h2 data-path=".ship.name">U.S.S. Dark Matter</h2>
+					<h3>Available Missions</h3>
+					<h4>Select a mission from the list to view details</h4>
+				</div>
+			</div>
+		</div>
+		<div class="info-bot">
+			<span class="info-bg-left"></span>
+			<span class="info-bg-right"></span>
+		</div>
+	</div>
+</div>
+
+
+
+
+<script>
+	require('/game/client/lib/contentHelpers').arrowList();
+	$(".selectable-entry").click(function() {
+
+		$('.selected').removeClass('selected');
+		$(this).addClass('selected');
+
+	});
+</script>

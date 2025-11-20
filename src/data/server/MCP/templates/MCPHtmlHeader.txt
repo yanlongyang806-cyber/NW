@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Server Monitor</title>
+<link rel="stylesheet" type="text/css" href="/static/css/mcp.css">
+
+
+<!-- YUI GUI Chewie Kablooie -->
+<link rel="stylesheet" type="text/css" href="/static/js/yui/button/assets/skins/sam/button.css"> 
+<link rel="stylesheet" type="text/css" href="/static/js/yui/menu/assets/skins/sam/menu.css"> 
+<link rel="stylesheet" type="text/css" href="/static/js/yui/fonts/fonts-min.css">
+<link rel="stylesheet" type="text/css" href="/static/js/yui/container/assets/skins/sam/container.css">
+
+<!--#EXTRA_STYLESHEETS -->
+
+<!-- js --> 
+<script type="text/javascript" src="/static/js/yui/yahoo/yahoo-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/event/event-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/yahoo-dom-event/yahoo-dom-event.js"></script> 
+<script type="text/javascript" src="/static/js/yui/animation/animation-min.js"></script>
+<script type="text/javascript" src="/static/js/yui/element/element-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/button/button-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/connection/connection-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/container/container-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/menu/menu-min.js"></script> 
+<script type="text/javascript" src="/static/js/yui/dragdrop/dragdrop-min.js"></script>
+<script type="text/javascript" src="/static/js/yui/slider/slider-min.js"></script>
+<script type="text/javascript" src="/static/js/yui/cookie/cookie-min.js"></script> 
+<!--[if IE]><script language="javascript" type="text/javascript" src="/static/js/flot/excanvas.min.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="/static/js/flot/jquery.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/js/flot/jquery.flot.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/js/flot/jquery.flot.selection.min.js"></script>
+<script language="javascript" type="text/javascript" src="/static/js/logparsergraphing.js"></script>
+<script language="javascript" type="text/javascript" src="/static/js/favicon.js"></script>
+
+<script language="javascript" type="text/javascript" src="/static/js/rollover.js"></script>
+
+<!-- auto refresh mojo -->
+<script src="/static/js/auto-refresh.js"></script>
+
+<!-- commands as widgets -->
+<script type="text/javascript" src="/static/js/command-gui.js"></script>
+
+<!--#EXTRA_SCRIPTS -->
+
+</head>
+<body class="yui-skin-sam">
+<div id="content">
+<span id="auto-update-swap" style="display:none"></span>
+<span id="auto-update">

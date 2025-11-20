@@ -1,0 +1,482 @@
+'use strict';
+//
+// configure
+//
+// Handles config file and command line configuration.
+//
+// The command line overrides the config file.
+// The default config file name is gateway.cfg. If its location isn't
+//   specified with --config, it is searched for in the current and all parent
+//   directories. The first one found is used.
+//
+var fs = require('fs');
+var url = require('url');
+var path = require('path');
+var crypto = require('crypto');
+
+var optimist = require('optimist');
+
+var log = require('./log');
+var mkdirsSync = require('cryptic/mkdirsSync');
+var lock = require('cryptic/lock');
+
+var g_config;
+
+var configDefault = {
+	// Put all config options here (with appropriate defaults).
+	// Please keep them alphabetized.
+	// All Dirs are relative to where the base script is located.
+	autodetectLag:            true,         // Automatically locks Gateway if it starts to bog down.
+	binDir:                   '../../../bin',  // Where are my binaries?
+	buildVersion:             'none',
+	buildInfoFileName:        'buildInfo.json',
+	cacheDir:                 './cache',
+	cacheCleanupDistance:     86400000,     // Allowed stale age of cache files in milliseconds. (Yes, really)
+	debugLevel:               5,
+	hostShardMonitor:         'localhost',
+	ipAccountServer:          0,            // This will force a lookup
+	ipLoginServer:            0,            // This will force a lookup
+	ipGatewayServer:          0,            // This will force a lookup
+	ipGatewayLoginLauncher:   0,            // Only used by Login if a slave
+	ipsTrusted:               [ '208.95.187.15' ],  // array of ip specs which are considered trusted. (This is Cryptic Studios.)
+	locked:                   false,        // If true, then disallow logins.
+	portAccountServer:        6901,         // CrypticPorts.h: DEFAULT_ACCOUNTSERVER_TRUSTED_PORT
+	portClient:                  0,
+	portClientStart:          6860,         // CrypticPorts.h: GATEWAYPROXY_CLIENT_PORT_START
+	portClientEnd:            6891,         // CrypticPorts.h: GATEWAYPROXY_CLIENT_PORT_END
+	portGatewayLoginLauncher: 6899,         // CrypticPorts.h: DEFAULT_GATEWAYLOGINLAUNCHER_PORT
+	portGatewayServer:        6900,         // CrypticPorts.h: DEFAULT_GATEWAYSERVER_PORT
+	portLogin:                   0,
+	portLoginStart:           6850,         // CrypticPorts.h: GATEWAYLOGIN_CLIENT_PORT_START
+	portLoginEnd:             6859,         // CrypticPorts.h: GATEWAYLOGIN_CLIENT_PORT_END
+	portLoginServer:          6988,         // CrypticPorts.h: DEFAULT_LOGINSERVER_GATEWAY_LOGIN_PORT
+	portShardMonitor:         80,
+	publicDir:                './public',   // Location of the directory for static HTTP serving
+	shardName:                '',           // The name of my shard, given by my launcher (Proxy only)
+	slave:                    false,        // If true, die if the connection to the GatewayServer dies.
+
+	useAuthLoginUrl:          true,         // If true, replace "gateway" with "auth" to make the auth url.
+											// If false, uses the same url, with the https protocol.
+	useClustering:            true,         // Support multiple shards
+	useLogin2:                true,         // Use Login2 stuff for the LoginServer.
+
+	userLimit:                0             // The maximum number of users allowed on a proxy at once. 0 means no limit.
+
+};
+
+function configure()
+{
+	if(typeof g_config !== 'undefined')
+	{
+		return g_config;
+	}
+
+	var argv = optimist
+		.usage('Usage $0')
+		.wrap(78)
+		.option('autodetectLag', {
+			desc:'Automatically locks gateway if it starts to bog down.',
+			type:'boolean',
+			'default': configDefault.autodetectLag
+		})
+		.option('buildVersion', {
+			desc: 'Sets the build version of the shard.',
+			type:'string'
+		})
+		.option('buildInfoFileName', {
+			desc: 'The file used to load/save build info when the proxy is started.',
+			type:'string'
+		})
+		.option('cacheDir', {
+			desc: 'Sets the directory to cache textures and headshots in.'
+		})
+		.option('cacheCleanupDistance', {
+			desc: 'How far back to save cached files that are expired. (in milliseconds)'
+		})
+		.option('config', {
+			alias: 'c',
+			desc: 'Path to a config file.',
+			type: 'string'
+		})
+		.option('debugLevel', {
+			alias: 'd',
+			desc: 'Sets the debug level. 5 is normal, 10 is debug.'
+		})
+		.option('help', {
+			alias: 'h',
+			desc: 'Show this help.'
+		})
+		.option('hostShardMonitor', {
+			desc: 'Sets the host (and, optionally, port) for the shard monitor. Usually something like shardname:80 or shardname',
+			type: 'string'
+		})
+		.option('ipAccountServer', {
+			desc: 'Sets the ip address for the Login Server.'
+		})
+		.option('ipGatewayLoginLauncher', {
+			desc: 'Sets the ip address for the GatewayLoginLauncher.'
+		})
+		.option('ipGatewayServer', {
+			desc: 'Sets the ip address for the GatewayServer.'
+		})
+		.option('ipLoginServer', {
+			desc: 'Sets the ip address for the Login Server.'
+		})
+		.option('ipsTrusted', {
+			desc: 'Sets ip address(es) that are trusted. (e.g. 208.95.187.15). Use multiple times for multiple specs.'
+		})
+		.option('locked', {
+			desc: 'If locked, logins are disallowed.',
+			type: 'boolean',
+			'default': configDefault.locked
+		})
+		.option('portAccountServer', {
+			desc: 'Sets the port the account server talks on.'
+		})
+		.option('portClient', {
+			desc: 'Sets the port clients will talk on.'
+		})
+		.option('portClientStart', {
+			desc: 'Sets the start of the range of ports clients will talk on.'
+		})
+		.option('portClientEnd', {
+			desc: 'Sets the end of the range of ports clients will talk on.'
+		})
+		.option('portGatewayLoginLauncher', {
+			desc: 'Sets the port to talk to the GatewayLoginLauncher on.'
+		})
+		.option('portGatewayServer', {
+			desc: 'Sets the port to talk to the GatewayServer on.'
+		})
+		.option('portLogin', {
+			desc: 'Sets the port clients will login to.'
+		})
+		.option('portLoginStart', {
+			desc: 'Sets the start of the range of ports clients will login to.'
+		})
+		.option('portLoginEnd', {
+			desc: 'Sets the end of the range of ports clients will login to.'
+		})
+		.option('portLoginServer', {
+			desc: 'Sets the port to talk to the login server on.'
+		})
+		.option('portShardMonitor', {
+			desc: 'Sets the port for the shard monitor. Usually something like 80. (Unused if the port is set with -hostShardMonitor.)'
+		})
+		.option('publicDir', {
+			desc: 'Sets the directory where static HTTP resources are found.'
+		})
+		.option('shardName', {
+			desc: "The name of the shard which owns this Proxy."
+		})
+		.option('slave', {
+			desc: 'Shut down if the connection to the GatewayServer dies.',
+			type: 'boolean',
+			'default': configDefault.slave
+		})
+		.option('useAuthLoginUrl', {
+			desc: 'Replace "gateway" with "auth" to make the auth url.',
+			type: 'boolean',
+			'default': configDefault.useAuthLoginUrl
+		})
+		.option('useClustering', {
+			desc: 'Support multiple shards.',
+			type: 'boolean',
+			'default': configDefault.useClustering
+		})
+		.option('useLogin2', {
+			desc: 'Use Login2 stuff for the LoginServer.',
+			type: 'boolean',
+			'default': configDefault.useLogin2
+		})
+		.option('userLimit', {
+			desc: "The maximum number of users allowed on a proxy at once. 0 means no limit."
+		})
+
+		//
+		// Please add new options in alphabetical order.
+		//
+		// Make sure you add your option to the list of options in
+		//   configDefault at the top of this file (if it overrides any
+		//   config variables).
+		//
+		.argv;
+
+	if(argv.help)
+	{
+		optimist.showHelp();
+		process.exit();
+	}
+
+	// Find the base script, useful for finding out where we're "rooted"
+	var script = module;
+	while(script.parent)
+	{
+		script = script.parent;
+	}
+
+	if(!argv.config)
+	{
+		var cfile = '';
+
+		var cdir, check_configs = [
+			'gateway-local.cfg',  // Local config
+			'gateway-default.cfg' // Default config
+		];
+
+		config_found:
+		for(var x in check_configs)
+		{
+			cdir = path.dirname(script.filename);
+
+			while(cdir.length > 3)
+			{
+				if(fs.existsSync(path.join(cdir, check_configs[x])))
+				{
+					cfile = check_configs[x];
+					break config_found;
+				}
+				cdir = path.join(cdir, '..');
+			}
+		}
+
+		if(cdir.length <= 3 )
+		{
+			throw(new Error('Unable to find config file! (gateway-local.cfg or gateway-default.cfg)'));
+		}
+
+		argv.config = path.join(cdir, cfile);
+	}
+
+	console.log('Using config file: ', argv.config);
+	g_config = eval(fs.readFileSync(argv.config).toString());
+
+	// Override the config file with whatever was on the command line.
+
+	for(var field in configDefault)
+	{
+		if(field in argv)
+		{
+			if(configDefault[field] !== argv[field])
+			{
+				console.log('Command line override '+field+' = '+argv[field]);
+				g_config[field] = argv[field];
+			}
+		}
+
+		if(!(field in g_config))
+		{
+			g_config[field] = configDefault[field];
+		}
+	}
+
+	// Normalize the shard name
+	g_config.shardName = g_config.shardName.toLowerCase();
+
+	// Save the base directory for convenience
+	g_config.scriptDir = path.resolve(path.dirname(script.filename));
+
+	// Clean up any relative paths
+	g_config.binDir = path.resolve(g_config.scriptDir, g_config.binDir);
+	g_config.publicDir = path.resolve(g_config.scriptDir, g_config.publicDir);
+	g_config.cacheDir = path.resolve(g_config.scriptDir, g_config.cacheDir);
+
+	// Prepare the cache directory
+	initCache(g_config);
+
+	// Add our bin DIR to PATH (needed for gm)
+	process.env.PATH = process.env.PATH + ';' + g_config.binDir + ';';
+
+	// Make sure a shard monitor is set.
+	if(!g_config.hostShardMonitor) throw(new Error('hostShardMonitor must be specified in the config file or on the command line!'));
+
+	// Chop up the monitor into host and port parts for convenience.
+	var res = /(.*):(.*)/.exec(g_config.hostShardMonitor);
+	if(res)
+	{
+		g_config.hostShardMonitor = res[1];
+		g_config.portShardMonitor = res[2];
+	}
+
+	// If specific ports have been given to us, use them instead of searching
+	//   for unused ports.
+	if(g_config.portClient)
+	{
+		g_config.portClientStart = g_config.portClientEnd = g_config.portClient;
+	}
+
+	if(g_config.portLogin)
+	{
+		g_config.portLoginStart = g_config.portLoginEnd = g_config.portLogin;
+	}
+
+	// Remove all the extra stuff and just use the last one.
+	for(var key in g_config)
+	{
+		if(Array.isArray(g_config[key]))
+		{
+			g_config[key] = g_config[key].slice(-1)[0];
+		}
+	}
+
+	console.log('');
+	console.log('Final config:', g_config);
+	console.log('');
+
+	return g_config;
+}
+
+function initCache(config)
+{
+	// Build info used to expire cached files
+	var buildInfo;
+	var buildInfoFile;
+	var runCleanup = false;
+
+	buildInfoFile = path.resolve(config.cacheDir, config.buildInfoFileName);
+	if(fs.existsSync(buildInfoFile))
+	{
+		// Check for build version mismatch since last startup
+		buildInfo = fs.readFileSync(buildInfoFile);
+		if(buildInfo)
+		{
+			try
+			{
+				buildInfo = JSON.parse(buildInfo);
+			}
+			catch(e)
+			{
+				buildInfo = undefined;
+			}
+
+			if(buildInfo && buildInfo.buildVersion !== config.buildVersion)
+			{
+				buildInfo = undefined;
+			}
+		}
+	}
+
+	// If we dont have current build info, or we're simply in debug mode.
+	// Then we update the cache start time.
+	// Idea being, we dont change the cache start time unless there was
+	// a build change, or this is the first time this was ever run.
+	// Unless we're debugging, then we change it every time it restarts.
+	if(!buildInfo || IS_DEBUG())
+	{
+		buildInfo = {};
+		// Set timestamp identifying this runtime.
+		// And shave off miliseconds to match file time lookups
+		buildInfo.cacheStart = Math.round(+new Date()/1000) * 1000;
+
+		runCleanup = true;
+	}
+
+	// Update to current build version
+	buildInfo.buildVersion = config.buildVersion
+
+	// make sure we have our cache dir before trying to write a file to it
+	try
+	{
+		mkdirsSync(config.cacheDir);
+	}
+	catch(e)
+	{
+		if(e.code !== 'EEXIST')
+		{
+			log.error(e);
+		}
+	}
+
+	// Write to file for next restart
+	fs.writeFileSync(buildInfoFile, JSON.stringify(buildInfo));
+
+	// And set the correct cache start time
+	config.cacheStart = buildInfo.cacheStart;
+
+	// Cahce Max Age for the FileCache, only really desired in dev.
+	config.cacheMaxAge = IS_DEBUG() ? 2 * 1000 : null;
+
+	// Make an ETAG
+	config.etag = crypto.createHash('md5').update(IS_DEBUG()?config.cacheStart.toString():config.buildVersion).digest("hex");
+
+	if(runCleanup)
+	{
+		// Also, because of a build change, do some garbage collection
+		// Doing this at the end of init because I want to be sure the
+		// config settings are all done.
+		cleanUpCacheDir(config.cacheDir);
+	}
+}
+
+var s_cacheCleanupAbort = false;
+function cleanUpCacheDir(dir)
+{
+	if(lock.lockDir(dir))
+	{
+		var x; // function scope for use below
+		fs.readdir(dir, function(err, files) {
+			for(x = 0; x < files.length; x++)
+			{
+				if(s_cacheCleanupAbort)
+					return;
+
+				if((files[x] !== g_config.buildInfoFileName) // DONT delete the build info file, ever
+					&& (files[x] !== 'lock.lock')) // Lock file name, dont try to clean up.
+				{
+					(function(file) {
+						setTimeout(function() {
+							cleanUpCacheFile(file);
+						}, x * 10);
+					})(path.join(dir,files[x]))
+				}
+			}
+		});
+
+		setTimeout(function() {
+			lock.unlockDir(dir);
+		}, x * 10);
+	}
+}
+
+function cleanUpCacheFile(fileOrDir)
+{
+	// Never delete this file, also bail if we hit an error.
+	if(s_cacheCleanupAbort)
+		return;
+
+	fs.stat(fileOrDir, function(err, stats) {
+		if(!err)
+		{
+			if(stats.isDirectory())
+			{
+				cleanUpCacheDir(fileOrDir);
+			}
+			else
+			{
+				if(stats.mtime.getTime() < (g_config.cacheStart - g_config.cacheCleanupDistance))
+				{
+					fs.unlink(fileOrDir, function(err) {
+						if(err)
+						{
+							log.warn("cleanUpCacheFile(): Error Deleting File. (" + err.message + ") - cleanup aborted.");
+							s_cacheCleanupAbort = true;
+						}
+					});
+				}
+			}
+		}
+		else
+		{
+			log.warn("cleanUpCacheFile(): Error getting file stats. (" + err.message + ") - cleanup aborted.");
+			s_cacheCleanupAbort = true;
+		}
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = configure;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

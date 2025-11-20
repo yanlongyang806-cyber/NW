@@ -1,0 +1,119 @@
+OperationDef
+	Name "BuildingLightsColored" // Name of the operation
+	ParentName "BuildingLights"
+	OptionName "With Color"
+	Description "Tiled random pattern based on time of day"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates (automatically scaled by 1/64)"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+
+	Input
+		Name Start
+		Description "Time to start fading from 0 to 1"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 24
+		Default
+			Type Value
+			Floats 18
+		EndDefault
+	EndInput
+	Input
+		Name StartFade
+		Description "Time finish fading up"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 24
+		Default
+			Type Value
+			Floats 19
+		EndDefault
+	EndInput
+	Input
+		Name End
+		Description "Time to start fading from 1 to 0"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 24
+		Default
+			Type Value
+			Floats 5
+		EndDefault
+	EndInput
+	Input
+		Name EndFade
+		Description "Time to finish fading down"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 24
+		Default
+			Type Value
+			Floats 6
+		EndDefault
+	EndInput
+	Input
+		Name Minimum
+		Description "Minimum value"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 1
+		Default
+			Type Value
+			Floats 0
+		EndDefault
+	EndInput
+	Input
+		Name Maximum
+		Description "Maximum value"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 1
+		Default
+			Type Value
+			Floats 0.85
+		EndDefault
+	EndInput
+
+
+	Input
+		Name PatternTexture // String input in editor, integer texture unit number output to shader
+		Description "Random Pattern Texture; RGB: Color A: Random mask"
+		Type Texture
+		Texture 1
+		Default
+			Strings random
+		EndDefault
+	EndInput
+
+
+
+	Input
+		Name FadeValue
+		Description "Internal result of time and above parameters"
+		Float 1
+		Type TimeGradient
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "RGB: Black or input color, A: Value of either 0 or 1 based on the time of day and other input parameters"
+		Float 4
+	EndOutput
+	Output
+		Name Color
+		Description "RGBA: unfiltered input color"
+		Float 4
+	EndOutput
+
+EndOperationDef
+

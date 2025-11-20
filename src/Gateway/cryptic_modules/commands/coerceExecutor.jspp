@@ -1,0 +1,80 @@
+'use strict';
+
+//
+// coerceExecutor
+//
+// A coercing executor for use with FunctionQueuer.
+//
+// Does its best to coerce the value, whatever it is, to conform to the
+// restrictions.
+//
+// May throw an error if it cannot convert.
+//
+
+var coerceExecutor = {
+	int: function(v) {
+		if(typeof v === 'string')
+			v = parseInt(v, 10);
+
+		if(typeof v === 'number' && !isNaN(v))
+			v = v > 0 ? Math.floor(v) : Math.ceil(v);
+		else
+			v = 0;
+
+		return v;
+	},
+	str: function(v) {
+		if(!v)
+			v = '';
+
+		if(typeof v !== 'string')
+			v = v.toString();
+
+		return v;
+	},
+	id: function(v) {
+		if(!v) throw new Error('IDs must be set.')
+
+		if(typeof v !== 'string')
+			v = v.toString();
+
+		if(!(/^\d+$/.test(v))) throw new Error('Non-digits in ID.');
+
+		return v;
+	},
+
+	minlen: function(v, m) {
+		if(v.length < m) throw new Error('Length is shorter than allowed. '+v.length+'<'+m);
+
+		return v;
+	},
+	maxlen: function(v, m) {
+		if(v.length > m)
+			v = v.substr(0, m);
+
+		return v;
+	},
+	min: function(v, m) {
+		if(v < m)
+			v = m;
+
+		return v;
+	},
+	max: function(v, m) {
+		if(v > m)
+			v = m;
+
+		return v;
+	},
+	nonzero: function(v, m) {
+		if(v === 0 || v === '0') throw new Error('Cannot be zero.');
+
+		return v;
+	}
+};
+
+////////////////////////////////////////////////////////////////////////////
+
+module.exports = coerceExecutor;
+
+// End of File

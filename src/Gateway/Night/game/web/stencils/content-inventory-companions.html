@@ -1,0 +1,44 @@
+<div class="page-content">
+	<div class="page-inventory-companions">
+		<div class="page-body">
+
+			<h3 class="page-title" data-translation-id="Inventory_Pets_Name">Idle Companions</h3>
+
+			<ul class="inventory-group" data-update="ent.main.inventory.bags">
+
+				<li class="inventory-container first-bag" data-path="ent.main.inventory.bags[bagid=InactivePets]">
+					<div class="bag-header">
+						<img src="./tex/Contact_Icon_Vendor_Companion.png" alt="" /><!-- PULL ICON -->
+						<h4 data-translation-id="Inventory_Pets_Name">Idle Companions</h4>
+						<div class="input-field button light">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button data-set-onclick="client.sendCommand('GatewayInventory_SortBag', '{.bagid}', 1)">
+								Sort
+							</button>
+						</div>
+					</div>
+					<ul data-path=".slots">
+						<li data-if="{.count} ne 0">
+							<div data-set-class="icon-slot large {.rarity}" data-set-data-tt-item="{.uid}" data-set-data-tt-menu="{$here()}">
+								<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+								<span class="icon-overlay"></span>
+								<span class="quantity" data-if="{.count} gt 1" data-path=".count">9</span>
+								<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+									<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+								</span>
+							</div>
+						</li>
+						<li data-if="{.count} eq 0">
+							<div class="icon-slot large Junk empty">
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>
+
+

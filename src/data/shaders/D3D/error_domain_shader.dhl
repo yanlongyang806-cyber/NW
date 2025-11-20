@@ -1,0 +1,58 @@
+
+cbuffer view_spec : register( b0 )
+{
+	matrix mvp;
+	matrix modelview;
+	matrix projection;
+};
+
+
+struct HS_CPOut
+{
+	float3 f3ViewPos : WORLDPOS;
+	float3 f3ViewNormal : NORMAL0;
+	float4 c_vColor : COLOR0;
+	float2 f2TexCoord : TEXCOORD0;
+};
+
+struct HS_PatchConstOut
+{
+	float edgeTess[3] : SV_TessFactor;
+	float insideTess  : SV_InsideTessFactor;
+};
+
+struct DS_OUTPUT
+{
+	float4 c_vPos : SV_POSITION;
+	float2 c_vTex : TEXCOORD0;
+	float3 position_vs : TEXCOORD1;
+	float4 c_vColor : COLOR0;
+};
+
+float2 interp2( float3 patchUVW, float2 a, float2 b, float2 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+float3 interp3( float3 patchUVW, float3 a, float3 b, float3 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+float4 interp4( float3 patchUVW, float4 a, float4 b, float4 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+[domain("tri")]
+DS_OUTPUT error_domainshader( float3 patchUVW : SV_DomainLocation, OutputPatch< HS_CPOut, 3 > controlPoints, HS_PatchConstOut patchData )
+{
+	DS_OUTPUT output = (DS_OUTPUT)0;
+
+	output.position_vs = interp3( patchUVW, controlPoints[0].f3ViewPos, controlPoints[1].f3ViewPos, controlPoints[2].f3ViewPos );
+	output.c_vPos = mul( projection, float4( output.position_vs, 1.0 ) );
+	output.c_vTex = interp2( patchUVW, controlPoints[0].f2TexCoord, controlPoints[1].f2TexCoord, controlPoints[2].f2TexCoord );
+	output.c_vColor = interp4( patchUVW, controlPoints[0].c_vColor, controlPoints[1].c_vColor, controlPoints[2].c_vColor );
+
+	return output;
+}

@@ -1,0 +1,27 @@
+
+<button class="close-button" data-url="back"></button>
+
+<div class="modal-confirm">
+	<h3>Confirm Purchase</h3>
+	<p>Are you sure you wish to spend <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path=".price">200</span> on <span class="zenmarket-confirm-itemname" data-path='.hdef.displayname.str'>Item Name</span>?</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<span class="zenMarketOnly">
+			<button data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}" data-set-onclick="client.purchaseMicrotransaction({.id}, {.price})">OK</button>
+		</span>
+		<span class="professionsPackOnly">
+			<button data-url-silent="/professions" data-set-onclick="client.purchaseMicrotransaction({.id}, {.price})">OK</button>
+		</span>
+	</div>
+
+</div>

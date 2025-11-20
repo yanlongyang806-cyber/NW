@@ -1,0 +1,84 @@
+<div class="modal-top-outer">
+	<div class="modal-top-inner">
+		<a class="close-button" data-set-data-url-silent="/holdings/{$root().queryParams.projectname}/projects/{$root().queryParams.taskslotnum}"><span class="back-arrow mobileOnly"></span></a>
+	</div>
+</div>
+<div class="modal-body-outer">
+	<div class="modal-body-inner">
+		<div class="holdings-contributions-submit">
+			<h2 class="modal-title">Contribute</h2>
+			<form>
+				<input type="hidden" data-set-value="{.playerquantity}" name="invisible" id="contribution-playerquantity">
+				<input type="hidden" data-set-value="{.rewardmultiplier}" name="invisible" id="contribution-rewardmultiplier">
+				<input type="hidden" data-set-value="{.requiredquantity}" name="invisible" id="contribution-requiredquantity">
+				<input type="hidden" data-set-value="{.currentquantity}" name="invisible" id="contribution-currentquantity">
+				<input type="hidden" data-set-value="{.incrementquantity}" name="invisible" id="contribution-incrementquantity">
+				<ul class="contribution-numerics-list">
+					<li>
+						<h3>Contributing:</h3>
+						<div class="item-icon medium">
+							<img alt="" data-set-src="/tex/{.requireditemicon}.png">
+						</div>
+						<span class="contribution-amount"><input type="text" id="amount" /></span>
+						<span class="contribution-name" data-path=".requireditemdisplayname.str">Dilithium</span>
+					</li>
+					<li>
+						<h3>Earns:</h3>
+						<div class="item-icon medium">
+							<img alt="" data-set-src="/tex/{.rewarditem.icon}.png">
+						</div>
+						<span class="contribution-amount"><input class="readonly" type="text" id="return" readonly /></span>
+						<span class="contribution-name" data-path=".rewarditem.displaynamemsg.str">Fleet Credits</span>
+					</li>
+				</ul>
+				<div class="slider">
+					<script>
+						$(function() {
+							var playerquantity = $('#contribution-playerquantity').val();
+							var currentquantity = $('#contribution-currentquantity').val();
+							var requiredquantity = $('#contribution-requiredquantity').val();
+							var incrementquantity = Math.max($('#contribution-incrementquantity').val(), 1);
+							var maxdonation = Math.min(playerquantity, requiredquantity-currentquantity);
+							var rewardmultiplier = $('#contribution-rewardmultiplier').val();
+							$('#slider-range-min').slider({
+								range: 'min',
+								value: 0,
+								min: 0,
+								step: incrementquantity,
+								max: maxdonation - (maxdonation % incrementquantity),
+								slide: function( event, ui ) {
+									$('#amount').val(ui.value);
+									$('#return').val(ui.value * rewardmultiplier);
+								}
+							});
+							$('#amount').val($( '#slider-range-min').slider('value'));
+							$('#return').val($( '#slider-range-min').slider('value'));
+						});
+					</script>
+					<div id="slider-range-min"></div>
+				</div>
+				<div class="contribution-total">
+					<h3>Your Current Total:</h3>
+
+					<span class="contribution-amount">
+						<div class="item-icon medium">
+							<img alt="" data-set-src="/tex/{.requireditemicon}.png">
+						</div>
+						<span data-path=".playerquantity.$commify()">63,201</span>
+					</span>
+					<span class="contribution-name" data-path=".requireditemdisplayname.str">Dilithium</span>
+				</div>
+				<span class="contribution-fineprint">
+					Note: If your contribution exceeds the remaining amount, your items will be adjusted to include only the amount needed.
+				</span>
+				<div class="contribution-submit-buttons">
+
+					<input type="button" value="Accept" data-set-onclick="client.guildProjectDonateSimpleItems({$root().queryParams.guildid},'Fleet_Possession_'+'{$root().queryParams.projectname}',{$root().queryParams.taskslotnum},'{$root().queryParams.bucketname}','{.requireditemname}')"
+					data-set-data-url-silent="/holdings/{$root().queryParams.projectname}/projects/{$root().queryParams.taskslotnum}" />
+
+					<input type="reset" value="Cancel" data-set-data-url-silent="/holdings/{$root().queryParams.projectname}/projects/{$root().queryParams.taskslotnum}" />
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

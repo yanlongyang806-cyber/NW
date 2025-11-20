@@ -1,0 +1,151 @@
+<div data-update="guild">
+	<div class="page-content">
+		<div class="page-guild-events">
+			<div class="page-body">
+				<div class="event-details">
+
+
+					<!-- THIS NEEDS PROPER DATA HOOKUPS -->
+					<h3 data-path=".title">Event Name Goes Here</h3>
+					<p data-path=".description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc. Maecenas dapibus nisi non sapien lacinia gravida non eget odio.</p>
+
+					<h4 data-path=".starttime">February 22, 2013 from 7:25pm to 8:25pm</h4>
+					<h4 data-if="{.maxaccepts} eq 0 && {.minaccepts} eq 0">Any number of attendees may join.</h4>
+					<h4 data-if="{.maxaccepts} ge 1 && {.minaccepts} eq 0">Want at most <span data-path=".maxaccepts">10</span> attendees.</h4>
+					<h4 data-if="{.maxaccepts} ge 0 && {.minaccepts} ge 1">Want at least <span data-path=".minaccepts">10</span> attendees.</h4>
+					<h4 data-if="{.maxaccepts} ge 1 && {.minaccepts} ge 1">Want <span data-path=".minaccepts">5</span> to <span data-path=".maxaccepts">10</span> attendees.</h4>
+					<h4>Allowed Level: <span data-path="minlevel">0</span> - <span data-path=".maxlevel">60</span></h4>
+					<h4>Minimum Guild Rank: <span data-path="minguildrank">Recruit (Rank 1)</span></h4>
+
+
+					<!-- NOT FOR LAUNCH
+					<div class="rsvp-replies">
+						<h3>Currently Attending:</h3>
+
+						<ul>
+							<li class="rsvp-yes">0 Accept</li>
+							<li class="rsvp-maybe">0 Maybe</li>
+							<li class="rsvp-no">0 Out</li>
+						</ul>
+					</div>
+
+					<table id="gatewayTableGuildRSVP">
+						<thead>
+							<tr>
+								<th class="rsvp-name"><span>Name</span></th>
+								<th class="rsvp-response"><span>Response</span></th>
+								<th class="rsvp-message"><span>Message</span></th>
+								<th></th>
+							</tr>
+						</thead>
+						<tbody data-if=".members.$length() ge 1" data-path=".members">
+							<tr>
+								<td data-path=".name">Character Name</td>
+								<td data-path=".officerrank">Response</td>
+								<td data-path=".comment">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</td>
+								<td></td>
+							</tr>
+						</tbody>
+						<tbody data-if=".activityentries.$length() eq 0">
+							<tr>
+								<td colspan="6">
+									<h2>There are no replies</h2>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<script type="text/javascript">
+					// GUILD ACTIVITY TABLE
+
+					var gatewayTableGuildRSVP, gatewayTableGuildRSVPSettings, rows = 10;
+					function resizegatewayTableGuildRSVP(rows) {
+						gatewayTableGuildRSVPSettings._iDisplayLength = rows; // How many rows to display
+						gatewayTableGuildRSVP.fnDraw();
+					};
+					$('document').ready(function() {
+						gatewayTableGuildRSVP = $('table#gatewayTableGuildRSVP').dataTable({
+							'bLengthChange': false,
+							'iDisplayLength': rows,
+							'aoColumns': [
+								null,
+								null,
+								null,
+								{ 'bVisible': false, 'bSearchable': false },
+							],
+
+							'aaSorting': [[0, 'asc']],
+							// "sPaginationType": "full_numbers",
+							'fnInitComplete': function(oSettings) {
+								gatewayTableGuildRSVP = this;
+								gatewayTableGuildRSVPSettings = oSettings;
+							},
+						});
+					});
+					</script>
+					-->
+
+
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+	<div class="box-footer-block">
+		<div class="box-footer box-footer-guild-events">
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-mid">
+				<div class="box-content">
+					<div class="page-footer">
+						<div class="footer-body">
+							<div class="footer-controls-left">
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url="/events" class="resetWindow">Back to Calendar</button>
+								</div>
+							</div>
+							<!-- NOT FOR LAUNCH
+							<div class="footer-controls-right">
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url-silent="/modal-guild-events-rsvp">RSVP</button>
+								</div>
+
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url="/events/edit" class="resetWindow">Edit Event</button>
+								</div>
+
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url-silent="/modal-guild-events-cancel">Cancel Event</button>
+								</div>
+							</div>
+							-->
+						</div>
+					</div>
+				</div>
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-bot">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="deco-left"></div>
+			<div class="deco-right"></div>
+		</div>
+	</div>
+</div>
+

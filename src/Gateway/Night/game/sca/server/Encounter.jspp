@@ -1,0 +1,74 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+var TileSets = require('./TileSets');
+var Challenge = require('./Challenge');
+var scaGlobals = require('./scaGlobals');
+
+function Encounter(options)
+{
+	// Expected fields (* are required):
+	//		id*
+	//		tags
+	//		color
+	//		start or end (maybe)
+
+	this.id = options.id;
+	this.complete = false;
+	this.challenge = null;
+	this.background = null;
+	this.image = null;
+
+	this.color = options.color;
+	this.start = options.start;
+	this.end = options.end;
+
+	this.tags = options.tags || '';
+	this.alsoOpens = options.alsoOpens || '';
+
+	if(Array.isArray(this.tags))
+		this.tags = this.tags.join(' ');
+
+}
+
+Encounter.prototype.setChallenge = function(challenge)
+{
+	this.challenge = new Challenge(challenge);
+	this.reset();
+}
+
+Encounter.prototype.reset = function()
+{
+	if(this.challenge)
+		this.challenge.reset();
+
+	this.complete = false;
+}
+
+Encounter.prototype.isComplete = function()
+{
+	this.complete = this.complete || (this.challenge ? this.challenge.isComplete : false);
+	return this.complete;
+}
+
+Encounter.prototype.chooseImages = function(tileset)
+{
+	this.background = scaGlobals.tileSets.chooseBackground(tileset, this.id);
+
+	if(!this.image)
+	{
+		var img = this.challenge.image ? this.challenge.image : 'sca_fg_mushroom.png';
+		this.image = TileSets.fixName(img, 'fg');
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Encounter;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

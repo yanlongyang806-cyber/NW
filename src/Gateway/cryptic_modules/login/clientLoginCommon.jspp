@@ -1,0 +1,167 @@
+'use strict';
+
+var LoginErrorCode = require('cryptic/login/LoginErrors');
+var url = require('url');
+
+var ret;
+if(window.location.search)
+{
+	ret = /ret=([^&]+)/.exec(window.location.search);
+	if(ret)
+		ret = ret[1];
+}
+
+function submitForm(form)
+{
+	// Do some error messageing or something.
+	// For now, im making them red if empty
+	if(!(form['user'].value))
+	{
+		$('input[name="user"]').addClass('input-error');
+		return false;
+	}
+	else
+	{
+		$('input[name="user"]').removeClass('input-error');
+	}
+
+	if(!(form['pass'].value))
+	{
+		$('input[name="pass"]').addClass('input-error');
+		return false;
+	}
+	else
+	{
+		$('input[name="user"]').removeClass('input-error');
+	}
+
+	// Show the loading spinner
+	$('#loading').show();
+	$('#login').hide();
+	$('.error').hide(); // Hide error message until we get a new one
+
+	// 1 second delay for dramatic effect.  ...seriously.
+	// - Oooh loading thingy
+	// - Ooh is that a sound I hear? *DRAMA*
+	setTimeout(function() {
+		$.ajax({
+			url: '/',
+			type: 'POST',
+			data: {
+				'user': form['user'].value,
+				'pw':  form['pass'].value,
+				'ret': ret
+			},
+			headers : { "Cache-Control": "no-cache" },
+			dataType: 'json',
+			success: function(response) {
+				// We got data back successfully
+
+				if(response.result === 'user_login_ok')
+				{
+					var u = url.parse(response.destURL);
+					u.search = undefined; // So query will be used.
+					u.query = {
+						account: "" + response.idAccount,
+						ticket:  "" + response.idTicket,
+						browser: "" + response.idBrowser
+					};
+					u.hash = window.location.hash;
+					window.location.href = url.format(u);
+				}
+				else
+				{
+					switch(response.idFailure)
+					{
+						case LoginErrorCode.GatewayLocked:
+							window.location.reload();
+							break;
+
+						case LoginErrorCode.UnlinkedPWCommonAccount:
+							//showLoginError(response.idFailure);
+
+							$('#form').hide();          // hide the form
+							$('#loading').hide();       // Reset back to start just in case
+							$('#login').show();         // So they can try again later
+							$('#linktocryptic').show(); // Show the 'you must go link' message
+							$('#linktocryptic').css('visibility', 'visible');
+							break;
+
+						case LoginErrorCode.CrypticDisabled:
+							//showLoginError(response.idFailure);
+
+							var eAccount = encodeURIComponent(form['user'].value);
+							var eTicket = encodeURIComponent(response.idConflict || 0);
+							$('#linkurl').attr('href', 'https://my.perfectworld.com/sto/launcherlanding?account=' + eAccount + '&ticket=' + eTicket);
+							$('#form').hide();       // hide the form
+							$('#loading').hide();    // Reset back to start just in case
+							$('#login').show();      // So they can try again later
+							$('#linktopw').show();   // Show the 'you must go link' message
+							$('#linktopw').css('visibility', 'visible');
+							break;
+
+						default:
+							// response:
+							//   result     - English failure string
+							//   idFailure  - See login/errors.js for LoginFailureCode.*
+							//   idConflict - conflict ID for when the code is LoginFailureCode_UnlinkedPWCommonAccount
+							showLoginError(response.idFailure);
+							$('input#user, input#pass').effect("shake", { times:2, distance: 10 }, 75);
+
+							$('#loading').hide();    // Reset back to start
+							$('#login').show();      // So they can try again
+							break;
+					}
+				}
+			},
+			error: function() {
+				// Something broke
+				// dbg.log("Something Broke.");
+			}
+		});
+	}, 1000);
+
+	return false;
+}
+
+function showLoginError(idFailure)
+{
+	var txt = $('#loginerror-' + idFailure).text();
+
+	// use default if no error msg exists for this id
+	if(!txt)
+	{
+		txt = $('#loginerror').text();
+		txt += '(' + idFailure + ')';
+	}
+
+	$('.error').text(txt).show();
+}
+
+// On Ready stuff
+function onReady()
+{
+	$(document).on('click', '#login-try-again', function() {
+		$('#linktocryptic').css('visibility', 'hidden');
+		$('#linktocryptic').hide();
+		$('#linktopw').css('visibility', 'hidden');
+		$('#linktopw').hide();
+		$('#form').show();
+	});
+
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+var clientLogin = {};
+
+clientLogin.submitForm = submitForm;
+clientLogin.onReady = onReady;
+
+module.exports = clientLogin;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File
+

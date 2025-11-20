@@ -1,0 +1,167 @@
+'use strict';
+
+var Encounter = require('./Encounter');
+var Layout = require('./Layout');
+
+var scaGlobals = require('./scaGlobals');
+
+function QuestState(quest, layout)
+{
+	this.quest = quest;
+
+	this.layout = null;
+	this.encounters = {};
+	this.usedChallenges = {};
+	this.encounter = null;
+
+	this.end = null;
+	this.rewards = [];
+
+	this.usedLayouts = {};
+
+	this.roomsVisibleCache = null;
+
+	this.roller = null;
+
+	if(layout instanceof Layout)
+	{
+		this.layout = layout;
+	}
+	else
+	{
+		this.layout = scaGlobals.layouts.choose(this.quest.mapTags, this.usedLayouts);
+	}
+
+	for(var id in this.layout.encounters)
+	{
+		this.encounters[id] = new Encounter(this.layout.encounters[id]);
+
+		if(this.layout.encounters[id].end)
+			this.end = id;
+	}
+}
+
+QuestState.prototype.populateEncounters = function(challenges)
+{
+	this.roomsVisibleCache = null;
+
+	for(var id in this.encounters)
+	{
+		var e = this.encounters[id];
+		var tags = '';
+
+		if(e.end)
+		{
+			tags += 'end ' + this.quest.encounterEndTags;
+		}
+		else
+		{
+			tags += ' ' + this.quest.encounterTags;
+		}
+
+		tags += ' ' + e.tags;
+
+		var r = Math.random();
+		for(var i = 0; i < this.quest.chance.length; i++)
+		{
+			r -= (this.quest.chance[i] || 0);
+			if(r <= 0)
+			{
+				tags += ' minDice' + (i+1);
+				break;
+			}
+		}
+
+		if(!e.end)
+			tags += ' -end';
+
+		e.setChallenge(scaGlobals.challengeDefs.choose(tags, this.usedChallenges));
+		e.chooseImages(this.quest.tileSet);
+	}
+}
+
+QuestState.prototype.startEncounter = function(id)
+{
+	this.roomsVisibleCache = null;
+
+	this.encounter = this.encounters[id];
+	this.encounter.challenge.reset();
+	return this.encounter;
+}
+
+QuestState.prototype.isComplete = function()
+{
+	var e = this.encounters[this.end];
+	return (e && e.challenge && e.challenge.isComplete);
+}
+
+QuestState.prototype.isEncounterComplete = function()
+{
+	this.roomsVisibleCache = null;
+	return (this.encounter && this.encounter.isComplete());
+}
+
+QuestState.prototype.isUsable = function(die)
+{
+	return this.encounter && this.encounter.challenge && this.encounter.challenge.isUsable(die);
+}
+
+QuestState.prototype.isSideUsable = function(side)
+{
+	return this.encounter && this.encounter.challenge && this.encounter.challenge.isSideUsable(side);
+}
+
+QuestState.prototype.assign = function(die)
+{
+	return this.encounter && this.encounter.challenge && this.encounter.challenge.assign(die);
+}
+
+QuestState.prototype.isEncounterAvailable = function(id)
+{
+	var rooms = this.roomsVisibleCache || this.layout.roomsVisible(this);
+
+	if(id in this.encounters)
+	{
+		var e = this.encounters[id];
+		return (e.color in rooms && !e.isComplete())
+	}
+
+	return false;
+}
+
+
+QuestState.prototype.availableEncounters = function()
+{
+	var rooms = this.roomsVisibleCache || this.layout.roomsVisible(this);
+
+	var avail = {};
+	for(var id in this.encounters)
+	{
+		var e = this.encounters[id];
+		if(e)
+		{
+			if(e.color in rooms)
+			{
+				avail[id] = e;
+			}
+		}
+	}
+
+	return avail;
+}
+
+QuestState.prototype.clientMap = function ()
+{
+	this.roomsVisibleCache = null;
+	return this.layout.generateHTML(this);
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = QuestState;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

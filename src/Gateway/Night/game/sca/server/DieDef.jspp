@@ -1,0 +1,113 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+var Side = require('./Side');
+
+var re = /\s/;
+var reTrim = /^\s+|\s+$/g;
+
+function DieDef(sidesDef)
+{
+	var sides;
+
+	if(typeof sidesDef === 'object')
+	{
+		// Expected fields
+		//		id
+		//		def*
+		//		color
+		cutils.extend(this, sidesDef);
+		sidesDef = this.def;
+	}
+	else
+	{
+		console.error('You must pass an object.')
+		return;
+	}
+
+	if(!this.sides)
+	{
+		if(typeof sidesDef === 'string')
+		{
+			if(re.test(sidesDef))
+			{
+				// 'a b c dx ex'
+				// 5 sidesDef, each side separated by spaces
+				sides = sidesDef.replace(reTrim,'').split(re);
+			}
+			else
+			{
+				// 'abcdef'
+				// 5 sidesDef, each side is the symbol of the given character
+				sides = sidesDef.split('');
+			}
+		}
+		else
+		{
+			sides = [];
+			console.error("Can't make a die out of "+sidesDef);
+			return;
+		}
+
+		this.sides = [];
+		for(var i = 0; i < sides.length; i++)
+			this.sides.push(new Side(sides[i]));
+
+		this.sides = this.sides.sort(function(a, b) {
+			// std order is: mptc
+			var order = 'm p t mp mt mc pt pc tc c w'.split(' ');
+
+			var o = order.indexOf(a.sym) - order.indexOf(b.sym);
+
+			if(o === 0)
+			{
+				return a.count - b.count;
+			}
+			else
+			{
+				return o;
+			}
+		});
+
+		this.probs = {};
+		for(i = 0; i < this.sides.length; i++)
+		{
+			var s = this.sides[i];
+
+			// Count the wild faces, calculate the probability for other
+			// symbols.
+			if(s.wild)
+			{
+				if(!this.probs[s.sym])
+					this.probs[s.sym] = 0;
+
+				this.probs[s.sym]++;
+			}
+			else
+			{
+				for(var j = 0; j < s.vals.length; j++)
+				{
+					var v = s.vals[j];
+
+					if(!this.probs[v.sym])
+						this.probs[v.sym] = 0;
+
+					this.probs[v.sym] += s.count/this.sides.length;
+				}
+			}
+		}
+	}
+
+	this.count = this.sides.length;
+	this.color = this.color || 'base';
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+if(module && module.exports)
+	module.exports = DieDef;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

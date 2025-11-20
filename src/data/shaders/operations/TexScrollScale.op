@@ -1,0 +1,45 @@
+OperationDef
+	Name "TexScrollScale" // Name of the operation
+	Description "Texture Scrolling and Scaling"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name ScrollRate
+		Description "Rate of scrolling, in texture tiles per tick"
+		Float 2
+		FloatRange -10 10
+		Type Scroll
+		Default
+			Floats 0.1 0.1
+		EndDefault
+	EndInput
+	Input
+		Name Scale
+		Description "Amount to scale"
+		FloatRange 0.001 50
+		Float 2
+		Type Uv_Scale
+		NoManualConnect 1
+		Default
+			Floats 1.0 1.0
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Type TexCoord
+		Description "Scrolled texture coordinates"
+		Float 2
+		AlphaFrom TexCoord
+	EndOutput
+EndOperationDef

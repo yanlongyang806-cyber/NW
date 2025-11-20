@@ -1,0 +1,27 @@
+OperationDef
+	Name "TangentToCamNormal" // Name of the operation
+	Description "Convert Tangent Space normal to Camera Space normal"
+	Type Custom
+
+	MinShader 3.0
+
+	Input
+		Name Normal
+		Description "Tangent Space Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Camera Space Normal"
+		Float 4
+		Type Normal
+	EndOutput
+
+EndOperationDef
+

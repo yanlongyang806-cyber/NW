@@ -1,0 +1,46 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(black_bg_sampler, 0);
+SAMPLER_DECL(gray_bg_sampler, 1);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 bg_color : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+struct PS_OUTPUT
+{
+	#ifdef MRT4
+		float4 color[4] : SEM_COLOR(0);
+	#elseifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+	float3 black_bg_color = (sampleTex2D(black_bg_sampler, fragment.texcoord.xy)).xyz;
+	float3 gray_bg_color = (sampleTex2D(gray_bg_sampler, fragment.texcoord.xy)).xyz;
+
+	float3 alpha = 1 - (gray_bg_color - black_bg_color) / (128.0/255.0);
+
+	output.color[0] = lerp(bg_color, float4(black_bg_color, 1), alpha.r);
+	output.color[0].a = alpha.r;
+	
+	#ifdef MRT4
+	{
+		output.color[3] = 0;
+		output.color[2] = 0;
+	}
+	#endif
+	#ifdef MRT2
+	{
+		output.color[1] = 0;
+	}
+	#endif
+
+	return output;
+}

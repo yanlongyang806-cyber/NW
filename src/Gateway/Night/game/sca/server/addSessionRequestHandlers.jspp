@@ -1,0 +1,200 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+
+var proxyRequestHandlers = require('cryptic/proxy/ProxyRequestHandlers');
+var ScaGameState = require('./ScaGameState');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Socket Message Hooks
+//
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_ScaStartGame(sockClient, data)
+{
+	dbg.trace(data);
+
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	if(!gamestate)
+	{
+		new ScaGameState(sockClient.clientSession);
+	}
+	else if(gamestate.containerid != ''+sockClient.clientSession.loginInfo.loginentity.id)
+	{
+		new ScaGameState(sockClient.clientSession);
+	}
+	else
+	{
+		gamestate.destroy();
+		new ScaGameState(sockClient.clientSession);
+	}
+}
+
+function onClient_ScaResetQuest(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.resetQuest();
+	}
+}
+
+function onClient_ScaSetQuest(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.setQuest(data.id);
+	}
+}
+
+function onClient_ScaConfirmQuest(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.confirmQuest(data ? data.id : undefined);
+	}
+}
+
+function onClient_ScaAddPartyMember(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.addPartyMember(data.id);
+	}
+}
+
+function onClient_ScaRemovePartyMember(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.removePartyMember(data.id);
+	}
+}
+
+function onClient_ScaConfirmParty(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.confirmParty();
+	}
+}
+
+function onClient_ScaSetEncounter(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.setEncounter(data.id);
+	}
+}
+
+function onClient_ScaConfirmEncounter(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.confirmEncounter(data.id);
+	}
+}
+
+function onClient_ScaRollDice(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.rollDice();
+	}
+}
+
+function onClient_ScaDoneRolling(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.doneRolling();
+	}
+}
+
+function onClient_ScaChooseDie(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.chooseDie(data.id, data.idWild);
+	}
+}
+
+function onClient_ScaCombatDone(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.combatDone();
+	}
+}
+
+function onClient_ScaQuestDone(sockClient)
+{
+	dbg.trace();
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.questDone();
+	}
+}
+
+function onClient_ScaDebug(sockClient, data)
+{
+	dbg.trace(data);
+
+	var gamestate = ScaGameState.get(sockClient.clientSession);
+	{
+		gamestate.debug(data.msg);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// Add the handlers
+
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaDebug', onClient_ScaDebug);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaStartGame', onClient_ScaStartGame);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaResetQuest', onClient_ScaResetQuest);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaSetQuest', onClient_ScaSetQuest);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaConfirmQuest', onClient_ScaConfirmQuest);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaAddPartyMember', onClient_ScaAddPartyMember);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaRemovePartyMember', onClient_ScaRemovePartyMember);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaConfirmParty', onClient_ScaConfirmParty);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaSetEncounter', onClient_ScaSetEncounter);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaConfirmEncounter', onClient_ScaConfirmEncounter);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaRollDice', onClient_ScaRollDice);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaDoneRolling', onClient_ScaDoneRolling);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaChooseDie', onClient_ScaChooseDie);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaCombatDone', onClient_ScaCombatDone);
+proxyRequestHandlers.addSessionRequestHandler('Client_ScaQuestDone', onClient_ScaQuestDone);
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

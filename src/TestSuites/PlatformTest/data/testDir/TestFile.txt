@@ -1,0 +1,9 @@
+TestStruct
+	stringfield s
+	intfield 1
+EndTestStruct
+
+TestStruct
+	stringfield s2
+	intfield 2
+EndTestStruct

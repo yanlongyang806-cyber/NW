@@ -1,0 +1,84 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+// Used by FastParticles, and TriStrips/MeshTrails
+
+SAMPLER_DECL(texture_sampler, 0);
+#ifdef SOFT_PARTICLE
+SAMPLER_DECL(depth_sampler, 1);
+#endif
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 depth_sampler_scale : PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 special_params : PS_CONSTANT_MATERIAL_PARAM2() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+// -----------------------------------------------------------------------
+
+// Main function prototype
+struct PS_OUTPUT
+{
+	#ifdef MRT4
+		float4 color[4] : SEM_COLOR(0);
+	#elseifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+};
+
+// -----------------------------------------------------------------------
+
+PS_OUTPUT particle_pixelshader(PS_INPUT_PARTICLE fragment)
+{
+	clip(fragment.color.w);
+
+	float2 coord;
+	getVPos(coord, fragment);
+	
+#ifdef MANUAL_DEPTH_TEST
+	float depth_buffer_z = sampleTexDepthVS(depth_buffer_sampler, coord*depth_sampler_scale.xy+depth_sampler_scale.zw);
+	float mydepth = -fragment.position_vs.z;
+	clip(depth_buffer_z - mydepth);
+#endif
+
+	PS_OUTPUT output;
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	float4 outcolor = fragment.color * texcolor;
+
+#ifdef NO_TONEMAPPING
+	outcolor.xyz = fragment.fogvalues.w * outcolor.xyz + ToneMapLDR(fragment.fogvalues.xyz);
+#else
+	outcolor.xyz = fragment.fogvalues.w * outcolor.xyz + fragment.fogvalues.xyz;
+#endif
+
+#ifdef SOFT_PARTICLE
+#ifdef SM30
+	float depth = sampleTexDepthVS(depth_sampler, coord*depth_sampler_scale.xy+depth_sampler_scale.zw);
+
+	outcolor.a *= saturate(fragment.position_vs.z + depth);
+#endif
+#endif
+
+#ifdef NO_TONEMAPPING
+	output.color[0] = outcolor;
+#else
+	output.color[0].rgb = ToneMapLDR(outcolor.rgb);
+	output.color[0].a = outcolor.a;
+#endif
+
+	#ifdef MRT4
+		output.color[3] = 0;
+		output.color[2] = 0;
+	#endif
+	#ifdef MRT2
+		output.color[1].rgb = ToneMapHDR(outcolor.rgb);
+		output.color[1].a = outcolor.a;
+	#endif
+
+	#ifdef SPECIAL_DESATURATE
+		output.color[0].rgb = lerp(output.color[0].rgb, dot(output.color[0].rgb, float3(0.3, 0.59, 0.11)), saturate(special_params.x));
+	#endif
+
+	return output;
+}

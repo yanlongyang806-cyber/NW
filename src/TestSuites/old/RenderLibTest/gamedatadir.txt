@@ -1,0 +1,2 @@
+C:\FightClub\serverdata
+C:\FightClub\data

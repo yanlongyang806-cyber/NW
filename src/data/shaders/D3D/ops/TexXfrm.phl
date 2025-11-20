@@ -1,0 +1,3 @@
+{
+	%Result%.xy = %TexCoord%.xy * %Transform%.xy + %Transform%.zw;
+}

@@ -1,0 +1,1 @@
+SUB %Result%, %A%, %B%;

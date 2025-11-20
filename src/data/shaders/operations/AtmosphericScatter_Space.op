@@ -1,0 +1,65 @@
+OperationDef
+	Name "AtmosphericScatter_Space"
+	Description "Atmospheric Scattering Effect, Viewed From Space"
+	Type CUSTOM
+
+	Input
+		Name UnlitColor
+		Description "Unlit color"
+		Float 3
+		Default
+			Type Value
+			Floats 0.0 0.0 0.0 0.0
+		EndDefault
+	EndInput
+	
+	Input
+		Name ActualAtmosphereRadiusSquared
+		Description "Squared radius of the atmosphere geometry (in game units)."
+		Float 1
+		FloatRange 0 20000
+		Default
+			Floats 10.25
+		EndDefault
+	EndInput
+
+	Input
+		Name AtmosphericScatterLUT
+		Description "Atmosphere 3D texture"
+		Type Texture3D
+		Texture 1
+	EndInput
+
+	Input
+		Hidden 1
+		Name SunDirectionViewSpace
+		Description "The sun direction in view space."
+		Float 3
+		Type SunDirectionViewSpace
+	EndInput
+
+	Input
+		Hidden 1
+		Name SunColor
+		Description "The sun color (RGB)."
+		Float 3
+		Type SunColor
+	EndInput
+
+	Input
+		Hidden 1
+		Name ModelPositionViewSpace
+		Description "The model's position (pivot) in view space."
+		Float 4
+		Type ModelPositionViewSpace
+	EndInput
+
+	Output
+		Name UnlitResult
+		Description "Atmospheric Scattering Unlit Output"
+		Float 3
+		AutoConnect UnlitColor
+	EndOutput
+
+EndOperationDef
+

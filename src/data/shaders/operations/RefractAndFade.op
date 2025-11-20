@@ -1,0 +1,87 @@
+OperationDef
+	Name "RefractAndFade" // Name of the operation
+	Description "Refraction and Depth Fade Effect"
+	Type ADVANCED
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name FadeEnd
+		Description "At what depth fading finishes (can come from a texture!)"
+		Float 1
+		FloatRange 0 20.0
+		Default
+			Floats 2.0
+		EndDefault
+	EndInput
+
+	Input
+		Name SkewScale
+		Description "How much to scale the normal when deciding skew (0.13 is default), matters most when something intersects the refracting surface"
+		Float 1
+		FloatRange -0.5 0.5
+		NoManualConnect 0
+		Default
+			Floats 0.13
+		EndDefault
+	EndInput
+	
+	Input
+		Name MaxSkew
+		Description "Largest skew amount allowed (0.07 is default)"
+		Float 1
+		FloatRange 0 0.25
+		NoManualConnect 0
+		Default
+			Floats 0.07
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenColor
+		Description "Internal"
+		Type Texture_ScreenColor
+		Texture 1
+		Hidden 1
+	EndInput
+
+// 	Input
+// 		Name ScreenColorHDR
+// 		Description "Internal"
+// 		Type Texture_ScreenColorHDR
+// 		Texture 1
+// 		Hidden 1
+// 	EndInput
+
+	Input
+		Name ScreenDepth
+		Description "Depth Texture for refraction"
+		Type Texture_ScreenDepth
+		Texture 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Refraction Output"
+		Float 4
+		AutoConnect UnlitColor
+	EndOutput
+
+	Output
+		Name DepthFadeResult
+		Description "Fade weight"
+		Float 1
+	EndOutput
+
+EndOperationDef
+

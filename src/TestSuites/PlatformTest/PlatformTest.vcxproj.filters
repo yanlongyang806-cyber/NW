@@ -1,0 +1,29 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AutoGen\PlatformTest_AutoGen_1.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoGen\PlatformTest_AutoGen_2.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="FileTest.c" />
+    <ClCompile Include="gfxLibStub.c" />
+    <ClCompile Include="InputLibTest.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="RenderLibStub.c" />
+    <ClCompile Include="SoundLibEventTest.cpp" />
+    <ClCompile Include="SoundLibTest.c" />
+    <ClCompile Include="TexturesTest.c" />
+    <ClCompile Include="uiLibStub.c" />
+    <ClCompile Include="worldLibStub.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="RenderLibStub.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AutoGen">
+      <UniqueIdentifier>{a18f875e-6193-430d-8e2a-b63e08f2925d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

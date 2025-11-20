@@ -1,0 +1,16 @@
+{
+	float compressed_depth;
+	float2 coord_orig;
+
+	getVPosNormalized(coord_orig, v);
+	compressed_depth = sampleTex2D(TexSampler%ScreenDepth%, coord_orig).x;
+	float3 position_vs = extractPositionWithCorrection(compressed_depth, coord_orig);
+
+	float4 normal = float4( 0.0, 0.0, 0.0, 0.0 );
+	float4 t = GetIntersectionWithEllipsoid( %Pivot%, position_vs.xyz, normal, 1 );
+
+	%Length% = t.x;
+	%IntersectStart% = t.y;
+	%IntersectEnd% = t.z;
+	%Result% = t.w;
+}

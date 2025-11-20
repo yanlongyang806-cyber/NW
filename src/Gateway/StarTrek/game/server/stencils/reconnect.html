@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body>
+
+		<h1>Reconnecting...</h1>
+		<script>
+			var data = JSON.stringify({
+					message: 'reconnect',
+				});
+			parent.postMessage(data, '*'); // TODO: MAKE THIS NOT A WILDCARD?
+			// https://developer.mozilla.org/en-US/docs/DOM/window.postMessage
+		</script>
+	</body>
+</html>

@@ -1,0 +1,165 @@
+<div class="modal-window sca large encounter" data-path="gatewaygamedata">
+	<div class="fancy-box fit-content">
+		<div class="fancy-box-top">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+			<button class="fancy-box-close" data-url-silent="closemodal" onclick="client.scaConfirmEncounter('')"></button>
+		</div>
+		<div class="fancy-box-mid">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-content">
+
+
+				<div class="dungeon-encounter" data-path=".quest.encounter">
+					<div class="encounter-bg" data-set-style="background-image: url(/img_sca/{.background});"></div>
+					<div class="encounter-fg" data-set-style="background-image: url(/img_sca/{.image});"></div>
+					<div class="encounter-gradient"></div>
+
+					<div class="encounter-title">
+						<h2 data-path=".challenge.def.name">Kobold Shapechanger</h2>
+					</div>
+
+					<div data-set-class="encounter-flavor trial-count-{.challenge.trials.$length}">
+						<p data-path=".challenge.def.description"></p>
+					</div>
+
+					<div class="encounter-trials">
+
+						<h4>Trials:</h4>
+						<span data-path=".challenge.trials">
+							<div data-set-class="trial trial-{$hereIndex()} active">
+								<span data-path=".needs.$asArray()">
+									<span data-set-class="rune {.symbol.$map(nw_sides)}"><span class="num" data-path=".count">1</span></span>
+								</span>
+							</div>
+						</span>
+
+					</div>
+				</div>
+				<div class="encounter-party-list">
+					<h3>Select Companion for this Encounter:</h3>
+					<ul data-path=".party.members">
+						<li class="party-entry">
+							<button data-url-silent="closemodal" data-set-class="{.resting.$choose(disabled,)}" data-set-onclick="client.scaConfirmEncounter('{.id}')">
+								<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+								<h3 class="party-name" data-path=".name">Companion Name</h3>
+								<!-- if Resting -->
+								<div class="party-cooldown" data-if="{.resting}">Resting</div>
+								<!-- if Resting -->
+							</button>
+							<div class="party-dice" data-path=".pile.dice">
+
+								<span data-set-class="dice tiny d{.count} {.color}" data-if="{.color} ne 'base'" data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-tt-pos="top"></span>
+
+
+								<!-- dice tooltip using css hover
+								<span data-set-class="dice tiny d{.count} {.color}" data-if="{.color} ne 'base'">
+									<div data-set-class="dice-info-hover {.color}">
+										<h3><span data-path=".name"></span></h3>
+										<div data-path=".sides[sym=m]" class="dice-group magic">
+											<div class="dice side magic">
+												<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=p]" class="dice-group perception">
+											<div class="dice side perception">
+												<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=t]" class="dice-group thievery">
+											<div class="dice side thievery">
+												<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=c]" class="dice-group combat">
+											<div class="dice side combat">
+												<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=mp]" class="dice-group magic-perception">
+											<div class="dice side magic-perception">
+											</div>
+										</div>
+										<div data-path=".sides[sym=mt]" class="dice-group magic-thievery">
+											<div class="dice side magic-thievery">
+											</div>
+										</div>
+										<div data-path=".sides[sym=mc]" class="dice-group magic-combat">
+											<div class="dice side magic-combat">
+												<span class="num">3</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=pt]" class="dice-group perception-thievery">
+											<div class="dice side perception-thievery">
+											</div>
+										</div>
+										<div data-path=".sides[sym=pc]" class="dice-group perception-combat">
+											<div class="dice side perception-combat">
+												<span class="num">3</span>
+											</div>
+										</div>
+										<div data-path=".sides[sym=tc]" class="dice-group thievery-combat">
+											<div class="dice side thievery-combat">
+												<span class="num">3</span>
+											</div>
+										</div>
+
+										<div data-path=".sides[sym=w]" class="dice-group wild">
+											<div class="dice side wild">
+												<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+											</div>
+										</div>
+
+									</div>
+								</span>
+								-->
+
+
+
+							</div>
+						</li>
+					</ul>
+				</div>
+				<!--
+				<hr />
+
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="closemodal" onclick="client.scaConfirmEncounter('')">Back</button>
+				</div>
+				-->
+
+			</div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-bot">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<!-- dev -->
+
+		<div style="
+			position: absolute;
+			right: 36px;
+			top: 6px;
+			text-align: center;
+			z-index: 9999;
+		"
+		data-update="gatewaygamedata"
+		data-path="gatewaygamedata">
+			<div class="input-field button light">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button onclick="client.scaDebug('wake up')">wake up</button>
+			</div>
+		</div>
+
+		<!-- dev -->
+	</div>
+</div>
+
+
+

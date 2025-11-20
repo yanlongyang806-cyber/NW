@@ -1,0 +1,44 @@
+<div class="modal-window sca medium" data-path="gatewaygamedata">
+	<div class="fancy-box fit-content">
+		<div class="fancy-box-top">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-mid">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-content">
+
+				<div class="modal-confirm leave">
+					<h3>Congratulations!</h3>
+					<p>You have successfully completed <span data-path="gatewaygamedata.quest.name">The Wilds</span>! You have earned:</p>
+
+					<div class="leave-rewards" data-path=".queuedrewardbag.rewards">
+						<div class="icon-block reward small">
+							<div class="icon-slot {.itemdef.quality}" data-set-data-tt-item="{.itemdef.name}">
+								<img data-set-src="tex/{.itemdef.icon}.png" alt="" />
+								<span class="quantity" data-path=".count" data-if="{.count} gt 1">5</span>
+							</div>
+							<div class="icon-info">
+								<h4 data-path=".itemdef.displaynamemsg.str">Strawberry Kool-Aid</h4>
+							</div>
+						</div>
+					</div>
+
+					<div class="input-field button epic">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button onclick="client.scaQuestDone()">OK</button>
+					</div>
+				</div>
+			</div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-bot">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+	</div>
+</div>
+
+

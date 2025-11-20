@@ -1,0 +1,34 @@
+!!ARBvp1.0
+
+#include "utils.fph"
+#include "params.fph"
+
+
+TEMP    position_vs, position_clip;
+
+MULMAT4(position_clip, clip_mat, position)
+MOV result.position, position_clip;
+
+MULMAT43(position_vs, modelview_mat, position)
+COMPUTEFOG(position_vs)
+
+#ifdef POSTPROCESSING
+
+	RCP position_clip.z, position_clip.w;
+	MUL position_clip.xy, position_clip, position_clip.z;
+	RANGECOMPRESS(position_clip.xy, position_clip)
+	MUL position_clip.xy, position_clip, postprocess_tex_size.xyxy;
+	MUL position_clip.xy, position_clip, postprocess_tex_size.zwzw;
+	MUL result.texcoord[0].xy, position_clip, position_clip.w;
+	MOV result.texcoord[0].w, position_clip.w;
+
+#else
+
+	MOV result.texcoord[0], vertex.texcoord[0];
+	MOV result.texcoord[1], vertex.texcoord[1];
+
+	MOV result.color.primary, color;
+
+#endif
+
+END

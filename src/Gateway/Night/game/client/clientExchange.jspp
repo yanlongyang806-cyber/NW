@@ -1,0 +1,155 @@
+'use strict';
+
+var clientExchange = module.exports;
+var buildCommand = require('cryptic/commands/buildCommand');
+
+clientExchange.exchangeFetchExchangeAccountData = function()
+{
+	this.dataModel.fetchExchangeAccountData('' + this.dataModel.model.loginInfo.accountid);
+}
+
+clientExchange.withdrawOrder = function(orderId)
+{
+	this.sendCommand('GatewayExchange_WithdrawOrder', orderId);
+}
+
+clientExchange.buildOfferModal = function()
+{
+	var iQuantity = parseInt($('Input[name="quantity"]').val(),10);
+	var iPrice = parseInt($('Input[name="price"]').val(),10);
+
+	if(isNaN(iQuantity) === false && isNaN(iPrice) === false )
+	{
+		var sUrl = "postoffer?quantity=" + iQuantity + "&price=" + iPrice;
+
+		client.shifter.shift(client.shifter.resolveHash(sUrl),false,true);
+	}
+}
+
+clientExchange.createSellOrder = function(iQuantity, iPrice)
+{
+	this.sendCommand('GatewayExchange_CreateSellOrder', iQuantity, iPrice);
+}
+
+clientExchange.createBuyOrder = function(iQuantity, iPrice)
+{
+	this.sendCommand('GatewayExchange_CreateBuyOrder', iQuantity, iPrice);
+}
+
+clientExchange.withdraw = function()
+{
+	var bAll = $('Input[name="withdraw"]:checked').val() === "all";
+	var iTCAmount;
+	var iMTCAmount;
+
+	if(bAll)
+	{
+		iTCAmount = client.dataModel.model.exchangeaccountdata.readytoclaimescrow;
+		iMTCAmount = client.dataModel.model.exchangeaccountdata.readytoclaimmtc;
+	}
+	else
+	{
+		iTCAmount = $('input[name="withdrawTC"]:visible').val();
+		iMTCAmount = $('input[name="withdrawMTC"]:visible').val();
+	}
+
+	if(iTCAmount > 0)
+		this.sendCommand('GatewayExchange_ClaimTC', iTCAmount);
+
+	if(iMTCAmount > 0)
+		this.sendCommand('GatewayExchange_ClaimMTC', iMTCAmount);
+}
+
+clientExchange.withdrawOnChange = function()
+{
+	var bAll = $('Input[name="withdraw"]:checked').val() === "all";
+
+	if(bAll)
+	{
+		$('.withdrawInput').addClass('disabled').find('input').attr('disabled','disabled');
+		$('#withdrawAllAttention').removeClass('hidden');
+		$('#withdrawSomeAttention').addClass('hidden');
+	}
+	else
+	{
+		$('.withdrawInput').removeClass('disabled').find('input').removeAttr('disabled');
+		$('#withdrawAllAttention').addClass('hidden');
+		$('#withdrawSomeAttention').removeClass('hidden');
+	}
+
+	$('input[name="withdrawTC"]:visible').val(client.dataModel.model.exchangeaccountdata.readytoclaimescrow);
+	$('input[name="withdrawMTC"]:visible').val(client.dataModel.model.exchangeaccountdata.readytoclaimmtc);
+}
+
+clientExchange.withdrawOnInput = function()
+{
+	var iRemainTC = client.dataModel.model.exchangeaccountdata.readytoclaimescrow;
+	var iRemainMTC = client.dataModel.model.exchangeaccountdata.readytoclaimmtc;
+
+	var iWithdrawTC = parseInt($('Input[name="withdrawTC"]').val(),10);
+	var iWithdrawMTC = parseInt($('Input[name="withdrawMTC"]').val(),10);
+
+	if(!isNaN(iWithdrawTC))
+		iRemainTC -= iWithdrawTC;
+
+	if(!isNaN(iWithdrawMTC))
+		iRemainMTC -= iWithdrawMTC;
+
+	$('#remainTC').text(iRemainTC);
+	$('#remainMTC').text(iRemainMTC);
+}
+
+clientExchange.updateExchangeTotal = function()
+{
+	var iQuantity = parseInt($('Input[name="quantity"]').val(),10);
+	var iPrice = parseInt($('Input[name="price"]').val(),10);
+	var iTotal = iQuantity * iPrice;
+	var bValid = true;
+
+	if(isNaN(iTotal))
+	{
+		iTotal = 0;
+		bValid = false;
+	}
+
+	if(!isNaN(iPrice) && iPrice > client.dataModel.model.exchangeaccountdata.globaldata.maxmtcprice)
+	{
+		$('.offer-to-high').removeClass('hidden');
+		bValid = false;
+	}
+	else
+	{
+		$('.offer-to-high').addClass('hidden');
+	}
+
+	if(!isNaN(iPrice) && iPrice < client.dataModel.model.exchangeaccountdata.globaldata.minmtcprice)
+	{
+		$('.offer-to-low').removeClass('hidden');
+		bValid = false;
+	}
+	else
+	{
+		$('.offer-to-low').addClass('hidden');
+	}
+
+	if(!isNaN(iPrice) && iQuantity > client.dataModel.model.exchangeaccountdata.globaldata.maxquantityperorder)
+	{
+		$('.quantity-to-high').removeClass('hidden');
+		bValid = false;
+	}
+	else
+	{
+		$('.quantity-to-high').addClass('hidden');
+	}
+
+	if(!bValid)
+	{
+		$('.createofferbutton').addClass('disabled').find('button').attr('disabled','disabled');
+	}
+	else
+	{
+		$('.createofferbutton').removeClass('disabled').find('button').removeAttr('disabled');
+	}
+
+	$('.total').text(iTotal.toLocaleString());
+}

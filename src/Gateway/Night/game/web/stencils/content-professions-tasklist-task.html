@@ -1,0 +1,72 @@
+<div data-if=".isheader">
+	<h3 data-set-class=".header"><span data-path=".header">Rare</span> Tasks <span data-if="{.header} eq 'Rare'">(Updating in <span data-path=".unextupdatetime.$timerAgoShort(1)" data-set-data-timer=".unextupdatetime" data-timer-length="1">54m</span>)<span></h3>
+</div>
+<div data-if="!{.isheader}" data-set-class="task-list-entry {.header.$toLowerCase()} {.failslevelrequirements.$map(1:higherlevel)} {.failsresourcesrequirements.$map(1:unmet)}">
+	<h4><span data-path=".hdef.displayname.str">Task Name Goes Up Here</span> <span data-if="{.header} eq 'Rare'" class="subheader">(Rare Task)</span></h4>
+	<span data-set-class="level-pip {.failslevelrequirements.$map(1:red)}" data-path=".hdef.requiredrank">5</span>
+	<span class="icon-lock-small" data-tt-text="Your profession level is not high enough to start this task." data-if=".failslevelrequirements"></span>
+	<div data-if="{.required.$length()} ge 1 || {.consumables.$length()} ge 1" class="task-requirements">
+
+		<h6>Requires:</h6>
+		<ul data-path=".required">
+			<li>
+				<div data-set-class="icon-slot simple smaller {.fillsrequirements.$map(0:red)}" data-tt-stencil="tooltip-professions-requiredslot" data-set-data-tt-path="{.$here()}">
+					<img data-set-src="tex/{.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+				</div>
+			</li>
+		</ul>
+
+		<hr data-if="{.required.$length()} ge 1 && {.consumables.$length()} ge 1" />
+
+		<ul data-path=".consumables">
+			<li>
+				<div data-set-class="icon-slot simple smaller {.hdef.quality} {.fillsrequirements.$map(0:red)}" data-set-data-tt-item="{.hdef.name}">
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+					<span data-if=".required ge 2">
+						<span data-if="{.count} ge {.required}" class="quantity" data-path=".required">10</span>
+						<span data-if="!({.count} ge {.required})">
+							<span class="quantity"><span data-path=".count" >5</span>/<span data-path=".required">10</span></span>
+						</span>
+					</span>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<div class="task-rewards">
+		<h6>Rewards:</h6>
+		<ul data-path=".rewards">
+			<li>
+				<div data-if="{.hdef.type} eq 'Numeric'" data-set-class="icon-slot simple smaller {.hdef.quality}" data-tt-stencil="tooltip-numeric" data-set-data-tt-path="{$here()}">
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+					<span data-if=".count ge 2" class="quantity" data-path=".count">5</span>
+				</div>
+				<div data-if="{.hdef.type} ne 'Numeric'" data-set-class="icon-slot simple smaller {.hdef.quality}" data-set-data-tt-item="{.hdef.name}">
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+					<span data-if=".count ge 2" class="quantity" data-path=".count">5</span>
+				</div>
+			</li>
+		</ul>
+
+		<!-- need this to be hooked up to the correct data-if -->
+		<span data-if=".rewards gt 5" class="task-rewards-more">+</span>
+	</div>
+
+	<span class="task-duration">
+		Duration: <span data-path=".hdef.duration.$timerShort()" class="task-duration-time">2h 30m</span>
+	</span>
+
+
+	<div class="input-field button light with-arrow">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-set-data-url="/professions-tasks/{$root().queryParams.categoryName}/{.hdef.name}">
+			<span data-if=".failslevelrequirements">Details</span>
+			<span data-if="!{.failslevelrequirements}">Continue</span>
+		</button>
+	</div>
+</div>

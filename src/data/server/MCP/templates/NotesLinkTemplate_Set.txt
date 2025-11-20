@@ -1,0 +1,6 @@
+<span class="rollover">
+	<a class="rollover_link" id="$NOTE.rollover" href="$LINK&svrTitle=$TITLE" target="_blank"><img src="$ICON"></a>
+    <span class="rollover_message $POP_CLASS">
+		$BODY
+    </span>
+</span>

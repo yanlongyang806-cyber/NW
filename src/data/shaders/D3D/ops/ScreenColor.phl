@@ -1,0 +1,13 @@
+{
+	float4 sample;
+	float2 coord_orig;
+
+	getVPosNormalized(coord_orig, v);
+
+	InvToneMapScreen(TexSampler%ScreenColor%, coord_orig, sample);
+
+	%Result%.xyz = sample.xyz;
+
+	// Set alpha
+	%Result%.w = 1;
+}

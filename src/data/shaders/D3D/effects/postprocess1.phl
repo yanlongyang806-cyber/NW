@@ -1,0 +1,123 @@
+
+// Outlining postprocessing shader
+
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+#include "outline_edge_detect.phl"
+
+struct PS_OUTPUT
+{
+	float4 color : SEM_COLOR(0);
+#ifdef DRAW_OUTLINES_AT_Z_DEPTH
+	float depth : DEPTH;
+#endif
+};
+
+SAMPLER_DECL(normal_sampler, 0);
+SAMPLER_DECL(depth_sampler, 1);
+#ifdef APPLY_WITH_NORMALS
+SAMPLER_DECL(color_normal_sampler, 2);
+#endif
+
+// -----------------------------------------------------------------------
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 edgeColor	: PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 ppTexScale	: PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 edgeFades	: PS_CONSTANT_MATERIAL_PARAM2() ;
+uniform float maxDepth		: PS_CONSTANT_MATERIAL_PARAM3() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+#ifdef APPLY_WITH_NORMALS
+
+	output.color = sampleTex2D(normal_sampler, fragment.texcoord.xy);
+	float3 texnormal = extractNormalPacked(sampleTex2D(color_normal_sampler, fragment.texcoord.xy).w);
+
+	// DEBUG: show normals in RG
+	//output.color.rg = texnormal * 0.5 + 0.5;
+
+	float3 texnormalDx = extractNormalPacked(sampleTex2D(color_normal_sampler, fragment.texcoord.xy + float2(inv_screen_params.x,0)).w);
+	float3 texnormalDy = extractNormalPacked(sampleTex2D(color_normal_sampler, fragment.texcoord.xy + float2(0,inv_screen_params.y)).w);
+	texnormal.xy = saturate( float2( 0.87, 0.87 ) - float2( dot( texnormal, texnormalDx ), dot( texnormal, texnormalDy ) ) );
+	texnormal.z = max( texnormal.x, texnormal.y );
+
+	float depth;
+	depth = sampleTexDepth(depth_sampler, fragment.texcoord.xy);
+	depth = viewSpaceDepth(depth);
+	// fade normal-discontinuity edges based on the depth
+	texnormal.z *= saturate( ( depth - edgeFades.z ) * edgeFades.w );
+
+	output.color.a += texnormal.z;
+
+	// DEBUG: show all outline results
+	//output.color.a = 1.0;
+
+#else
+
+	// blend in the edge based on an edge weight
+#ifdef USE_Z
+	output.color = calculate_edgeZ(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades);
+#else
+	output.color = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades);
+#endif
+
+#ifdef DRAW_OUTLINES_AT_Z_DEPTH
+	output.depth = output.color.r;
+#endif
+	output.color.rgb = edgeColor.rgb;
+
+#ifdef THICK_OUTLINES
+	// multisample thickening: currently, we're using average of 3x3 neighborhood
+	fragment.texcoord.xy += ppTexScale.xy;
+	float neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy -= ppTexScale.zw;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy -= ppTexScale.xy;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy -= ppTexScale.xy;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy += ppTexScale.zw;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy += ppTexScale.zw;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy += ppTexScale.xy;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	fragment.texcoord.xy += ppTexScale.xy;
+	neighbor_a = calculate_edge(fragment.texcoord.xy, depth_sampler, samdepth_sampler, ppTexScale, edgeFades).a;
+	output.color.a += neighbor_a;
+	//output.color.a = max( neighbor_a, output.color.a );
+
+	output.color.a *= 1.0f / 9;
+#endif
+
+	output.color.a *= edgeColor.a;
+
+#endif
+
+	return output;
+}

@@ -1,0 +1,577 @@
+<div data-path="ent.main" data-update="ent.main" data-update-exclude="ent.main.inventory">
+
+	<div class="page-charactersheet other">
+		<div class="page-content">
+
+
+
+
+			<div class="charsheet-column-main">
+				<div class="charsheet-header">
+					<h2><span data-path=".name">Character Name</span><span class="username">@<span data-path=".publicaccountname">Username</span></span></h2>
+					<h3 data-path=".title">Champion of Neverwinter</h3>
+					<div class="charsheet-emblem">
+						<img data-set-src="/tex/{.classicon}.png" alt="" />
+						<h3>Level <span data-path=".levelui">Number</span></h3>
+					</div>
+					<h6>
+						Level <span data-path=".levelui">60</span> <span data-path=".classname">Trickster Rogue</span>
+						| <span data-path=".gendername">Gender</span> <span data-path=".speciesname">Race</span>
+					</h6>
+
+				</div>
+
+				<div class="charsheet-headshot">
+					<div class="outfitEquipment">
+
+						<div class="headshot-img" data-set-style="background-image: url(/shot/body/{.id}.png);"></div>
+					</div>
+					<div class="outfitFashion">
+						<div class="headshot-img" data-set-style="background-image: url(/shot/body_fashion/{.id}.png);"></div>
+					</div>
+				</div>
+
+				<div class="charsheet-slots-container" data-path=".inventory" data-update=".inventory">
+
+					<h3 class="mobileOnly mobile-header">Equipment</h3>
+					<div class="outfitEquipment">
+						<div class="charsheet-slots left">
+							<!-- HELM SLOT -->
+							<div data-if="!{.bags[bagid=Head].slots[0]}" class="icon-block large helm left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Helm</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if=".bags[bagid=Head].slots[0]" data-path=".bags[bagid=Head].slots[0]" data-set-class="icon-block large helm left {.bags[bagid=Head].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Helm</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- CHEST SLOT -->
+							<div data-if="!{.bags[bagid=Armor].slots[0]}" class="icon-block large chest left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Chest</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Armor].slots[0]}" data-path=".bags[bagid=Armor].slots[0]" data-set-class="icon-block large chest left {.bags[bagid=Armor].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Chest</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- ARMS SLOT -->
+							<div data-if="!{.bags[bagid=Arms].slots[0]}" class="icon-block large arms left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Arms</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Arms].slots[0]}" data-path=".bags[bagid=Arms].slots[0]" data-set-class="icon-block large arms left {.bags[bagid=Arms].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Arms</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- MAIN HAND SLOT -->
+							<div data-if="!{.bags[bagid=Melee].slots[0]}" class="icon-block large mainhand left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Main Hand</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Melee].slots[0]}" data-path=".bags[bagid=Melee].slots[0]" data-set-class="icon-block large mainhand left {.bags[bagid=Melee].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Main Hand</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- OFF HAND SLOT -->
+							<div data-if="!{.bags[bagid=Melee].slots[1]}" class="icon-block large offhand left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Off Hand</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Melee].slots[1]}" data-path=".bags[bagid=Melee].slots[1]" data-set-class="icon-block large offhand left {.bags[bagid=Melee].slots[1].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Off Hand</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- BOOTS SLOT -->
+							<div data-if="!{.bags[bagid=Feet].slots[0]}" class="icon-block large boots left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Boots</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Feet].slots[0]}" data-path=".bags[bagid=Feet].slots[0]" data-set-class="icon-block large boots left {.bags[bagid=Feet].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Boots</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+
+						</div>
+						<div class="charsheet-slots right">
+							<!-- NECK SLOT -->
+							<div data-if="!{.bags[bagid=Neck].slots[0]}" class="icon-block large neck right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Neck</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Neck].slots[0]}" data-path=".bags[bagid=Neck].slots[0]" data-set-class="icon-block large neck right {.bags[bagid=Neck].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Neck</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- RING SLOT 1 -->
+							<div data-if="!{.bags[bagid=Ring].slots[0]}" class="icon-block large ring right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Ring</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Ring].slots[0]}" data-path=".bags[bagid=Ring].slots[0]" data-set-class="icon-block large ring right {.bags[bagid=Ring].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Ring</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- RING SLOT 2 -->
+							<div data-if="!{.bags[bagid=Ring].slots[1]}" class="icon-block large ring right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Ring</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Ring].slots[1]}" data-path=".bags[bagid=Ring].slots[1]" data-set-class="icon-block large ring right {.bags[bagid=Ring].slots[1].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Ring</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- WAIST SLOT -->
+							<div data-if="!{.bags[bagid=Waist].slots[0]}" class="icon-block large waist right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Waist</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Waist].slots[0]}" data-path=".bags[bagid=Waist].slots[0]" data-set-class="icon-block large waist right {.bags[bagid=Waist].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Waist</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- SHIRT SLOT -->
+							<div data-if="!{.bags[bagid=Shirt].slots[0]}" class="icon-block large shirt right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Shirt</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Shirt].slots[0]}" data-path=".bags[bagid=Shirt].slots[0]" data-set-class="icon-block large shirt right {.bags[bagid=Shirt].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Shirt</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- TROUSERS SLOT -->
+							<div data-if="!{.bags[bagid=Pants].slots[0].itemdef}" class="icon-block large trousers right empty">
+								<div class="icon-slot">
+									<img src="../img_nw/sample_item_01.png" alt="" />
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Trousers</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=Pants].slots[0].itemdef}" data-path=".bags[bagid=Pants].slots[0]" data-set-class="icon-block large trousers right {.bags[bagid=Pants].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Trousers</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+						</div>
+					</div>
+
+					<h3 class="mobileOnly mobile-header">Fashion Items</h3>
+					<div class="outfitFashion">
+						<div class="charsheet-slots left">
+							<h3>Fashion Items</h3>
+							<!-- FASHION HEAD SLOT -->
+							<div data-if="!{.bags[bagid=FashionHead].slots[0]}" class="icon-block large head left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Head</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=FashionHead].slots[0]}" data-path=".bags[bagid=FashionHead].slots[0]" data-set-class="icon-block large head left {.bags[bagid=FashionHead].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Head</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- FASHION ACCESSORY SLOT -->
+							<!-- temporarily removed from game for launch
+							<div data-if="!{.bags[bagid=FashionAccessory].slots[0]}" class="icon-block large accessory left empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Accessory</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=FashionAccessory].slots[0]}" data-path=".bags[bagid=FashionAccessory].slots[0]" data-set-class="icon-block large accessory left {.bags[bagid=FashionAccessory].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Accessory</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+							-->
+						</div>
+						<div class="charsheet-slots right">
+							<h3>Fashion Items</h3>
+							<!-- FASHION UPPER BODY SLOT -->
+							<div data-if="!{.bags[bagid=FashionBody].slots[0]}" class="icon-block large upperbody right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Upper Body</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=FashionBody].slots[0]}" data-path=".bags[bagid=FashionBody].slots[0]" data-set-class="icon-block large upperbody right {.bags[bagid=FashionBody].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Upper Body</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+							<!-- FASHION LOWER BODY SLOT -->
+							<div data-if="!{.bags[bagid=FashionFeet].slots[0]}" class="icon-block large lowerbody right empty">
+								<div class="icon-slot">
+									<span class="icon-bg"></span>
+								</div>
+								<div class="icon-info">
+									<h4>Lower Body</h4>
+									<h6>Empty</h6>
+								</div>
+							</div>
+							<div data-if="{.bags[bagid=FashionFeet].slots[0]}" data-path=".bags[bagid=FashionFeet].slots[0]" data-set-class="icon-block large lowerbody right {.bags[bagid=FashionFeet].slots[0].rarity}">
+								<div class="icon-slot" data-set-data-tt-item="{.uid}">
+									<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+										<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+									</span>
+								</div>
+								<div class="icon-info">
+									<h4>Lower Body</h4>
+									<h6 data-path=".itemdef.displaynamemsg.str">Item Name</h6>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+
+
+
+
+				<div class="charsheet-outfitswitcher">
+					<h3>Outfit Switcher</h3>
+					<span id="buttonEquipment" class="outfit-equipment selected"></span>
+					<span id="buttonFashion" class="outfit-fashion switchToFashion"></span>
+				</div>
+
+
+
+
+
+			</div>
+			<div class="charsheet-column-side">
+
+				<div class="charsheet-abilityscores">
+					<h3>Ability Scores</h3>
+					<!-- add "primary" for primary stat and "secondary" for secondary stats -->
+					<div class="abilityscore">
+						<span class="ability">Strength</span>
+						<span data-path=".attribs.str" class="score">18</span>
+					</div>
+					<div class="abilityscore">
+						<span class="ability">Intelligence</span>
+						<span data-path=".attribs.int" class="score">7</span>
+					</div>
+					<div class="abilityscore">
+						<span class="ability">Constitution</span>
+						<span data-path=".attribs.con" class="score">13</span>
+					</div>
+					<div class="abilityscore">
+						<span class="ability">Wisdom</span>
+						<span data-path=".attribs.wis" class="score">9</span>
+					</div>
+					<div class="abilityscore">
+						<span class="ability">Dexterity</span>
+						<span data-path=".attribs.dex" class="score">15</span>
+					</div>
+					<div class="abilityscore">
+						<span class="ability">Charisma</span>
+						<span data-path=".attribs.cha" class="score">12</span>
+					</div>
+					</dl>
+
+				</div>
+				<div class="charsheet-stats">
+
+					<h3>Stats</h3>
+
+					<div class="stat-fancy armor-class">
+						<span class="stat-fancy-left"></span>
+						<span class="stat-fancy-mid">
+							<span data-path=".attribs.armorclass.$commify()" class="score">22</span> <span class="stat">Armor Class</span>
+						</span>
+						<span class="stat-fancy-right"></span>
+					</div>
+					<div class="stat-fancy hit-points">
+						<span class="stat-fancy-left"></span>
+						<span class="stat-fancy-mid">
+							<span data-path=".attribs.hitpointsmax.$commify()" class="score">6853</span> <span class="stat">Hit Points</span>
+						</span>
+						<span class="stat-fancy-right"></span>
+					</div>
+
+					<div class="stat-entry">
+						<span class="stat">Power</span>
+						<span data-path=".attribs.stat_power.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Defense</span>
+						<span data-path=".attribs.stat_defense.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Critical Strike</span>
+						<span data-path=".attribs.stat_crit.$commify()"class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Recovery</span>
+						<span data-path=".attribs.stat_recovery.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Armor Penetration</span>
+						<span data-path=".attribs.stat_armorpen.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Regeneration</span>
+						<span data-path=".attribs.stat_regen.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Health Steal</span>
+						<span data-path=".attribs.stat_healthsteal.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Deflection</span>
+						<span data-path=".attribs.stat_deflect.$commify()" class="score">100</span>
+					</div>
+					<div class="stat-entry">
+						<span class="stat">Movement</span>
+						<span data-path=".attribs.stat_movement.$commify()" class="score">100</span>
+					</div>
+				</div>
+
+				<h3 class="mobileOnly mobile-header">Guild</h3>
+				<div data-if=".guildname" class="charsheet-guild">
+					<h3>Guild Member of:</h3>
+					<p data-path=".guildname">Guild Name Goes Here</p>
+				</div>
+
+			</div>
+
+		</div>
+
+
+		<div class="box-footer-block" data-if=".guildname">
+			<div class="box-footer">
+				<div class="box-top">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+				<div class="box-mid">
+					<div class="box-content">
+						<div class="page-footer">
+							<div class="footer-body">
+								<div class="footer-controls-right">
+									<div class="input-field button">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+										<button data-set-data-url="#guild({.guildname})/">View Character's Guild</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+				<div class="box-bot">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+				<div class="deco-left"></div>
+				<div class="deco-right"></div>
+			</div>
+		</div>
+		<!-- only display this if the player has a guild -->
+
+
+	</div>
+</div>
+

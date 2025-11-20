@@ -1,0 +1,289 @@
+'use strict';
+
+var scaGlobals = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+
+var fs = require('fs');
+var path = require('path');
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+var loadCSV = require('cryptic/loadCSV');
+
+var dataDir = path.resolve(path.dirname(module.filename), 'defs');
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+scaGlobals.waitUntilLoaded = function (cb)
+{
+	if(diceLoaded && schedLoaded && companionsLoaded && questsLoaded && challengesLoaded
+		&& layoutsLoaded && tileSetsLoaded && personalQuestListLoaded)
+	{
+		scaGlobals.chooseNewSharedQuests();
+
+		cb();
+	}
+	else
+	{
+		setTimeout(function() { scaGlobals.waitUntilLoaded(cb) }, 50);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+//
+// Load the DieDefs
+//
+
+var diceLoaded = false;
+
+var DiceDefs = require('./DiceDefs');
+
+
+scaGlobals.diceDefs = new DiceDefs();
+
+loadCSV(path.resolve(dataDir, 'defsDice.csv'), { id: 'id', array: 'face', arrayLength: 20 }, function(e, r) {
+	for(var id in r)
+	{
+		r[id].def = r[id].face.join(' ');
+		delete r[id].face;
+		if(!r[id].tags)
+			r[id].tags = r[id].color || '';
+
+		scaGlobals.diceDefs.addDieDef(r[id]);
+	}
+
+	diceLoaded = true;
+});
+
+//////////////////////////////////////////////////////////////////////////
+
+var schedLoaded = false;
+
+loadCSV(path.resolve(dataDir, 'defsDiceSchedules.csv'), { id: 'id', array: 'rank', arrayLength: 40 }, function(e, r) {
+	for(var id in r)
+	{
+		scaGlobals.diceDefs.addSlotSchedule(r[id].id, r[id].rank);
+	}
+
+	schedLoaded = true;
+});
+
+//////////////////////////////////////////////////////////////////////////
+
+
+var companionsLoaded = false;
+
+var CompanionDefs = require('./CompanionDefs');
+
+scaGlobals.companionDefs = new CompanionDefs();
+
+loadCSV(path.resolve(dataDir, 'defsCompanions.csv'), { id: 'id', array: 'die', arrayLength: 10 }, function(e, r) {
+	for(var id in r)
+	{
+		scaGlobals.companionDefs.add(r[id]);
+	}
+
+	companionsLoaded = true;
+});
+
+//////////////////////////////////////////////////////////////////////////
+
+
+var questsLoaded = false;
+
+var QuestDefs = require('./QuestDefs');
+
+scaGlobals.questDefs = new QuestDefs();
+
+loadCSV(path.resolve(dataDir, 'defsQuests.csv'), { id: 'id', array: 'chance', arrayLength: 10 }, function(e, r) {
+	for(var id in r)
+	{
+		scaGlobals.questDefs.add(r[id]);
+	}
+
+	questsLoaded = true;
+});
+
+//////////////////////////////////////////////////////////////////////////
+
+
+var challengesLoaded = false;
+
+var ChallengeDefs = require('./ChallengeDefs');
+
+scaGlobals.challengeDefs = new ChallengeDefs();
+
+var files = [
+	'defs8dChallenges.csv',
+	'defs7dChallenges.csv',
+	'defs6dChallenges.csv',
+	'defs5dChallenges.csv',
+	'defs4dChallenges.csv',
+	'defs3dChallenges.csv'
+];
+
+(function loadChallenges(curFile) {
+	loadCSV(path.resolve(dataDir, files[curFile]), { id: 'id' }, function(e, r) {
+
+		for(var id in r)
+		{
+			r[id].tags = (r[id].tags || '') + ' minDice' + r[id].minDice;
+
+			scaGlobals.challengeDefs.add(r[id]);
+		}
+
+		curFile++;
+		if(curFile < files.length)
+		{
+			loadChallenges(curFile);
+		}
+		else
+		{
+			challengesLoaded = true;
+		}
+	});
+})(0);
+
+//////////////////////////////////////////////////////////////////////////
+
+var layoutsLoaded = false;
+
+var Layouts = require('./Layouts');
+
+scaGlobals.layouts = new Layouts();
+
+(function loadLayouts() {
+	fs.readFile(path.resolve(dataDir, 'defsLayouts.json'), function(e, r) {
+		if(e)
+		{
+			log.error(e);
+			return;
+		}
+
+		var list;
+		try
+		{
+			list = JSON.parse(r);
+		}
+		catch (e)
+		{
+			log.error('Unable to load layouts:');
+			log.error(e.stack);
+			log.error(r);
+			return;
+		}
+
+		for(var i = 0; i < list.length; i++)
+		{
+			list[i].tags = list[i].tags || list[i].id;
+			list[i].showAll = false;
+			list[i].showColors = false;
+			list[i].editMode = false;
+			scaGlobals.layouts.add(list[i]);
+		}
+
+		layoutsLoaded = true;
+	});
+})();
+
+//////////////////////////////////////////////////////////////////////////
+
+var tileSetsLoaded = false;
+
+var TileSets = require('./TileSets');
+
+scaGlobals.tileSets = null;
+
+(function loadTileSets() {
+	fs.readFile(path.resolve(dataDir, 'defsTileSets.json'), function(e, r) {
+		if(e)
+		{
+			log.error(e);
+			return;
+		}
+
+		var list;
+		try
+		{
+			scaGlobals.tileSets = new TileSets(JSON.parse(r));
+		}
+		catch (e)
+		{
+			log.error('Unable to load tilesets:');
+			log.error(e.stack);
+			log.error(r);
+			return;
+		}
+
+		tileSetsLoaded = true;
+	});
+})();
+
+//////////////////////////////////////////////////////////////////////////
+
+var personalQuestListLoaded = false;
+
+scaGlobals.personalQuestList = null;
+
+(function loadPersonalQuestList() {
+	fs.readFile(path.resolve(dataDir, 'defsPersonalQuests.json'), function(e, r) {
+		if(e)
+		{
+			log.error(e);
+			return;
+		}
+
+		var list;
+		try
+		{
+			scaGlobals.personalQuestList = JSON.parse(r);
+		}
+		catch (e)
+		{
+			log.error('Unable to load personal quest list:');
+			log.error(e.stack);
+			log.error(r);
+			return;
+		}
+
+		personalQuestListLoaded = true;
+	});
+})();
+
+//////////////////////////////////////////////////////////////////////////
+
+scaGlobals.sharedQuestList = [
+	{
+		"id": "e1",
+		"tags": "difficulty01e",
+		"area": "6"
+	}
+];
+scaGlobals.usedSharedQuestDefs = {};
+scaGlobals.sharedQuests = {};
+
+scaGlobals.chooseNewSharedQuests = function ()
+{
+	for(var i = 0; i < scaGlobals.sharedQuestList.length; i++)
+	{
+		var id = scaGlobals.sharedQuestList[i].id;
+		var tags = scaGlobals.sharedQuestList[i].tags;
+
+		var quest = scaGlobals.questDefs.choose(tags, scaGlobals.usedSharedQuestDefs);
+
+		scaGlobals.sharedQuests[id] = { questId: quest.id, samplereward: null, area: scaGlobals.sharedQuestList[i].area };
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = scaGlobals;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File
+

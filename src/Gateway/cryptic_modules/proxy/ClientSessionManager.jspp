@@ -1,0 +1,215 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ClientClientSessionManager
+//
+// Tracks a user's session with the proxy.
+//
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+var locale = require('cryptic/locale');
+
+var ClientSession = require('./ClientSession');
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// new ClientSessionManager
+//
+// Creates a new ClientSessionManager, which is basically a map of active
+// ClientSessions.
+//
+var ClientSessionManager = function ClientSessionManager()
+{
+	dbg.trace();
+
+	this.sessionsById = {};
+	this.sessionsByMagic = {};
+
+	this.nextMagic = Math.floor(Math.random()*0x7ffffffe)+1;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// destroyManager
+//
+// Used to shut down the manager. Deletes any outstanding sessions and
+// clears out all object references it might have.
+//
+ClientSessionManager.prototype.destroyManager = function destroyManager()
+{
+	dbg.trace();
+
+	this.destroyAllSessions();
+	this.sessionsById = {};
+	this.sessionsByMagic = {};
+}
+
+//
+// getSessionCount
+//
+// Returns the number of active sessions.
+//
+ClientSessionManager.prototype.getSessionCount = function getSessionCount()
+{
+	return Object.keys(this.sessionsById).length;
+}
+
+//
+// findClientSessionBySessionId
+//
+// Finds and returns the session with the given sessionid
+//
+ClientSessionManager.prototype.findClientSessionBySessionId = function findClientSessionBySessionId(sid)
+{
+	dbg.trace(sid);
+
+	if(sid in this.sessionsById)
+	{
+		return this.sessionsById[sid];
+	}
+	else
+	{
+		dbg.debug('Unable to find client session for id ' + sid);
+	}
+
+	return undefined;
+}
+
+//
+// findClientSessionByMagic
+//
+// Finds and returns the session with the give magic
+//
+ClientSessionManager.prototype.findClientSessionByMagic = function findClientSessionByMagic(magic)
+{
+	dbg.trace(magic);
+
+	if(magic in this.sessionsByMagic)
+	{
+		dbg.trace('Found session for ' + magic);
+		return this.sessionsByMagic[magic];
+	}
+	else
+	{
+		dbg.debug('Unable to find client session for magic ' + magic);
+	}
+
+	return undefined;
+}
+
+//
+// createClientSession
+//
+// Creates and returns a new session.
+//
+ClientSessionManager.prototype.createClientSession = function createClientSession(sid, socket, loginInfo)
+{
+	dbg.trace();
+
+	return new ClientSession(this, sid, this.getNextMagic(), socket, loginInfo);
+}
+
+//
+// destroyClientSession
+//
+// Destroy (and returns) the session with the given sid.
+//
+ClientSessionManager.prototype.destroyClientSession = function destroyClientSession(sid)
+{
+	dbg.trace();
+
+	var session = this.findClientSessionBySessionId(sid);
+	if(session)
+	{
+		session.destroy();
+	}
+
+	return session;
+}
+
+//
+// destroyAllClientSessions
+//
+// Deletes all the client sessions.
+//
+ClientSessionManager.prototype.destroyAllClientSessions = function destroyAllClientSessions()
+{
+	dbg.trace();
+
+	for(var sid in this.sessionsById)
+	{
+		this.sessionsById[sid].destroy();
+	}
+}
+
+//
+// trackClientSession
+//
+ClientSessionManager.prototype.trackClientSession = function trackClientSession(session)
+{
+	dbg.trace();
+	perf.inc('players');
+
+	this.sessionsById[session.sessionid] = session;
+	this.sessionsByMagic[session.magic] = session;
+
+	return session;
+}
+
+//
+// untrackClientSession
+//
+// Stops tracking the given session.
+//
+ClientSessionManager.prototype.untrackClientSession = function untrackClientSession(session)
+{
+	dbg.trace();
+	perf.dec('players');
+
+	if(this.sessionsById[session.sessionid] === session)
+	{
+		delete this.sessionsById[session.sessionid];
+		delete this.sessionsByMagic[session.magic];
+	}
+}
+
+//
+// forAllClientSessions
+//
+// Executes the given function for each session.
+//
+ClientSessionManager.prototype.forAllClientSessions = function forAllClientSessions(callback)
+{
+	dbg.trace();
+
+	for(var sid in this.sessionsById)
+	{
+		if(this.sessionsById[sid])
+		{
+			callback(this.sessionsById[sid]);
+		}
+	}
+}
+
+//
+// getNextMagic
+//
+// Returns a new magic number.
+//
+ClientSessionManager.prototype.getNextMagic = function getNextMagic()
+{
+	var magic = this.nextMagic++;
+	this.nextMagic = this.nextMagic % 0x7fffffff;  // keep less than a 32-bit int
+	this.nextMagic = this.nextMagic === 0 ? 1 : this.nextMagic; // avoid 0
+
+	return magic;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ClientSessionManager;
+
+// End of File

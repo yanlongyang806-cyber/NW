@@ -1,0 +1,110 @@
+'use strict';
+
+var client = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+var dbg = require('cryptic/dbg');
+dbg.setLevel(dbg.DEBUG);
+//dbg.disableFile('Resolver');
+dbg.disableFile('Shifter');
+dbg.disableFile('transition');
+dbg.disableFile('contentHelpers');
+dbg.disableFile('ResourceManager');
+dbg.disableFile('ResourceDictionary');
+dbg.disableFile('ClientResourceManager');
+
+var cutils = require('cryptic/cutils');
+
+///////////////////////////////////////////////////////////////////////////
+//
+// All the stencils (HTML) for the app
+//
+
+require('./Stencils.js');
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Build the client object.
+//
+
+cutils.extend(client, require('cryptic/client/clientCommon'));
+cutils.extend(client, require('./clientUpdate'));
+cutils.extend(client, require('./clientRender'));
+cutils.extend(client, require('./clientProject'));
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Initialization
+
+//
+// All the shifter stuff
+//
+var shifterInfo =
+{
+	'default': {
+		urls: require('../web/shifter/urls.js'),
+		transitions: require('../web/shifter/transition.js'),
+		rememberScrollY: false
+	}
+};
+
+//
+// Allocate all the sound stuff.
+//
+var Sound = require('cryptic/client/Sound');
+var sounds = new Sound();
+sounds.init({
+	'hover':  4,
+	'button': 2,
+	'back':   1
+}, true);
+
+
+//
+// Intialize the client
+//
+
+client.init(shifterInfo);
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Start everything up once the document is loaded.
+//
+
+$(document).ready(function() {
+
+	client.commonWidgets(sounds);
+
+	client.onReady.call(client);
+
+	// Also get us our initial window size.
+	client.checkWindowSize();
+});
+
+//
+//    ######## ##    ##  ######      ###     ######   ######## ####
+//    ##       ###   ## ##    ##    ## ##   ##    ##  ##       ####
+//    ##       ####  ## ##         ##   ##  ##        ##       ####
+//    ######   ## ## ## ##   #### ##     ## ##   #### ######    ##
+//    ##       ##  #### ##    ##  ######### ##    ##  ##
+//    ##       ##   ### ##    ##  ##     ## ##    ##  ##       ####
+//    ######## ##    ##  ######   ##     ##  ######   ######## ####
+//
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

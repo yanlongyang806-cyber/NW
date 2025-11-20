@@ -1,0 +1,48 @@
+OperationDef
+	Name "Glow" // Name of the operation
+	Description "Light glow inside an ellipsoid volume centered around the origin of the model"
+	Type SIMPLE
+
+	Input
+		Hidden 1
+		Name Pivot
+		Description "The transformation from view space to model space. The glow uses the model pivot as the position and orientation of the ellipsoid"
+		Float 12
+		Type InvModelViewMatrix
+	EndInput
+
+	Input
+		Name ScreenDepth
+		Description "Depth Texture for intersecting existing scene with ellipsoid"
+		Type Texture_ScreenDepth
+		Texture 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Glow intensity"
+		Float 1
+		AutoConnect UnlitColor
+	EndOutput
+
+	Output
+		Name Length
+		Description "World space length of intersection"
+		Float 1
+	EndOutput
+
+	Output
+		Name IntersectStart
+		Description "Parametric intersection start point"
+		Float 1
+	EndOutput
+
+	Output
+		Name IntersectEnd
+		Description "Parametric intersection end point"
+		Float 1
+	EndOutput
+
+EndOperationDef
+

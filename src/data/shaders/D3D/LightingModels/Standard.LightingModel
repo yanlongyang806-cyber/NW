@@ -1,0 +1,284 @@
+
+LightingModel
+
+Text <<
+
+{
+#ifdef VERTEX_ONLY_LIGHTING
+	float3 vertex_diffuse_prod = v.diffuse_value.xyz * 4;
+	vertex_diffuse_prod += extra_lighting;
+	outColor = albedo * vertex_diffuse_prod;
+#else
+
+	// Inputs from Output.phl:
+	//		unlit_color
+	//		N_vs
+	//		albedo
+	//   %SpecularExponent% - power of specular over 128
+	//   %SpecularValue% - glossiness
+	//   %SpecularColor% - specular color (rgb)
+	//   %LightBleed% - light bleed
+	//	 %DiffuseWarp% - diffuse warping texture
+	//   %DiffuseWarpY% - y coord for diffuse warp sampling
+#macro DIFFUSE_WARP_SAMPLER(uvs)
+#ifdef HasDiffuseWarp
+#ifdef D3D11
+TexSampler%DiffuseWarp%.Sample(samTexSampler%DiffuseWarp%, uvs)
+#else
+tex2D(TexSampler%DiffuseWarp%, uvs)
+#endif
+#else
+#endif
+#endmacro
+
+#macro DIFFUSE_WARP_SAMPLER_CALL
+#ifdef HasDiffuseWarp
+, TexSampler%DiffuseWarp%, samTexSampler%DiffuseWarp%, diffuse_warp_y
+#else
+#endif
+#endmacro
+
+	#ifdef HasDiffuseWarp
+		float diffuse_warp_y = %DiffuseWarpY%.x;
+	#endif
+		
+	#ifndef NO_SPECULAR
+		float3 spec_color = (%SpecularValue%).x * %SpecularColor%.xyz;
+		float spec_exponent = clamp((%SpecularExponent%).x * 128, 0.25, 128.0f);
+	#else
+		float3 spec_color = 0;
+		float spec_exponent = 0.25;
+	#endif
+	
+	//float2 light_bleed = float2((%LightBleed%).x / (1 + (%LightBleed%).x), 1.f / (1 + (%LightBleed%).x));
+	float2 light_bleed = %LightBleed%.xy;
+
+	float3 reflect_vs = -reflect(view_vs, N_vs);
+
+	outColor = 0;
+	
+#ifdef SINGLE_DIRLIGHT
+		float3 lightdir_vs, light_diffuse_term, light_spec_term, light_shadow_mask, light_shadow_color, light_secondary_diffuse_term;
+#endif
+		#ifdef NO_SHADOW
+			float3 shadow_term; // Data put in, but should be optimized out
+		#else
+			float3 shadow_term = shadow_buffers.xyz;
+		#endif
+
+		float3 diffuseComponent = 0, specularComponent = 0;
+		float3 diffuseLightingValue = float3(groundlight_param, 1, groundlight_param*1);
+
+		$PerLight$
+
+		#ifndef ShowDiffuseLighting
+			#ifdef NO_NORMAL_MAP
+				diffuseComponent += vertex_lighting;
+			#else
+				#ifdef ShowNormalMapVertexLightVS
+				diffuseComponent += vertex_lighting * dot(normal_vs, N_vs);
+				#elseifdef ShowNormalMapVertexLightNS
+				diffuseComponent += vertex_lighting * %Normal%.z;
+				#else
+				diffuseComponent += vertex_lighting;
+				#endif
+			#endif
+		#endif
+
+		diffuseComponent += extra_lighting;
+		// TODO: calculate this from extra_lighting
+		// TODO: diffuseLightingValue.x += localDiffuseLightingValue.x;
+		// TODO: diffuseLightingValue.y *= localDiffuseLightingValue.y;
+		// TODO: diffuseLightingValue.z += localDiffuseLightingValue.x*localDiffuseLightingValue.y;
+
+		float diffuseComponentIntensity = getIntensityQuick(diffuseComponent) * exposure_transform.x;
+
+#ifdef BacklightInShadow
+		{
+			float in_shadow = saturate(1 - 2*diffuseLightingValue.z);
+			float dotp = dot(N_vs, view_vs);
+			float3 back_light_color = %BackLightColor%;
+			float2 back_light_bleed = %BackLightBleed%.xy;
+			#ifdef BACKLIGHT_USE_FRESNEL_TEST
+				dotp = saturate(1.0 - abs(dotp));
+				float v = pow(dotp, 3);
+			#else
+				float v = saturate(-dotp * back_light_bleed.y + back_light_bleed.x);
+			#endif
+			outColor += in_shadow * back_light_color.xyz * (lerp(1, albedo, 0.5)) * v;
+		}
+#endif
+
+
+#ifdef HALFTONE
+		float3 halftone = %Special%.xyz;
+		float d;
+		d = saturate(diffuseComponentIntensity+groundlight_param); // Instead use the same logic that gets used for vertex lighting
+		// SSAO
+		d += (0.5 - d)*2 * shadow_buffers.a;
+		// Vertex lighting
+		d = saturate(d);
+		float2 harshness = float2(8, 1 + 1.f/8);
+		float ambient_masked = 0.8;
+		float halftone_mask = saturate(harshness.x*(saturate(halftone.x)*harshness.y + d - 1));
+		outColor = albedo * (halftone_mask * diffuseComponent +
+			(halftone_mask * ambient_masked + (1-ambient_masked)) * (
+			#ifndef NO_AMBIENT_FALLOFF
+				#ifndef VERTEX_ONLY_LIGHTING
+					(1-diffuseComponentIntensity) *
+				#endif
+			#endif
+			ambient_lighting.rgb));
+		#ifndef NO_SPECULAR
+			// Ramping the specular
+			outColor += spec_color * saturate(getIntensity(specularComponent)*16 - 8)*specularComponent * halftone_mask;
+		#endif
+#else
+		#ifndef ShowSingleDirLight
+			outColor += albedo * diffuseComponent;
+			#ifndef NO_SPECULAR
+				outColor += spec_color * specularComponent;
+			#endif
+			float3 ambient_term =  
+				ambient_lighting.rgb * ambient_occlusion * albedo;
+			#ifdef USE_OLD_REFLECTION
+				ambient_term = lerp(ambient_term, ambient_term * reflection_value, reflection_weight);
+			#endif
+			#ifndef NO_AMBIENT_FALLOFF
+				#ifndef VERTEX_ONLY_LIGHTING
+					ambient_term *= (1-saturate(diffuseComponentIntensity*0.5));
+				#endif
+			#endif
+			outColor += ambient_term;
+		#endif
+#endif
+
+#ifdef SpecularOnly
+	unlit_color = 0;
+	outColor = spec_color * specularComponent;
+	reflection_value = 0;
+#endif
+
+#ifdef ShowDiffuseLighting
+	unlit_color = 0;
+	outColor = diffuseComponent;
+	reflection_value = 0;
+#endif
+
+#ifdef ShowLightingLevels
+	unlit_color = 0;
+	reflection_value = 0;
+#endif
+
+#endif // end non-VERTEX_ONLY_LIGHTING
+
+	#ifdef HALFTONE
+		unlit_color += reflection_add_weight*reflection_value;
+	#else
+		unlit_color = lerp(unlit_color, unlit_color * reflection_value, reflection_weight) + reflection_add_weight*reflection_value;
+	#endif
+	#ifdef UnlitInShadow
+		#ifndef VERTEX_ONLY_LIGHTING
+			unlit_color *= 1-saturate(diffuseComponentIntensity*(special.y+1));
+		#endif
+	#endif
+
+	outColor += unlit_color;
+}
+>>
+
+// Note: PerLight code can *not* use any %Variables% from the MaterialAssembler
+PerLight <<
+
+#ifdef VERTEX_ONLY_LIGHTING
+	// Nothing here
+#elifdef SINGLE_DIRLIGHT
+	// Specialized just once for the single directional light shader...
+	#ifdef NO_NORMALMAP
+		#ifdef NO_SHADOW
+			float spec_shadow_val = 1;
+			// don't have to do this, it's 1!  diffuseLightingValue.y *= spec_shadow_val;
+		#else
+			#ifdef TINT_SHADOW
+				float3 shadow_tint_color = light_shadow_color;
+				float spec_shadow_val = 1.0f - saturate(dot(shadow_term, light_shadow_mask));
+				light_diffuse_term = lerp(shadow_tint_color, light_diffuse_term, spec_shadow_val);
+			#else
+				float spec_shadow_val = 1 - saturate(dot(shadow_term, light_shadow_mask));
+				light_diffuse_term *= spec_shadow_val;
+			#endif
+			diffuseLightingValue.y *= spec_shadow_val;
+		#endif
+
+		// We have no normal mapping, move some work to the vertex shader
+		#ifndef NO_USE_VERTEX_LIGHTING
+			#ifdef SM30
+				float2 sdl_values = 2 * v.sdl_values.xy - 1; // range expand
+				float vertex_diffusedot = sdl_values.x * fragmentIsFrontFacingSign(v);
+				diffuseLightingValue.x = vertex_diffusedot*0.5 + 0.5;
+				#ifdef HasDiffuseWarp
+					float3 vertex_diffuse_val;
+					vertex_diffuse_val.x = (vertex_diffusedot + light_bleed.x) * light_bleed.y;
+					vertex_diffuse_val = DIFFUSE_WARP_SAMPLER(float2(vertex_diffuse_val.x * 0.5 + 0.5, diffuse_warp_y)).xyz;
+				#else
+					float vertex_diffuse_val = (vertex_diffusedot + light_bleed.x) * light_bleed.y;
+					vertex_diffuse_val = saturate(vertex_diffuse_val);
+				#endif
+				float3 vertex_diffuse_prod = light_diffuse_term * vertex_diffuse_val;
+				float vertex_secondary_diffuse_val = saturate(-vertex_diffusedot);
+				vertex_diffuse_prod += light_secondary_diffuse_term * vertex_secondary_diffuse_val;
+				float vertex_specular = saturate(sdl_values.y);
+			#else
+				diffuseLightingValue.x = v.diffuse_value.x*0.5 + 0.5;
+				// CREATURES TODO: Do what here for diffuseLightingValue.x?  Need one more component from the VS!  Pack into hemisphere_dir_vs_and_unused?
+				float3 vertex_diffuse_prod = v.diffuse_value.xyz * 4;
+				float vertex_specular = v.diffuse_value.w;
+				// CREATURES TODO: HasDiffuseWarp used here too
+			#endif
+
+			#ifndef NO_SPECULAR
+				#ifdef SINGLE_DIRLIGHT_SPECULAR_IN_VS
+					float specular_val = saturate(pow(vertex_specular, spec_exponent));
+				#else
+					float vertex_specular_val = saturate(dot(lightdir_vs, reflect_vs));
+					float specular_val = saturate(pow(vertex_specular_val, spec_exponent));
+				#endif
+			#endif
+		#else
+			// Stuff named vertex_ is what got moved to the vertex shader
+			float vertex_diffusedot = dot(N_vs, lightdir_vs);
+			diffuseLightingValue.x = vertex_diffusedot*0.5 + 0.5;
+			float vertex_diffuse_val = saturate((vertex_diffusedot + light_bleed.x) * light_bleed.y);
+			float3 vertex_diffuse_prod = light_diffuse_term * vertex_diffuse_val;
+			float vertex_secondary_diffuse_val = saturate(-vertex_diffusedot);
+			vertex_diffuse_prod += light_secondary_diffuse_term * vertex_secondary_diffuse_val;
+			#ifndef NO_SPECULAR
+				// These might have to be per-pixel (also better optimizes out if spec_value = 0)?
+				float3 vertex_reflect_vs = -reflect(view_vs, N_vs);
+				float vertex_specular_val = saturate(dot(lightdir_vs, vertex_reflect_vs));
+				float specular_val = saturate(pow(vertex_specular_val, spec_exponent));
+			#endif
+		#endif
+
+		#ifdef ShowSingleDirLight
+			outColor = float3(0, 2, 0.5);
+		#else
+			diffuseComponent = vertex_diffuse_prod;
+			#ifndef NO_SPECULAR
+				specularComponent = spec_shadow_val * (specular_val * light_spec_term);
+			#endif
+		#endif
+		diffuseLightingValue.z = diffuseLightingValue.x*diffuseLightingValue.y;
+	#endif // end no normalmap
+#else // else: not a single directional light
+#endif
+
+>>
+
+LightShadowBuffer <<
+			shadow_term = shadow_buffers.xyz;
+>>
+
+EndLightingModel
+
+

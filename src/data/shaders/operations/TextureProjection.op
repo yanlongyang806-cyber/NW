@@ -1,0 +1,49 @@
+OperationDef
+	Name "TextureProjection" // Name of the operation
+	Description "Creates a UV offset of a texture according to the camera vector against the objet's normal"
+	DefaultOptionName "TextureProjection"
+	OptionName "Without Depth Texture"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name Depth
+		Description "How far back the projection is assumed to be within the plane"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 1
+		FloatRange 0.0 20.0
+		Default
+			Floats 1.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Type TexCoord
+		Description "UV Offset (tangent dot invec, binormal dot invec)"
+		Float 4
+	EndOutput
+
+EndOperationDef
+

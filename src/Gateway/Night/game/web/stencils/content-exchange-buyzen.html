@@ -1,0 +1,136 @@
+<!-- if(dev) -->
+<div class="page-content" data-update="exchangeaccountdata">
+	<div data-if="!{exchangeaccountdata}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+		<script type="text/javascript">
+			client.exchangeFetchExchangeAccountData();
+		</script>
+	</div>
+	<div data-if="exchangeaccountdata" class="page-exchange-buyzen">
+		<div class="page-body">
+
+			<h3 class="page-title">Buy ZEN</h3>
+
+			<div class="exchange-main">
+				<div class="panel-inner create-offer">
+					<div class="panel-top">
+						<div class="panel-left"></div>
+						<div class="panel-center"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-mid">
+						<div class="panel-left"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-bot">
+						<div class="panel-left"></div>
+						<div class="panel-center"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-content">
+						<h4>Create Offer to Buy ZEN</h4>
+						<p class="attention">Enter how many ZEN you want  to receive in the "ZEN Quantity to buy" field below. Then enter the Unit Price to determine how many Astral Diamonds you are willing to offer for each ZEN.</p>
+
+						<div class="create-offer-group">
+							<div class="create-offer-left">
+								<label>ZEN Quantity to buy:</label>
+								<div class="input-field text currency">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<img class="currency-img" src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="">
+									<input maxlength="4" type="text" name="quantity" onKeyUp="client.updateExchangeTotal()"/>
+								</div>
+							</div>
+							<div class="create-offer-mid">
+								<p>at</p>
+							</div>
+							<div class="create-offer-right">
+								<label>Unit Price:</label>
+								<div class="input-field text currency">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="">
+									<input maxlength="3" type="text" name="price" onKeyUp="client.updateExchangeTotal()"/>
+								</div>
+							</div>
+							<div class="create-offer-end">
+								<p>each</p>
+							</div>
+						</div>
+						<div class="offer-to-low hidden">
+							<p class="attention">Unit offer to low, min offer is <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".exchangeaccountdata.globaldata.minmtcprice">10</span></p>
+						</div>
+						<div class="offer-to-high hidden">
+							<p class="attention">Unit offer to high, max offer is <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".exchangeaccountdata.globaldata.maxmtcprice">900</span></p>
+						</div>
+						<div class="quantity-to-high hidden">
+							<p class="attention">Quantity to high, max quantity is <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".exchangeaccountdata.globaldata.maxquantityperorder">900</span></p>
+						</div>
+						<div class="create-offer-total">
+							You will spend:<br />
+							<span class="offer-currency"><img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span class="total">0</span></span>
+						</div>
+						<div class="create-offer-submit">
+							<div class="input-field button epic createofferbutton ">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button onclick="client.buildOfferModal()">Post Offer</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="exchange-side">
+				<h4>Top ZEN Listings</h4>
+				<p>The listings below show the best prices for ZEN right now.</p>
+
+				<table id="gatewayTableBuyZen">
+					<thead>
+						<tr>
+							<th><span>Available Quantity</span></th>
+							<th></th>
+							<th><span>Unit Price</span></th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody data-path=".exchangeaccountdata.globaldata.sellprices">
+						<tr>
+							<td><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantity.$commify()">2,400</span></td>
+							<td data-path=".quantity.$commify()">2400</td>
+							<td><img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".price.$commify()">350 each</span></td>
+							<td data-path=".price.$commify()">350</td>
+						</tr>
+					</tbody>
+				</table>
+				<script type="text/javascript">
+					client.buyZenDataTable();
+				</script>
+			</div>
+
+			<div class="exchange-bot">
+				<h4 class="mobileOnly">Exchange Balance</h4>
+				<span class="desktopOnly">Exchange Balance:</span>
+				<span class="exchange-balance-ad">
+					<img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".exchangeaccountdata.readytoclaimescrow.$commify()">0,000</span>
+				</span>
+				<span class="exchange-balance-zen">
+					<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".exchangeaccountdata.readytoclaimmtc.$commify()">0,000</span>
+				</span>
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="withdraw">Withdraw</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- endif(dev) -->

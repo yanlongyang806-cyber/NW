@@ -1,0 +1,77 @@
+<!-- if(dev) -->
+
+<div data-update="cstore">
+	<div data-if="!{$root().cstore._gotBundle}">
+		<div class="loading-block">
+			<h2>Loading the ZEN Store...</h2>
+			<div class="loading-image"></div>
+		</div>
+	</div>
+	<div data-if="{$root().cstore._gotBundle}">
+
+		<div data-set-class="zenstore-splash {.name}">
+			<h1>Welcome to the ZEN Store</h1>
+		</div>
+		<div id="zenstore_mobile_nav" class="mobileOnly zenstore-mobile-nav">
+			<div class="zenstore-nav">
+				<div data-path="$root().cstore.topLevel">
+					<a class="button-nav" data-set-data-url="/zenstore/{.name}">
+						<span data-path=".displayname.str"></span>
+					</a>
+				</div>
+			</div>
+		</div>
+		<div class="zenstore-body">
+			<div class="zenstore-header">
+				<h2 data-set-class="{.name}" data-path=".displayname.str"></h2>
+				<div class="zenstore-current">
+					<span data-update="loginInfo.loginentity.zen">
+						<h5>Current ZEN: <img src="/tex/Currency_Icon_Tiny_Zen.png" alt="" /> <span data-path="$root().loginInfo.loginentity.zen.$commify()"></span></h5>
+					</span>
+					<a class="button-standard rounded" data-url-silent="/zenstore/buyzen">Buy ZEN</a>
+				</div>
+			</div>
+			<ul data-path=".products" class="zenstore-list">
+				<li class="zenstore-entry" data-if="{.prereqsmet}">
+					<a data-if="{.price} le {$root().loginInfo.loginentity.zen}" class="zenstore-icon" data-set-data-url-silent="/zenstore/{$root.queryParams.categoryName}/{.id}">
+						<img data-set-src="tex/{.hdef.smallicon}.png" alt="" />
+					</a>
+					<a data-if="{.price} gt {$root().loginInfo.loginentity.zen}" class="zenstore-icon disabled" data-set-data-url-silent="/zenstore/{$root.queryParams.categoryName}/{.id}">
+						<img data-set-src="tex/{.hdef.smallicon}.png" alt="" />
+					</a>
+
+					<!-- add info for sales/featured/new -->
+
+					<div class="zenstore-info-block">
+						<h4 data-path=".hdef.displaynamemesg.str">Item Name</h4>
+					</div>
+
+					<a class="zenstore-moreinfo" data-set-data-url-silent="/zenstore/{$root.queryParams.categoryName}/{.id}">More Info</a>
+
+					<a data-if="{.price} le {$root().loginInfo.loginentity.zen}" class="zenstore-button button-standard rounded" data-set-data-url-silent="/zenstore/{$root.queryParams.categoryName}/{.id}">
+						<span data-if="{.price} gt 0">
+							Buy for
+							<img src="/tex/Currency_Icon_Tiny_Zen.png" alt="" />
+							<span data-path=".price">000</span>
+						</span>
+						<span data-if="{.price} le 0">Available</span>
+					</a>
+					<a data-if="{.price} gt {$root().loginInfo.loginentity.zen}" class="zenstore-button button-standard rounded disabled" data-set-data-url-silent="/zenstore/{$root.queryParams.categoryName}/{.id}">
+						Buy for
+						<img src="/tex/Currency_Icon_Tiny_Zen.png" alt="" />
+						<span data-path=".price">000</span>
+					</a>
+				</li>
+			</ul>
+			<div class="clear"></div>
+		</div>
+		<div class="zenstore-current mobileOnly">
+			<span data-update="loginInfo.loginentity.zen">
+				<h5>Current ZEN: <img src="/tex/Currency_Icon_Small_Zen.png" alt="" /> <span data-path="$root().loginInfo.loginentity.zen.$commify()"></span></h5>
+			</span>
+			<a class="button-standard rounded" data-url-silent="/zenstore/buyzen">Buy ZEN</a>
+		</div>
+	</div>
+</div>
+
+<!-- endif(dev) -->

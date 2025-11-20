@@ -1,0 +1,172 @@
+// Using this for DepthOfField (/highQualityDoF) blurs way too much, bluring HQDOF
+//  at 0.5 looks like it's doing a 80%-90% blur, makes slight blurs in, e.g. NNO,
+//  look very blury.
+
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(color_texture, 0);
+SAMPLER_DECL(depth_texture, 1);
+
+#ifdef DOF_BLUR
+	SAMPLER_DECL(local_contrast_blur_texture, 2);
+#endif
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 tex_transform : PS_CONSTANT_MATERIAL_PARAM0() ;
+
+#ifdef DOF_BLUR
+	// [0] Focus depth, [1] focus value at depth, [2] focus change rate towards near focus, 
+	// [3] focus change rate towards far focus
+	uniform float4 dofParams	: PS_CONSTANT_MATERIAL_PARAM1() ;
+
+	// [0] -(sky depth start)/(sky depth fade len), [1] 1/(sky depth fade len), [2] sky blur value,
+	// [3] local contrast scale
+	uniform float4 dofParams2	: PS_CONSTANT_MATERIAL_PARAM2() ;
+
+	#ifdef DOF_EDGES
+		// [0]-[2] border color
+		// [3] border ramp
+		uniform float4 dofParams3	: PS_CONSTANT_MATERIAL_PARAM3() ;
+
+		// [0] border blur ammount
+	#endif
+	// [1] random value - for GRIME test, can be removed/replaced
+	// [2] unsharp_amount
+	// [3] unsharp_theshold
+	uniform float4 dofParams4	: PS_CONSTANT_MATERIAL_PARAM4() ;
+
+#endif
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+float4 sample_tex(in float2 texcoord, in float offset, in float absoffset, in float ref_value, 
+				  in float ref_sky_amount, in float3 ref_color, in float eff_border_blur, inout float num_samples)
+{
+	float4 color;
+	float sample_depth;
+	float sample_valid;
+
+	#ifdef VERTICAL
+		texcoord.y += tex_transform.y * offset;
+	#else
+		texcoord.x += tex_transform.x * offset;
+	#endif
+
+	color = sampleTex2D(color_texture, texcoord);
+	sample_depth = sampleTexDepthVS(depth_texture, texcoord);
+
+#ifdef DOF_BLUR
+
+	float sky_amount;
+	float dof_value = calculateDepthOfField(sample_depth, 1, dofParams, dofParams2.xyz, eff_border_blur, sky_amount);
+	sample_valid = lerp(dof_value, 1, sky_amount); // blends sky into far pixels
+	sample_valid = lerp(sample_valid * ref_value, sample_valid, ref_sky_amount);
+	color.rgb = lerp(color.rgb, ref_color, ref_sky_amount * sky_amount * (1 - ref_value)); // blends far pixels into sky
+
+#else
+
+	float depth_diff = abs(sample_depth - ref_value);
+	sample_valid = 1 - saturate(absoffset * (0.2* depth_diff * tex_transform.w + tex_transform.z));
+
+#endif
+
+	num_samples += sample_valid;
+	return color * sample_valid;
+}
+
+// -----------------------------------------------------------------------
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float4 avg_color;
+	float num_samples = 1;
+
+	avg_color = sampleTex2D(color_texture, fragment.texcoord.xy);
+	float ref_value = sampleTexDepthVS(depth_texture, fragment.texcoord.xy);
+
+	float sky_amount;
+	float3 ref_color = avg_color.rgb;
+#ifdef DOF_BLUR
+
+	#ifdef DOF_EDGES
+		float border_ramp = dofParams3.w; // 2
+		float3 border_color = dofParams3.xyz; // float3(0.08, 0.08, 0.10)
+		float border_blur = dofParams4.x; // 1
+		float border = max(0, -(border_ramp-1) + border_ramp*4*((fragment.texcoord.x - 0.5)*(fragment.texcoord.x - 0.5) + (fragment.texcoord.y - 0.5)*(fragment.texcoord.y - 0.5)));
+		//float border = smoothstep(0, 0.4, (texcoord.x - 0.5)*(texcoord.x - 0.5) + (texcoord.y - 0.5)*(texcoord.y - 0.5));
+		float eff_border_blur = border*border_blur;
+	#else
+		float border = 0;
+		float eff_border_blur = 0;
+	#endif
+
+	// ref_value is a blur amount here? or something else?
+	ref_value = calculateDepthOfField(ref_value, 1, dofParams, dofParams2.xyz, eff_border_blur, sky_amount);
+#else
+	float eff_border_blur = 0;
+
+#endif
+
+
+#ifdef KERNEL_11
+	avg_color += sample_tex(fragment.texcoord.xy, -5, 5, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -4, 4, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  4, 4, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  5, 5, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+#elseifdef KERNEL_9
+	avg_color += sample_tex(fragment.texcoord.xy, -4, 4, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  4, 4, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+#elseifdef KERNEL_7
+	avg_color += sample_tex(fragment.texcoord.xy, -3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  3, 3, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+#elseifdef KERNEL_5
+	avg_color += sample_tex(fragment.texcoord.xy, -2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy, -1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  2, 2, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+#elseifdef KERNEL_3
+	avg_color += sample_tex(fragment.texcoord.xy, -1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+	avg_color += sample_tex(fragment.texcoord.xy,  1, 1, ref_value, sky_amount, ref_color, eff_border_blur, num_samples);
+#endif
+
+	avg_color = avg_color / num_samples;
+
+#ifdef DOF_BLUR
+	#ifdef VERTICAL
+		float3 lc_blur_color = sampleTex2D(local_contrast_blur_texture, fragment.texcoord.xy).rgb;
+		float unsharp_amount = dofParams4.z;
+		float unsharp_threshold = dofParams4.w;
+		avg_color.rgb = applyLocalContrast(avg_color.rgb, lc_blur_color, dofParams2.w, unsharp_amount, unsharp_threshold);
+
+		#ifdef DOF_EDGES
+			avg_color.rgb += border*border_color;
+			#ifdef ShowBlurBorder
+				avg_color.rgb = border;
+			#endif
+		#endif
+	#endif
+
+	#ifdef ShowDOFAmount
+		avg_color.rgb = ref_value;
+	#endif
+
+#endif
+
+	return avg_color;
+}

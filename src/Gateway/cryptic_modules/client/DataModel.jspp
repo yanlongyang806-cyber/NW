@@ -1,0 +1,848 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// DataModel
+//
+// The standard resolver augmented with special Star Trek stuff.
+//
+///////////////////////////////////////////////////////////////////////////
+
+var dbg = require('cryptic/dbg');
+var format = require('cryptic/format');
+var Synchro = require('cryptic/synchro');
+var Resolver = require('cryptic/Resolver');
+
+var ClientResourceManager = require('./ClientResourceManager');
+var ContainerManager = require('cryptic/ContainerManager');
+var cutils = require('cryptic/cutils');
+
+var DataModel = function DataModel()
+{
+	dbg.trace();
+	this.rmgr = new ClientResourceManager();
+	this.cmgr = new ContainerManager();
+
+	Resolver.call(this.rmgr, this.cmgr);
+
+	this.model = {
+		loginInfo: null,
+		ent: null,
+		queryParams: null,
+		guild: null,
+		guildproject: null,
+		personalproject: null,
+		craftinglist: null,
+		craftingdetail: null,
+		maillist: null,
+		maildetail: null,
+		auctionList: null,
+		cstore: null,
+		vendor: null,
+		news: null,
+		ebs: null,
+		exchangeaccountdata: null,
+		gatewaygamedata: null
+	};
+	dbg.trace(this.model);
+}
+
+cutils.inherits(DataModel, Resolver);
+
+///////////////////////////////////////////////////////////////////////////
+
+DataModel.prototype.addDefaultResources = function addDefaultResources(dictname, objs)
+{
+	var dict = this.rmgr.findOrCreateDictionary(dictname);
+	if(dict)
+	{
+		for(var key in objs)
+		{
+			dict.setResource(key, { str: objs[key] });
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+DataModel.prototype.connect = function connect(socket)
+{
+	this.rmgr.connect(socket);
+	this.cmgr.connect(socket);
+}
+
+DataModel.prototype.disconnect = function disconnect()
+{
+	this.model.ent = null;
+	this.model.loginInfo = null;
+
+	this.rmgr.disconnect();
+	this.cmgr.disconnect();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+function renderInternal(dataModel, renderStencil, rootpath)
+{
+	if(rootpath)
+	{
+		if(typeof rootpath === 'string')
+		{
+			dataModel.resolvePath(rootpath, dataModel.model, function(e, obj) {
+				renderStencil(e, dataModel.makeStackItem(obj, rootpath));
+			});
+		}
+		else
+		{
+			renderStencil(undefined, rootpath);
+		}
+	}
+	else
+	{
+		renderStencil(undefined, dataModel.model);
+	}
+}
+
+DataModel.prototype.render = function(stencilFunc, name, rootpath, callback)
+{
+	var self = this;
+
+	this.dropUpdates(name);
+
+	var renderStencil = function _renderStencil(e, obj) {
+		self.pauseUpdates();
+		stencilFunc(name, cutils.bind(self, self.resolveArray), obj, function(e, r) {
+			cutils.nextTick(function() { self.resumeUpdates(); });
+			if(callback)
+				callback(e, r);
+		});
+	};
+
+	renderInternal(this, renderStencil, rootpath);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+DataModel.prototype.loadLoginEntityByName = function loadLoginEntityByName(name, cb)
+{
+	dbg.trace(name);
+	var self = this;
+
+	if(this.model.loginInfo.loginentity)
+		this.model.loginInfo.loginentity = undefined;
+
+	this.cmgr.requestLoginEntity(name, function _onReceivedLoginEntity(error, loginent) {
+		if(error)
+		{
+			if(cb)
+				cb(error, undefined);
+		}
+		else
+		{
+			if(cb)
+				cb(error, loginent);
+		}
+	});
+}
+
+DataModel.prototype.loadEntityByName = function loadEntityByName(name, cb)
+{
+	dbg.trace(name);
+	var self = this;
+
+	this.model.ent = { };
+
+	fetchEntity(this, name, function _lEBN_onFetchedEntity(e, r) {
+		if(e)
+		{
+			dbg.error("DataModel.loadEntiyByName - fetchEntity Error: " + e.message);
+			if(cb) cb(e, undefined);
+		}
+		else
+		{
+			client.updateModelEnt(self.cmgr.findEntity(name).container);
+
+			dbg.trace("metaEnt", self.model.ent);
+
+			getEntBundle(self.rmgr);
+
+			if(cb) cb(undefined, self.model.ent);
+		}
+	});
+}
+
+DataModel.prototype.loadGuildByName = function loadGuildByName(name, cb)
+{
+	dbg.trace(name);
+	var self = this;
+
+	this.model.guild = { };
+
+	fetchGuild(self, name, function _lGBN_onFetchedGuild(e, r) {
+		if(e)
+		{
+			dbg.error(e)
+
+			if(cb) cb(e, undefined);
+		}
+		else
+		{
+			self.model.guild = r;
+
+			dbg.trace("guild", r);
+
+			if(cb) cb(undefined, r);
+		}
+
+		dbg.trace('post-guild model', self.model);
+	});
+}
+
+
+DataModel.prototype.fetchCraftingList = function fetchCraftingList(name, callback)
+{
+	dbg.trace(name);
+
+	if(!this.model.craftinglist)
+	{
+		this.model.craftinglist = { };
+	}
+	var self = this;
+	this.cmgr.requestCraftingList(name, function _onReceivedCraftingList(error, list) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else if(!list._askedBundle)
+		{
+			list._askedBundle = true;
+
+			var defs = {};
+			if(list && Array.isArray(list.entries))
+			{
+				list.entries.forEach(function(entry) {
+					if(!entry.isheader && entry.hdef)
+					{
+						defs[entry.hdef] = true;
+						entry.rewards.forEach(function(i) {
+							defs[i.hdef] = true;
+						});
+						entry.consumables.forEach(function(i) {
+							defs[i.hdef] = true;
+						});
+					}
+				});
+			}
+
+			getResourceBundle(self.rmgr, Object.keys(defs),
+				{ dicts: { 'Message': 1, 'ItemAssignmentDef': 1, 'ItemDef': 1 },
+					depth: 2 },
+				function() {
+					list._gotBundle = true;
+					self.renderUpdates('create *', 'craftinglist.'+name.toLowerCase());
+
+					if(callback)
+						callback(error, list);
+				});
+		}
+	});
+}
+
+DataModel.prototype.fetchCraftingDetail = function fetchCraftingDetail(name, callback)
+{
+	dbg.trace(name);
+
+	//Clear our the current details
+	this.model.craftingdetail = null;
+
+	var self = this;
+	this.cmgr.requestCraftingDetail(name, function _onReceivedCraftingDetail(error, detail) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			self.model.craftingdetail = detail;
+			if(callback)
+				callback(error, detail);
+		}
+	});
+}
+
+DataModel.prototype.fetchExchangeAccountData = function fetchExchangeAccountData(name, callback) {
+	dbg.trace(name);
+
+	this.model.exchangeaccountdata = null;
+
+	var self = this;
+	this.cmgr.requestExchangeAccountData(name, function(error, list) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			self.model.exchangeaccountdata = list;
+			if(callback)
+				callback(error, list);
+		}
+	});
+}
+
+DataModel.prototype.fetchGatewayGameData = function fetchGatewayGameData(name, callback) {
+	dbg.trace(name);
+
+	this.model.gatewaygamedata = null;
+
+	var self = this;
+	this.cmgr.requestGatewayGameData(name, function(error, list) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			self.model.gatewaygamedata = list;
+			if(callback)
+				callback(error, list);
+		}
+	});
+}
+
+DataModel.prototype.fetchMailList = function fetchMailList(name, callback)
+{
+	dbg.trace(name);
+
+	//Clear our the current details
+	this.model.maillist = null;
+
+	var self = this;
+	this.cmgr.requestMailList(name, function(error, list) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			self.model.maillist = list;
+			if(callback)
+				callback(error, list);
+		}
+	});
+}
+
+DataModel.prototype.fetchMailDetail = function fetchMailDetail(name, callback)
+{
+	dbg.trace(name);
+
+	//Clear our the current details
+	this.model.maildetail = null;
+
+	var self = this;
+	this.cmgr.requestMailDetail(name, function(error, detail) {
+		if(error)
+		{
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			self.model.maildetail = detail;
+			self.renderUpdates('create *', 'maildetail');
+
+			if(callback)
+				callback(error, detail);
+		}
+	});
+}
+
+DataModel.prototype.clearMailDetail = function clearMailDetail()
+{
+	this.model.maildetail = null;
+
+	this.renderUpdates('destroy *', 'maildetail');
+}
+
+DataModel.prototype.fetchCStore = function fetchCStore(name, callback)
+{
+	name = name || 'cstore';
+	var self = this;
+	// TODO: Possibly make it so that we dont get the bundle every time
+	//       we change characters?  This value gets lost when there is
+	//       a character change. (this.model.cstore === null)
+	var gotBundle = (this.model && this.model.cstore) ? this.model.cstore._gotBundle : false;
+
+	this.cmgr.requestCStore(name, function(error, cstore) {
+
+		self.model.cstore = cstore;
+		self.model.cstore._gotBundle = gotBundle;
+		self.cstoreCategoryBundleUpdate();
+
+		if(!gotBundle)
+		{
+			var defs = {};
+			if(cstore.products && Array.isArray(cstore.products))
+			{
+				cstore.products.forEach(function(product) {
+					if(product.hdef)
+					{
+						defs[product.hdef] = true;
+					}
+				});
+			}
+
+			getResourceBundle(self.rmgr, Object.keys(defs),
+				{ dicts: { 'Message': 1, 'MicroTransactionDef': 1 }, depth: 2 },
+				function() {
+					self.model.cstore._gotBundle = true;
+					self.cstoreCategoryBundleUpdate();
+					self.renderUpdates('create *', 'cstore');
+
+					if(callback)
+						callback(error, cstore);
+				});
+		}
+		else
+		{
+			self.renderUpdates('create *', 'cstore');
+
+			if(callback)
+				callback(undefined, cstore);
+		}
+	});
+}
+
+DataModel.prototype.cstoreCategoryBundleUpdate = function()
+{
+	dbg.trace();
+
+	var c;
+	for(c in this.model.cstore.categories)
+	{
+		this.model.cstore.categories[c]['_gotBundle'] = this.model.cstore._gotBundle;
+	}
+}
+
+DataModel.prototype.fetchVendor = function fetchVendor(name, callback)
+{
+	name = name || 'vendor';
+	var self = this;
+
+	this.model.vendor = { };
+
+	this.cmgr.requestVendor(name, function(error, vendor) {
+		if(vendor)
+		{
+			self.model.vendor = vendor;
+
+			self.renderUpdates('create *', 'vendor');
+		}
+
+		if(callback)
+			callback(error, vendor);
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+DataModel.prototype.translate = function translate(key, cb)
+{
+	if(crypticMessages && crypticMessages[key])
+	{
+		cb(undefined, crypticMessages[key]);
+	}
+	else
+	{
+		this.rmgr.fetch('Message', key, function _translate_cb(error, val) {
+			if(error)
+			{
+				cb(error, key);
+			}
+			else
+			{
+				cb(undefined, val.value.str);
+			}
+		});
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Determine if a container can be viewed with privileged information
+// based on name. This is for use in shifter to determine which content
+// stencils should be displayed.
+DataModel.prototype.isPrivilegedContainerByName = function(name)
+{
+	dbg.trace(name);
+
+	if(!name)
+	{
+		return false;
+	}
+	else
+	{
+		if(name.indexOf('@') > -1)
+		{
+			return this.isPrivilegedCharacterByName(name);
+		}
+		else
+		{
+			return this.isPrivilegedGuildByName(name);
+		}
+	}
+}
+
+// Privileged means this is one of your characters.
+DataModel.prototype.isPrivilegedCharacterByName = function(name)
+{
+	dbg.trace(name);
+
+	// If we have no loginInfo, no character choices,
+	// then they clearly cannot be the owner of this character.
+	if(!this.model.loginInfo || !this.model.loginInfo.choices || !this.model.loginInfo.choices.length)
+	{
+		return false;
+	}
+
+	var ns = name.split('@');
+
+	// Simple public account name comparison for character ownership.
+	// i18n: This may be a problem.
+	if(this.model.loginInfo.publicaccountname.toLowerCase() === ns[1].toLowerCase())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// Privileged means being a member of the guild.
+DataModel.prototype.isPrivilegedGuildByName = function(name)
+{
+	dbg.trace(name);
+
+	// If we have no loginInfo, or no login entity
+	// then they clearly cannot be a member of this guild.
+	if(!this.model.loginInfo || !this.model.loginInfo.loginentity)
+	{
+		return false;
+	}
+
+	// i18n: This may be a problem.
+	if(this.model.loginInfo.loginentity.guildname.toLowerCase() === name.toLowerCase())
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+DataModel.prototype.fetchAuctionSettingsBundle = function(callback)
+{
+	var self = this;
+
+	self.rmgr.fetch('AuctionSettings', 'Main', function _onReceivedAuctionSettingsBundle(error, list) {
+		if(error)
+		{
+			dbg.error(new Error('Error attepting to get AuctionSettings Bundle'));
+
+			if(callback)
+				callback(error, undefined);
+		}
+		else
+		{
+			getResourceBundle(self.rmgr, [ self.model.ent.main.auctionsettings ],
+				{ dicts: { 'Message': 1 }, depth: 2 },
+				function() {
+					self.model.ent.main._gotAuctionBundle = true;
+					self.renderUpdates('create *', 'ent.main.auctionsettings');
+
+					if(callback)
+						callback(error, list);
+				});
+		}
+	});
+
+}
+
+DataModel.prototype.fetchAuctionResultsBundle = function(diff, name)
+{
+	var auctionlist = this.model.auctionList[name];
+	var self = this;
+
+	if(auctionlist)
+	{
+		getResourceBundle(self.rmgr, auctionlist.list.auctionlots,
+			{ dicts: { 'Message' : 1, 'ItemDef': 1}, depth: 2},
+			function() {
+				self.renderUpdates(diff, 'auctionList.'+name);
+			});
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+
+function getEntBundle(rmgr)
+{
+	dbg.trace()
+	$.ajax({
+		url: '/ent/me',
+		type: 'GET',
+		dataType: 'json',
+		success: function(response) {
+			dbg.trace('getEntBundle: success: ', response);
+			rmgr.onAjax_ResourceBundle(response);
+		},
+
+		error: function() {
+			// Something broke
+		}
+	});
+}
+
+
+var reResource = /@([^\[]+)\[([^\]]+)\]/;
+function getResourceBundle(rmgr, reslist, options, callback)
+{
+	dbg.trace();
+
+	if(!reslist)
+	{
+		callback();
+		return;
+	}
+
+	// Don't fetch resources we already have.
+	reslist = reslist.filter(function(resName) {
+		var res = reResource.exec(resName);
+		if(res && res[1] && res[2])
+		{
+			return !rmgr.find(res[1], res[2]);
+		}
+		return true;
+	});
+
+	if(reslist.length === 0)
+	{
+		callback();
+		return;
+	}
+
+	$.ajax({
+		url: '/bundle',
+		type: 'POST',
+		data: {
+			'res[]' : reslist,
+			'dicts' : options.dicts,
+			'depth' : options.depth
+		},
+		dataType: 'json',
+		success: function(response) {
+			dbg.trace('getResBundle: success: ', response);
+			rmgr.onAjax_ResourceBundle(response);
+			callback();
+		},
+
+		error: function(xhr, status, error) {
+			callback();
+			// Something broke
+		}
+	});
+}
+
+function fetchAllOwnedContainers(dataModel, name, callback)
+{
+	dataModel.cmgr.requestEntity(name, function _fAOC_onReceivedEntity(error, data) {
+		dbg.trace(error, data);
+
+		if(error)
+		{
+			callback(error, undefined);
+			return;
+		}
+
+		if(data.ownedcontainers)
+		{
+			var owned = data.ownedcontainers;
+			var sync = new Synchro();
+			for(var i = 0; i < owned.length; i++)
+			{
+				(function(id) {
+					sync.add(function _async_requestPet(ready) {
+						dataModel.cmgr.requestPet(id, ready);
+					});
+				})(owned[i].id);
+			}
+			sync.waitForAll(function _waitForAll_requestPets(aErrors, aResults) {
+				if(aErrors && aErrors.length > 0)
+				{
+					// There were errors
+					var s = 'Error(s) when fetching pets: ';
+					for(var i in aErrors)
+					{
+						if(aErrors[i])
+						{
+							s += aErrors[i].message;
+						}
+					}
+					callback(new Error(s), undefined);
+				}
+				else
+				{
+					callback(undefined, aResults);
+				}
+			});
+		}
+		else
+		{
+			callback(undefined, []);
+		}
+	});
+}
+
+function fetchEntity(dataModel, name, callback)
+{
+	dbg.trace(name,callback);
+	dataModel.cmgr.requestEntity(name, function _fetchEntity_onReceivedEntity(error, ent) {
+		if(error)
+		{
+			callback(error, undefined);
+		}
+		else
+		{
+			fetchAllOwnedContainers(dataModel, name, function _onFetchedAllOwnedContainers(error, pets) {
+				if(error)
+				{
+					callback(error, undefined);
+				}
+				else
+				{
+					callback(error, ent);
+				}
+			});
+			dataModel.cmgr.requestPersonalProject(ent.id, function(e, r) { });
+		}
+	});
+}
+
+
+function fetchGuild(dataModel, name, callback)
+{
+	dbg.trace(name);
+
+	dataModel.cmgr.requestGuild(name, function _onFetchedGuild(error, guild) {
+		if(error)
+		{
+			callback(error, undefined);
+		}
+		else
+		{
+			// This never emits a container back on Neverwinter.
+			// Which means the callback never gets fired, and the
+			// guild never finishes loading.
+			dataModel.cmgr.requestGroupProject(guild.id, function(e, r) {
+//				callback(e, guild);
+			});
+
+			// Loaded the guild!
+			callback(undefined, guild);
+		}
+	});
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Resolvers that are special in some way to Star Trek.
+//
+//
+
+//
+// $root
+//
+// Returns the root data object in the model.
+//
+Resolver.prototype.resolvers.root = function(ctx, unused, str, fn)
+{
+	fn(undefined, this.model);
+}
+
+//
+// $map(map name | value pairs)
+//
+// Maps the current value to another value.
+//
+// map name needs to match exactly a name in the s_maps list below.
+//
+// value pairs should look like this:
+//    val1: map1, val2: map2, val3: map3, *: map4
+//
+// * matches if no others match.
+//
+Resolver.prototype.resolvers.map = function(ctx, val, args, fn)
+{
+	var paramStr = args.join(',');
+
+	if(paramStr.indexOf(':') < 0)
+	{
+		// This is the name of a table.
+		paramStr = s_maps[paramStr.trim()] || '';
+	}
+
+	var re = new RegExp(val+'\\s*:\\s*([^,]+)\\s*(,|$)');
+	var res = re.exec(paramStr);
+	if(!res)
+	{
+		re = new RegExp('\\*\\s*:\\s*([^,]+)\\s*(,|$)');
+		res = re.exec(paramStr);
+	}
+	fn(undefined, res && res[1] ? res[1] : val);
+}
+
+//
+// Pre-defined maps for the $map function.
+//
+// value pairs should look like this:
+//    val1: map1, val2: map2, val3: map3, *: map4
+//
+// * matches if no others match.
+//
+var s_maps = {
+	factionId: 'Allegiance_Starfleet:fed, Allegiance_Klingon:kli, Allegiance_Romulan:rom',
+	classTypeIcons: 'Starfleet_Tactical:tac, Starfleet_Engineering:eng, Bridge_Officer_Tactical:tac, Bridge_Officer_Engineering:eng, Bridge_Officer_Science:sci, Klingon_Tactical:tac, Klingon_Engineering:eng, Klingon_Science:sci, Romulan_Tactical:tac, Romulan_Engineering:eng, Romulan_Science:sci, *:sci',
+	rankIcons: '0:ensign, 1:lieut, 2:ltcmdr, 3:cmdr, 4:capt, 5:rearadmlower, 6:rearadmupper, 7:viceadm, *:ensign',
+	monthLongNames: '0:January, 1:February, 2:March, 3:April, 4:May, 5:June, 6:July, 7:August, 8:September, 9:October, 10:November, 11:December',
+	monthShortNames: '0:Jan, 1:Feb, 2:Mar, 3:Apr, 4:May, 5:Jun, 6:Jul, 7:Aug, 8:Sep, 9:Oct, 10:Nov, 11:Dec',
+	tierStyles: 'Fleet_Tier_Bg_Sb:starbase, Fleet_Tier_Bg_Mil:military, Fleet_Tier_Bg_Eng:engineering, Fleet_Tier_Bg_Sci:science',
+	factionFromClass: 'Starfleet_Tactical:fed, Starfleet_Science:fed, Starfleet_Engineering:fed, Klingon_Tactical:kli, Klingon_Science:kli, Klingon_Engineering:kli, Romulan_Tactical:rom, Romulan_Science:rom, Romulan_Engineering:rom',
+	reputationCategories: 'Rep_Event:Event, Rep_Nukara:Nukara, Rep_Omega:Omega, Rep_Romulan:Romulan, Rep_Voth:Dyson Joint Command',
+
+	nw_classTypeIcons: 'Player_Devoted:Devoted, Player_Trickster:Trickster, Player_Guardian:Guardian, Player_Greatweapon:Greatweapon, Player_Controller:Controller',
+	nw_className: 'Player_Devoted:Devoted Cleric, Player_Trickster:Trickster Rogue, Player_Guardian:Guardian Fighter, Player_Greatweapon:Great Weapon Fighter, Player_Controller:Control Wizard',
+	nw_lfg: 'Prompt:Social_Icon_Block_Invites, Open:Social_Icon_Allow_Invites, RequestOnly:Social_Icon_Allow_Invites, Closed:Social_Icon_Block_Invites',
+	nw_sides: 'p:perception, m:magic, t:thievery, c:combat, w:wild, mp:magic-perception, mt:magic-thievery, mc:magic-combat, pt:perception-thievery, pc:perception-combat, tc:thievery-combat'
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = new DataModel();
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

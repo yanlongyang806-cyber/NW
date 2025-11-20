@@ -1,0 +1,221 @@
+<!-- if(dev) -->
+
+<div class="page-content" data-path="gatewaygamedata" data-update="gatewaygamedata">
+	<div class="page-dungeon-explore">
+
+
+
+		<div class="explore-map">
+			<div data-set-class="dungeon-map {.quest.parchment} {.quest.tiles}">
+				<span class="dungeon-map-helper mobileOnly"></span>
+				<h2 class="explore-title-mobile mobileOnly" data-path=".quest.name">Cave of Trouble</h2>
+				<div class="dungeon-map-inner dMapScale" data-path=".quest.map"></div>
+				<div class="explore-info-mobile mobileOnly" data-path=".quest.goal">Lorem ipsum dolor</div>
+			</div>
+		</div>
+
+		<div class="explore-info" data-path=".quest">
+			<div class="fancy-box">
+				<div class="fancy-box-top">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-mid">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-content">
+						<h2 class="explore-title" data-path=".name">Cave of Trouble</h2>
+						<div class="explore-flavor attention"  data-path=".description">
+							Flavor text lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.
+						</div>
+						<hr />
+
+						<div class="explore-goal"><span data-path=".goal" data-tt-stencil="content-tt-sca-encounter" data-tt-path="gatewaygamedata.quest.encs[end]" data-tt-pos="bottom"></span></div>
+
+					</div>
+
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-bot">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+			</div>
+		</div>
+		<div class="party-frame">
+			<span class="party-frame-helper mobileOnly"></span>
+			<ul data-path=".party.members">
+				<li data-set-class="party-entry {.resting.$choose(disabled,)}">
+					<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+					<h3 class="party-name" data-path=".name">Companion Name</h3>
+					<div class="party-dice" data-path=".pile.dice">
+
+						<span data-set-class="dice small d{.count} {.color}" data-if="{.color} ne 'base'" data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-tt-pos="top"></span>
+
+						<!-- dice tooltip using css hover
+						<span data-set-class="dice small d{.count} {.color}" data-if="{.color} ne 'base'">
+
+							<div data-set-class="dice-info-hover {.color}">
+								<h3><span data-path=".name"></span></h3>
+								<div data-path=".sides[sym=m]" class="dice-group magic">
+									<div class="dice side magic">
+										<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=p]" class="dice-group perception">
+									<div class="dice side perception">
+										<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=t]" class="dice-group thievery">
+									<div class="dice side thievery">
+										<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=c]" class="dice-group combat">
+									<div class="dice side combat">
+										<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=mp]" class="dice-group magic-perception">
+									<div class="dice side magic-perception">
+									</div>
+								</div>
+								<div data-path=".sides[sym=mt]" class="dice-group magic-thievery">
+									<div class="dice side magic-thievery">
+									</div>
+								</div>
+								<div data-path=".sides[sym=mc]" class="dice-group magic-combat">
+									<div class="dice side magic-combat">
+										<span class="num">3</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=pt]" class="dice-group perception-thievery">
+									<div class="dice side perception-thievery">
+									</div>
+								</div>
+								<div data-path=".sides[sym=pc]" class="dice-group perception-combat">
+									<div class="dice side perception-combat">
+										<span class="num">3</span>
+									</div>
+								</div>
+								<div data-path=".sides[sym=tc]" class="dice-group thievery-combat">
+									<div class="dice side thievery-combat">
+										<span class="num">3</span>
+									</div>
+								</div>
+
+								<div data-path=".sides[sym=w]" class="dice-group wild">
+									<div class="dice side wild">
+										<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+									</div>
+								</div>
+
+							</div>
+						</span>
+						-->
+					</div>
+					<!-- if Resting -->
+					<div class="party-cooldown" data-if="{.resting}">Resting</div>
+					<!-- if Resting -->
+				</li>
+			</ul>
+
+
+			<div class="dungeon-health" data-update="gatewaygamedata">
+				<div class="dungeon-health-bar">
+					<div class="bar-container">
+						<span class="bar-bg-left"></span>
+						<span class="bar-bg-mid"></span>
+						<span class="bar-bg-right"></span>
+
+						<span data-if="gatewaygamedata.party.staminatotal gt 0">
+							<div class="bar-filled" data-set-style="width: {gatewaygamedata.party.staminapercent}%;">
+								<div class="bar-container">
+									<span class="bar-bg-left"></span>
+									<span class="bar-bg-mid"></span>
+									<span class="bar-bg-right"></span>
+								</div>
+							</div>
+							<div class="bar-tick-container">
+								<script>
+									function sca_makeTicks(count)
+									{
+										var incr = 100/count;
+										var s = [];
+										var here = 0;
+										for(var i = 0; i < count-1; i++)
+										{
+											here += incr;
+											s.push('<div class="bar-tick" style="left: '+here.toFixed(2)+'%;"></div>');
+										}
+										return s.join('');
+									}
+
+									if(client.dataModel.model.gatewaygamedata.party)
+										$('.bar-tick-container').html(sca_makeTicks(client.dataModel.model.gatewaygamedata.party.staminatotal));
+								</script>
+							</div>
+						</span>
+
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+
+
+<script>
+
+
+
+
+
+
+
+
+(function (window, document, $) {
+    $(function ($) {
+		var $win = $(window);
+
+		var $partyFrameX = 720;
+		var $partyFrameY = 240;
+
+		function update () {
+            var viewportWidth = document.documentElement.clientWidth
+              , viewportHeight = document.documentElement.clientHeight;
+
+			/* set sizes for the upper parchment */
+			if (viewportWidth <= ($partyFrameX / .96))
+			{
+				$('.dungeon-map-helper').css( "height", viewportHeight - 35 - (viewportWidth * .96 * ($partyFrameY / $partyFrameX) ) );
+			} else {
+				$('.dungeon-map-helper').css( "height", (viewportHeight - 35 - $partyFrameY) );
+			}
+
+			/* set sizes for the lower character frame */
+			if (viewportWidth <= ($partyFrameX / .98))
+			{
+				$('.party-frame-helper').css( "height", viewportWidth * .98 * ($partyFrameY / $partyFrameX) );
+				$('.dungeon-health-bar .bar-container').css( "width", (viewportWidth * .98 * .95) - 18);
+			} else {
+				$('.party-frame-helper').css( "height", $partyFrameY );
+				$('.dungeon-health-bar .bar-container').css( "width", ($partyFrameX * .95) - 18);
+			}
+
+			console.log('x: ' + viewportWidth + ', y: ' + viewportHeight);
+        }
+        update();
+        $win.on('resize', update);
+    });
+}(this, document, jQuery));
+
+
+
+
+</script>
+
+<!-- endif(dev) -->

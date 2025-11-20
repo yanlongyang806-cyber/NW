@@ -1,0 +1,9 @@
+{
+	%Color% = %ColorNormal%;
+
+#ifndef OVERRIDE_HDR
+    float4 error = OVERRIDE_HDR_is_not_defined_for_this_material;
+#else
+    colorHdr = %ColorHDR%;
+#endif
+}

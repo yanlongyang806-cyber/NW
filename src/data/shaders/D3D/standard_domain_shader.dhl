@@ -1,0 +1,191 @@
+#include "hs_outputs.hlsl"
+// Texture samplers
+Texture2D heightTex : register(t0);
+SamplerState heightTexSampler : register(s0);
+
+cbuffer view_spec : register( b0 )
+{
+	uniform float4x4 projection_mat						: packoffset(c0);	// view -> clip space	(Objects may have force far depth, this goes here)
+	uniform float4x4 modelview_mat						: packoffset(c4);	// model -> view space
+	uniform float4x4 model_mat							: packoffset(c8);
+};
+
+cbuffer view_spec : register( b1 )
+{
+	uniform float scale									: packoffset(c0.x);
+};
+
+struct DS_OUTPUT
+{
+	float4 position_clip			: SV_POSITION;
+#ifndef NOPIXELSHADER
+	float4 texcoords				: TEXCOORD0;
+	float4 position_vs				: TEXCOORD1;	// view space position, world space fog height interpolater fog_value if VERTEX_FOG
+	float4 color0					: TEXCOORD2;
+	float4 instanceParam			: TEXCOORD3;
+	
+	#ifndef DEPTH_ONLY
+
+		float4 hemisphere_dir_vs_and_unused	: TEXCOORD4;	// xyz: hemisphere lighting direction (unless NO_NORMALMAP, then nothing)
+															// w:   unused
+		float4 vpos_xyw_and_unused: TEXCOORD5;	// xyz: view space position.xyw (for terrain_heightmap, detail fade alpha)
+															// w:   ambient intensity for HALFTONE
+		float4 normal_vs_and_unused			: TEXCOORD6;	// xyz: view space normal (x is distance to plane for ALPHA_FADE_PLANE)
+															// w:   unused
+
+		#ifndef VERTEX_ONLY_LIGHTING
+			float4 vertex_lighting				: TEXCOORD7;
+		#endif
+		#ifndef NO_NORMALMAP
+			float3 tangent_vs				: COLOR0;		// view space tangent, range compressed
+			float3 binormal_vs				: COLOR1;		// view space binormal, range compressed
+		#else
+			#ifdef SINGLE_DIRLIGHT
+				#ifdef SM30
+					float4 sdl_values			: COLOR0;		// N*L, L*R
+				#else
+					float4 diffuse_value		: COLOR0;		// alpha is specular_value
+				#endif
+			#elifdef VERTEX_ONLY_LIGHTING
+				float4 diffuse_value			: COLOR0;		// alpha is specular_value
+			#endif
+			float4 backlight_params			: COLOR1;		// xy - backlight, zw - unused
+		#endif
+	#endif
+#endif
+};
+
+float rangeexpand(float value)
+{
+	return (value - 0.5) * 2.0;
+}
+
+float2 rangeexpand2(float2 value)
+{
+	return (value - 0.5) * 2.0;
+}
+
+float3 rangeexpand3(float3 value)
+{
+	return (value - 0.5) * 2.0;
+}
+
+float2 interp2( float3 patchUVW, float2 a, float2 b, float2 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+float3 interp3( float3 patchUVW, float3 a, float3 b, float3 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+float4 interp4( float3 patchUVW, float4 a, float4 b, float4 c )
+{
+	return a * patchUVW.x + b * patchUVW.y + c * patchUVW.z;
+}
+
+void pnTrianglePos(		out float3 myCurrentPos,
+						in float3 norm1,  in float3 norm2, in float3 norm3,
+						in float3 myNorm,
+						in float3 pos1,  in float3 pos2, in float3 pos3,
+						in float3 uvw,
+						in float3 b[10] )
+{
+	// Control net is calculated in the hull shader.
+
+	myCurrentPos =
+			b[0] * (uvw.x * uvw.x * uvw.x) +
+			b[3] * (uvw.y * uvw.y * uvw.y) +
+			b[9] * (uvw.z * uvw.z * uvw.z) +
+			b[1] * 3 * (uvw.x * uvw.x * uvw.y) +
+			b[2] * 3 * (uvw.x * uvw.y * uvw.y) +
+			b[4] * 3 * (uvw.x * uvw.x * uvw.z) +
+			b[6] * 3 * (uvw.y * uvw.y * uvw.z) +
+			b[7] * 3 * (uvw.x * uvw.z * uvw.z) +
+			b[8] * 3 * (uvw.y * uvw.z * uvw.z) +
+			b[5] * 6 * (uvw.x * uvw.y * uvw.z);
+}
+
+float getPushScale(		in float3 myCurrentPos,
+						in float3 norm1,  in float3 norm2, in float3 norm3,
+						in float3 myNorm,
+						in float3 pos1,  in float3 pos2, in float3 pos3,
+						in float3 uvw )
+{
+	float3 push_scaler;
+	float3 push_factors;
+
+	push_factors.x = (1-dot(myNorm,norm1)) * uvw.x;// * lerp(1,-1,step(0,dot((myCurrentPos - pos1),norm1)));
+	push_factors.y = (1-dot(myNorm,norm2)) * uvw.y;// * lerp(1,-1,step(0,dot((myCurrentPos - pos2),norm2)));
+	push_factors.z = (1-dot(myNorm,norm3)) * uvw.z;// * lerp(1,-1,step(0,dot((myCurrentPos - pos3),norm3)));
+
+	push_scaler.x = (push_factors.x * uvw.y + push_factors.y * uvw.x) * (1-uvw.z) * length(pos1 - pos2);
+	push_scaler.y = (push_factors.y * uvw.z + push_factors.z * uvw.y) * (1-uvw.x) * length(pos2 - pos3);
+	push_scaler.z = (push_factors.z * uvw.x + push_factors.x * uvw.z) * (1-uvw.y) * length(pos3 - pos1);
+
+	return (push_scaler.x + push_scaler.y + push_scaler.z) * 2.0;
+}
+
+[domain("tri")]
+DS_OUTPUT standardDomainShader( float3 patchUVW : SV_DomainLocation, OutputPatch< HS_OUTPUT_STANDARD, 3 > controlPoints, HS_PatchConstOut patchData )
+{
+	DS_OUTPUT output = (DS_OUTPUT)0;
+	float pushScale;
+	float3 vertPos;
+
+//-----------------------------------------------------------------------------
+	output.position_clip = interp4(patchUVW, controlPoints[0].position_clip, controlPoints[1].position_clip, controlPoints[2].position_clip);
+
+	output.texcoords = interp4(patchUVW, controlPoints[0].texcoords, controlPoints[1].texcoords, controlPoints[2].texcoords);
+	output.position_vs = interp4( patchUVW, controlPoints[0].position_vs, controlPoints[1].position_vs, controlPoints[2].position_vs );
+	output.color0 = interp4(patchUVW, controlPoints[0].color0, controlPoints[1].color0, controlPoints[2].color0);
+	output.instanceParam = controlPoints[0].instanceParam;
+
+	output.hemisphere_dir_vs_and_unused = controlPoints[0].hemisphere_dir_vs_and_unused;	// xyz: hemisphere lighting direction (unless NO_NORMALMAP, then nothing)
+														// w:   unused
+	output.vpos_xyw_and_unused = interp4(patchUVW, controlPoints[0].vpos_xyw_and_unused, controlPoints[1].vpos_xyw_and_unused, controlPoints[2].vpos_xyw_and_unused);	// xyz: view space position.xyw (for terrain_heightmap, detail fade alpha)
+															// w:   ambient intensity for HALFTONE
+	output.normal_vs_and_unused = interp4(patchUVW, controlPoints[0].normal_vs_and_unused, controlPoints[1].normal_vs_and_unused, controlPoints[2].normal_vs_and_unused);	// xyz: view space normal (x is distance to plane for ALPHA_FADE_PLANE)
+	output.normal_vs_and_unused.xyz = normalize(output.normal_vs_and_unused.xyz);
+	#ifdef PN_TRIANGLES
+		pnTrianglePos(	vertPos,
+						controlPoints[0].normal_vs_and_unused.xyz, controlPoints[1].normal_vs_and_unused.xyz, controlPoints[2].normal_vs_and_unused.xyz,
+						output.normal_vs_and_unused.xyz,
+						controlPoints[0].position_clip.xyz, controlPoints[1].position_clip.xyz, controlPoints[2].position_clip.xyz,
+						patchUVW,
+						patchData.pnControlNet);
+	#else
+		vertPos = output.position_clip.xyz;
+	#endif
+	#ifdef HAS_HEIGHTMAP
+		vertPos = vertPos + scale * (output.normal_vs_and_unused.xyz * (rangeexpand(heightTex.SampleLevel(heightTexSampler,output.texcoords.xy,1).w)));
+	#endif
+	output.position_clip = mul(projection_mat,float4(vertPos,1));
+	output.vpos_xyw_and_unused.xyz = output.position_clip.xyw;	// xyz: view space position.xyw (for terrain_heightmap, detail fade alpha)
+	output.vpos_xyw_and_unused.w = 0;
+
+	#ifndef VERTEX_ONLY_LIGHTING
+		output.vertex_lighting = interp4(patchUVW, controlPoints[0].vertex_lighting, controlPoints[1].vertex_lighting, controlPoints[2].vertex_lighting);
+	#endif
+	#ifndef NO_NORMALMAP
+		output.tangent_vs = interp3(patchUVW, controlPoints[0].tangent_vs, controlPoints[1].tangent_vs, controlPoints[2].tangent_vs);		// view space tangent, range compressed
+		output.binormal_vs = interp3(patchUVW, controlPoints[0].binormal_vs, controlPoints[1].binormal_vs, controlPoints[2].binormal_vs);		// view space binormal, range compressed
+	#else
+		#ifdef SINGLE_DIRLIGHT
+			#ifdef SM30
+				output.sdl_values = interp4(patchUVW, controlPoints[0].sdl_values, controlPoints[1].sdl_values, controlPoints[2].sdl_values);		// N*L, L*R
+			#else
+				output.diffuse_value = interp4(patchUVW, controlPoints[0].diffuse_value, controlPoints[1].diffuse_value, controlPoints[2].diffuse_value);		// alpha is specular_value
+			#endif
+		#elifdef VERTEX_ONLY_LIGHTING
+			output.diffuse_value = interp4(patchUVW, controlPoints[0].diffuse_value, controlPoints[1].diffuse_value, controlPoints[2].diffuse_value);		// alpha is specular_value
+		#endif
+		output.backlight_params = controlPoints[0].backlight_params;		// xy - backlight, zw - unused
+	#endif
+	#ifdef SCREEN_TEX_COORDS
+		output.texcoords.xy = output.position_clip.xy/output.position_clip.w*float2(0.5,-0.5)+float2(0.5,0.5);
+	#endif
+
+	return output;
+}

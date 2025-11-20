@@ -1,0 +1,194 @@
+
+<div class="page-content" data-update="maillist">
+	<div data-if="!{maillist}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+		<script type="text/javascript">
+			client.mailFetchMessageList();
+		</script>
+	</div>
+	<div class="page-mail-inbox" data-if="maillist" data-update="maillist">
+		<h3 class="page-title">Inbox</h3>
+
+		<!-- INBOX LIST -->
+		<table data-if="maillist.messages.$length() ge 1" id="gatewayTablemailInbox">
+			<thead>
+				<tr>
+					<th class="mail-inbox-from"><span>From</span></th>
+					<th class="mail-inbox-subject"><span>Subject</span></th>
+					<th class="mail-inbox-date"><span>Date</span></th>
+					<th class="desktopOnly single-row-cell"></th>
+					<th class="mobileOnly single-row-cell"></th>
+				</tr>
+			</thead>
+			<tbody data-path=".maillist.messages">
+				<tr>
+
+
+
+					<!-- EMPTY CELLS (for data sorting) -->
+					<td class="emptyCell">
+						<span data-path=".from">PlayerName</span>
+					</td>
+					<td class="emptyCell">
+						<span data-path=".subject.$escapeForHTML()">Subject Line</span>
+					</td>
+					<td class="emptyCell">
+						<span data-path=".sent.$dateParse()">Date and Time</span>
+					</td>
+
+
+
+					<!-- DESKTOP CELL -->
+					<td class="desktopOnly single-row-cell" colspan="3">
+						<div class="single-row-button" data-set-onclick="client.mailReadMessage('{.id}','{.type}', this)">
+
+
+							<span class="single-cell mail-inbox-from">
+								<span data-path=".from">PlayerName</span>
+							</span>
+							<span class="single-cell mail-inbox-subject">
+								<span data-path=".subject.$escapeForHTML()">Subject Line</span>
+							</span>
+							<span class="single-cell mail-inbox-date">
+								<span data-path=".sent.$shortDateTime()">Date and Time</span>
+							</span>
+
+
+						</div>
+					</td>
+
+					<!-- MOBILE CELL -->
+					<td class="mobileOnly single-row-cell" colspan="3">
+
+						<a class="single-row-button" data-url-silent="/mail/message" data-set-onclick="client.mailReadMessage('{.id}','{.type}')">
+							<span class="single-mail-from">
+								<span data-path=".from">PlayerName</span>
+							</span>
+							<span class="single-mail-subject">
+								<span data-path=".subject.$escapeForHTML()">Subject Line</span>
+							</span>
+
+							<span class="single-mail-date">
+								<span data-path=".sent.$shortDateNoYear()">Date</span>
+							</span>
+						</a>
+					</td>
+				</tr>
+			</tbody>
+		</table>
+		<script data-if="maillist.messages.$length() ge 1" type="text/javascript">
+			client.mailInboxDataTable();
+		</script>
+
+		<h3 class="center-message" data-if="maillist.messages.$length() eq 0">No new mail</h3>
+
+		<hr class="desktopOnly" />
+
+		<!-- MAIL DETAILS -->
+		<div class="mail-detail" data-update="maildetail" data-path="maildetail">
+			<div class="mail-header">
+				<h4>
+					<span class="mail-header-label">From:</span>
+					<span class="mail-header-data">
+						<span data-path=".header.from">Playername</span><span data-if=".header.fromhandle">@<span data-path=".header.fromhandle">Username</span></span>
+					</span>
+				</h4>
+				<h4>
+					<span class="mail-header-label">Subject:</span>
+					<span class="mail-header-data">
+						<span data-path=".header.subject.$escapeForHTML()">Lorem ipsum dolor sit amet<span>
+					</span>
+				</h4>
+			</div>
+			<div class="mail-body" data-path=".body.body.$escapeForHTML()">Lorem ipsum dolor sit amet.
+
+			Consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc.
+
+			Maecenas dapibus nisi non sapien lacinia gravida non eget odio.</div>
+
+
+			<div class="mail-items" data-if=".body.items.$length() ge 1">
+				<h4>Attached Items:</h4>
+				<span data-path=".body.items">
+					<div data-set-class="icon-slot small {.itemdef.quality}" data-set-data-tt-item=".itemdef.name">
+						<img data-set-src="tex/{.itemdef.icon}.png" alt="" />
+						<span data-if=".count ge 2" data-path=".count" class="quantity">9</span>
+					</div>
+				</span>
+				<h6 class="attention">Log in to the game to claim your items.</h6>
+
+
+			</div>
+		</div>
+	</div>
+</div>
+<div class="box-footer-block">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content" data-update="maildetail">
+				<div class="page-footer">
+					<div class="footer-body">
+						<div class="footer-controls-left">
+							<!-- DELETE BUTTON -->
+							<div data-if="{maildetail}" class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url-silent="/mail/delete-message">Delete</button>
+							</div>
+							<div data-if="!{maildetail}" class="input-field button disabled">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button disabled>Delete</button>
+							</div>
+							<!-- REPORT SPAM BUTTON -->
+							<div data-if="{maildetail.header.fromhandle}" class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url-silent="/mail/report-spam">Report Spam</button>
+							</div>
+							<div data-if="!{maildetail.header.fromhandle}" class="input-field button disabled">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button disabled>Report Spam</button>
+							</div>
+						</div>
+						<div class="footer-controls-right">
+							<!-- REPLY BUTTON -->
+							<div data-if="{maildetail.header.fromhandle}" class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button class="resetWindow" data-set-data-url="/mail-compose?to={maildetail.header.from}@{maildetail.header.fromhandle}&subject=Re:{maildetail.header.subject}">Reply</button>
+							</div>
+							<div data-if="!{maildetail.header.fromhandle}" class="input-field button disabled">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button disabled>Reply</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>

@@ -1,0 +1,60 @@
+<!-- if(dev) -->
+<div class="sca-back-button mobileOnly">
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="/"><span class="sca-back-symbol"></span></button>
+	</div>
+</div>
+<div class="page-dungeons">
+
+	
+
+
+
+	<!-- dev -->
+
+	<div style="
+		position: absolute;
+		right: 0;
+		top: 0;
+		text-align: center;
+		z-index: 9999;
+	"
+	data-update="gatewaygamedata"
+	data-path="gatewaygamedata">
+
+		<div class="input-field button light" data-if="{.state} eq 'k_Combat' || {.state} eq 'k_CombatChoose' || {.state} eq 'k_Rolling'">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.scaDebug('win')">victory</button>
+		</div>
+		<div class="input-field button light" data-if="{.state} eq 'k_Combat' || {.state} eq 'k_CombatChoose' || {.state} eq 'k_Rolling'">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.scaDebug('lose')">defeat</button>
+		</div>
+		<div class="input-field button light" data-if="!({.state} eq 'k_Combat' || {.state} eq 'k_CombatChoose' || {.state} eq 'k_Rolling')">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.scaDebug('wakeup')">wake up</button>
+		</div>
+		<div class="input-field button light">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.scaDebug('reset')">reset</button>
+		</div>
+	</div>
+	<!-- dev -->
+
+
+	<div id="content_dungeons" class="innerContent">
+	</div>
+</div>
+
+<!-- endif(dev) -->

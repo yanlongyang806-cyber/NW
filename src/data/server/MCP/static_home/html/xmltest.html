@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>XMLRPC Test</title>
+
+<script type="text/javascript">
+
+//I hate IE.
+if (typeof(Function.prototype.name) == "undefined") {
+    //Function.prototype.name = function() {
+    //    var M= this.toString().match(/function\s+([\w\$]+)\s*\(/) || '';
+    //    return M? M[1]: '';
+    //}
+    //I like this implementation better:
+    Function.prototype.name = "IE is a bag of shit.";
+}
+</script>
+<script type="text/javascript" src="/static/js/mimic-xmlrpc-debug.js"></script> 
+
+</head>
+
+<body>
+<h1>This is another test.</h1>
+
+
+
+<div id="content">
+</div>
+
+</body>
+
+<script language="javascript">
+/*
+//some test parameters for other test functions (not used)
+thing = new Object();
+thing["f"] = 123.456;
+thing["aint"] = [1,2,3,4,5];
+
+thing2 = new Object();
+thing2["f"] = 234.4;
+
+thing3 = new Object();
+thing3["f"] = 333.333;
+
+params = new Object();
+params["ptrs"] = [ thing, thing2, thing3 ];
+
+//The actual request.
+xmlrpc("/xmlrpc", "TT_SearchTickets", [ 1, sd ], function(ret) {
+    alert("loaded, got " + ret);
+}, function(err) {
+    alert("error occurred: " + err);
+}, function() {
+    alert("finished");
+});
+
+alert("loading");
+
+*/
+
+
+sd = new Object();
+sd['Any'] = ' ';
+sd['Adminsearch'] = 1;
+sd['Limit'] = 1;
+
+var request = new XmlRpcRequest("/xmlrpc", "TT_GetUserGroups");
+//request.addParam(1);
+//request.addParam(sd);
+
+var response = request.send();
+var result = response.parseXML();
+alert(response.xmlData);
+if(response.isFault() != true)
+{
+	var swap = document.getElementById("content");
+	swap.innerHTML = result;
+}
+else
+{
+	alert(result['faultString']);
+}
+
+</script>
+</html>

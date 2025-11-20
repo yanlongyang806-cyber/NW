@@ -1,0 +1,71 @@
+<!-- if(dev) -->
+<button class="close-button" data-url-silent="closemodal"></button>
+
+<div class="modal-confirm modal-withdraw">
+	<h3>Withdraw</h3>
+
+	<div class="withdraw-balance">
+		<h4>Available Balance</h4>
+		<ul>
+			<li><img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span data-path=".exchangeaccountdata.readytoclaimescrow.$commify()">000,000</span></li>
+			<li><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path=".exchangeaccountdata.readytoclaimmtc.$commify()">000</span></li>
+		</ul>
+	</div>
+	<div class="withdraw-amount">
+		<h4>Withdraw</h4>
+		<label class="radio checked">
+			<span class="input-img"></span> <input type="radio" name="withdraw" value="all" onclick="client.withdrawOnChange()" checked> Withdraw All
+		</label>
+		<label class="radio">
+			<span class="input-img"></span> <input type="radio" name="withdraw" value="some" onclick="client.withdrawOnChange()"> Withdraw Some
+		</label>
+
+		<div class="input-field text currency withdrawInput disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="">
+			<input maxlength="9" type="text" data-set-value=".exchangeaccountdata.readytoclaimescrow" name="withdrawTC" disabled onKeyUp="client.withdrawOnInput()"/>
+		</div>
+		<div class="input-field text currency withdrawInput disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<img class="currency-img" src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="">
+			<input maxlength="9" type="text" data-set-value=".exchangeaccountdata.readytoclaimmtc" name="withdrawMTC" disabled onKeyUp="client.withdrawOnInput()"/>
+		</div>
+
+	</div>
+
+	<div class="withdraw-remaining">
+
+		<h4>Remaining Balance</h4>
+
+		<p class="attention" id="withdrawAllAttention">There will be no remaining balance after withdrawing this amount</p>
+
+		<!-- if "Withdraw Some" is clicked -->
+		<ul id="withdrawSomeAttention" class="hidden">
+			<li><img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span id="remainTC">0</span></li>
+			<li><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span id="remainMTC">0</span></li>
+		</ul>
+
+		<p class="alert-red">You will move this money from your game account to your character <span data-path="loginInfo.loginentity.name"></span>'s individual account. If you delete the character <span data-path="loginInfo.loginentity.name"></span>, the moved money will also be deleted.</p>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal" onclick="client.withdraw()">OK</button>
+
+	</div>
+
+</div>
+<!-- endif(dev) -->

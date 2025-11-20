@@ -1,0 +1,833 @@
+'use strict';
+
+var cutils = {};
+if(typeof deepExtend === 'undefined')
+	cutils = require('cryptic/cutils');
+else
+	cutils.deepExtend = deepExtend;
+
+// ----------------------------------------------------------------------------
+//
+// ----------------------------------------------------------------------------
+
+function Layout(heightOrLayoutObj, width, editMode)
+{
+	this.name = '';
+	this.id = '';
+	this.width = 0;
+	this.height = 0;
+	this.tags = '';
+	this.tiles = [];
+	this.encounters = {};
+	this.locations = {};
+	this.rooms = {};
+	this.roomCount = 0;
+	this.showAll = false;
+	this.showColors = false;
+	this.editMode = editMode;
+
+	if(typeof heightOrLayoutObj === 'number')
+	{
+		this.width = width;
+		this.height = heightOrLayoutObj;
+
+		for(var h = 0; h < this.height; h++)
+		{
+			this.tiles[h] = [];
+			for(var w = 0;w < this.width; w++)
+			{
+				this.tiles[h][w] = { type: '-', colors: [] };
+			}
+		}
+	}
+	else
+	{
+		this.importMap(heightOrLayoutObj);
+	}
+}
+
+Layout.prototype.importMap = function(layoutObj)
+{
+	cutils.deepExtend(this, layoutObj);
+	this.tiles = [];
+
+	var rows = typeof layoutObj.tiles === 'string' ? layoutObj.tiles.split(/[\r\n]+/) : [].concat(layoutObj.tiles);
+
+	var maxCols = 0;
+	for(var r = 0; r < rows.length; r++)
+	{
+		rows[r] = rows[r].split(/\s+/);
+		maxCols = rows[r].length > maxCols ? rows[r].length : maxCols;
+	}
+	this.height = rows.length;
+	this.width = maxCols;
+
+	for(r = 0; r < rows.length; r++)
+	{
+		this.tiles[r] = [];
+		for(var c = 0; c < rows[r].length; c++)
+		{
+			switch(rows[r][c].charAt(0))
+			{
+				case 'R':
+				case 'H':
+					this.fromSelectionFillRect(makeTileSelectionBox(r, c), rows[r][c].charAt(0));
+					break;
+				default:
+					this.tiles[r][c] = { type: '-', colors: [] };
+					break;
+			}
+
+			for(var i = 1; i < rows[r][c].length; i++)
+			{
+				if(rows[r][c][i] >= 'a' && rows[r][c][i] <= 'i')
+				{
+					this.tiles[r][c].colors.push(rows[r][c][i]);
+				}
+			}
+		}
+	}
+
+	this.calculateRooms();
+}
+
+Layout.prototype.exportMap = function()
+{
+	this.calculateRooms();
+
+	var m = cutils.deepExtend({}, this);
+
+	var rows = [];
+	for(var r = 0; r < this.tiles.length; r++)
+	{
+		var cols = [];
+		for(var c = 0; c < this.tiles[r].length; c++)
+		{
+			var s = this.tiles[r][c].type ? this.tiles[r][c].type : '-';
+			for(var i = 0; i < this.tiles[r][c].colors.length; i++)
+			{
+				if(this.tiles[r][c].colors[i] >= 'a' && this.tiles[r][c].colors[i] <= 'z')
+					s += this.tiles[r][c].colors[i];
+			}
+			cols.push(s);
+		}
+		rows.push(cols.join(' '));
+	}
+
+	m.tiles = rows;
+
+	for(var id in m.encounters)
+		delete m.encounters[id].complete;
+
+
+	return m;
+}
+
+Layout.prototype.getTileClass = function(r, c)
+{
+	var ret = '';
+	switch(this.tiles[r][c].type)
+	{
+		case 'H':
+			ret = 'hall';
+			break;
+
+		case 'R':
+			ret = 'room';
+			break;
+	}
+
+	return ret;
+}
+
+// Assign walls, etc.
+Layout.prototype.generateHTML = function(questState, rowCol)
+{
+	var str = [];
+	var roomsVisible = this.roomsVisible(questState);
+
+	for(var r = 0; r < this.height; r++)
+	{
+		for(var c = 0; c < this.width; c++)
+		{
+			if(this.showAll || this.tileVisible(r, c, roomsVisible))
+			{
+				if(this.editMode || rowCol)
+				{
+					str.push('<div data-row="' + r + '" data-col="' + c +'"');
+					str.push(' class="tile');
+					str.push(' ' + this.getTileClass(r, c));
+				}
+				else
+				{
+					str.push('<div');
+					str.push(' class="tile');
+					str.push(' ' + this.getTileClass(r, c));
+				}
+
+				var n = this.lookNorth(r, c);
+				var s = this.lookSouth(r, c);
+				var w = this.lookWest(r, c);
+				var e = this.lookEast(r, c);
+
+				var nw = this.lookNorthWest(r, c);
+				var ne = this.lookNorthEast(r, c);
+				var sw = this.lookSouthWest(r, c);
+				var se = this.lookSouthEast(r, c);
+
+				if(!n)
+				{
+					str.push(' wall-n');
+				}
+				if(!e)
+				{
+					str.push(' wall-e');
+				}
+				if(!s)
+				{
+					str.push(' wall-s');
+				}
+				if(!w)
+				{
+					str.push(' wall-w');
+				}
+
+				if(this.tiles[r][c].type === 'R')
+				{
+					if(n === 'H')
+					{
+						str.push(' open-n');
+					}
+					if(e === 'H')
+					{
+						str.push(' open-e');
+					}
+					if(s === 'H')
+					{
+						str.push(' open-s');
+					}
+					if(w === 'H')
+					{
+						str.push(' open-w');
+					}
+				}
+
+				str.push('">');
+
+				// HALLWAYS ------------------------
+				if(this.tiles[r][c].type === 'R')
+				{
+
+					if(n === 'H')
+					{
+						str.push('<div class="overlay open-n"></div>');
+					}
+					if(e === 'H')
+					{
+						str.push('<div class="overlay open-e"></div>');
+					}
+					if(s === 'H')
+					{
+						str.push('<div class="overlay open-s"></div>');
+					}
+					if(w === 'H')
+					{
+						str.push('<div class="overlay open-w"></div>');
+					}
+
+					if(n && n !== 'H' && e && e !== 'H' && (!ne || ne === 'H'))
+					{
+						str.push('<div class="overlay corner corner-ne"></div>');
+					}
+
+					if(n && n !== 'H' && w && w !== 'H' && (!nw || nw === 'H'))
+					{
+						str.push('<div class="overlay corner corner-nw"></div>');
+					}
+
+					if(s && s !== 'H' && w && w !== 'H' && (!sw || sw === 'H'))
+					{
+						str.push('<div class="overlay corner corner-sw"></div>');
+					}
+
+					if(s && s !== 'H' && e && e !== 'H' && (!se || se === 'H'))
+					{
+						str.push('<div class="overlay corner corner-se"></div>');
+					}
+
+					// Encounters
+					var enc = this.getEncounter(r, c, questState);
+					if(enc)
+					{
+						if(enc.start)
+						{
+							str.push('<div class="overlay button exit" data-url-silent="/adventures/leaveconfirm" data-tt-stencil="content-tt-sca-leave"></div>');
+						}
+						else if(enc.exit)
+						{
+							str.push('<div class="overlay button stairs-down"></div>');
+						}
+						else
+						{
+							var encClass = enc.end ? 'boss' : 'encounter';
+
+							str.push('<div class="overlay button ' + encClass + ' ' + (enc.complete ? ' complete"' : '"'));
+
+							if(this.editMode)
+							{
+								str.push(' data-encounter-id="' + enc.id
+									+ '" data-encounter-tags="' + (enc.tags || '')
+									+ '" data-encounter-opens="' + (enc.alsoOpens || '')
+									+ '" data-tt="Tags: ' + (enc.tags || '(none)')
+									+ '&lt;br&gt;'
+									+ 'Opens: ' + (enc.alsoOpens || '(none)')
+									+ '"></div>');
+							}
+							else
+							{
+								str.push(' data-encounter-id="' + enc.id + '" data-tt-stencil="content-tt-sca-encounter" data-tt-path="gatewaygamedata.quest.encs[' + enc.id + ']"></div>');
+							}
+						}
+					}
+				}
+
+				// Colors
+				if(this.showColors)
+				{
+					for(var i = 0; i < this.tiles[r][c].colors.length; i++)
+					{
+						str.push(this.tiles[r][c].colors[i] + ' ');
+					}
+				}
+			}
+			else
+			{
+				if(this.editMode || rowCol)
+				{
+					str.push('<div data-row="' + r + '" data-col="' + c +'"');
+					str.push(' class="tile">');
+				}
+				else
+				{
+					str.push('<div class="tile">');
+				}
+			}
+
+			str.push('</div>');
+		}
+		str.push('<div class="clear"></div>');
+	}
+
+	return str.join('');
+}
+
+Layout.prototype.generateEncountersHTML = function(questState)
+{
+	var str = [];
+
+	str.push('<ul>');
+	var keys = Object.keys(this.rooms).sort();
+	for(var i = 0; i < keys.length; i++)
+	{
+		var key = keys[i];
+		str.push('<li>Room '+key+'<br>');
+		str.push('Requires:');
+		str.push('<ul>');
+		for(var j = 0; j < this.rooms[key].requires.length; j++)
+		{
+			var e = questState ? questState.encounters[this.rooms[key].requires[j]] : this.encounters[this.rooms[key].requires[j]];
+			str.push('<li>');
+			str.push('r'+e.row+'c'+e.col+':'+e.color);
+			str.push('</li>');
+		}
+		str.push('</ul>');
+		str.push('Opens:');
+		str.push('<ul>');
+		for(var id in this.rooms[key].opens)
+		{
+			str.push('<li>')
+			str.push(id);
+			str.push('</li>')
+		}
+		str.push('</ul>');
+		str.push('</li>');
+	}
+	str.push('</ul>');
+
+	return str.join('');
+}
+
+Layout.prototype.tileVisible = function(r, c, rooms)
+{
+	var t = this.tiles[r][c];
+	for(var i = 0; i < t.colors.length; i++)
+	{
+		if(t.colors[i] in rooms)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Layout.prototype.roomsVisible = function(questState)
+{
+	var visible = {};
+	var color;
+	var room;
+
+	for(var id in this.rooms)
+	{
+		room = this.rooms[id];
+
+		if(room.showAlways)
+		{
+			visible[id] = true;
+		}
+
+		// If this room has requirements (encounters which must be complete)
+		// check to see that they are all complete. If the room is complete,
+		// then open up all the connected rooms.
+		if(room.requires.length > 0)
+		{
+			var bComplete = true;
+
+			for(var i = 0; bComplete && i < room.requires.length; i++)
+			{
+				var e = questState ? questState.encounters[room.requires[i]] : this.encounters[room.requires[i]];
+				bComplete = bComplete && (e.start || e.complete);
+			}
+
+			if(bComplete)
+			{
+				visible[id] = true;
+				for(color in room.opens)
+				{
+					visible[color] = true;
+				}
+			}
+		}
+	}
+
+	// Open up rooms connected to visible rooms that have no requirements.
+	var foundOne;
+	do
+	{
+		foundOne = false;
+		for(id in this.rooms)
+		{
+			room = this.rooms[id];
+			if(visible[id] && room.requires.length === 0)
+			{
+				for(color in room.opens)
+				{
+					if(!visible[color])
+					{
+						visible[color] = true;
+						foundOne = true;
+					}
+				}
+			}
+		}
+		// This loop should never be infinite, because it stops once there are
+		// no new rooms to make visible.
+	} while(foundOne);
+
+	return visible;
+}
+
+// ----------------------------------------------------------------------------
+// Room calculation
+// ----------------------------------------------------------------------------
+
+var s_fill = 0;
+Layout.prototype.calculateRooms = function()
+{
+	var color;
+	var room;
+
+	this.rooms = {};
+	s_fill = 0;
+
+	// Clear out all of the auto-calculated rooms. Auto-calced rooms always
+	// use numeric colors.
+	for(r = 0; r < this.height; r++)
+	{
+		for(c = 0; c < this.width; c++)
+		{
+			this.tiles[r][c].colors = this.tiles[r][c].colors.filter(function(val, idx, a) {
+				return !(val >= '0' && val <= '9');
+			});
+		}
+	}
+
+	// Color in the rooms and hallways.
+	this.colorRoomsAndHallways();
+
+	// Doors that are right next to openings count as tiny little rooms of
+	// their own. Fill them in, and remember what room they came from.
+	this.colorDoorEncounters();
+
+	// Loop over all the encounters and assign them to the room where they
+	// live.
+	for(var id in this.encounters)
+	{
+		color = this.encounters[id].color = this.tiles[this.encounters[id].row][this.encounters[id].col].colors[0];
+
+		room = this.rooms[color] = this.rooms[color] || { requires: [], opens: {} };
+
+		room.requires.push(id);
+		if(this.encounters[id].start)
+		{
+			room.showAlways = true;
+		}
+		if(this.encounters[id].alsoOpens)
+		{
+			var a = this.encounters[id].alsoOpens.split(/\s/);
+			for(var i = 0; i < a.length; i++)
+			{
+				room.opens[a[i]] = true;
+			}
+		}
+	}
+
+	// Color in adjacent cells so that you can see a little bit into
+	// hallways and rooms. Also, this is used below to make an adjacency graph.
+	this.colorAdjacents();
+
+	// Loop over the map and look to see which colors overlap
+	// If two colors share a tile, then they are adjacent.
+	// All the rooms that are adjacent to a "complete" room will be made
+	// visible.
+	for(var r = 0; r < this.height; r++)
+	{
+		for(var c = 0; c < this.width; c++)
+		{
+			var adj = this.tiles[r][c].adj;
+			if(adj)
+			{
+				color = this.tiles[r][c].colors[0];
+				room = this.rooms[color] = this.rooms[color] || { requires: [], opens: {} };
+				for(var k = 0; k < adj.length; k++)
+				{
+					room.opens[adj[k]] = true;
+				}
+			}
+		}
+	}
+
+	this.roomCount = Object.keys(this.rooms).length;
+}
+
+
+Layout.prototype.colorDoorEncounters = function ()
+{
+	// Doors that are right next to openings count as tiny little rooms of
+	// their own. Fill them in, and remember what room they came from.
+
+	for(var id in this.encounters)
+	{
+		var r = this.encounters[id].row;
+		var c = this.encounters[id].col;
+
+		var roomColor = this.tiles[r][c].colors[0];
+
+		var n = this.lookNorth(r, c);
+		var s = this.lookSouth(r, c);
+		var e = this.lookEast(r, c);
+		var w = this.lookWest(r, c);
+
+		if(n === 'H' || s === 'H' || e === 'H' || w === 'H')
+		{
+			this.tiles[r][c].doorEncounter = this.tiles[r][c].colors[0];
+			this.tiles[r][c].colors[0] = ''+s_fill;
+			s_fill++;
+		}
+	}
+}
+
+var s_types = "RH";
+Layout.prototype.colorRoomsAndHallways = function()
+{
+	var r;
+	var c;
+
+	// Fill in all the rooms and hallways with distinct colors
+	for(r = 0; r < this.height; r++)
+	{
+		for(c = 0; c < this.width; c++)
+		{
+			if(s_types.indexOf(this.tiles[r][c].type) >= 0)
+			{
+				if(this.tiles[r][c].colors.length === 0)
+				{
+					this.floodFill(r, c, s_fill, this.tiles[r][c].type);
+					s_fill++;
+				}
+			}
+		}
+	}
+}
+
+Layout.prototype.floodFill = function(r, c, fill, color)
+{
+	if(r < 0 || c < 0 || r >= this.height || c >= this.width)
+		return;
+
+	var t = this.tiles[r][c];
+	if(t.colors.length === 0)
+	{
+		if(color.indexOf(t.type) >= 0
+			&& t.colors.length === 0)
+		{
+			t.colors.push(''+fill);
+
+			this.floodFill(r+1, c, fill, color);
+			this.floodFill(r-1, c, fill, color);
+			this.floodFill(r, c-1, fill, color);
+			this.floodFill(r, c+1, fill, color);
+		}
+	}
+}
+
+Layout.prototype.colorAdjacents = function()
+{
+	var r;
+	var c;
+
+	// Bleed adjacent colors one cell, so each color fill overlaps with
+	// any adjacent ones. This has to be done in a temporary variable so
+	// colors don't bleed too far.
+	for(r = 0; r < this.height; r++)
+	{
+		for(c = 0; c < this.width; c++)
+		{
+			if(s_types.indexOf(this.tiles[r][c].type) >= 0)
+			{
+				if(this.tiles[r][c].colors.length > 0)
+				{
+					this.tiles[r][c].adj = [].concat(
+						this.getColors(r+1, c),
+						this.getColors(r-1, c),
+						this.getColors(r, c+1),
+						this.getColors(r, c-1));
+				}
+			}
+		}
+	}
+
+	// Apply the adjacent bleed to the final color list, keeping only unique
+	// colors.
+	for(r = 0; r < this.height; r++)
+	{
+		for(c = 0; c < this.width; c++)
+		{
+			var t = this.tiles[r][c];
+			if(t.adj && t.adj.length > 0)
+			{
+				t.adj = t.adj.filter(function(a, b, c) {
+					return !(a >= 'a' && a <= 'i') // Don't bleed user colors
+						&& c.indexOf(a) === b; // Get rid of duplicates
+				});
+
+				t.colors = t.colors.concat(t.adj);
+
+				// This crazy little check is so that a bit of hallway
+				// shows outside of a room where there is an encounter
+				// "locking" the opening. Without it, the hallway isn't
+				// considered visible.
+				if(t.type == 'H')
+				{
+					// doorEncounter is the original color of the room that
+					// the door is sitting in.
+					var x = this.doorEncounter(r-1, c)
+						|| this.doorEncounter(r+1, c)
+						|| this.doorEncounter(r, c-1)
+						|| this.doorEncounter(r, c+1);
+
+					if(x)
+						t.colors.push(x);
+				}
+
+				// Only keep unique colors
+				t.colors = t.colors.filter(function(a, b, c) {
+					return c.indexOf(a) === b;
+				});
+			}
+		}
+	}
+}
+
+Layout.prototype.getColors = function(r, c)
+{
+	if(r < 0 || c < 0 || r >= this.height || c >= this.width)
+		return [];
+
+	return this.tiles[r][c].colors;
+}
+
+Layout.prototype.doorEncounter = function(r, c)
+{
+	if(r < 0 || c < 0 || r >= this.height || c >= this.width)
+		return undefined;
+
+	return this.tiles[r][c].doorEncounter;
+}
+
+// ----------------------------------------------------------------------------
+// Map modification
+// ----------------------------------------------------------------------------
+
+function getSelectionBox()
+{
+	return undefined;
+}
+
+Layout.prototype.fromSelectionFillRect = function(sel, fill)
+{
+	var box = sel || getSelectionBox();
+	if(box.top < 0) return;
+
+	for(var r = box.top; r <= box.bottom; r++)
+	{
+		for(var c = box.left; c <= box.right; c++)
+		{
+			this.tiles[r][c] = { type: fill ? fill : '-', colors: [] };
+			if(!fill)
+			{
+				this.removeEncounter(r, c);
+			}
+		}
+	}
+}
+
+Layout.prototype.fromSelectionFillColor = function(fill, sel)
+{
+	var box = sel || getSelectionBox();
+	if(box.top < 0) return;
+
+	for(var r = box.top; r <= box.bottom; r++)
+	{
+		for(var c = box.left; c <= box.right; c++)
+		{
+			if(!fill)
+			{
+				this.tiles[r][c].colors = [];
+			}
+			else if(this.tiles[r][c].colors.indexOf(fill) < 0)
+			{
+				this.tiles[r][c].colors.push(fill)
+			}
+		}
+	}
+}
+
+function encID(r, c)
+{
+	return 'r'+r+'c'+c;
+}
+
+Layout.prototype.getEncounter = function(r, c, questState)
+{
+	var id = encID(r, c);
+	return questState? questState.encounters[id] : this.encounters[id];
+}
+
+Layout.prototype.addEncounter = function(r, c, tags, end)
+{
+	var id = encID(r, c);
+	var e = this.encounters[id];
+	if(!e)
+	{
+		e = { id: id, row: r, col: c, tags: '', end: end };
+		this.encounters[id] = e;
+	}
+
+	e.tags = tags;
+
+	this.calculateRooms();
+
+	return e;
+}
+
+Layout.prototype.removeEncounter = function(r, c)
+{
+	delete this.encounters[encID(r, c)];
+	this.calculateRooms();
+}
+
+Layout.prototype.addStart = function(r, c, tags)
+{
+	var e = this.addEncounter(r, c, tags);
+	e.start = true;
+	this.calculateRooms();
+}
+
+Layout.prototype.addExit = function(r, c, tags)
+{
+	var e = this.addEncounter(r, c, tags);
+	e.exit = true;
+	this.calculateRooms();
+}
+
+Layout.prototype.toggleEncounter = function(r, c)
+{
+	var e = this.getEncounter(r, c);
+	if(e && !e.start)
+	{
+		e.complete = !e.complete;
+	}
+}
+
+// ----------------------------------------------------------------------------
+// Look around
+// ----------------------------------------------------------------------------
+
+Layout.prototype.lookDirection = function(r, c, dr, dc)
+{
+	r = r + dr;
+	c = c + dc;
+
+	if(r < 0
+		|| r >= this.height
+		|| c < 0
+		|| c >= this.width
+		|| this.tiles[r][c].type === '-')
+	{
+		return undefined;
+	}
+
+	return this.tiles[r][c].type;
+}
+
+Layout.prototype.lookNorth = function(r, c) { return this.lookDirection(r, c, -1, 0); }
+Layout.prototype.lookNorthWest = function(r, c) { return this.lookDirection(r, c, -1, -1); }
+Layout.prototype.lookNorthEast = function(r, c) { return this.lookDirection(r, c, -1, 1); }
+Layout.prototype.lookSouth = function(r, c) { return this.lookDirection(r, c, 1, 0); }
+Layout.prototype.lookSouthWest = function(r, c) { return this.lookDirection(r, c, 1, -1); }
+Layout.prototype.lookSouthEast = function(r, c) { return this.lookDirection(r, c, 1, 1); }
+Layout.prototype.lookWest = function(r, c) { return this.lookDirection(r, c, 0, -1); }
+Layout.prototype.lookEast = function(r, c) { return this.lookDirection(r, c, 0, 1); }
+
+
+function makeTileSelectionBox(r, c)
+{
+	return {
+		top: r,
+		bottom: r,
+		left: c,
+		right: c,
+	};
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+if(typeof module !== 'undefined' && module.exports)
+	module.exports = Layout;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

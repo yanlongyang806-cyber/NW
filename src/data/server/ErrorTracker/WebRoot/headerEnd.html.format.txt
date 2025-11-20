@@ -1,0 +1,20 @@
+</head>
+<body>
+<center>
+<table id="maintable" width="90%%">
+<tr><td>
+<table width="100%%">
+<tr>
+<td><span class="title">Error Tracker</span></td>
+<td align=right>
+%s
+[<a href="/search">Search</a>]
+[<a href="/viewgeneric">Generic Crashes</a>]
+[<a href="/activedumps">Active Dumps</a>]
+[<a href="/goto">Go To</a>]
+[<a href="/stackinfo">SVN Stack Blaming</a>]
+</td>
+</tr>
+</table>
+<hr size=1>
+

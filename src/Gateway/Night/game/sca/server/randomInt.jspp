@@ -1,0 +1,10 @@
+'use strict';
+
+function randomInt(from, toExclusive)
+{
+	return Math.floor(Math.random() * (toExclusive - from)) + from;
+}
+
+module.exports = randomInt;
+
+// End of File

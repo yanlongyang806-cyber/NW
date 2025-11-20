@@ -1,0 +1,59 @@
+
+#ifndef SM30
+  #define UNSUPPORTED
+#else
+  #ifdef TRANSGAMING
+    #define UNSUPPORTED
+  #endif
+#endif
+
+#ifndef UNSUPPORTED
+float4 error_pixelshader(float4 position_screen : SV_POSITION) : COLOR
+{
+	// polka-dots
+// 	float bit1 = (sin(position_screen.x*0.2) + 1) / 2;
+// 	float bit2 = (cos(position_screen.y*0.2) + 1) / 2;
+// 	float bit = (int)(saturate((bit1 * bit2)) * 2);
+
+	// X
+	float bit1 = fmod(position_screen.x + position_screen.y, 32) * (1/32.f);
+	float bit2 = fmod(10000-position_screen.x + position_screen.y, 32) * (1/32.f);
+	float bit = (int)saturate(max(bit1, bit2) + 0.35);
+	float bit3 = fmod(position_screen.x+4, 32) * (1/32.f);
+	float bit4 = fmod(position_screen.y-6, 32) * (1/32.f);
+	bit = bit * (int)(1.8 - bit3);
+	bit = bit * (int)(1.8 - bit4);
+
+ 	return lerp(float4(0.1, 0.2, 0.2, 1), float4(1, 0.1, 0.1, 1), bit);
+
+}
+
+float4 loading_debug_pixelshader(float4 position_screen : SV_POSITION) : COLOR
+{
+	// L
+	float bit1 = fmod(10000-position_screen.x, 32) * (1/32.f);
+	float bit2 = fmod(position_screen.y, 32) * (1/32.f);
+	float bit = (int)saturate(max(bit1, bit2) + 0.35);
+	float bit3 = fmod(position_screen.x-17, 32) * (1/32.f);
+	float bit4 = fmod(position_screen.y-6, 32) * (1/32.f);
+	bit = bit * (int)(1.8 - bit3);
+	bit = bit * (int)(1.8 - bit4);
+
+ 	return lerp(float4(0.1, 0.2, 0.2, 1), float4(1, 1, 0.1, 1), bit);
+}
+
+#else
+float4 error_pixelshader() : COLOR
+{
+	return float4(0.9, 0.5, 0.5, 1.0);
+}
+float4 loading_debug_pixelshader() : COLOR
+{
+	return float4(0.9, 0.9, 0.5, 1.0);
+}
+#endif
+
+float4 loading_pixelshader() : COLOR
+{
+	return float4(0.0, 0.0, 0.0, 1.0);
+}

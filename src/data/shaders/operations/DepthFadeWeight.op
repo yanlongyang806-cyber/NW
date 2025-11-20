@@ -1,0 +1,31 @@
+OperationDef
+	Name "DepthFadeWeight" // Name of the operation
+	Description "Depth based fade/murky effect weight"
+	Type ADVANCED
+
+	Input
+		Name FadeEnd
+		Description "At what depth fading finishes (can come from a texture!)"
+		Float 1
+		FloatRange 0 10.0
+		Default
+			Floats 2.0
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenDepth
+		Description "Depth Texture for fading"
+		Type Texture_ScreenDepth
+		Texture 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Fade weight"
+		Float 1
+	EndOutput
+
+EndOperationDef
+

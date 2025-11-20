@@ -1,0 +1,31 @@
+OperationDef
+	Name "AlphaPlaneFade" // Name of the operation
+	Description "AlphaPlaneFade"
+	Type ADVANCED
+
+	Input
+		Name FadeEnd
+		Description "Fade distance from fade plane"
+		Float 1
+		Default
+			Type Value
+			Floats 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name Atten
+		Description "Attenuation"
+		Float 4
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Alpha Fade Weight"
+		Float 1
+		AlphaFrom Atten
+	EndOutput
+
+EndOperationDef
+

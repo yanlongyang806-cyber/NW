@@ -1,0 +1,364 @@
+
+<script type="text/javascript">
+	client.auctionInit();
+</script>
+
+<div class="page-content auctionResults" data-update="ent.main.auctionsettings">
+	<div data-if="{ent.main._gotAuctionBundle}" class="page-auction-browse">
+		<div class="tabs-vertical">
+			<span data-path="ent.main.auctionsettings.sorttypes">
+				<div class="tab tabSide tabValue" data-set-data-tabid="tabcontent_{.index}"  data-set-data-tab-value="{.category}">
+					<span class="tab-name">
+						<span data-path=".displayname.str">All</span>
+					</span>
+					<span class="tab-left"></span>
+					<span class="tab-right"></span>
+				</div>
+
+				<div class="tabSideContent hidden" data-set-id="tabcontent_{.index}">
+					<div class="subtabs-vertical" data-path=".subsorttypes">
+						<div class="subtab subtabSide tabValue"  data-set-data-tab-value="{.category}%{.type}">
+							<span class="tab-name">
+								<span data-path=".displayname.str">All Armor</span>
+							</span>
+							<span class="tab-left"></span>
+							<span class="tab-right"></span>
+						</div>
+					</div>
+				</div>
+			</span>
+		</div>
+
+		<div class="search-header with-sidebar">
+
+			<h3 class="mobileOnly page-title">Browse Auctions</h3>
+
+			<div class="auction-search-row-1">
+
+				<div class="input-field dropdown mobileOnly auction-filter-categories">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<select name="Categories">
+						<option value="" selected>Select a Category</option>
+						<span data-path="ent.main.auctionsettings.sorttypes">
+							<option  data-set-value=".category"><span data-path=".displayname.str">Test Category</span></option>
+							<span data-path=".subsorttypes">
+								<option data-set-value="{.category}%{.type}">
+									- <span data-path=".displayname.str">Test Subcategory</span>
+								</option>
+							</span>
+						</span>
+					</select>
+				</div>
+
+				<div class="input-field search auction-filter-search-field">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<input type="text" name="search" placeholder="Search for Name" maxlength="50" />
+				</div>
+
+				<span class="desktopOnly">
+
+					<div class="input-field button auction-filter-search-button">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<input type="submit" value="Search" class="auctionSearch" onclick="return client.requestAuctionSearch()" />
+					</div>
+					<div class="input-field button auction-filter-advanced">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button class="showAdvancedSearchButton">Show Advanced Search</button>
+						<button class="hideAdvancedSearchButton">Hide Advanced Search</button>
+					</div>
+				</span>
+				<span class="mobileOnly">
+					<div class="input-field button light with-down-arrow auction-filter-advanced">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button class="showAdvancedSearchButton">Show Advanced Search</button>
+						<button class="hideAdvancedSearchButton">Hide Advanced Search</button>
+					</div>
+				</span>
+
+
+			</div>
+
+			<span class="auctionAdvancedOptions">
+				<span class="auction-filter-advanced-options">
+
+					<div class="auction-search-row-2">
+
+						<div class="auction-filter-level">
+							<label>Level:</label>
+							<div class="input-field text">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<input type="text" name="minlevel" maxlength="2" />
+							</div>
+							<label>-</label>
+							<div class="input-field text">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<input type="text" name="maxlevel" maxlength="2" />
+							</div>
+						</div>
+
+						<div class="input-field dropdown auction-filter-quality">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<select name="quality">
+								<option value="-1">Any Quality</option>
+								<option class="Bronze" value="1">Common</option>
+								<option class="Silver" value="2">Uncommon</option>
+								<option class="Gold" value="3">Rare</option>
+								<option class="Special" value="4">Very Rare</option>
+							</select>
+						</div>
+
+						<div class="input-field dropdown auction-filter-class">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<select name="class">
+								<option value="">Any Class</option>
+								<option value="Player_Trickster">Trickster Rogue</option>
+								<option value="Player_Devoted">Devoted Cleric</option>
+								<option value="Player_Controller">Control Wizard</option>
+								<option value="Player_Greatweapon">Great Weapon Fighter</option>
+								<option value="Player_Guardian">Guardian Fighter</option>
+							</select>
+						</div>
+
+						<div class="auction-filter-usable">
+							<label class="checkbox" name="filter_usable">
+								<span class="input-img"></span>
+								<input name="filter_usable" type="checkbox" value="desc">Usable by me
+							</label>
+						</div>
+
+					</div>
+					<div class="auction-search-row-3 hidden">
+						<div class="auction-filter-enchant">
+							<label>Enchantment Type:</label>
+							<div class="input-field dropdown auction-filter-enchant-type">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<select name="EnchantmentType">
+									<option value="">Any Type</option>
+									<option value="ItemOffense">Offense Slot</option>
+									<option value="ItemDefense">Defense Slot</option>
+									<option value="ItemUtility">Utility Slot</option>
+									<option value="WeaponEnhancement">Weapon Enchantment Slot</option>
+									<option value="ArmorEnhancement">Armor Enchantment Slot</option>
+								</select>
+							</div>
+							<div class="input-field dropdown auction-filter-enchant-slots">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<select name="EnchantmentSlots">
+									<option value="0">Any number of slots</option>
+									<option value="1">1 Enchantment Slot</option>
+									<option value="2">2 Enchantment Slots</option>
+									<option value="3">3 Enchantment Slots</option>
+								</select>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="auction-search-row-4 hidden">
+						<div class="auction-filter-stats">
+							<label>Stats:</label>
+
+							<div class="auction-search-stats-field">
+								<div class="input-field dropdown">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<select name="stat1">
+										<option value="">None</option>
+										<option value="AC">Armor Class</option>
+										<option value="HitPointsMax">Maximum Hit Points</option>
+										<option value="Stat_Power">Power</option>
+										<option value="Stat_Crit">Critical Strike</option>
+										<option value="Stat_ArmorPen">Armor Penetration</option>
+										<option value="Stat_Recovery">Recovery</option>
+										<option value="Stat_Defense">Defense</option>
+										<option value="Stat_Deflect">Deflect</option>
+										<option value="Stat_Regen">Regeneration</option>
+										<option value="Stat_HealthSteal">Life Steal</option>
+										<option value="Stat_Movement">Movement</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="auction-search-stats-field">
+								<div class="input-field dropdown">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<select name="stat2">
+										<option value="">None</option>
+										<option value="AC">Armor Class</option>
+										<option value="HitPointsMax">Maximum Hit Points</option>
+										<option value="Stat_Power">Power</option>
+										<option value="Stat_Crit">Critical Strike</option>
+										<option value="Stat_ArmorPen">Armor Penetration</option>
+										<option value="Stat_Recovery">Recovery</option>
+										<option value="Stat_Defense">Defense</option>
+										<option value="Stat_Deflect">Deflect</option>
+										<option value="Stat_Regen">Regeneration</option>
+										<option value="Stat_HealthSteal">Life Steal</option>
+										<option value="Stat_Movement">Movement</option>
+									</select>
+								</div>
+							</div>
+
+							<div class="auction-search-stats-field">
+								<div class="input-field dropdown">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<select name="stat3">
+										<option value="">None</option>
+										<option value="AC">Armor Class</option>
+										<option value="HitPointsMax">Maximum Hit Points</option>
+										<option value="Stat_Power">Power</option>
+										<option value="Stat_Crit">Critical Strike</option>
+										<option value="Stat_ArmorPen">Armor Penetration</option>
+										<option value="Stat_Recovery">Recovery</option>
+										<option value="Stat_Defense">Defense</option>
+										<option value="Stat_Deflect">Deflect</option>
+										<option value="Stat_Regen">Regeneration</option>
+										<option value="Stat_HealthSteal">Life Steal</option>
+										<option value="Stat_Movement">Movement</option>
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="auction-search-row-5 hidden">
+						<div class="auction-filter-enchant">
+							<label>Enchantment Type:</label>
+							<div class="input-field dropdown auction-filter-enchant-type">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<select name="EnchantmentType">
+									<option value="">Any Type</option>
+									<option value="PetOffense">Companion Offense Slot</option>
+									<option value="PetDefense">Companion Defense Slot</option>
+								</select>
+							</div>
+						</div>
+					</div>
+				</span>
+			</span>
+
+			<span class="mobileOnly">
+				<div class="input-field button auction-filter-search-button">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<input type="submit" value="Search" class="auctionSearch" onclick="return client.requestAuctionSearch()" />
+				</div>
+			</span>
+		</div>
+
+		<hr class="mobileOnly" />
+
+		<div class="page-body with-sidebar">
+			<div id="auctionLotList" data-update="auctionList.search">
+				<table id="gatewayTableAuctionBrowse">
+					<tr>
+						<td>
+
+						</td>
+					</tr>
+				</table>
+				<script data-if="auctionList[search].list.auctionlots.$length() ge 1">
+					client.auctionSearchDataTable();
+					client.startCountdowns();
+				</script>
+
+				<h3 class="center-message" data-if="auctionList[search].list.auctionlots.$length() eq 0">No items found</h3>
+
+				<h3 class="center-message" data-if="!{auctionList[search]}">Choose at least one search criteria (category, quality or name) and press 'Search'</h3>
+			</div>
+		</div>
+		<script>
+			client.auctionBrowsePageInit();
+		</script>
+	</div>
+
+
+	<div data-if="!{ent.main._gotAuctionBundle}" class="page-auction-browse">
+		<div class="page-loading">
+			<h1>Loading...</h1>
+			<div class="loading-image"></div>
+		</div>
+	</div>
+
+
+</div>
+<div class="box-footer-block footer-auction-browse">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<div class="current-money">
+							<span class="currency-icon astral"></span> <span data-path="ent.main.currencies.diamonds.$commify()">99,999</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+						<div class="input-field text currency disabled auctionBidInput">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<span class="currency-icon astral"></span>
+							<input type="text" maxlength="9" name="bidAmount" disabled="disabled" />
+						</div>
+						<div class="input-field button disabled auctionBidButton">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button onclick="client.auctionSearchPlaceBid()">Place a Bid</button>
+						</div>
+						<div class="input-field button disabled auctionBuyoutButton">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button onclick="client.auctionSearchBuyout()">Buy Out</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+
+<div id="item-details" class="auctionDetails"></div>

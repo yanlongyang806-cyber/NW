@@ -1,0 +1,22 @@
+Category Entity
+{
+	Atrribacrrualset
+	mission_common.h
+	PlayerVisitedMap
+	Power
+}
+
+Category TextParser
+{
+	textparserutils.c
+	textparsercallbacks.c
+	objpath.c
+}
+
+Category ResourceAndRefSystem
+{
+	referencesystem.c
+	referencesystemopt.c
+	resourcesystemio.c
+	resourceinfo.c
+}

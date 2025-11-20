@@ -1,0 +1,31 @@
+OperationDef
+	Name "UniqueOffset" // Name of the operation
+	Description "Unique, 2-channel, per-object offset in the range 0-64"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates to be offset"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name Value
+		Description "Internal value"
+		Float 2
+		Type UniqueOffset
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Texcoords offset by the range 0-64"
+		Float 2
+	EndOutput
+
+EndOperationDef
+

@@ -1,0 +1,11 @@
+// OutlineEdgeDetect.phl
+{
+#define HAS_OUTLINE
+
+	float4 texcolor = calculate_edgeZ(%TexCoord%.xy, TexSampler%ScreenDepth%, samTexSampler%ScreenDepth%,
+		float4(inv_screen_params.x, 0.0, 0.0, inv_screen_params.y),
+		float4( -5.0, 1.0 / 5, -10.0, 1.0 / 20 ));
+		
+	%Result%.a = texcolor.a;
+	%Result%.rgb = %Outlinecolor%.rgb;
+}

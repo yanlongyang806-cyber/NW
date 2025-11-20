@@ -1,0 +1,64 @@
+'use strict';
+
+var fs = require('fs');
+var path = require('path');
+
+
+var s_fdLocks = {};
+function lockDir(dirname)
+{
+	if(s_fdLocks[dirname])
+	{
+		// Directory is already locked.
+		return true;
+	}
+
+	var sem = path.resolve(path.join(dirname, 'lock.lock'));
+	try
+	{
+		s_fdLocks[dirname] = fs.openSync(sem, 'wx+');
+	}
+	catch(e)
+	{
+		// The file already exists.
+		// Try to delete it. If we can, and we can create it exclusive,
+		//   then the lock was stale and now we own the lock.
+		try
+		{
+			fs.unlinkSync(sem);
+			s_fdLocks[dirname] = fs.openSync(sem, 'wx+');
+		}
+		catch(e)
+		{
+			// One of those two things failed, so someone else must
+			// have the directory locked.
+			// Give up.
+		}
+	}
+
+	return !!s_fdLocks[dirname];
+}
+
+function unlockDir(dirname)
+{
+	if(!s_fdLocks[dirname])
+	{
+		// We didn't lock this directory
+		return false;
+	}
+
+	fs.close(s_fdLocks[dirname]);
+	s_fdLocks[dirname] = undefined;
+
+	return true;
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+module.exports.lockDir = lockDir;
+module.exports.unlockDir = unlockDir;
+
+////////////////////////////////////////////////////////////////////////////
+
+// End of File

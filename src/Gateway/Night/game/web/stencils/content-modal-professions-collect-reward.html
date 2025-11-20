@@ -1,0 +1,33 @@
+<button class="close-button" data-url="back"></button>
+
+<h3>Congratulations</h3>
+<div class="professions-rewards-modal">
+	<div data-path='.rewards.itemrewards'>
+		<div class="icon-block reward big">
+			<div class="icon-slot" data-set-data-tt-item=".hitem.name">
+				<img data-set-src="tex/{.hitem.icon}.png" alt="" />
+				<span data-if=".count ge 2" class="quantity" data-path=".count">5</span>
+			</div>
+			<div class="icon-info">
+				<h4 data-path=".hitem.displaynamemsg.str">Item Name</h4>
+			</div>
+		</div>
+	</div>
+	<div data-path='.rewards.numericrewards'>
+		<div class="icon-block reward small">
+			<div class="icon-slot">
+				<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+				<span data-if=".numericvalue ge 2" class="quantity" data-path=".numericvalue">5</span>
+			</div>
+			<div class="icon-info">
+				<h4 data-path=".hdef.displaynamemsg.str">Item Name</h4>
+			</div>
+		</div>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back" data-set-onclick="client.professionTaskCollectRewards('{uassignmentid}')">Collect Result</button>
+	</div>
+</div>

@@ -1,0 +1,149 @@
+<div data-path="guild">
+	<div class="page-content">
+		<div class="page-guild-roster">
+			<div class="page-body">
+				<h3 class="page-title">Member Roster <a class="refresh-button desktopOnly" onclick="client.guildRosterRefresh()" data-tt-text="Click to refresh the member roster"></a></h3>
+
+				<div class="mobileOnly mobile-roster-refresh">
+					<div class="input-field button light">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button onclick="client.guildRosterRefresh()">Refresh Roster</button>
+					</div>
+				</div>
+
+				<table id="gatewayTableGuildRoster" data-if=".members.$length() ge 1">
+					<thead>
+						<tr>
+							<th class="roster-name"><span>Name</span></th>
+							<th class="roster-rank"><span>Guild Rank</span></th>
+							<th class="roster-class"><span>Class</span></th>
+							<th>Class Sortable</th>
+							<th class="roster-level"><span>Level</span></th>
+							<th class="roster-location"><span>Location</span></th>
+							<th class="roster-lft"><span>LFG</span></th>
+							<th>LFG Sortable</th>
+							<th class="roster-lastonline"><span>Last Online</span></th>
+							<th>last Online Sortable</th>
+							<th class="roster-comments"><span>Member Comments</span>
+							</th>
+						</tr>
+					</thead>
+					<tbody data-path=".members">
+						<tr>
+							<td class="roster-name">
+
+								<a class="roster-name-link" data-set-data-url="#char({.name.$escapeForString()}{.publicaccountname})/charactersheet"><span data-path=".name">Name</span><span data-path=".publicaccountname">Display</span></a>
+
+							</td>
+							<td class="roster-rank" data-path=".officerrank">Officer</td>
+							<td class="roster-class" data-set-data-tt-text="{.classtype.$map(nw_className)}">
+								<span class="table-tooltip-cell">
+									<span class="table-tooltip-data">
+										<img data-set-src="/tex/Icon_Build_{.classtype}_Tiny">
+									</span>
+								</span>
+							</td>
+							<td data-path=".classtype.$map(nw_classTypeIcons)">eng</td>
+							<td class="roster-level" data-path=".level">2</td>
+							<td class="roster-location" data-set-data-tt-text="{.location}">
+								<span class="table-tooltip-cell">
+									<span class="table-tooltip-data" data-path=".location"></span>
+								</span>
+							</td>
+							<td class="roster-lft"><img data-set-src="/tex/{.lfg.$map(nw_lfg)}"></td>
+							<td data-path=".lfg">X</td>
+
+							<td data-if=".online eq 0" class="roster-lastonline" data-set-data-tt-text="{.logouttime.$ago()}">
+								<span class="table-tooltip-cell">
+									<span class="table-tooltip-data" data-path=".logouttime.$ago()"></span>
+								</span>
+							</td>
+							<td data-if=".online eq 0" data-path=".logouttime.$dateParse()">1234567890</td>
+
+							<td data-if=".online eq 1" class="roster-lastonline">Online</td>
+							<td data-if=".online eq 1" >99999999999</td>
+
+							<td class="roster-comments" data-path=".publiccomment">Oh Hai</td>
+						</tr>
+					</tbody>
+				</table>
+				<div data-if=".members.$length() ge 1" class="mobileOnly">
+					<div class="pagination-loader loading-image"></div><!-- ATTACH PAGINATION TRIGGERS HERE -->
+				</div>
+				<script data-if=".members.$length() ge 1" type="text/javascript">
+					client.guildRosterDataTable();
+				</script>
+
+				<h3 class="center-message" data-if=".members.$length() eq 0">There are no members of this Guild</h3>
+			</div>
+		</div>
+
+	</div>
+
+
+	<!-- NOT FOR LAUNCH
+	<div class="box-footer-block">
+		<div class="box-footer">
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-mid">
+				<div class="box-content">
+					<div class="page-footer">
+						<div class="footer-body">
+
+							<div class="footer-controls-left">
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url-silent="/modal-guild-roster-kick">Kick</button>
+								</div>
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<input type='submit' value='Promote' />
+								</div>
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<input type='submit' value='Demote' />
+								</div>
+							</div>
+							<div class="footer-controls-right">
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url-silent="/modal-guild-roster-invite">Invite</button>
+								</div>
+								<div class="input-field button">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-url-silent="/modal-guild-roster-leave">Leave</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-bot">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="deco-left"></div>
+			<div class="deco-right"></div>
+		</div>
+	</div>
+
+</div>
+
+-->

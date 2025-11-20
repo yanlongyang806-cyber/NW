@@ -1,0 +1,20 @@
+//this file lists names of ExprFuncTAbles which are "important" and should therefore get their own links on the front page of
+//expr function server monitoring. Each one should have both an internal name and an external name separated by a colon, 
+//so for instance Combat_Apply:Power_Requires, because there's an ExprFuncTable in code called Combat_Apply, but designers
+//refer to it as "Power_Requires"
+
+Combat_Apply:Power_Requires
+Combat_Apply:Power_Enhance_Apply
+Combat_Affects:Power_Affects
+Combat_Enhance:Power_Enhance_Attach
+AI_Global:Critter_AI_Requires
+AI_Global:Critter_FSM_Expression
+TriggerCondition:Trigger_Condition
+EncounterPlayer:Interact_Expression
+Encounter:Spawn_Condition
+Interactable:Visible_Expression
+LayerFSM:Layer_FSM_Expression
+OpenMission:Open_Mission_Success_Condition
+MissionDef:Mission_Success_Condition
+MissionDef_Requires:Mission_Requires
+Contact:Contact_Condition

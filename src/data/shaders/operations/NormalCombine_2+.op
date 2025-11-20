@@ -1,0 +1,22 @@
+OperationDef
+	Name "NormalCombine_2+" // Name of the operation
+	DefaultOptionName "NormalCombine_2+"
+	OptionName "2 normals"
+	Category "Combiner"
+	Description "Sums normal maps"
+	Type SIMPLE
+
+	Input: Normal1, "First normal"
+	Input: Normal2, "Second normal"
+
+	Output
+		Name Result
+		Description "Output of summing normals"
+		Float 4
+		AlphaModeAnd 1
+		AlphaFrom Normal1
+		AlphaFrom Normal2
+	EndOutput
+
+EndOperationDef
+

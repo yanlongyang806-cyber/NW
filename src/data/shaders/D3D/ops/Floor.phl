@@ -1,0 +1,4 @@
+{
+	%Result%.xy = floor(%Value%.xy * %FloorValues%.yw) * %FloorValues%.xz;
+	%Result% = float4(%Result%.xy, 0, 0);
+}

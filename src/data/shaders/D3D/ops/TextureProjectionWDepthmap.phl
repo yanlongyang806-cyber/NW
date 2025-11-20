@@ -1,0 +1,16 @@
+//TextureProjectionWDepthmap.phl
+{
+#ifdef NO_NORMALMAP
+	float3 rightVec = cross(view_vs,normal_vs);
+	%Result%.xy = calcUVProjection( rightVec, cross(view_vs,rightVec), view_vs );
+#else
+	%Result%.xy = calcUVProjection( tangent_vs, binormal_vs, view_vs );
+#endif
+	float depthMapValue = sampleTex2D(TexSampler%DepthMap%, %TexCoord%.xy).x;
+	float depthMapValue2 = sampleTex2D(TexSampler%DepthMap%, (%Result%.xy * %Depth%.x * 0.33 + %TexCoord%.xy)).x;
+	float depthMapValue3 = sampleTex2D(TexSampler%DepthMap%, (%Result%.xy * %Depth%.x * 0.66 + %TexCoord%.xy)).x;
+	float depthMapValue4 = sampleTex2D(TexSampler%DepthMap%, (%Result%.xy * %Depth%.x + %TexCoord%.xy)).x;
+	depthMapValue = 1-lerp(depthMapValue,(lerp(depthMapValue2,(lerp(depthMapValue3,depthMapValue4,step(depthMapValue3,0.33))),step(depthMapValue2,0.66))),step(depthMapValue,0.99));
+	%Result%.xy = %Result%.xy * depthMapValue * %Depth%.x + %TexCoord%.xy;
+	%Result%.zw = 0.0;
+}

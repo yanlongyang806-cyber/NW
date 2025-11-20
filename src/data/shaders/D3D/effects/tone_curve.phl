@@ -1,0 +1,152 @@
+#include "ps_inc.hlsl"
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+#ifdef COLOR_CURVE
+	uniform float4 levels_r				: PS_CONSTANT_MATERIAL_PARAM0() ;
+	uniform float4 levels_g				: PS_CONSTANT_MATERIAL_PARAM1() ;
+	uniform float4 levels_b				: PS_CONSTANT_MATERIAL_PARAM2() ;
+	uniform float3 gammas				: PS_CONSTANT_MATERIAL_PARAM3() ;
+	uniform float4 curve_r[4]			: PS_CONSTANT_MATERIAL_PARAM4() ;
+	uniform float4 curve_g[4]			: PS_CONSTANT_MATERIAL_PARAM8() ;
+	uniform float4 curve_b[4]			: PS_CONSTANT_MATERIAL_PARAM12() ;
+#elseifdef INTENSITY_TINT
+	uniform float4 curve_s[4]			: PS_CONSTANT_MATERIAL_PARAM0() ;
+	uniform float4 curve_r[4]			: PS_CONSTANT_MATERIAL_PARAM4() ;
+	uniform float4 curve_g[4]			: PS_CONSTANT_MATERIAL_PARAM8() ;
+	uniform float4 curve_b[4]			: PS_CONSTANT_MATERIAL_PARAM12() ;
+#else
+	uniform float4 levels_i				: PS_CONSTANT_MATERIAL_PARAM0() ;
+	uniform float gamma					: PS_CONSTANT_MATERIAL_PARAM1() ;
+	uniform float4 curve_i[4]			: PS_CONSTANT_MATERIAL_PARAM2() ;
+#endif
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+
+/////////////////////////////////////////////////////////////////////////
+
+float eval_curve(in float intensity, in float4 curve[4])
+{
+	float3 weights, vals;
+
+	// curve[0] -> x0, x1, x2, 0.5 * (x1 + x2)
+	// curve[1] -> 1/(mid-x0), 1/(x3-mid), 1/(x1-x0), 1/(x2-x1)
+	// curve[2] -> 1/(x3-x2), weight_pow, m1, b1
+	// curve[3] -> m2, b2, m3, b3
+
+	if (intensity < curve[0].w)
+		weights.y = saturate((intensity - curve[0].x) * curve[1].x);
+	else
+		weights.y = saturate(1 - (intensity - curve[0].w) * curve[1].y);
+
+	if (intensity < curve[0].y)
+	{
+		weights.x = 1 - (intensity - curve[0].x) * curve[1].z;
+		weights.z = -2;
+	}
+	else if (intensity < curve[0].z)
+	{
+		weights.x = -(intensity - curve[0].y) * curve[1].w;
+		weights.z = -1 - weights.x;
+	}
+	else
+	{
+		weights.x = -2;
+		weights.z = (intensity - curve[0].z) * curve[2].x;
+	}
+
+	weights.xz = saturate(weights.xz * 0.5f + 0.5f);
+
+	weights = pow(weights, curve[2].y);
+
+	if (intensity < curve[0].y)
+		weights.x += 1 - (weights.x + weights.y + weights.z);
+	else if (intensity < curve[0].z)
+		weights.y += 1 - (weights.x + weights.y + weights.z);
+	else
+		weights.z += 1 - (weights.x + weights.y + weights.z);
+
+	vals.x = intensity * curve[2].z + curve[2].w;
+	vals.y = intensity * curve[3].x + curve[3].y;
+	vals.z = intensity * curve[3].z + curve[3].w;
+
+	return dot(weights, vals);
+}
+
+/////////////////////////////////////////////////////////////////////////
+
+float apply_gamma(in float intensity, in float gamma)
+{
+	return pow(intensity, gamma);
+}
+
+float apply_input_range(in float intensity, in float min_intensity, in float one_over_intensity_range)
+{
+	return saturate((intensity - min_intensity) * one_over_intensity_range);
+}
+
+float apply_output_range(in float intensity, in float min_intensity, in float intensity_range)
+{
+	return saturate(min_intensity + intensity * intensity_range); // lerp(min_intensity, max_intensity, intensity)
+}
+
+float apply_color_levels(in float intensity, in float4 levels, in float gamma)
+{
+	return apply_output_range(apply_gamma(apply_input_range(intensity, levels.x, levels.y), gamma), levels.z, levels.w);
+}
+
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float intensity = fragment.texcoord.x;
+
+/////////////////////////////////////////////////////////////////////////
+#ifdef COLOR_CURVE
+
+	float3 newcolor;
+
+	newcolor.r = eval_curve(intensity, curve_r);
+	newcolor.g = eval_curve(intensity, curve_g);
+	newcolor.b = eval_curve(intensity, curve_b);
+
+	newcolor.r = apply_color_levels(newcolor.r, levels_r, gammas.x);
+	newcolor.g = apply_color_levels(newcolor.g, levels_g, gammas.y);
+	newcolor.b = apply_color_levels(newcolor.b, levels_b, gammas.z);
+
+	return float4(newcolor, 0);
+
+/////////////////////////////////////////////////////////////////////////
+#elseifdef INTENSITY_TINT
+
+	float3 tint;
+	float sat;
+
+	sat    = eval_curve(intensity, curve_s);
+	tint.r = eval_curve(intensity, curve_r);
+	tint.g = eval_curve(intensity, curve_g);
+	tint.b = eval_curve(intensity, curve_b);
+
+	return float4(tint, saturate(0.5f * sat + 0.5f));
+
+/////////////////////////////////////////////////////////////////////////
+#else
+
+	// apply tone curve
+	#ifdef BOOST_ABOVE_80PERCENT
+		float power = 0.1f;
+		float newintensity = lerp(intensity * (power+1), intensity, saturate(intensity - 1 + 2*power) / (2*power));
+	#else
+		float newintensity = intensity;
+	#endif
+
+	// apply contrast adjustment to newintensity
+	newintensity = eval_curve(newintensity, curve_i);
+	newintensity = apply_color_levels(newintensity, levels_i, gamma);
+
+	float iscale = intensity?(newintensity / intensity):1;
+	return float4(max(0, iscale), 0, 0, 0);
+
+#endif
+}
+

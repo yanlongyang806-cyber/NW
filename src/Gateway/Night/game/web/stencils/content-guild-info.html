@@ -1,0 +1,71 @@
+<div class="page-content" data-path="guild" data-update="guild">
+
+	<!-- MAIN SECTION 5 -->
+	<div class="page-guild-info">
+		<div class="page-body">
+			<h3 class="page-title">Guild Info</h3>
+			<!--
+			<div class="guild-header">
+				<h2 data-path=".name">The Crazy Amazing Guild</h2>
+			</div>
+			-->
+			<dl>
+
+				<dt>Name:</dt>
+				<dd data-path=".name">The Crazy Amazing Guild</dd>
+
+				<dt>Total Members:</dt>
+				<dd data-path=".totalmembers">35</dd>
+
+				<dt data-if=".description">Description:</dt>
+				<dd data-if=".description" data-path=".description.$escapeForHTML()">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc. Maecenas dapibus nisi non sapien lacinia gravida non eget odio.</dd>
+
+				<dt data-if=".recruitmessage">Recruiting Message:</dt>
+				<dd data-if=".recruitmessage" data-path=".recruitmessage.$escapeForHTML()">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</dd>
+
+				<dt>Minimum Level:</dt>
+				<dd data-path=".minlevelrecruit">20</dd>
+
+				<dt data-if=".website">Website:</dt>
+				<dd data-if=".website"><a data-path=".website" data-set-href="{.website.$httpify()}" target="_blank">http://www.playneverwinter.com</a></dd>
+			</dl>
+		</div>
+	</div>
+</div>
+
+<!-- NOT FOR LAUNCH
+<div class="box-footer-block">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-body">
+						<div class="footer-controls-right">
+
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url="/guild/info/edit" class="resetWindow">Edit</button>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+-->

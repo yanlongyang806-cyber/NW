@@ -1,0 +1,3 @@
+{
+	%Result% = lerp(%ProjectSpecialParam%, 0, %Override%);
+}

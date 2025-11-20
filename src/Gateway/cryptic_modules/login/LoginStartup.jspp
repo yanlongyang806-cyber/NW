@@ -1,0 +1,671 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// LoginStartup
+//
+// This server provides a web-based interface to the AccountServer for login
+// purposes.
+//
+
+//
+// Handle argv and config file.
+//
+var g_config = require('cryptic/configure')();
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var fs = require('fs');
+var url = require('url');
+var path = require('path');
+var util = require('util');
+var http = require('http');
+var crypto = require('crypto');
+var connect = require('connect');
+var colors = require('colors');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var locale = require('cryptic/locale');
+var staticStencil = require('cryptic/staticStencil');
+var isInternalIp = require('cryptic/isInternalIp');
+var FileCache = require('cryptic/FileCache');
+
+//////////////////////////////////////////////////////////////////////////
+
+// ASLoginRequest handles all the communication with the AccountServer.
+// There is one of these for each client.
+var ASLoginRequest = require('./ASLoginRequest');
+
+
+// LauncherConnection communicates with the GatewayLoginLauncher
+var g_launcher = require('./LauncherConnection');
+log.addLogger(g_launcher.makeLogger('gateway_login'));
+
+//////////////////////////////////////////////////////////////////////////
+
+//
+// Set up HTTP and file serving
+//
+
+require('cryptic/patchServerResponse');
+	// Patch server response to handle setHeader better.
+
+var rewriteForLocale = require('cryptic/rewriteForLocale');
+	// Middleware for locale overrides.
+var makeBrowserId = require('cryptic/makeBrowserId');
+	// Middleware to handle BrowserIds.
+
+var publicCache = new FileCache(g_config.publicDir, {
+	maxBytes: 20*1024*1024,
+	cacheMaxAge: g_config.cacheMaxAge,
+	etag: g_config.etag,
+	maxAge: 24*60*60*1000 /* one day in ms */
+});
+	// Middleware to handle file cacheing.
+
+connect.logger.token('userid', function(req, res) {
+	return req.signedCookies && req.signedCookies['gw_login'] ? req.signedCookies['gw_login'] : '-';
+});
+connect.logger.token('realaddr', function(req, res) {
+	return req.realAddress || '-';
+});
+
+connect.logger.format('cryptic', ':realaddr - :userid [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time');
+
+var compressor = connect.compress({ filter : function (req, res) { return (/json|text|javascript|svg|xml/).test(res.getHeader('Content-Type')); } });
+	// Set up the compressor for static files.
+
+var connectApp = connect()
+	.use(connect.favicon())
+		// Caching and early-out for the favicon
+	.use(getRealAddress)
+		// Store the client's real address, taking into account the load balancer.
+	.use(rejectRobots)
+		// Reject confirmed robots immediately.
+	.use(connect.logger({ format: 'cryptic', stream: g_launcher.makeLogger('gateway_access') }))
+		// logging output
+	.use(connect.limit('5kb'))
+		// Reject requests larger than this
+	.use(handleLock)
+		// If the shard is locked, say so.
+	.use(connect.cookieParser('InXanaduDidKublaKhan/AStatelyPleasureDomeDecree:'))
+		// Cookie for session management
+	.use(connect.session({ key: 'gw_login' }))
+		// Session management
+	.use(makeBrowserId())
+		// Confirm or generate a browser ID
+	.use(connect.favicon(path.resolve(g_config.publicDir, '/img/favicon.ico')))
+		// Yay favicon
+	.use(connect.bodyParser())
+		// If there's a POST body, parse it and...
+	.use(doLogin)
+		// ...handle the POST, which is the login form
+	.use(rewriteForLocale(locale, path.resolve(g_config.publicDir, 'locale'), '/locale'))
+		// rewrite URLS for overridden files.
+	.use(compressor)
+		// zip up responses
+	.use(publicCache.serveFile)
+		// And serve static files as well.
+
+
+var g_httpServer = http.createServer(connectApp);
+
+// -----------------------------------------------------------------
+// HTTPS: This is the call to launch an HTTPS Server, if desired.
+// var g_httpServer = https.createServer({
+//		key: fs.readFileSync(g_config.scriptDir + '\\privatekey.pem'),
+//		cert: fs.readFileSync(g_config.scriptDir + '\\certificate.pem')
+//	}, connectApp);
+// -----------------------------------------------------------------
+
+////////////////////////////////////////////////////////////////////////////
+
+var s_robotIPs = {};
+var s_robotCount = 0;
+var s_maybeRobotCount = 0;
+var ROBOT_LIMIT = 90;
+var ROBOT_FILL = 20;
+var ROBOT_DRAIN = 1;
+var ROBOT_MAX = 999999;
+var ROBOT_LOG_ROLLUP = 30;
+
+function addRobot(ip)
+{
+	if(!s_robotIPs[ip])
+	{
+		s_robotIPs[ip] = { score: ROBOT_FILL, logCount: ROBOT_LOG_ROLLUP };
+	}
+	else
+	{
+		s_robotIPs[ip].score += ROBOT_FILL;
+
+		if(s_robotIPs[ip].score > ROBOT_MAX)
+			s_robotIPs[ip].score = ROBOT_MAX;
+	}
+}
+
+function banRobot(ip)
+{
+	if(!s_robotIPs[ip])
+	{
+		s_robotIPs[ip] = { score: ROBOT_LIMIT*2, logCount: ROBOT_LOG_ROLLUP };
+	}
+	else
+	{
+		s_robotIPs[ip].score += ROBOT_LIMIT*2;
+
+		if(s_robotIPs[ip].score > ROBOT_MAX)
+			s_robotIPs[ip].score = ROBOT_MAX;
+	}
+}
+
+function isRobot(ip)
+{
+	return s_robotIPs[ip] ? s_robotIPs[ip].score >= ROBOT_LIMIT : false;
+}
+
+function scoreRobot(ip)
+{
+	return s_robotIPs[ip] ? s_robotIPs[ip].score : 0;
+}
+
+function drainRobots()
+{
+	s_robotCount = 0;
+	s_maybeRobotCount = 0;
+	for(var ip in s_robotIPs)
+	{
+		s_maybeRobotCount++;
+		if(s_robotIPs[ip].score < ROBOT_MAX)
+		{
+			s_robotIPs[ip].score -= ROBOT_DRAIN;
+
+			if(s_robotIPs[ip].score < 0)
+			{
+				delete s_robotIPs[ip];
+				s_maybeRobotCount--;
+			}
+		}
+
+		if(s_robotIPs[ip] && s_robotIPs[ip].score >= ROBOT_LIMIT)
+		{
+			s_robotCount++;
+		}
+	}
+}
+
+function reportRobots()
+{
+	if(s_robotCount > 0)
+	{
+		log.log('RobotInfo: ' + s_robotCount + ' IPs are robots, ' + (s_maybeRobotCount-s_robotCount) + ' might be.');
+	}
+}
+
+setInterval(drainRobots, 1 * 1000);
+setInterval(reportRobots, 60 * 1000);
+
+function rejectRobots(req, res, next)
+{
+	if(isRobot(req.realAddress))
+	{
+		addRobot(req.realAddress);
+
+		s_robotIPs[req.realAddress].logCount++;
+
+		if(s_robotIPs[req.realAddress].logCount >= ROBOT_LOG_ROLLUP)
+		{
+			// To print the first one right away.
+			if(s_robotIPs[req.realAddress].logCount > ROBOT_LOG_ROLLUP)
+				s_robotIPs[req.realAddress].logCount = 1;
+
+			log.log('RobotReject: '
+				+'(x' + s_robotIPs[req.realAddress].logCount + ') '
+				+ 'addr ' + req.realAddress
+				+ ' score ' + scoreRobot(req.realAddress));
+
+			s_robotIPs[req.realAddress].logCount = 0;
+		}
+
+		// don't waste the time or socket on this guy.
+		res.end();
+		return;
+	}
+
+	next();
+}
+
+function getRandomInt(min, max)
+{
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function sendFakeInvalidUsernameOrPassword(res)
+{
+	setTimeout(function() {
+		res.setHeader('Content-Type', 'application/json');
+		res.setHeader('Cache-Control', 'no-cache');
+		res.writeHead(200);
+		res.end(JSON.stringify({
+			result: 'Invalid username or password.',
+			idFailure: 2
+		}));
+	}, getRandomInt(3 * 1000, 6 * 1000));
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+function getRealAddress(req, res, next)
+{
+	if(req.headers['x-real-ip'])
+	{
+		req.realAddress = req.headers['x-real-ip'];
+	}
+	else
+	{
+		req.realAddress = req.connection.remoteAddress;
+	}
+
+	next();
+}
+
+
+//
+// handleLock
+//
+function handleLock(req, res, next)
+{
+	if(g_config.locked && !isInternalIp(req.realAddress))
+	{
+		if(req.url === '/' || req.url === '/index.html')
+		{
+			if(req.method === 'POST')
+			{
+				res.setHeader('Content-Type', 'application/json');
+				res.writeHead(200);
+				res.end(JSON.stringify({
+					result: 'Gateway is locked.', // English failure string
+					idFailure: 100                // Shard is locked
+				}));
+			}
+			else
+			{
+				res.writeHead(307, 'Moved Temporarily',
+					{'Location': '/index_locked.html', 'Cache-Control': 'no-cache'});
+				res.end();
+			}
+
+			return;
+		}
+	}
+
+	next();
+}
+
+//
+// doLogin
+//
+// When the client POSTs a form with the right fields, doLogin starts the
+// login handshake with the AccountServer.
+//
+function doLogin(req, res, next)
+{
+	dbg.trace();
+
+	if(req.body)
+	{
+		if(req.body.user && req.body.pw)
+		{
+			dbg.trace();
+
+			var login = new ASLoginRequest(req.realAddress,	req.body, req.session.idBrowser,
+				mkOnLoginComplete(req, res, req.session, req.body.ret));
+
+			// This starts up verification with the AccountServer.
+			login.start();
+		}
+		else
+		{
+			next(); // This form isn't for us
+		}
+	}
+	else
+	{
+		next(); // There isn't a form
+	}
+}
+
+//
+// mkOnLoginComplete
+//
+// Makes function to handle login success or failure of the login.
+// (Main purpose of which is to bind req, res, and session into the closure).
+//
+function mkOnLoginComplete(req, res, session, hostReturn)
+{
+	dbg.trace();
+
+	log.log('LoginAttempt: '
+		+ 'addr ' + req.realAddress
+		+ ', sid '+ req.signedCookies['gw_login']
+		+ ', user ' + req.body.user);
+
+	var fn = function onLoginComplete(error, result)
+	{
+		if(error)
+		{
+			log.log('LoginFailed: '
+				+ 'addr ' + req.realAddress
+				+ ', sid '+ req.signedCookies['gw_login']
+				+ ', user ' + req.body.user
+				+ ', failureid ' + result.idFailure
+				+ ', reason "' + result.reason + '"');
+
+			if(result.idFailure === 4 /* Too many attempts */)
+			{
+				log.log('RobotAttempt: (AS rate limited) '
+					+ 'addr ' + req.realAddress
+					+ ', sid '+ req.signedCookies['gw_login']
+					+ ', user ' + req.body.user);
+
+				banRobot(req.realAddress);
+
+				// Pretend this is a regular failure
+				sendFakeInvalidUsernameOrPassword(res);
+				return;
+			}
+
+			setTimeout(function() {
+				res.setHeader('Content-Type', 'application/json');
+				res.setHeader('Cache-Control', 'no-cache');
+				res.writeHead(200);
+				res.end(JSON.stringify({
+					result: result.reason,              // English failure string
+					idFailure: result.idFailure,        // See above for LoginFailureCode_*
+					idConflict: result.idConflictTicket // conflict ID for when the code is UnlinkedPWCommonAccount or CrypticDisabled
+				}));
+			}, scoreRobot(req.realAddress) > 0 ? getRandomInt(2 * 1000, 4 * 1000) : 0);
+
+			addRobot(req.realAddress);
+		}
+		else
+		{
+			log.log('LoginSuccess: '
+				+ 'addr ' + req.realAddress
+				+ ', sid '+ req.signedCookies['gw_login']
+				+ ', user ' + req.body.user);
+
+			res.setHeader('Content-Type', 'application/json');
+			res.setHeader('Cache-Control', 'no-cache');
+			res.writeHead(200);
+
+			var u = url.parse('http://' + req.headers.host);
+			u.host = undefined; // So the modified hostname and port will be used
+
+			if(!u.port || +u.port == 80)
+			{
+				// Production environment.
+				u.hostname = u.hostname.replace('auth', 'gateway'); // Change the subdomain.
+				u.protocol = 'http:';                               // Use HTTP.
+			}
+			else
+			{
+				// Development environment.
+				u.port = g_config.portClientStart; // Replace the port number.
+
+				// If provided a host:port to return to, use it.
+				if(hostReturn)
+				{
+					u.host = hostReturn;
+				}
+			}
+
+			res.end(JSON.stringify({
+				result: 'user_login_ok',
+				destURL: url.format(u),
+				idBrowser: session.idBrowser,
+				idTicket: result.idTicket,
+				idAccount: result.idAccount
+			}));
+
+			// We should be done with this person, free their session data
+			session.cookie.maxAge = 1;
+			session.destroy();
+		}
+	}
+
+	return fn;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Set up Launcher callbacks
+//
+
+var g_LauncherConnectionAttempts = 0;
+
+g_launcher.on('connecting', function _onServerConnecting() {
+	dbg.trace();
+	console.log('Connecting to GatewayLoginLauncher...'.bold);
+});
+
+g_launcher.on('connected', function _onServerConnected() {
+	dbg.trace();
+
+	console.log(colors.bold('Connected to GatewayLoginLauncher: ' + g_config.ipGatewayLoginLauncher +':'+ g_config.portGatewayLoginLauncher));
+
+	var now = new Date();
+	log.log('GatewayLogin - started ' + now.toUTCString());
+	log.log('Using config', g_config);
+
+	g_LauncherConnectionAttempts = 0;
+
+	// Send perf data every 15 seconds
+	g_launcher.perfInterval = setInterval(g_launcher.sendPerf.bind(g_launcher), 15*1000);
+
+	// Generate all of the translated html.
+	locale.makeTranslationFiles(g_launcher,
+		require(path.resolve(g_config.scriptDir, 'en.js')),
+		path.resolve(g_config.publicDir, 'locale'),
+		function() {
+			staticStencil()
+				.cacheBuster(g_config.etag)
+				.locale(locale)
+				.outDir(path.resolve(g_config.publicDir, 'locale'))
+				.makeHTMLForFile(path.resolve(g_config.scriptDir, 'login-stencils.js'))
+				.outDir(g_config.publicDir)
+				.makeHTMLForFile(path.resolve(g_config.scriptDir, 'login-stencils.js'), locale.defaultLocale);
+
+			startListening();
+		}
+	);
+});
+
+g_launcher.on('disconnected', function _onServerDisconnected() {
+	dbg.trace();
+
+	console.log('GatewayLoginLauncher is disconnected.');
+
+	if(typeof g_launcher.perfInterval !== 'undefined')
+	{
+		clearInterval(g_launcher.perfInterval);
+		g_launcher.perfInterval = undefined;
+	}
+
+	if(g_config.slave)
+	{
+		console.log('Exiting (in slave mode)');
+		process.exit();
+	}
+
+	setTimeout(attemptLauncherConnection, 5000);
+});
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//
+// FINALLY! Everything is set up and ready to go.
+//
+//
+//
+                    attemptLauncherConnection();
+
+
+function attemptLauncherConnection()
+{
+	dbg.trace();
+
+	g_LauncherConnectionAttempts++;
+	dbg('Attempting to connect to GatewayLoginLauncher. Try '+g_LauncherConnectionAttempts);
+
+	if(g_config.ipGatewayLoginLauncher && g_config.portGatewayLoginLauncher)
+	{
+		g_launcher.connect(g_config.ipGatewayLoginLauncher, g_config.portGatewayLoginLauncher);
+		dbg('\tTrying:', g_config.ipGatewayLoginLauncher, g_config.portGatewayLoginLauncher);
+	}
+	else
+	{
+		throw(new Error('No GatewayLoginLauncher configured. You need to set ipGatewayLoginLauncher and portGatewayLoginLauncher.'))
+	}
+
+	// The _onServerConnected handler above will eventually call startListening() below.
+}
+
+function startListening()
+{
+	g_httpServer.on('listening', function(error) {
+		log.log('Serving files from:', g_config.publicDir);
+		log.log('Doing URL rewrites for locale from:', path.resolve(g_config.publicDir, 'locale', 'en|de|fr'));
+		log.log('Listening for clients on port ' + g_config.portLogin + '.');
+	});
+
+	g_httpServer.on('error', function(error) {
+		if(error.code === 'EADDRINUSE')
+		{
+			if(g_config.portLogin < g_config.portLoginEnd)
+			{
+				g_config.portLogin++;
+				setTimeout(function () {
+					log.log('Attempting to listen on port ' + g_config.portLogin + '.');
+					g_httpServer.listen(g_config.portLogin);
+				}, 250);
+			}
+			else
+			{
+				throw(new Error('Unable to find an open port for clients. Tried ' + g_config.portLoginStart + ' to ' + g_config.portLoginEnd + '.'));
+			}
+		}
+		else
+		{
+			throw(error);
+		}
+	});
+
+	g_config.portLogin = g_config.portLoginStart;
+	log.log('Attempting to listen on port ' + g_config.portLogin + '.');
+	g_httpServer.listen(g_config.portLogin);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var globals =
+{
+	g_launcher: g_launcher,
+	doLogin: doLogin,
+	mkOnLoginComplete: mkOnLoginComplete,
+	_module: module,
+	s_robotIPs: s_robotIPs,
+	// I can't explain it, but every time I try simply assign dbg to a member
+	//   it ends up being undefined. So, I'll provide the actual functions too.
+	dbg: dbg,
+	level: dbg.setLevel,
+	disable: dbg.disableFile,
+	enable: dbg.enableFile
+};
+
+var repl = require('repl');
+
+function listenForCommands()
+{
+	var bREPL = false;
+	process.stdin.resume();
+	process.stdin.setRawMode(true);
+
+	process.stdin.on('data', function(chunk) {
+		if(!bREPL)
+		{
+			if(Buffer.isBuffer(chunk))
+				chunk = chunk.toString();
+
+			console.log('>' + chunk);
+			if(chunk === 'd')
+			{
+				console.log('Debug level: DEBUG');
+				dbg.setLevel(dbg.DEBUG);
+			}
+			else if(chunk === 'D')
+			{
+				console.log('Debug level: DEBUG MOST THE THINGS');
+
+				dbg.setLevel(dbg.DEBUG);
+				dbg.disableFile('packet');
+				dbg.disableFile('CrypticProtocolConnection');
+			}
+			else if(chunk === 'Z')
+			{
+				console.log('Debug level: DEBUG ALL THE THINGS');
+
+				dbg.setLevel(dbg.DEBUG);
+				dbg.enableFile('packet');
+				dbg.enableFile('CrypticProtocolConnection');
+			}
+			else if(chunk === 'l')
+			{
+				console.log('Debug level: LOG');
+				dbg.setLevel(dbg.LOG);
+				dbg.disableFile('packet');
+				dbg.disableFile('CrypticProtocolConnection');
+			}
+			else if(chunk === 'r')
+			{
+				bREPL = true;
+				console.log('REPL started.');
+				console.log('.help   for help');
+				console.log('_       for last result');
+
+				var replServer = repl.start('>');
+				replServer.context.login = globals;
+				replServer.on('exit', function() {
+					console.log('REPL closed.')
+					bREPL = false;
+
+					process.stdin.resume();
+					process.stdin.setRawMode(true);
+				});
+			}
+			else
+			{
+				console.log('Commands:');
+				console.log('d - debug level DEBUG');
+				console.log('D - debug level DEBUG MOST THE THINGS');
+				console.log('l - debug level LOG');
+				console.log('r - REPL ("login" is root variable in context)');
+				console.log('Z - debug level DEBUG ALL THE THINGS');
+			}
+		}
+	});
+}
+
+listenForCommands();
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

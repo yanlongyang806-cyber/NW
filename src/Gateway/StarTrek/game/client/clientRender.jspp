@@ -1,0 +1,822 @@
+'use strict';
+
+var clientRender = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+var dbg = require('cryptic/dbg');
+var format = require('cryptic/format');
+
+//
+// Put Javascript used by the HTML in here.
+//
+// For example, stuff to support a data table (like the fleet roster) or
+// setting a theme, if you have one.
+//
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Override onAfterSetStencil
+//
+clientRender.onAfterSetStencil = function(callback)
+{
+	setContentHeight();
+
+	if(callback)
+		callback();
+}
+
+/////////////////////////////////
+//
+// Helpers for onAfterSetStencil
+//
+var s_contentHeight = 0;
+var s_loginHeight = 0;
+function setContentHeight() {
+
+	$('.loginWindowOuter').delay(50).promise().done(function() {
+		var loginHeight = $("#loginWindowInner").outerHeight();
+		if(s_loginHeight === loginHeight)
+		{
+			return; // early out if we have the same values.
+		}
+		else
+		{
+			s_loginHeight = loginHeight;
+			if (loginHeight <= 600)
+			{
+				$('.loginWindowOuter').animate({'height': 600}, 250);
+			}
+			else
+			{
+				$('.loginWindowOuter').animate({'height': loginHeight}, 250);
+			}
+		}
+	});
+
+
+	$('.contentWindowOuter').delay(50).promise().done(function() {
+
+		var frontWindowHeight	= $("#frontWindowInner").outerHeight();
+		var sectionWindowHeight	= $("#sectionWindowInner").outerHeight();
+		var frontNavHeight		= $("#frontNavInner").outerHeight() + 30;
+		var sectionNavHeight	= $("#sectionNavInner").outerHeight() + 30;
+
+		var windowHeight = Math.max(frontWindowHeight, sectionWindowHeight, frontNavHeight, sectionNavHeight);
+
+		if(s_contentHeight === windowHeight)
+		{
+			return; // early out if we have the same values.
+		}
+		else
+		{
+			s_contentHeight = windowHeight;
+			if (windowHeight <= 520)
+			{
+				$('.contentWindowOuter').animate({'height': 520}, 250);
+				$('.contentNavOuter').animate({'height': 490}, 250);
+			}
+			else
+			{
+				$('.contentWindowOuter').animate({'height': windowHeight}, 250);
+				$('.contentNavOuter').animate({'height': windowHeight - 30}, 250);
+			}
+		}
+	});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Override setTheme
+// section: char, fleet
+// arg: anything useful.  For char, its metaEnt.
+clientRender.setTheme = function(section, arg)
+{
+	if(section === 'char')
+	{
+		client.dataModel.resolvePath('.main.allegiance.name.$map(factionId)', arg, function(err, res) {
+			if(res)
+			{
+				$('#stylesheet').attr('href','./css/style-' + res + '.css');
+			}
+		});
+	}
+	else if(section === 'fleet')
+	{
+		$('#stylesheet').attr('href','./css/style-fed-fleet.css');
+	}
+	else
+	{
+		$('#stylesheet').attr('href','./css/style-fed.css');
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+// onResize
+//
+// Use this to add anything that needs to happen when the Gateway snaps to a new size.
+// Most commonly used for resizing dataTables used throughout the site.
+clientRender.onResize = function(sizeNow)
+{
+
+	// Trigger size event, and set window size if given
+	if(sizeNow)
+	{
+		this.WINDOW_SIZE = sizeNow;
+	}
+	else
+	{
+		// If not given, use the current known size.
+		sizeNow = this.WINDOW_SIZE;
+	}
+
+	dbg.trace('Window Size: ' + sizeNow);
+
+	setContentHeight();
+	this.resizeDataTable(sizeNow);
+}
+
+// Default no-op function.
+clientRender.resizeDataTable = function(sizeNow)
+{
+	return;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Window Resizamabob
+//
+// Watches window resizing, and sets a size value in client.
+// Also triggers onResize() when sizes change.
+clientRender.WINDOW_SIZE = 0; // Keeping track of this
+clientRender.checkWindowSize = function()
+{
+	var sizeNow = 0;
+	if(matchMedia('(max-width:759px)').matches)
+	{
+		sizeNow = 1;
+	}
+	else if(matchMedia('(min-width:760px) and (max-width: 999px)').matches)
+	{
+		sizeNow = 2;
+	}
+	else if(matchMedia('(min-width:1000px) and (max-width: 1239px)').matches)
+	{
+		sizeNow = 3;
+	}
+	else if(matchMedia('(min-width:1240px) and (max-width: 1479px)').matches)
+	{
+		sizeNow = 4;
+	}
+	else if(matchMedia('(min-width:1480px)').matches)
+	{
+		sizeNow = 5;
+	}
+	if(sizeNow != client.WINDOW_SIZE)
+	{
+		client.onResize(sizeNow);
+	}
+}
+
+// Returns true if we expect to see the desktop version currently.
+// Added verify in case checks are needed early in the client setup
+// before WINDOW_SIZE may be set.
+clientRender.isDesktop = function(verify)
+{
+	if(verify)
+	{
+		return matchMedia('(max-width:759px)').matches
+	}
+	else
+	{
+		return (this.WINDOW_SIZE > 1)
+	}
+}
+
+clientRender.commonWidgets = function(sounds)
+{
+	// Hook up sounds
+	$(document).on('mouseenter', '.button-nav, .button-back, .charselect-list .entry', function() {
+		sounds.play('hover');
+	});
+
+	$(document).on('click', '.button-back', function() {
+		sounds.play('back');
+	})
+
+	$(document).on('click', '.button-nav, .charselect-list .entry', function buttonnavclick() {
+		sounds.play('button');
+
+	});
+
+
+	// For touchbuttons on mobile
+	$(document).on('touchstart', '.touchbutton', function() {
+		$(this).addClass('touchSelected');
+	});
+
+	$(document).on('touchmove', '.touchbutton', function() {
+		$(this).removeClass('touchSelected');
+	});
+
+	$(document).on('touchend', '.touchbutton', function() {
+		$(this).removeClass('touchSelected');
+	});
+
+	// And bind this event to the window.
+	$(window).resize(client.checkWindowSize);
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// News and EBS
+//
+var s_lastUpdate = 0;
+clientRender.getNewsAndEBS = function(callback)
+{
+	if(Date.now() - s_lastUpdate > 5 * 60 * 1000)
+	{
+		s_lastUpdate = Date.now();
+
+		$.ajax({
+			url: '/news?game=sto',
+			type: 'GET',
+			dataType: 'json',
+
+			success: function(response) {
+				client.dataModel.model.news = { items: response };
+				client.dataModel.renderUpdates('create *', 'news')
+				if(callback)
+					callback(undefined, response);
+			},
+
+			error: function(xhr, status, error) {
+				if(callback)
+					callback(error, undefined);
+				// Something broke
+			}
+		});
+
+		$.ajax({
+			url: '/ebs?game=sto',
+			type: 'GET',
+			dataType: 'json',
+
+			success: function(response) {
+				client.dataModel.model.ebs = response;
+				client.dataModel.renderUpdates('create *', 'ebs');
+				if(callback)
+					callback(undefined, response);
+			},
+
+			error: function(xhr, status, error) {
+				if(callback)
+					callback(error, undefined);
+				// Something broke
+			}
+		});
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+//
+//     ######  ######## ####### ##     ##   ######   ######  ##
+//    ##    ##    ##    ##      ###    ##  ##    ##    ##    ##
+//    ##          ##    ##      ## #   ##  ##          ##    ##
+//     ######     ##    #####   ##  #  ##  ##          ##    ##
+//          ##    ##    ##      ##   # ##  ##          ##    ##
+//    ##    ##    ##    ##      ##    ###  ##    ##    ##    ##
+//     ######     ##    ####### ##     ##   ######   ######  #######
+//
+//                   Stencil Specific Code below.
+//
+
+////////////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-fleet-roster.html
+//
+clientRender.fleetRosterInit = function()
+{
+	$('document').ready(function() {
+
+		var sort, search;
+		var shifter = window.client.shifter;
+
+		if(typeof shifter.hashInfo.qParams['sort'] !== 'undefined')
+		{
+			sort = JSON.parse(shifter.hashInfo.qParams['sort']);
+		}
+		else
+		{
+			sort = [[9, 'desc']];
+		}
+
+		if(typeof shifter.hashInfo.qParams['search'] !== 'undefined')
+		{
+			search = shifter.hashInfo.qParams['search'];
+		}
+		else
+		{
+			search = '';
+		}
+
+		$('table#roster_table').dataTable({
+			'bStateSave': true,
+			'fnStateSave': function(oSettings, oData) {
+				shifter.updateQString({
+						'sort': JSON.stringify(oData.aaSorting),
+						'search': oData.oSearch.sSearch
+					});
+			},
+			'bLengthChange': false,
+			'iDisplayLength': 12,
+			'aoColumns': [
+				{ 'bVisible': false, 'bSearchable': false }, // Admin
+				null, // Name
+				null, // fleet Rank
+				null, // Class
+				{ 'bVisible': false, 'bSearchable': false }, // sortable class
+				null, // Roster Rank
+				{ 'bVisible': false, 'bSearchable': false }, // sortable rank
+				null, // location
+				null, // lft
+				{ 'bVisible': false, 'bSearchable': false }, // lft sortable
+				null, // last online
+				{ 'bVisible': false, 'bSearchable': false }, // last online sortable
+				null // Comments
+			],
+			'oLanguage': client.dataTableLanguage,
+			'aoColumnDefs': [
+				{ "iDataSort": 4, "aTargets": [ 3 ] },
+				{ "iDataSort": 6, "aTargets": [ 5 ] },
+				{ "iDataSort": 9, "aTargets": [ 8 ] },
+				{ "iDataSort": 11, "aTargets": [ 10 ] }
+			],
+			'aaSorting': sort,
+			'oSearch': {'sSearch': search },
+			'sPaginationType': "full_numbers"
+		});
+
+//      Leaving this in comments so we remember how to set the admin column visible/invisible
+//		$('.dev_toggle_admin_column').on('click', function() {
+//			dataTable.fnSetColumnVis(0,!dataTableSettings.aoColumns[0].bVisible);
+//		});
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-fleet-events-view.html
+//
+clientRender.fleetEventsViewTableInit = function()
+{
+	$('document').ready(function() {
+		$('table#rsvp_table').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 14,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				{ 'bVisible': false, 'bSearchable': false }
+			],
+			'oLanguage': client.dataTableLanguage,
+			'aaSorting': [[0, 'asc']],
+			"sPaginationType": "two_button"
+		});
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-fleet-holdings-leaderboard.html
+//
+clientRender.fleetHoldingsLeaderBoardTableInit = function()
+{
+	$('document').ready(function() {
+		$('table#leaderboard_table').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 12,
+			'aoColumns': [
+				//null, // Rank
+				null, // Name
+				null // Contributions
+				//null, // Level Rank
+				//{ 'bVisible': false, 'bSearchable': false },
+				//null, // Fleet rank
+				//null, // Last Online
+				//{ 'bVisible': false, 'bSearchable': false },
+			],
+			'oLanguage': client.dataTableLanguage,
+			//'aoColumnDefs': [
+			//	{ "iDataSort": 4, "aTargets": [ 3 ] },
+			//	{ "iDataSort": 7, "aTargets": [ 6 ] }
+			//],
+			'aaSorting': [[0, 'asc']],
+			"sPaginationType": "full_numbers"
+		});
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-fleet-logs.html
+//
+clientRender.fleetLogsTableInit = function()
+{
+	$('document').ready(function() {
+		$('table#logs_table').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 14,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				{ 'bVisible': false, 'bSearchable': false }
+			],
+			'oLanguage': client.dataTableLanguage,
+			'aaSorting': [[0, 'asc']],
+			"sPaginationType": "full_numbers"
+		});
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-personnel-bridgeofficer-roster.html
+//
+
+var s_bridgeOfficers = [];
+
+function bridgeOfficersReset()
+{
+	var viewing = client.getCurrentCharAtName();
+
+	if(viewing)
+	{
+		s_bridgeOfficers[viewing] = {
+				'pagenow': 1,
+				'lastpage': 1,
+				'perpage': 4,    // Items per page
+				'paging': false,
+				'mover': {},
+				'next': {},
+				'prev': {},
+			}
+
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+clientRender.bridgeOfficersInit = function()
+{
+	var viewing = client.getCurrentCharAtName();
+
+	if(viewing)
+	{
+		if(!s_bridgeOfficers[viewing])
+		{
+			bridgeOfficersReset();
+		}
+
+		var div = $('#boff-paginate');
+
+		s_bridgeOfficers[viewing].mover = div.children(':first'); // expecting ONE div
+
+		s_bridgeOfficers[viewing].lastpage = Math.ceil(s_bridgeOfficers[viewing].mover.children().length / s_bridgeOfficers[viewing].perpage);
+
+		// Next button available?
+		if(s_bridgeOfficers[viewing].pagenow < s_bridgeOfficers[viewing].lastpage)
+		{
+			$('#boff-next').removeClass('disabled');
+		}
+
+		// Previous button available?
+		if(s_bridgeOfficers[viewing].pagenow > 1)
+		{
+			$('#boff-prev').removeClass('disabled');
+		}
+
+		// Move to the current page
+		if(s_bridgeOfficers[viewing].pagenow > 1)
+		{
+			s_bridgeOfficers[viewing].mover.css('left',(-100 * (s_bridgeOfficers[viewing].pagenow - 1)) + '%' )
+		}
+
+		pageHeadshots();
+	}
+}
+
+clientRender.bridgeOfficersPageNext = function()
+{
+	var viewing = client.getCurrentCharAtName();
+
+	if(!s_bridgeOfficers[viewing].paging)
+	{
+		if(s_bridgeOfficers[viewing].pagenow < s_bridgeOfficers[viewing].lastpage)
+		{
+			s_bridgeOfficers[viewing].paging = true;
+
+			if(s_bridgeOfficers[viewing].pagenow == 1) $('#boff-prev').removeClass('disabled');
+
+			s_bridgeOfficers[viewing].pagenow++;
+
+			if(s_bridgeOfficers[viewing].pagenow == s_bridgeOfficers[viewing].lastpage) $('#boff-next').addClass('disabled');
+
+			s_bridgeOfficers[viewing].mover.animate({'left': '-=100%'}, 700, 'easeInOutExpo', function() {
+				s_bridgeOfficers[viewing].paging = false;
+			});
+		}
+
+		pageHeadshots();
+	}
+}
+
+clientRender.bridgeOfficersPagePrev = function()
+{
+	var viewing = client.getCurrentCharAtName();
+
+	if(!s_bridgeOfficers[viewing].paging)
+	{
+		if(s_bridgeOfficers[viewing].pagenow > 1)
+		{
+			s_bridgeOfficers[viewing].paging = true;
+
+			if(s_bridgeOfficers[viewing].pagenow == s_bridgeOfficers[viewing].lastpage) $('#boff-next').removeClass('disabled');
+
+			s_bridgeOfficers[viewing].pagenow--;
+
+			if(s_bridgeOfficers[viewing].pagenow == 1) $('#boff-prev').addClass('disabled');
+
+			s_bridgeOfficers[viewing].mover.animate({'left': '+=100%'}, 700, 'easeInOutExpo', function() {
+				s_bridgeOfficers[viewing].paging = false;
+			});
+		}
+
+		pageHeadshots();
+	}
+}
+
+// Only reveal images for the officers we can see right now.
+// This stops us from trying to get 100+ headshots in a single pageload
+function pageHeadshots()
+{
+	var viewing = client.getCurrentCharAtName();
+
+	var i = s_bridgeOfficers[viewing].mover.children(':eq(' + ((s_bridgeOfficers[viewing].pagenow - 1) * s_bridgeOfficers[viewing].perpage) + ')');
+	var self;
+
+	for(var x = 0; x < s_bridgeOfficers[viewing].perpage; x++)
+	{
+		if(i)
+		{
+			self = i.find('img[data-img]');
+			if(self)
+			{
+				self.attr('src', self.attr('data-img'));
+				self.removeAttr('data-img');
+			}
+
+			i = i.next();
+		}
+		else
+		{
+			break;
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-fleet-events.html
+//
+
+clientRender.calendarPrev = function()
+{
+	// Do nothing if already on the first page.
+	if($('.calendar-prev').hasClass('disabled')) return;
+
+	// Calculate which page is being shown, then show the previous page.
+	var pageNum = $('.fleet-calendar-body tr:visible').first().index() / 5;
+	fleetCalendarShowPage(pageNum - 1);
+
+	// Disable this button if we're at the beginning of the calendar.
+	if(pageNum <= 1) $('.calendar-prev').addClass('disabled');
+
+	// Enable the other button.
+	$('.calendar-next').removeClass('disabled');
+}
+
+clientRender.calendarNext = function()
+{
+	// Do nothing if already on the last page.
+	if($('.calendar-next').hasClass('disabled')) return;
+
+	// Calculate which page is being shown, then show the next page.
+	var pageNum = $('.fleet-calendar-body tr:visible').first().index() / 5;
+	fleetCalendarShowPage(pageNum + 1);
+
+	// Disable this button if we're at the end of the calendar.
+	var lastPage = $('.fleet-calendar-body tr').length / 5 - 1;
+	if(pageNum + 1 >= lastPage) $('.calendar-next').addClass('disabled');
+
+	// Enable the other button.
+	$('.calendar-prev').removeClass('disabled');
+}
+
+clientRender.fleetCalendarPageInit = function()
+{
+	fleetCalendarShowPage(0);
+}
+
+function fleetCalendarShowPage(pageNum)
+{
+	var weeks = $('.fleet-calendar-body tr').slice(pageNum * 5, (pageNum + 1) * 5);
+
+	// Calculate and set the title at the top.
+	var firstDay = weeks.first().find('td:first');
+	var lastDay  = weeks.last().find('td:last');
+	var title = firstDay.data('month') + '-' + lastDay.data('month') + ' ' + lastDay.data('year');
+	$('.fleet-calendar-title').text(title);
+
+	// Only show the month abbreviation for the first day of page, and the first of each month.
+	weeks.find('td h4 span.month').hide();
+	firstDay.find('h4 span.month').show();
+
+	// Hide the old, and show the new week rows.
+	$('.fleet-calendar-body tr').hide();
+	weeks.show();
+}
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+//            content-modal-zenstore-item-screenshots.html
+//
+
+clientRender.screenshotNav = function()
+{
+	var activeScreenshot;
+
+	$(document).on('click', '.screenshots-button', function() {
+		$('.screenshots-button').removeClass('selected');
+		$(this).addClass('selected');
+		activeScreenshot = $(this).attr('id');
+		$('.screenshots-image').hide();
+		$('.screenshots-image.' + activeScreenshot).show();
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+/*
+///////////////////////////////////////////////////////////////////////////
+//
+// Notifications
+//
+
+// TODO: This was stolen from Neverwinter. We need to set this up for
+// STO.
+//var types = {
+//	0: { sel: "#notify-info", fade: true },
+//	33: { sel: "#notify-info", fade: true },
+//	34: { sel: "#notify-error", fade: false }
+//};
+clientRender.addNotification = function(displayObj)
+{
+	dbg.log(displayObj.string);
+
+//	$('.notification').show();
+//
+//	var info = displayObj && displayObj.id ? types[displayObj.id] || types[0] : types[0];
+//
+//	var elem = $('<li>'+format.escapeForHTML(displayObj.string)+'</li>').appendTo($(info.sel));
+//
+//	if(info.fade)
+//	{
+//		$(elem).delay(3000).fadeOut(250).promise().done(function() {
+//			$(elem).remove();
+//			hideIfNoMessages();
+//		});
+//	}
+//
+//	function hideIfNoMessages()
+//	{
+//		if($('#notify-info li').length === 0 && $('#notify-error li').length === 0)
+//		{
+//			$('.notification').hide();
+//		}
+//	}
+}
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Notifications
+//
+var types = {
+	'info':		{ sel: '#notify', cls: 'info', fade: true },
+	'error':	{ sel: '#notify', cls: 'error', fade: false },
+	'success':	{ sel: '#notify', cls: 'success', fade: false },
+
+	0: { sel: '#notify', cls: 'info', fade: true },
+		// 33: kNotifyType_ItemAssignmentFeedback
+		// 37: kNotifyType_MailReceived
+		// 145: kNotifyType_AuctionSuccess
+		// 209:  kNotifyType_GroupProjectCollectionFeedback
+	34: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_ItemAssignmentFeedbackFailed
+	38: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_MailSendFailed
+	144: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_AuctionFailed
+	208: { sel: '#notify', cls: 'error', fade: false }	// kNotifyType_GroupProjectDonationFailed
+};
+
+clientRender.addNotification = function(displayObj)
+{
+	this.addNotificationHTML(format.escapeForHTML(displayObj.string), displayObj && displayObj.id ? displayObj.id : 'info');
+}
+
+clientRender.addNotificationMessageKey = function(key, type)
+{
+	this.dataModel.translate(key, function(error, str) {
+		client.addNotificationString(str, type);
+	});
+}
+
+clientRender.addNotificationString = function(string, type)
+{
+	this.addNotificationHTML(format.escapeForHTML(string), type);
+}
+
+clientRender.addNotificationSMF = function(smf, type)
+{
+	this.addNotificationHTML(format.cleanUpSMF(smf), type);
+}
+
+
+clientRender.addNotificationHTML = function(html, type)
+{
+	$('.notification').show();
+
+	var info = type ? types[type] || types[0] : types[0];
+
+	var elem = $('<li class="' + info.cls + '">'+html+'</li>').appendTo($(info.sel));
+
+	if(info.fade)
+	{
+		$(elem).delay(10000).fadeOut(250).promise().done(function() {
+			$(elem).remove();
+			hideIfNoMessages();
+		});
+	}
+
+	function hideIfNoMessages()
+	{
+		if($('#notify li').length === 0)
+		{
+			$('.notification').hide();
+		}
+	}
+}
+
+
+
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

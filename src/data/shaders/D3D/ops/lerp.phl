@@ -1,0 +1,4 @@
+// lerp.phl
+{
+	%Result% = lerp(%B%, %A%, %WEIGHT%);
+}

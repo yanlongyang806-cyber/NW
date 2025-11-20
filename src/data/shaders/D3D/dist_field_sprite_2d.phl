@@ -1,0 +1,125 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+
+//Remove maxDen to make the shader as short as possible since nothing uses it
+struct LAYER_INFO
+{
+	float4 offset; //the zw components are not used, its just a float4 so it packs predictably into registers
+	//these are the precomputed constants for madstep_precomputed
+	float4 densityRange; //outline_mul, outline_add, minDen_mul, minDen_add
+	float4 colorMain;
+	float4 colorOutline;
+};
+
+#ifdef ONE_LAYER
+
+	static const int LAYER_COUNT = 1;
+
+#elseif TWO_LAYERS
+
+	static const int LAYER_COUNT = 2;
+
+#endif
+ 
+PS_CONSTANT_MATERIAL_BUFFER_START()
+#ifdef VERTICAL_GRADIENT
+uniform	float4 colorTop : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 colorBottom : PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 gradientPoints : PS_CONSTANT_MATERIAL_PARAM2() ; // x = -top/(bottom - top), y = 1/(bottom - top), z = unused, w = unused
+uniform LAYER_INFO layerSettings[LAYER_COUNT] : PS_CONSTANT_MATERIAL_PARAM3() ;
+#else
+uniform LAYER_INFO layerSettings[LAYER_COUNT] : PS_CONSTANT_MATERIAL_PARAM0() ;
+#endif
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+
+
+SAMPLER_DECL(texture_sampler, 0);
+
+float madstep(float mn, float mx, float v)
+{
+	//want : saturate((v - mn) / (mx - mn))
+	float delta = mx - mn;
+	float sharpen = 0.18; // increase tightness to get the same visual look/good AA
+	mx -= delta*sharpen;
+	mn += delta*sharpen;
+	float mulvalue = 1.f/(mx - mn);
+	float addvalue = -mn * mulvalue;
+	return saturate(v * mulvalue + addvalue);
+}
+
+//this assumes the mul and add values are done cpu-side
+float madstep_precomputed(float mulvalue, float addvalue, float v)
+{
+	return saturate(v * mulvalue + addvalue);
+}
+// -----------------------------------------------------------------------
+
+// Main function prototype
+struct PS_OUTPUT
+{
+	float4 color[1] : SEM_COLOR(0);
+};
+
+PS_OUTPUT dist_field_sprite_2d(PS_INPUT_SPRITE fragment)
+{
+	PS_OUTPUT output;
+	float4 outColor = float4(0,0,0,0);
+
+	float4 gradientColor;
+	#ifdef VERTICAL_GRADIENT
+	gradientColor = lerp(colorTop, colorBottom, saturate(fragment.color.r * gradientPoints.y + gradientPoints.x));
+	#else
+	gradientColor = fragment.color;
+	#endif
+
+	#ifndef _PS3
+	#ifndef TRANSGAMING
+	[unroll]
+	#endif
+	#endif
+	for (int i = 0; i < LAYER_COUNT ; i++)
+	{
+		float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy - layerSettings[i].offset.xy);
+
+		float4 layerColor;
+
+		float density = texcolor.a;
+		float minDen_mul = layerSettings[i].densityRange.x;
+		float minDen_add = layerSettings[i].densityRange.y;
+		float outline_mul = layerSettings[i].densityRange.z;
+		float outline_add = layerSettings[i].densityRange.w;
+		float4 colorOutline = layerSettings[i].colorOutline;
+		float4 colorMain; 
+		if (i != LAYER_COUNT - 1)
+		{ 
+			colorMain = layerSettings[i].colorMain; 
+		} 
+		else 
+		{ 
+			colorMain = layerSettings[i].colorMain * gradientColor;
+		} 
+
+		layerColor = lerp(colorOutline, colorMain, madstep_precomputed(outline_mul, outline_add, density));
+		//Removed maxDen to make the shader as short as possible since nothing uses it
+		float isInsideShape = madstep_precomputed(minDen_mul, minDen_add, density); // - madstep_precomputed(maxDen_mul, maxDen_add, density);
+		layerColor.a *= isInsideShape;
+
+		if (i > 0)
+		{
+			//blend with previous layer
+			outColor.rgb = lerp(outColor.rgb, layerColor.rgb, layerColor.a);
+			outColor.a = max(outColor.a, layerColor.a);
+		}
+		else
+		{
+			outColor = layerColor; 
+		}
+	} 
+
+
+	output.color[0] = outColor;
+
+	return output;
+}

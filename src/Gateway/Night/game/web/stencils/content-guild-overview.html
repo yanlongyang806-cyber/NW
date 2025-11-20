@@ -1,0 +1,92 @@
+<div class="page-content" data-path="guild" data-update="guild">
+	<div class="page-guild-overview">
+		<div class="page-body">
+			<div class="guild-header">
+				<h2 data-path=".name">The Crazy Amazing Guild</h2>
+				<h5 data-if=".motd">Message of the Day:</h5>
+				<h4 data-if=".motd" data-path=".motd.$escapeForHTML()">Welcome to the Crazy Amazing Guild lorem ipsum dolor sit amet, consectetur adipiscing elit.</h4>
+			</div>
+
+			<hr class="mobileOnly" />
+
+			<div class="panel-inner silver guild-overview-info">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-content">
+					<h4>Guild Info</h4>
+					<dl>
+						<dt>Founding Date:</dt>
+						<dd data-path=".createdon.$shortDate()">Jan 31, 2013</dd>
+
+						<dt>Total Members:</dt>
+						<dd data-path=".totalmembers">35</dd>
+
+						<dt>Minimum Level:</dt>
+						<dd data-path=".minlevelrecruit">1</dd>
+
+						<dt data-if=".website">Website:</dt>
+						<dd data-if=".website"><a data-path=".website" data-set-href="{.website.$httpify()}" href="http://www.playneverwinter.com/" target="_blank">http://www.playneverwinter.com</a></dd>
+					</dl>
+				</div>
+			</div>
+
+			<div class="panel-inner silver guild-overview-news">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div data-if="{.viewerismember}" class="panel-content">
+					<h4>Latest News</h4>
+
+					<table data-path=".activityentries.$slice(0, 8)">
+						<tr>
+							<td class="date"><span data-path=".time.$shortDateTime()">Jan 31, 2013</span></td>
+							<td class="entry"><span data-path=".string"></span></td>
+						</tr>
+					</table>
+					<!--
+					<dl data-path=".activityentries.$slice(0, 8)">
+						<dt data-path=".time.$shortDateTime()">Jan 31, 2013</dt>
+						<dd data-path=".string">Mr Pickles@username has joined the guild</dd>
+					</dl>
+					-->
+
+					<!--
+					<div class="guild-more-link" data-if=".activityentries.$length() gt 8">
+						<a data-url="/news">More News</span>
+					</div>
+					-->
+				</div>
+				<div data-if="!{.viewerismember}" class="panel-content">
+					<h4>Recruitment</h4>
+					<dl>
+						<dt>Recruiting Message:</dt>
+						<dd data-path=".recruitmessage.$escapeForHTML()">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</dd>
+					</dl>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

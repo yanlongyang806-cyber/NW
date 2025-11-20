@@ -1,0 +1,17 @@
+#include "ps_inc.hlsl"
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 blue_shift_transform : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float3 blue_shift_vector : PS_CONSTANT_MATERIAL_PARAM1() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	// For very low light conditions, the rods will dominate the perception of
+	// light, and therefore color will be desaturated and shifted towards blue.
+	float texlum = InvToneMapLDRIntensityToIntensity(fragment.texcoord.x);
+ 	float fBlueShiftCoefficient = saturate(texlum * blue_shift_transform.x + blue_shift_transform.y);
+	float3 vRodColor = ToneMapLDR(texlum * blue_shift_vector);
+
+	return float4(vRodColor * (1 - fBlueShiftCoefficient), fBlueShiftCoefficient);
+}

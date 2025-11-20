@@ -1,0 +1,132 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(texture_sampler, 0);
+#ifdef SOFT_PARTICLE
+SAMPLER_DECL(depth_sampler, 1);
+#endif
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 depth_sampler_scale : PS_CONSTANT_MATERIAL_PARAM1() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+// -----------------------------------------------------------------------
+
+float4 null_pixelshader() : COLOR0
+{
+	return float4(0, 0, 0, 1.0);
+}
+
+// Main function prototype
+struct PS_OUTPUT
+{
+	#ifdef MRT4
+		float4 color[4] : SEM_COLOR(0);
+	#elseifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+};
+
+
+PS_OUTPUT default_pixelshader(PS_INPUT_NORMAL fragment)
+{
+	PS_OUTPUT output;
+
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoords.xy);
+	float4 outcolor;
+
+	outcolor = fragment.color0 * texcolor;
+
+	fogApply(outcolor.xyz, volume_fog_not_available, fragment.position_vs, length(fragment.position_vs.xyz));
+	output.color[0].rgb = ToneMapLDR(outcolor.rgb);
+	output.color[0].a = outcolor.a;
+	
+	#ifdef MRT4
+		output.color[2] = 0;
+		
+		// inverted range compressed view space z value
+		output.color[3].x = sqrt(-fragment.position_vs.z * depth_range.y);
+		output.color[3].yzw = 0;
+	#endif
+	#ifdef MRT2
+		output.color[1].rgb = ToneMapHDR(outcolor.rgb);
+		output.color[1].a = outcolor.a;
+	#endif
+
+	return output;
+}
+
+// -----------------------------------------------------------------------
+
+PS_OUTPUT default_particle_pixelshader(PS_INPUT_SPRITE fragment)
+{
+	// TODO: make this use per-vertex fog like the fast particles if we need more performance (need separate vertex shader)
+	clip(fragment.color.w);
+	PS_OUTPUT output;
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	float4 outcolor = fragment.color * texcolor;
+
+	fogApply(outcolor.xyz, volume_fog_not_available, fragment.position_vs, length(fragment.position_vs.xyz));
+
+#ifdef SOFT_PARTICLE
+	float depth;
+	float2 coord;
+	getVPos(coord, fragment);
+	depth = sampleTexDepthVS(depth_sampler, coord*depth_sampler_scale.xy+depth_sampler_scale.zw);
+
+	outcolor.a *= saturate(fragment.position_vs.z + depth);
+#endif
+
+	output.color[0].rgb = ToneMapLDR(outcolor.rgb);
+	output.color[0].a = outcolor.a;
+	
+	#ifdef MRT4
+		output.color[3] = 0;
+		output.color[2] = 0;
+	#endif
+	#ifdef MRT2
+		output.color[1].rgb = ToneMapHDR(outcolor.rgb);
+		output.color[1].a = outcolor.a;
+	#endif
+
+	return output;
+}
+
+// -----------------------------------------------------------------------
+
+PS_OUTPUT cylinder_trail_pixelshader(PS_INPUT_CYLINDER_TRAIL fragment)
+{
+	PS_OUTPUT output;
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	/*
+	float3 center_vs = fragment.center_vs;
+	float3 position_vs = fragment.position_vs;
+	float3 distVec = (center_vs - position_vs) / fragment.center_vs.z;
+	distVec.z = 0.0f;
+	distVec.y *= 0.5f;
+	//distVec.x *= sin(distVec.x);
+	float distAlpha = -length(distVec);
+	distAlpha /= fragment.radius_vs;
+	float4 color = float4(0, distAlpha*distAlpha, 0, 1);
+	return color;
+	*/
+	float4 outcolor = fragment.color * texcolor;
+	
+	fogApply(outcolor.xyz, volume_fog_not_available, fragment.position_vs, length(fragment.position_vs.xyz));
+
+	output.color[0].rgb = ToneMapLDR(outcolor.rgb);
+	output.color[0].a = outcolor.a;
+	
+	#ifdef MRT4
+		output.color[3] = 0;
+		output.color[2] = 0;
+	#endif
+	#ifdef MRT2
+		output.color[1].rgb = ToneMapHDR(outcolor.rgb);
+		output.color[1].a = outcolor.a;
+	#endif
+	
+	return output;
+}

@@ -1,0 +1,244 @@
+#include "ps_inc.hlsl"
+
+#ifdef _PS3
+#pragma disablepc all
+#endif
+
+#ifdef DEPTH || DEPTH_AS_COLOR
+	#include "depth_inc.hlsl"
+#endif
+
+SAMPLER_DECL(texture_sampler, 0);
+SAMPLER_DECL(texture_sampler2, 1);
+SAMPLER_DECL(texture_sampler3, 2);
+SAMPLER_DECL(texture_sampler4, 3);
+SAMPLER_DECL(texture_sampler5, 4);
+
+#ifdef ADD_TEXTURES
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float2 multipliers : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+#ifdef BLOOM_CURVE
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float2 bloomcurve : PS_CONSTANT_MATERIAL_PARAM0() ; // offset, rate
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+	// match the one in shrink4.phl
+	float getBloomIntensity(float intensity)
+	{
+		//TODO DJR find out if negative offsets in bloom curve are appropriate
+		intensity = max(0, intensity - bloomcurve.x - exposure_transform.y);
+		return bloomcurve.y * intensity;
+	}
+#endif
+
+#ifdef TEXKILL_CONSTANT
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float texkillvalue : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+#ifdef DEPTH_AS_COLOR
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float3 color_depth_range : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+#ifdef SHOWTEXMIP
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float4 showtexmip : PS_CONSTANT_MATERIAL_PARAM0() ; // mip, reserved, reserved, reserved
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+#ifdef PCF_DEPTH_BLIT
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float4 depthRange : PS_CONSTANT_MATERIAL_PARAM0() ; // min, max, power
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+// -----------------------------------------------------------------------
+
+struct PS_OUTPUT
+{
+	#ifdef QUADRUPLE
+		float4 color0		: SEM_COLOR(0);
+		float4 color1		: SEM_COLOR(1);
+		float4 color2		: SEM_COLOR(2);
+		float4 color3		: SEM_COLOR(3);
+	#elifdef DOUBLE
+		float4 color0		: SEM_COLOR(0);
+		float4 color1		: SEM_COLOR(1);
+	#else
+		float4 color		: SEMCOLOR ;
+	#endif
+	#ifdef DEPTH
+		float depth		: DEPTH;
+	#endif
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+#ifdef PCF_DEPTH_BLIT
+	float4 texcolor = float4(1, 0.5, 0.5, 1);
+	#ifdef NVIDIA
+		// nvidia specific
+		// Edit smin and smax to zoom in on a specified depth range
+		float smin=depthRange.x;
+		float smax=depthRange.y;
+		float mn=smin;
+		float mx=smax;
+		float v=(mn+mx) * 0.5, r;
+	#ifndef TRANSGAMING
+		[unroll]
+	#endif
+		for (int i=0; i<16; i++)
+		{
+			r = sampleTex2DProj(texture_sampler, float4(fragment.texcoord.xy, v, 1)).x;
+			mn = lerp(mn, v, r);
+			mx = lerp(v, mx, r);
+			v = (mn + mx) * 0.5;
+		}
+		float transformedDepth = (v - smin) / (smax - smin);
+		if (transformedDepth > 0.0)
+			transformedDepth = pow(abs(transformedDepth), depthRange.z);
+		texcolor.xyz = transformedDepth;
+
+	#else
+		texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	#endif
+#else
+	#ifdef TEXKILL_TEXCOORD
+		// sampling a 1x1 texture for luminance testing - interpolated
+		// texcoord.x provides the luminance test value, texture color
+		// is the calculated luminance
+		float4 texcolor = sampleTex2D(texture_sampler, float2(0.5, 0.5));
+	#else
+		#ifdef SHOWTEXMIP
+		float4 texcolor = sampleTex2DLod(texture_sampler, fragment.texcoord.xy, showtexmip.x);
+		#else
+		float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+		#endif
+	#endif
+#endif
+
+	#ifdef ADD_TEXTURES || QUADRUPLE || DOUBLE
+		float3 texcolor2 = sampleTex2D(texture_sampler2, fragment.texcoord.xy).xyz;
+	#endif
+
+	#ifdef QUADRUPLE
+		float3 texcolor3 = sampleTex2D(texture_sampler3, fragment.texcoord.xy).xyz;
+		float3 texcolor4 = sampleTex2D(texture_sampler4, fragment.texcoord.xy).xyz;
+	#endif
+
+	#ifdef DEPTH
+		#ifdef TONEMAP_LDR_TO_HDR
+			float d = sampleTexDepth(texture_sampler2, fragment.texcoord.xy);
+			#ifdef BIAS_AND_SCALE_HDR_DEPTH
+			d = 0.01+d*.99; // Bias depth so we don't clip objects re-drawn at the same depth
+			#endif
+		#else
+			float d = sampleTex2D(texture_sampler5, fragment.texcoord.xy).x;
+		#endif
+	#endif
+
+	#ifdef ADD_TEXTURES
+		texcolor.xyz = multipliers.x * texcolor.xyz + multipliers.y * texcolor2.xyz;
+	#endif
+
+	#ifdef BLOOM_CURVE
+		float intensity = getIntensity(InvToneMapHDR(texcolor.xyz));
+		float bloom_intensity = getBloomIntensity(intensity);
+		texcolor.xyz *= (bloom_intensity / intensity);
+	#endif
+
+	#ifdef BRIGHT_PASS
+		float intensity = max(getIntensity(texcolor.xyz), 0.0001f);
+		// TODO these limits should be set in code
+		texcolor.xyz *= interp_safe(0.25, 1.25, intensity) / intensity;
+	#endif
+
+	#ifdef TONEMAP_LDR_TO_HDR
+//		texcolor.xyz = sampleTex2D(texture_sampler2, fragment.texcoord.xy).r;//ToneMapHDR(InvToneMapLDR(texcolor));
+		texcolor.xyz = ToneMapHDR(InvToneMapLDR(texcolor.xyz));
+//		texcolor.xyz = 40 * (d-0.975f);
+	#endif
+
+	#ifdef QUADRUPLE
+		output.color0 = float4(texcolor.xyz, 1);
+		output.color1 = float4(texcolor2, 1);
+		output.color2 = float4(texcolor3, 1);
+		output.color3 = float4(texcolor4, 1);
+	#elifdef DOUBLE
+		output.color0 = float4(texcolor.xyz, 1);
+		output.color1 = float4(texcolor2, 1);
+	#else
+		#ifdef ALPHA_AS_COLOR
+			texcolor.rgb = texcolor.a;
+		#endif
+
+		#ifdef ALPHABLIT_SHOW_ALPHA
+			#ifdef SM30
+				uint bit1 = (uint(abs(float(int(fragment.texcoord.x*8)))) % 16) / 8;
+				uint bit2 = (uint(abs(float(int(fragment.texcoord.y*8)))) % 16) / 8;
+				// DX11: removing position_screen
+				//int bit1 = (int(fragment.position_screen.x) % 16) / 8;
+				//int bit2 = (int(fragment.position_screen.y) % 16) / 8;
+				float3 invis = lerp(1, 0.9f, (bit1 + bit2) % 2);
+			#else
+				float3 invis = 0.9f;
+			#endif
+			texcolor.rgb = lerp(invis, texcolor.rgb, texcolor.a);
+		#endif
+
+		#ifdef USE_ALPHA
+			//texcolor.a = texcolor.a;
+		#else
+			texcolor.a = 1;
+		#endif
+			
+	    #ifdef DEPTH_AS_COLOR
+			{
+				float d = sampleTexDepth(texture_sampler, fragment.texcoord.xy);
+				float digitized = saturate( (d - color_depth_range[0]) / (color_depth_range[1] - color_depth_range[0]) );
+				digitized = pow(digitized, color_depth_range[2]);
+				
+				texcolor = float4( digitized, digitized, digitized, 1 );
+			}
+	    #endif
+
+		output.color = texcolor;
+	#endif
+	#ifdef DEPTH
+		output.depth = d;
+//		output.color[0] = d;
+//		output.color[1] = 0;
+	#endif
+
+	// The output color of both texkill sections is for debugging, as
+	// the count of clipped pixels determines the measurement. We scale 
+	// down the intensity (R) so we can see a greater range of luminances, 
+	// and set G to one, so we get a blue-to-white intensity gradient in 
+	// the debug thumbnail.
+	#ifdef TEXKILL_TEXCOORD
+		output.color.r = fragment.texcoord.r / 2.4;
+		output.color.g = 1.0;
+		
+		clip(texcolor.r - fragment.texcoord.r);
+	#elifdef TEXKILL_CONSTANT
+		output.color.r = getLuminance(InvToneMapHDR(texcolor.xyz));
+		output.color.g = 1.0f;
+		
+		clip(texcolor.r - texkillvalue);
+	#endif
+
+	#ifdef DISCARD_EDGE
+	{
+		clip( 0.5 - sampleTex2D( texture_sampler2, fragment.texcoord.xy ).r );
+	}
+	#endif
+
+	return output;
+}

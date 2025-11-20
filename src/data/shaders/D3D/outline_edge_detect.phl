@@ -1,0 +1,189 @@
+float3 extractNormalPacked(float packed_4_4_normal)
+{
+	float3 normal;
+	// shift so fractional bits contain the x, and integer bits contain y
+	packed_4_4_normal *= 16;
+
+	// separate into x & y
+	normal.x = frac( packed_4_4_normal );
+	normal.y = packed_4_4_normal - normal.x;
+
+	// x is now in [0,1]
+	normal.x = normal.x * 2 - 1;
+
+	// x is now in [0,16]
+	normal.y = ( normal.y / 15 ) * 2 - 1;
+	normal.z = sqrt( 1 - dot( normal.xy, normal.xy ) );
+	return normal;
+}
+
+//#define USE_Z
+
+void sample_depths2(in float2 input_texcoord,
+					in SAMPLER_PARAM1_TYPE() depth_sampler,
+					in SAMPLER_PARAM2_TYPE() samdepth_sampler,
+					in float4 ppTexScale, 
+					out float2 depthCZW, out float4 depthLRTB)
+{
+	float4 texcoord = float4(input_texcoord.xy, 0, 0);
+
+	// Get depth (Z/W) samples
+	// L = depthLRTB.x       T
+	// T = depthLRTB.z      LCR   C is at (x,y)
+	// C = depthCZW.xy       B
+	// R = depthLRTB.y
+	// B = depthLRTB.w
+
+	depthCZW.xy = sampleTexDepth(depth_sampler, texcoord.xy);
+
+	/*
+	if (depthCZW.x > maxDepth)
+	{
+		// early out
+		texcolor = 0;
+	}
+	else
+	*/
+
+	texcoord.xy = input_texcoord.xy - ppTexScale.xy;
+	depthLRTB.x = sampleTexDepth(depth_sampler, texcoord.xy);
+
+	texcoord.xy = input_texcoord.xy - ppTexScale.zw;
+	depthLRTB.z = sampleTexDepth(depth_sampler, texcoord.xy);
+
+	texcoord.xy = input_texcoord.xy + ppTexScale.xy;
+	depthLRTB.y = sampleTexDepth(depth_sampler, texcoord.xy);
+
+	texcoord.xy = input_texcoord.xy + ppTexScale.zw;
+	depthLRTB.w = sampleTexDepth(depth_sampler, texcoord.xy);
+
+	depthCZW.y = min(depthCZW.x, depthLRTB.z);
+	depthCZW.y = min(depthCZW.y, depthLRTB.w);
+	depthCZW.y = min(depthCZW.y, depthLRTB.x);
+	depthCZW.y = min(depthCZW.y, depthLRTB.y);
+}
+
+float4 calculate_edge(in float2 input_texcoord,
+					  in SAMPLER_PARAM1_TYPE() depth_sampler,
+					  in SAMPLER_PARAM2_TYPE() samdepth_sampler,
+					  in float4 ppTexScale, in float4 edgeFades)
+{
+	float2 depthCZW;
+	float4 depthLRTB;
+	float4 texcolor;
+
+	sample_depths2(input_texcoord, depth_sampler, samdepth_sampler, ppTexScale, 
+		depthCZW, depthLRTB);
+
+#ifdef DRAW_OUTLINES_AT_Z_DEPTH
+	texcolor.r = depthCZW.y;
+#endif
+
+	// early out
+	{
+
+		float2 edgeWeight;
+
+		// blend in the edge based on an edge weight
+		texcolor.a = 0;
+		float depth0 = depthCZW.x;
+
+#ifndef SINGLE_OUTLINES
+		// Option A. Second difference, weighted by depth
+		edgeWeight.x = dot(depthLRTB, 1) - 4 * depth0;
+		depthCZW.x = depthCZW.y;
+		edgeWeight.x = abs( edgeWeight.x );
+
+		depthCZW.x = viewSpaceDepth(depthCZW.x);
+#ifdef _PS3
+        edgeWeight.x = saturate(edgeWeight.x - (1.0/250.0));
+#endif
+
+		edgeWeight.x *= 250 * depthCZW.y;
+#else
+		// Option B. max of horz & vertical second difference
+		edgeWeight.x = ( depthLRTB.x + depthLRTB.z - depth0 * 2 );
+		edgeWeight.y = ( depthLRTB.y + depthLRTB.w - depth0 * 2 );
+
+		depthCZW.x = viewSpaceDepth(depthCZW.x);
+
+		edgeWeight.x = max( edgeWeight.x, edgeWeight.y ) * 25 / depthCZW.x;
+#endif
+
+	
+		// cut out low edge values
+		edgeWeight.x = saturate( ( edgeWeight.x - 0.25f ) * ( 1.0 / 0.75 ) );
+
+		// fade depth-discontinuity edges based on the depth
+		edgeWeight.x *= saturate( ( depthCZW.x - edgeFades.x ) * edgeFades.y );
+
+		texcolor.a = edgeWeight.x;
+
+		
+		/* DEBUG
+		// force normal edge test only
+		//edgeWeight.x = abs( texnormal.z );
+
+		// The following code shows the normals
+		texcolor.r = texnormal.x * 0.5 + 0.5;
+		texcolor.g = texnormal.y * 0.5 + 0.5;
+		texcolor.a = 1;
+
+		// The following code shows the edge weights
+		//texcolor.r += edgeWeight.x * 4000;
+		//texcolor.g += edgeWeight.y * 4000;
+		//texcolor.b += depthCZW.x;
+		//texcolor.a = 1.0;
+		//*/
+	}
+
+	return texcolor;
+}
+
+float4 calculate_edgeZ(in float2 input_texcoord,
+					   in SAMPLER_PARAM1_TYPE() depth_sampler,
+					   in SAMPLER_PARAM2_TYPE() samdepth_sampler,
+					   in float4 ppTexScale,
+					   in float4 edgeFades)
+{
+	float2 depthCZW;
+	float4 depthLRTB;
+	float4 texcolor;
+
+	sample_depths2(input_texcoord, depth_sampler, samdepth_sampler, ppTexScale, 
+		depthCZW, depthLRTB);
+
+#ifdef DRAW_OUTLINES_AT_Z_DEPTH
+	texcolor.r = depthCZW.y;
+#endif
+
+	// early out
+	{
+		depthCZW.x = viewSpaceDepth(depthCZW.x);
+		depthCZW.y = viewSpaceDepth(depthCZW.y);
+		depthLRTB = viewSpaceDepth4(depthLRTB);
+
+		float2 edgeWeight;
+
+		// blend in the edge based on an edge weight
+		texcolor.a = 0;
+
+		// Second difference, weighted by depth
+		edgeWeight.x = dot(depthLRTB,float4(1,1,1,1)) - 4 * depthCZW.x;
+		//edgeWeight.x = abs( edgeWeight.x ) * 250 * depthCZW.y;
+		edgeWeight.x = abs( edgeWeight.x );
+
+	
+		// cut out low edge values
+		edgeWeight.x = saturate( ( edgeWeight.x - 0.25 ) * ( 1.0 / 0.75 ) );
+
+		// fade depth-discontinuity edges based on the depth
+		edgeWeight.x *= saturate( ( depthCZW.x - edgeFades.x ) * edgeFades.y );
+		//edgeWeight.x *= saturate( depthCZW.x / 20.0 );
+
+		texcolor.a = edgeWeight.x;
+	}
+
+	return texcolor;
+}
+

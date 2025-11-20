@@ -1,0 +1,324 @@
+<!-- if(dev) -->
+<!--
+<div data-path="guild">
+-->
+<!--
+	<div class="edit-event-page">
+		<h2>Create Event</h2>
+		<div class="fleet-event-edit-container needsScrollBars">
+			<div class="scrollBarContent">
+
+				<form class="event-form">
+
+					<div class="event-form-title">
+						<label>Title:</label>
+						<input type="text" placeholder="Enter a title" class="event-title" />
+					</div>
+
+					<div class="event-form-desc">
+						<label>Description:</label>
+						<textarea data-no-translation placeholder="Enter a description" class="event-desc"></textarea>
+					</div>
+
+					<div class="event-form-date">
+						<label>Date:</label>
+						<div class="styled-select event-date-month">
+							<select>
+								<option value="January">January</option>
+								<option value="February">February</option>
+								<option value="March">March</option>
+								<option value="April">April</option>
+								<option value="May">May</option>
+								<option value="June">June</option>
+								<option value="July">July</option>
+								<option value="August">August</option>
+								<option value="September">September</option>
+								<option value="October">October</option>
+								<option value="November">November</option>
+								<option value="December">December</option>
+							</select>
+						</div>
+
+						<div class="styled-select event-date-day">
+							<select>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+								<option value="13">13</option>
+								<option value="14">14</option>
+								<option value="15">15</option>
+								<option value="16">16</option>
+								<option value="17">17</option>
+								<option value="18">18</option>
+								<option value="19">19</option>
+								<option value="20">20</option>
+								<option value="21">21</option>
+								<option value="22">22</option>
+								<option value="23">23</option>
+								<option value="24">24</option>
+								<option value="25">25</option>
+								<option value="26">26</option>
+								<option value="27">27</option>
+								<option value="28">28</option>
+								<option value="29">29</option>
+								<option value="30">30</option>
+								<option value="31">31</option>
+							</select>
+						</div>
+
+						<div class="styled-select event-date-year">
+							<select>
+								<option value="2012">2012</option>
+								<option value="2013">2013</option>
+								<option value="2014">2014</option>
+							</select>
+						</div>
+					</div>
+
+
+					<div class="event-form-time">
+						<label>Start Time:</label>
+						<div class="styled-select event-start-hour">
+							<select>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+								<option value="11">11</option>
+								<option value="12">12</option>
+							</select>
+						</div>
+						<span class="event-punctuation">:</span>
+						<div class="styled-select event-start-min">
+							<select>
+								<option value="00">00</option>
+								<option value="05">05</option>
+								<option value="10">10</option>
+								<option value="15">15</option>
+								<option value="20">20</option>
+								<option value="25">25</option>
+								<option value="30">30</option>
+								<option value="35">35</option>
+								<option value="40">40</option>
+								<option value="45">45</option>
+								<option value="50">50</option>
+								<option value="55">55</option>
+							</select>
+						</div>
+						<div class="styled-select event-start-ampm">
+							<select>
+								<option value="am">am</option>
+								<option value="pm">pm</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-duration">
+						<label>Duration:</label>
+						<div class="styled-select event-duration-hour">
+							<select>
+								<option value="0">0 hours</option>
+								<option value="1">1 hour</option>
+								<option value="2">2 hours</option>
+								<option value="3">3 hours</option>
+								<option value="4">4 hours</option>
+								<option value="5">5 hours</option>
+								<option value="6">6 hours</option>
+								<option value="7">7 hours</option>
+								<option value="8">8 hours</option>
+								<option value="9"> hours9</option>
+								<option value="10">10 hours</option>
+								<option value="11">11 hours</option>
+								<option value="12">12 hours</option>
+								<option value="13">13 hours</option>
+								<option value="14">14 hours</option>
+								<option value="15">15 hours</option>
+								<option value="16">16 hours</option>
+								<option value="17">17 hours</option>
+								<option value="18">18 hours</option>
+								<option value="19">19 hours</option>
+								<option value="20">20 hours</option>
+								<option value="21">21 hours</option>
+								<option value="22">22 hours</option>
+								<option value="23">23 hours</option>
+							</select>
+						</div>
+						<div class="styled-select event-duration-min">
+							<select>
+								<option value="00">00 min</option>
+								<option value="05">05 min</option>
+								<option value="10">10 min</option>
+								<option value="15">15 min</option>
+								<option value="20">20 min</option>
+								<option value="25">25 min</option>
+								<option value="30">30 min</option>
+								<option value="35">35 min</option>
+								<option value="40">40 min</option>
+								<option value="45">45 min</option>
+								<option value="50">50 min</option>
+								<option value="55">55 min</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-recurrence">
+						<label>Event Recurrence:</label>
+						<div class="styled-select event-recurrence">
+							<select>
+								<option value="0">Does Not Repeat</option>
+								<option value="1">Every Day</option>
+								<option value="2">Every 2 Days</option>
+								<option value="3">Every 3 Days</option>
+								<option value="4">Every 4 Days</option>
+								<option value="5">Every Week</option>
+								<option value="6">Every 2 Weeks</option>
+								<option value="7">Every 3 Weeks</option>
+								<option value="8">Every 4 Weeks</option>
+							</select>
+						</div>
+					</div>
+
+
+
+					<div class="event-form-repeats">
+						<label>Repeats Until:</label>
+						<div class="styled-select event-repeats">
+							<select>
+								<option value="forever">Forever</option>
+								<option value="2012-12-11">December 11, 2012</option>
+								<option value="2012-12-12">December 12, 2012</option>
+								<option value="2012-12-13">December 13, 2012</option>
+								<option value="2012-12-14">December 14, 2012</option>
+
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-min-rank">
+						<label>Minimum Rank:</label>
+						<div class="styled-select event-min-rank">
+							<select>
+								<option value="ensign">Ensign</option>
+								<option value="ensign">Lieutenant</option>
+								<option value="ensign">Lieutenant Commander</option>
+								<option value="ensign">Commander</option>
+								<option value="ensign">Captain</option>
+								<option value="ensign">Rear Admiral, Lower Half</option>
+								<option value="ensign">Rear Admiral, Upper Half</option>
+								<option value="ensign">Vice Admiral</option>
+							</select>
+						</div>
+						<div class="styled-select event-min-grade">
+							<select>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-max-rank">
+						<label>Maximum Rank:</label>
+						<div class="styled-select event-max-rank">
+							<select>
+								<option value="ensign">Ensign</option>
+								<option value="ensign">Lieutenant</option>
+								<option value="ensign">Lieutenant Commander</option>
+								<option value="ensign">Commander</option>
+								<option value="ensign">Captain</option>
+								<option value="ensign">Rear Admiral, Lower Half</option>
+								<option value="ensign">Rear Admiral, Upper Half</option>
+								<option value="ensign">Vice Admiral</option>
+							</select>
+						</div>
+						<div class="styled-select event-max-grade">
+							<select>
+								<option value="1">1</option>
+								<option value="2">2</option>
+								<option value="3">3</option>
+								<option value="4">4</option>
+								<option value="5">5</option>
+								<option value="6">6</option>
+								<option value="7">7</option>
+								<option value="8">8</option>
+								<option value="9">9</option>
+								<option value="10">10</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-min-fleet-rank">
+						<label>Minimum Fleet Rank:</label>
+						<div class="styled-select event-min-fleet-rank">
+							<select>
+								<option value="1">Recruit</option>
+								<option value="2">Member</option>
+								<option value="3">Sergeant</option>
+								<option value="4">Junior Officer</option>
+								<option value="5">Officer</option>
+								<option value="6">Senior Officer</option>
+								<option value="7">Leader</option>
+							</select>
+						</div>
+					</div>
+
+					<div class="event-form-attendance">
+						<label>Attendance Limits:</label>
+						<input class="event-attendance-min" type="text" placeholder="0" />
+						<span class="event-punctuation">-</span>
+						<input class="event-attendance-max" type="text" placeholder="Unlimited" />
+					</div>
+
+					<div class="event-form-editing">
+						<label>Editing Requirements:</label>
+						<div class="styled-select event-edit-requirements">
+							<select>
+								<option value="1">Recruit</option>
+								<option value="2">Member</option>
+								<option value="3">Sergeant</option>
+								<option value="4">Junior Officer</option>
+								<option value="5">Officer</option>
+								<option value="6">Senior Officer</option>
+								<option value="7">Leader</option>
+							</select>
+						</div>
+						<span class="form-note">Minimum Fleet Rank to Edit this Event</span>
+					</div>
+
+					<div class="event-form-submit">
+						<input type="submit" value="Save Changes" class="event-submit" />
+						<input type="submit" value="Delete Event" class="event-delete" />
+					</div>
+
+				</form>
+			</div>
+		</div>
+	</div>
+-->
+<!--
+</div>
+-->
+
+<!-- endif(dev) -->

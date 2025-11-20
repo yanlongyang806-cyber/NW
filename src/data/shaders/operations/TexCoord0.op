@@ -1,0 +1,23 @@
+OperationDef
+	Name "TexCoord0" // Name of the operation
+	Description "Texture Coordinates"
+	Type TEXTURE
+
+	Input
+		Name DefaultInput
+		Description "Default input to get constant value"
+		Float 4
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+		Hidden 1
+	EndInput
+	Output
+		Name TexCoord0
+		Type TexCoord
+		Description "TexCoord0"
+		Float 4
+		AlphaFrom DefaultInput
+	EndOutput
+EndOperationDef

@@ -1,0 +1,51 @@
+#include "ps_inc.hlsl"
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 shadow_coord_offset : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 coord_transform_x : PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 coord_transform_y : PS_CONSTANT_MATERIAL_PARAM2() ;
+uniform float4 pre_coord_transform_x : PS_CONSTANT_MATERIAL_PARAM3() ;
+uniform float4 pre_coord_transform_y : PS_CONSTANT_MATERIAL_PARAM4() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+struct PS_OUTPUT
+{
+	float4 color : COLOR;
+};
+
+
+// -----------------------------------------------------------------------
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+	float4 shadow_coord_temp;
+	float4 texcoord = fragment.texcoord / fragment.texcoord.w;
+	
+	#ifdef D3D11
+		// In D3D11, cubemaps filter across faces. There's no way to
+		// avoid this (apparently) so we'll just squish in our lookup
+		// table and the lookups by a bit.
+		texcoord.xy *= float2(
+			1.0 + 1.0 / 8.0,
+			1.0 + 1.0 / 8.0);
+		texcoord.xy -= float2(
+			0.5 / 8.0,
+			0.5 / 8.0);
+	#endif
+	
+	texcoord.z = 0;
+	texcoord.w = 1;
+	shadow_coord_temp.x = dot(texcoord, pre_coord_transform_x);
+	shadow_coord_temp.y = dot(texcoord, pre_coord_transform_y);
+	shadow_coord_temp.z = 0;
+	shadow_coord_temp.w = 1;
+
+	output.color.x = dot(coord_transform_x, shadow_coord_temp);
+	output.color.y = dot(coord_transform_y, shadow_coord_temp);
+	output.color.z = 0;
+	output.color.w = 0;
+
+	return output;
+}

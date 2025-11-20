@@ -1,0 +1,447 @@
+'use strict';
+//
+// GeneratedItemCache
+//
+// Provides a general method for caching generated data for HTTP requests.
+//
+// Most other pre-built caching libraries work off of files. Since most of
+//   our data comes from an asynchronous Cryptic remote_command, we needed
+//   a cache which abstracted out where the data comes from.
+//
+// It's entirely possible that there is a more "connect"-y way to do this,
+//   but this works and there's not as much magical stuff going on than what
+//   happens in connect.
+//
+var fs = require('fs');
+var path = require('path');
+
+var LRU = require('lru-cache');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var mkdirsSync = require('cryptic/mkdirsSync');
+
+var g_config = require('cryptic/configure')();
+var proxy = require('./ProxyStartup');
+
+var DEFAULT_MAX_AGE = 24*60*60;    // 1 day in seconds
+
+///////
+//
+// new GeneratedItemCache(generatorFunc, options)
+//
+// Creates a new cache, which has a function (serveItem) suitable for use
+// as as a connect handler.
+//
+///////
+//
+// Options can be provided as an object when the cache is created.
+//
+// options = {
+//
+//     // Cache options
+//
+//     maxBytes:         The total size to be used for the cache. If inserting an
+//                       item into the cache will exceed this limit, the least
+//                       recently used item will be evicted.
+//     maxCacheItemSize: Any items larger than this won't be cached in memory.
+//                       Defaults to 1/100 of maxBytes
+//     cacheDir:         If given, sets the subdirectory where cached files
+//                       are stored.
+//     name:             The name of the cache for debugging and tracking.
+//
+//     // HTTP options
+//
+//     maxAge:       The default maxAge for browser caching in seconds. Used
+//                   if one isn't set when generated. Defaults to one day.
+//     etag:         Either a string to be used for all items' ETAGs, or a
+//                   function used to generate ETAGs for a given urls. Defaults
+//                   to a constant string: the application's start time.
+//     contentType:  The HTTP content type (e.g. 'image/png'). Used when one isn't
+//                   set when generated. Defaults to nothing; a Content-Type
+//                   header won't be sent.
+// }
+//
+///////
+//
+// When an item is requested, GeneratedItemCache will look in its cache for
+// the given URL. If it isn't found, then generatorFunc(url, clientSession, callback) is
+// called.
+//
+// The first argument is the unadulterated URL for the request. The second
+// argument is a callback which expects the standard (error, result) parameters.
+// generatorFunc must call this callback.
+//
+// Result should be an object that at minimum must contain either a stream or
+// data field. The other parameters are optional.
+//
+// If the generated data is returning as a readStream, set stream.
+// If the generated data is a complete buffer, set data.
+// It only makes sense to set one of these fields.
+//
+// result = {
+//
+//     // Required
+//
+//     data:         Buffer
+//              or
+//     stream:       a readable stream
+//
+//     // Optional
+//
+//     maxAge:       The maxAge for browser caching.
+//     contentType:  The HTTP content type (e.g. 'image/png'). If not set, the
+//                   cache's content type will be used.
+//     cachedDisk:   If true, the item is already cached on disk and will not be
+//                   stored to disk.
+//     cachedMemory: If true, the item is already cached in memory and will not
+//                   be stored again.
+//     headers:      A hash of any headers to add to the response. e.g.
+//                   { 'x-special-header': 'howdy', 'x-second': 'bye' }
+//                   These are set after all the built-in headers, so be careful
+//                   of crushing things like Content-Type, Etag, and Cache-Control.
+// }
+//
+// error = {
+//     statusCode:   The status code to return in the response. If not provided,
+//                   404 is returned.
+//     headers:      A hash of any headers to add to the response. e.g.
+//                   { 'Location': '/redirected/here' }
+// }
+//
+///////
+//
+// A typical use might look like this:
+//
+// var textureCache = new GeneratedItemCache(generateTexture, { cacheDir: 'tex', maxBytes: 100*1024*1024 });
+// var connectApp = connect()
+//     .use(blah)
+//       [...]
+//     .use('/tex', textureCache.serveItem)
+//
+//
+var GeneratedItemCache = function(generator, options)
+{
+	dbg.trace();
+	options = options || {};
+
+	this.name = options.name || 'UnknownCache';
+	this.cacheDir = options.cacheDir || '';
+	this.maxBytes = options.maxBytes || 5*1024*1024;
+	this.maxCacheItemSize = options.maxCacheItemSize || this.maxBytes/100;
+	this.etag = options.etag || g_config.cacheStart.valueOf();
+	this.contentType = options.contentType || '';
+	this.maxAge = options.maxAge || DEFAULT_MAX_AGE;
+
+	this.generator = generator;
+	this.cache = new LRU({
+			max: this.maxBytes,
+			length: function(obj) { return (obj && obj.data ? obj.data.length : 0) }
+		});
+
+	cacheDirCreate(this.cacheDir);
+
+	this.serveItem = this.serveItemInternal.bind(this);
+}
+
+GeneratedItemCache.prototype.serveItemInternal = function(req, res, next)
+{
+	dbg.trace();
+	var self = this;
+
+	// No item name, early out with a 404.
+	if(!req.url || req.url === '/')
+	{
+		dbg.trace('No item name provided. (404)');
+
+		res.statusCode = 404;
+		res.end();
+		return;
+	}
+
+	var etag = '' + (typeof this.etag === 'function' ? this.etag(req) : this.etag);
+		// Make etag a string.
+
+	if(req.headers['if-none-match'] === etag)
+	{
+		// The client already has this version of the item, let them know.
+		dbg.trace('Etag matched');
+
+		res.statusCode = 304;
+		res.end();
+		return;
+	}
+
+	var result = this.cache.get(req.url);
+	if(result && result.data)
+	{
+		// The item in the memory cache
+		dbg.trace('In memory cache');
+		this.sendResult(req, res, next, result);
+	}
+	else
+	{
+		var clientSession;
+		if(req.signedCookies && req.signedCookies['gw_st'])
+		{
+			clientSession = proxy.clientSessionManager.findClientSessionBySessionId(req.signedCookies['gw_st']);
+		}
+
+		// It's not in the memory cache, try the disk.
+		this.getCachedFile(req.url, function(error, result) {
+			if(error)
+			{
+				dbg.trace('Fatal error trying to get the file from disk.');
+				res.statusCode = 404;
+				res.end();
+			}
+			else if(result)
+			{
+				dbg.trace('In disk cache');
+				self.sendResult(req, res, next, result)
+			}
+			else
+			{
+				// It's not on the disk, generate it
+				dbg.trace('Generating', req.url);
+				self.generator(req.url, clientSession, function(error, result) {
+					if(!result)
+					{
+						dbg.trace('Failed generation', req.url);
+
+						res.statusCode = (error && error.statusCode) || 404;
+						if(error && error.headers)
+						{
+							for(var i in error.headers)
+							{
+								res.setHeader(i, error.headers[i]);
+							}
+						}
+						res.end();
+					}
+					else
+					{
+						dbg.trace('Generated', req.url);
+						self.sendResult(req, res, next, result)
+					}
+				});
+			}
+		});
+	}
+}
+
+
+GeneratedItemCache.prototype.sendResult = function(req, res, next, result)
+{
+	dbg.trace(result);
+
+	var self = this;
+	var etag = (typeof this.etag === 'function' ? this.etag(req) : this.etag);
+
+	if(result.contentType)
+		res.setHeader('Content-Type', result.contentType);
+	else if(this.contentType)
+		res.setHeader('Content-Type', this.contentType);
+
+	res.setHeader('Cache-Control', 'public, max-age=' + (result.maxAge || this.maxAge));
+	res.setHeader('ETag', etag);
+
+	if(result.headers)
+	{
+		for(var i in result.headers)
+		{
+			res.setHeader(i, result.headers[i]);
+		}
+	}
+
+	if(result.stream)
+	{
+		dbg.trace('Send stream');
+		res.statusCode = 200;
+
+		result.stream.on('error', function (err) {
+			res.statusCode = 500;
+			res.end(String(err));
+		});
+
+		if(!result.cachedDisk || !result.cachedMemory)
+		{
+			dbg.trace('Cache to disk and memory');
+
+			var buffer = [];
+			result.stream.on('data', function(chunk) {
+				buffer.push(chunk);
+			});
+
+			result.stream.on('end', function() {
+				var whole = Buffer.concat(buffer);
+
+				if(!result.cachedMemory && whole.length < self.maxCacheItemSize)
+				{
+					dbg.trace('Cache in memory', req.url);
+					self.cache.set(req.url, { etag: etag, data: whole, cachedMemory: true, cachedDisk: true });
+				}
+
+				if(!result.cachedDisk)
+				{
+					dbg.trace('Write to disk cache', req.url);
+					self.setCachedFile(req.url, whole);
+				}
+			});
+		}
+
+		result.stream.pipe(res);
+	}
+	else if(result.data)
+	{
+		// We have a big chunk of memory, just blort it out.
+
+		dbg.trace('Send buffer');
+
+		res.setHeader('Content-Length', result.data.length);
+		res.statusCode = 200;
+		res.write(result.data);
+		res.end();
+
+		if(!result.cachedDisk
+			|| (!result.cachedMemory && result.data.length < this.maxCacheItemSize))
+		{
+			// The buffer is potentially pointing into the packet, so we need to copy it
+			//   so it doesn't get trounced when the packet reuses its buffer.
+			var copy = new Buffer(result.data.length);
+			result.data.copy(copy);
+
+			if(!result.cachedMemory && copy.length < this.maxCacheItemSize)
+			{
+				dbg.trace('Cache in memory', req.url);
+				this.cache.set(req.url, { etag: etag, data: copy, cachedMemory: true, cachedDisk: true });
+			}
+
+			if(!result.cachedDisk)
+			{
+				dbg.trace('Write to disk cache', req.url);
+				this.setCachedFile(req.url, copy);
+			}
+		}
+	}
+}
+
+GeneratedItemCache.prototype.getCachedFile = function(url, callback)
+{
+	dbg.trace(url);
+	var self = this;
+
+	var fname = urlToFilename(url);
+	if(!fname)
+	{
+		callback(new Error('No filename provided'), undefined);
+		return;
+	}
+
+	var cacheFile = path.join(g_config.cacheDir, this.cacheDir, fname);
+
+	try
+	{
+		var stat = fs.stat(cacheFile, function(e, stats) {
+			if(!e)
+			{
+				if(stats.mtime.valueOf() >= g_config.cacheStart.valueOf())
+				{
+					dbg.trace('cache hit ' + url + ' (file ' + cacheFile + ')');
+
+					try
+					{
+						var stream =  fs.createReadStream(cacheFile);
+						callback(undefined, {
+							stream: stream,
+							cachedDisk: true
+						});
+					}
+					catch(e)
+					{
+						dbg.trace('createReadStream failed (file ' + cacheFile + ')');
+						callback(e, undefined);
+					}
+				}
+				else
+				{
+					dbg.trace('stale cache entry ' + url + ' (file ' + cacheFile + ')');
+
+					// If the second parameter is undefined, it's considered a miss.
+					callback(undefined, undefined);
+				}
+			}
+			else
+			{
+				dbg.trace('cache miss ' + url + ' (file ' + cacheFile + ')');
+
+				// If the second parameter is undefined, it's considered a miss.
+				callback(undefined, undefined);
+			}
+		});
+	}
+	catch(e)
+	{
+		dbg.trace('stat failed (file ' + cacheFile + ')');
+		callback(e, undefined);
+	}
+}
+
+GeneratedItemCache.prototype.setCachedFile = function(url, buffer)
+{
+	dbg.trace(url);
+
+	var fname = urlToFilename(url);
+	var cacheFile = path.join(g_config.cacheDir, this.cacheDir, fname);
+
+	dbg.trace('Cache to disk ' + url + ' (file ' + cacheFile + ')');
+	try
+	{
+		fs.writeFile(cacheFile, buffer, function(err) {
+			if(err) throw err;
+		});
+	}
+	catch(e)
+	{
+		log.warn('Failed to cache to disk (file ' + cacheFile + ') : ' + e)
+	}
+}
+
+
+var reLeadingSlash = /^\//;
+var reSeps = /[\/\\]/g;
+var reWhite = /\s/g;
+var reDoubleDots = /\.\./g;
+var reInvalid = /[<>:"\\|?*\/\x00-\x1f]/g;
+function urlToFilename(url)
+{
+	url = url.replace(reLeadingSlash, '');
+	url = url.replace(reSeps, '-');
+	url = url.replace(reWhite, '_');
+	url = url.replace(reDoubleDots, '!');
+	url = url.replace(reInvalid, '!');
+
+	dbg.log(url);
+
+	return url;
+}
+
+
+function cacheDirCreate(dir)
+{
+	try
+	{
+		mkdirsSync(path.resolve(g_config.cacheDir, dir));
+	}
+	catch(e)
+	{
+		if(e.code !== 'EEXIST')
+		{
+			log.error(e);
+		}
+	}
+}
+
+module.exports = GeneratedItemCache;
+
+// End of File

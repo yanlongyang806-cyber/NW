@@ -1,0 +1,316 @@
+<script>
+	$(document).ready(function() {
+		$('[data-disabled]').each(function() {
+			if($(this).attr('data-disabled') == '1')
+			{
+				$(this).addClass('disabled');
+				$(this).disabled = true;
+			}
+		});
+		$('[input-disabled]').each(function () {
+			if($(this).attr('input-disabled') == '1')
+			{
+				$(this).addClass('disabled');
+				this.disabled = true
+			}
+		});
+	});
+
+	function showSlotWindow(iWindow)
+	{
+		$('#context_' + iWindow).fadeIn(200);
+	}
+</script>
+
+<div class="page-content" data-update="craftingdetail">
+	<div data-if="!{$root().craftingdetail} || {$root().craftingdetail.hdef.name} ne {$root().queryParams.taskName}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+		<script>
+			client.professionFetchTaskDetail(client.getQueryParam('taskName'));
+		</script>
+	</div>
+
+	<div class="page-professions-taskdetails" data-path="craftingdetail" data-if="{$root().craftingdetail} && {$root().craftingdetail.hdef.name} eq {$root().queryParams.taskName}">
+		<div class="taskdetails-header">
+			<div class="icon-slot readonly">
+				<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+				<span  data-path=".hdef.requiredrank" class="level-pip">5</span>
+			</div>
+			<h2 data-path=".hdef.displayname.str">Task Name Goes Up Here</h2>
+			<p data-path=".hdef.description.str">This task is a lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit commodo.</p>
+			<span class="task-duration">
+				Duration: <span data-path=".duration.$timerShort()" class="task-duration-time">2h 30m</span><!-- use class "alert-green" when a bonus is applied -->
+			</span>
+		</div>
+		<!--
+		<div class="taskdetails-unqualified" data-if=".failsrequirements eq 1">
+			<span data-path=".failedrequirementsreasons">Failure!!!</span>
+		</div>
+		-->
+
+		<div class="taskdetails-assets-block">
+			<!-- REQUIRED ASSETS -->
+			<div class="taskdetails-assets" data-if=".required.$length() ge 1">
+				<h3>Required Assets:</h3>
+				<h6>(Permanent assets that are required for the task and may grant bonuses.)</h6>
+
+				<!-- SAMPLE ASSET ENTRY -->
+				<ul data-path=".required">
+					<li data-set-class="icon-block large troop {.slot.hitemdef.quality} {.slot.uitemid.$map(0:empty)}"><!-- QUALITY GOES HERE -->
+						<div class="icon-slot" data-set-data-tt-item=".slot.uitemid">
+							<img data-set-src="tex/{.slot.hitemdef.icon}.png" alt="" />
+							<span class="icon-bg"></span>
+						</div>
+						<div class="icon-info">
+							<h4 data-path=".slot.hitemdef.displaynamemsg.str">Skilled Weasel</h4>
+							<div class="input-field button light with-arrow">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<!--
+								<div data-set-class="{.slot.uitemid.$map(0:&nbsp, *:hide)} button-glow buttonPulse">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+								</div>
+								-->
+
+								<button data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}/select-required-item/{.index}">Select</button>
+							</div>
+							<!-- <span class="slot-bonus">+3% Speed</span><!-- add this if there is a bonus applied from this item -->
+						</div>
+					</li>
+				</ul>
+				<!-- SAMPLE ASSET ENTRY -->
+			</div>
+
+
+			<!-- OPTIONAL ASSETS -->
+			<div class="taskdetails-assets" data-if=".optional.$length() ge 1">
+				<h3>Optional Assets:</h3>
+				<h6>(Optional permanent assets that may be selected for additional bonuses.)</h6>
+
+				<ul data-path=".optional">
+					<li data-set-class="icon-block large any-crafting {.slot.hitemdef.quality} {.slot.uitemid.$map(0:empty)}"><!-- QUALITY GOES HERE -->
+						<div class="icon-slot" data-set-data-tt-item=".slot.uitemid">
+							<img data-set-src="tex/{.slot.hitemdef.icon}.png" alt="" />
+							<span class="icon-bg"></span>
+						</div>
+						<div class="icon-info">
+							<h4 data-path=".slot.hitemdef.displaynamemsg.str">(Any Weasel)</h4>
+							<div class="input-field button light with-arrow">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}/select-optional-item/{.index}">Select</button>
+							</div>
+						</div>
+					</li>
+				</ul>
+			</div>
+
+			<!--
+			<div class="taskdetails-assets">
+				<h3>Consumed Assets:</h3>
+				<h6 class="attention">(Note: These assets will be permanently removed from your inventory.)</h6>
+
+				<div class="icon-block large chest empty">
+					<div class="icon-slot">
+						<img src="../img_nw/sample_item_01.png" alt="" />
+						<span class="icon-overlay"></span>
+					</div>
+					<div class="icon-slot">
+						<img src="../img_nw/sample_item_01.png" alt="" />
+						<span class="icon-overlay"></span>
+					</div>
+					<div class="icon-slot">
+						<img src="../img_nw/sample_item_01.png" alt="" />
+						<span class="icon-overlay"></span>
+					</div>
+					<div class="icon-slot">
+						<img src="../img_nw/sample_item_01.png" alt="" />
+						<span class="icon-overlay"></span>
+					</div>
+					<div class="icon-info">
+						<h4>(Any Weasel)</h4>
+						<div class="input-field button light with-arrow">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button>Select</button>
+						</div>
+					</div>
+				</div>
+
+			</div>
+			-->
+		</div>
+
+		<div class="taskdetails-resources" data-if=".consumables.$length() ge 1">
+			<h3>Consumed Resources:</h3>
+			<h6>(Expendable resources that will be used up.)</h6>
+			<span data-path=".consumables">
+				<div data-set-class="icon-slot small {.hdef.quality} {.fillsrequirements.$map(0:red, 1:&nbsp)}" data-set-data-tt-item=".hdef.name"><!-- QUALITY GOES HERE -->
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+					<span data-if="{.required} ge 2">
+						<span data-if="{.count} ge {.required}" class="quantity" data-path=".required">10</span>
+						<span data-if="!({.count} ge {.required})">
+							<span class="quantity"><span data-path=".count" >5</span>/<span data-path=".required">10</span></span>
+						</span>
+					</span>
+				</div>
+			</span>
+			<!-- not sure what this button is going to point to yet; it probably opens a context popup, but I'm not sure what content goes in there -->
+			<!--
+			<div class="input-field button light with-arrow">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button>Get More Resources</button>
+			</div>
+			-->
+		</div>
+
+
+
+		<div class="taskdetails-rewards">
+			<div class="panel-inner silver">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-content">
+
+					<hr class="mobileOnly" />
+
+					<h3>Rewards</h3>
+
+					<!-- EPIC REWARD BLOCK (for rewards with chance bonuses) -->
+					<div class="reward-block epic" data-if=".rewardoutcomes.$length() ge 2">
+						<div data-set-class="icon-slot xlarge {.rewardoutcomes[0].data.itemrewards[0].hitem.quality}" data-set-data-tt-item=".rewardoutcomes[0].data.itemrewards[0].hitem.name"><!-- QUALITY GOES HERE -->
+							<img data-set-src="tex/{.rewardoutcomes[0].data.itemrewards[0].hitem.icon}.png" alt="" />
+						</div>
+						<div data-path=".rewardoutcomes">
+							<div data-set-class="icon-block reward chance {.data.itemrewards[0].hitem.quality}"><!-- QUALITY GOES HERE -->
+								<div class="icon-slot" data-set-data-tt-item=".data.itemrewards[0].hitem.name">
+									<img data-set-src="tex/{.data.itemrewards[0].hitem.icon}" alt="" />
+								</div>
+								<div class="icon-info">
+									<h4 data-path=".data.itemrewards[0].hitem.msgdisplayname.str">Item Name Here</h4>
+									<div class="bar-container">
+										<span class="bar-bg-left"></span>
+										<span class="bar-bg-mid"></span>
+										<span class="bar-bg-right"></span>
+
+										<div class="bar-filled" data-set-style="width: {.chancedata.outcomepercentchance}%;">
+											<div class="bar-container">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+											</div>
+										</div>
+									</div>
+									<h6><span data-path=".chancedata.outcomepercentchance">55</span>% Chance</h6><!-- if the item has bonuses, add class "alert-green" to this tag -->
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- BASIC REWARD BLOCK (for regular item rewards) -->
+					<div class="reward-block basic" data-if="{.rewardoutcomes.$length()} eq 1 && {.rewardoutcomes[0].data.itemrewards.$length()} ge 1" data-path=".rewardoutcomes[0].data.itemrewards">
+						<div data-set-class="icon-block reward big {.hitem.quality}"><!-- QUALITY GOES HERE -->
+							<div class="icon-slot" data-set-data-tt-item=".hitem.name">
+								<img data-set-src="tex/{.hitem.icon}.png" alt="" />
+								<span data-if=".count ge 2" class="quantity" data-path=".count">5</span>
+							</div>
+							<div class="icon-info">
+								<h4 data-path=".hitem.displaynamemsg.str">Item Name</h4>
+							</div>
+						</div>
+					</div>
+
+					<!-- NUMERIC REWARD BLOCK (for numeric rewards) -->
+					<div class='reward-block numeric' data-if="{.rewardoutcomes.$length()} ge 1 && {.rewardoutcomes[0].data.numericrewards.$length()} ge 1" data-path=".rewardoutcomes[0].data.numericrewards">
+						<div class="icon-block reward small">
+							<div class="icon-slot">
+								<img data-set-src="tex/{.hdef.icon}.png" alt="">/>
+								<span data-if=".numericvalue ge 2" class="quantity" data-path=".numericvalue">5</span>
+							</div>
+							<div class="icon-info">
+								<h4 data-path=".hdef.displaynamemsg.str">Item Name</h4>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--
+		<div class="taskdetails-unqualified" data-if=".failsrequirements eq 1">
+			<span data-path=".failedrequirementsreasons">Failure!!!</span>
+		</div>
+		-->
+	</div>
+
+</div>
+
+<div class="box-footer-block footer-professions-taskdetails" data-update="craftingdetail">
+	<div class="box-footer" data-path="craftingdetail">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<div class="current-money">
+							<span class="currency-icon astral"></span> <span data-path="ent.main.currencies.diamonds.$commify()">99,999</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+						<div class="input-field button">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button class="resetWindow" data-url="back">Back</button><!-- hook up this button to go back to the previous section, hopefully should remember where we were -->
+						</div>
+						<div data-if=".failsrequirements eq 1" class="input-field button epic disabled" data-set-data-tt-text=".failedrequirementsreasons">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button>Start Task</button>
+						</div>
+						<div data-if="!{.failsrequirements}" class="input-field button epic">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button data-set-onclick="client.professionStartAssignment('{$root().queryParams.taskName}')">Start Task</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>

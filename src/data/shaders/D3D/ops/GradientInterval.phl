@@ -1,0 +1,6 @@
+// GradientInterval.phl
+{
+	float A = step(0.00001,((%Gradient%.x - %FirstB%.x) * (%FirstE%.x - %Gradient%.x) + 0.000011));
+
+	%Result%.xyzw = A * %Gradient%.a;
+}

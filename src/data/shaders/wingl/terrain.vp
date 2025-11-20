@@ -1,0 +1,59 @@
+!!ARBvp1.0
+
+#include "utils.fph"
+#include "params.fph"
+
+
+# ##############################################
+# unlit outputs (same as normal.vp)
+# 
+# texcoord[0]	-	st1 and st2 (packed)
+# texcoord[1]	-	view space position
+# texcoord[2]	-	view space normal
+# texcoord[3]	-	view space tangent (HAS_BUMP only)
+# texcoord[4]	-	view space binormal (HAS_BUMP only)
+# 
+# ##############################################
+
+
+
+TEMP	position_ws;
+TEMP	normal_ws;
+TEMP	binormal_ws;
+TEMP	tangent_ws;
+TEMP	position_vs;
+TEMP	normal_vs;
+TEMP	tangent_vs;
+TEMP	binormal_vs;
+
+MUL position_ws, vertex.texcoord[0].xyyy, color;
+MOV position_ws.y, 1.0; # TODO: Texture fetch
+MOV normal_ws, {0, 1, 0, 0};  # TODO: Texture fetch
+MOV binormal_ws, {1, 0, 0, 0};
+MOV tangent_ws, {0, 0, 1, 0};
+
+MULMAT4(result.position, clip_mat, position_ws)
+
+MULMAT43(position_vs, modelview_mat, position_ws)
+COMPUTEFOG(position_vs)
+
+MULMAT3(normal_vs, modelview_mat, normal_ws)
+MULMAT3(tangent_vs, modelview_mat, tangent_ws)
+MULMAT3(binormal_vs, modelview_mat, binormal_ws)
+
+
+# pack texcoords
+MOV result.texcoord[0].xy, vertex.texcoord[0].xyxy;
+MOV result.texcoord[0].zw, vertex.texcoord[1].xyxy;
+
+# output view space coords
+MOV result.texcoord[1], position_vs;
+MOV result.texcoord[2], normal_vs;
+MOV result.texcoord[3], tangent_vs;
+MOV result.texcoord[4], binormal_vs;
+
+MOV result.color.primary, 1;
+MOV result.color.secondary, 1;
+
+
+END

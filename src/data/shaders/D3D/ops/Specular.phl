@@ -1,0 +1,4 @@
+{
+	%SpecColor% = %SpecularColor%;
+	%SpecExponent% = %SpecularExponent%.x;
+}

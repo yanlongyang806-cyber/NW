@@ -1,0 +1,286 @@
+<html><head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+	<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+
+	<script src="./DiceBox.js"></script>
+
+	<link href="http://localhost:6860/css/sca.css" rel="stylesheet">
+	<link href="http://localhost:6860/css/style.css" rel="stylesheet">
+
+<style type="text/css">
+	#dicebox {
+		margin: 25px 25px 25px 150px;
+		height: 400px;
+		width: 700px;
+		position: relative;
+		overflow: hidden;
+		background: url(./img_nw/dice-box-02.png) no-repeat;
+		background-size: 100% 100%;
+	}
+
+	#box {
+		position: absolute;
+		top: 15px;
+		left: 15px;
+		bottom: 15px;
+		right: 15px;
+	}
+
+	#add-dice {
+		width: 60px;
+		height: 340px;
+		position: absolute;
+		background: #000;
+		z-index: 1000;
+	}
+
+	#add-dice .dice {
+		color: white;
+	}
+
+	#add-dice .input-field {
+		margin-left: 60px;
+		width: 75px;
+		text-align: center;
+	}
+
+	#add-dice hr {
+		margin: 10px auto 10px;
+	}
+
+	.rolldice-button {
+		position: absolute;
+		top: 380px;
+		left: 22px;
+		width: 90px;
+		text-align: center;
+		z-index: 100;
+		color: white;
+		.input-field.button.light button {
+			padding: 0 15px;
+		}
+	}
+
+	#dice-test .combatDiceBox {
+		display: block;
+	}
+
+</style>
+
+</head>
+<body id="dice-test">
+
+
+<div id="add-dice">
+	<button id="d4" class="dice d4 large base">2</button>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="add-button" onclick="addDie('4')">Add</button>
+	</div>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="rem-button" onclick="remDie('4')">Rem</button>
+	</div>
+
+	<hr>
+
+	<button id="d6" class="dice d6 large base">2</button>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="add-button" onclick="addDie('6')">Add</button>
+	</div>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="rem-button" onclick="remDie('6')">Rem</button>
+	</div>
+
+	<hr>
+
+	<button id="d8" class="dice d8 large base">2</button>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="add-button" onclick="addDie('8')" >Add</button>
+	</div>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="rem-button" onclick="remDie('8')">Rem</button>
+	</div>
+
+	<hr>
+
+	<button id="d10" onclick="addDie('d10')" class="dice d10 large base">2</button>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="add-button" onclick="addDie('10')">Add</button>
+	</div>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="rem-button" onclick="remDie('10')">Rem</button>
+	</div>
+
+	<hr>
+
+	<button id="d12" class="dice d12 large base">2</button>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="add-button" onclick="addDie('12')">Add</button>
+	</div>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button class="rem-button" onclick="remDie('12')">Rem</button>
+	</div>
+</div>
+
+<div class="rolldice-button">
+	<h3>Total: <span id="total">10</span><h3>
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button onClick="rollDice();">Roll Dice</button>
+	</div>
+</div>
+
+<!--
+	<div id="dicebox">
+		<div id="box"></div>
+	</div>
+
+ -->
+
+
+	<div class="challenge-container">
+		<div class="fancy-box">
+			<div class="fancy-box-top">
+				<div class="fancy-box-left"></div>
+				<div class="fancy-box-right"></div>
+			</div>
+			<div class="fancy-box-mid">
+				<div class="fancy-box-left"></div>
+				<div class="fancy-box-content">
+
+					<div class="combatDiceBox"></div>
+
+				</div>
+				<div class="fancy-box-right"></div>
+			</div>
+			<div class="fancy-box-bot">
+				<div class="fancy-box-left"></div>
+				<div class="fancy-box-right"></div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
+	<br><br>
+	<br>
+	<button onclick="throwDice(2);">Throw 2 Dice</button>
+	<button onclick="throwDice(5);">Throw 5 Dice</button>
+	<button onclick="throwDice(7);">Throw 7 Dice</button>
+	<button onclick="throwDice(10);">Throw 10 Dice</button>
+	<br>
+
+	<script src="../client/DiceBox.jspp" language="JavaScript"></script>
+
+<script>
+	var db = new DiceBox();
+
+	var dice = {
+		'4': 2,
+		'6': 2,
+		'8': 2,
+		'10': 2,
+		'12': 2
+	}
+
+	//db.setBox($('#box'));
+	db.setBox($('.combatDiceBox'));
+
+	function throwDice(number)
+	{
+		if(db.newBag(number))
+		{
+			db.throwDice();
+		}
+		else
+		{
+			console.log("Fail sauce.");
+		}
+	}
+
+	function addDie(size)
+	{
+		var t = totalDice();
+		if(t < 10)
+		{
+			dice[size]++;
+			$('#d' + size).text(dice[size]);
+			updateTotal();
+		}
+	}
+
+	function remDie(size)
+	{
+		if(dice[size] > 0)
+		{
+			dice[size]--;
+			$('#d' + size).text(dice[size]);
+			updateTotal();
+		}
+	}
+
+	function updateTotal()
+	{
+		$('#total').text(totalDice());
+	}
+
+	function totalDice()
+	{
+		var t = 0, size;
+		for(size in dice)
+		{
+			t += dice[size];
+		}
+		return t;
+	}
+
+	function rollDice()
+	{
+		db.emptyBag();
+		var n, size;
+		for(size in dice)
+		{
+			for(n = dice[size]; n > 0; n--)
+			{
+				db.addDieToBag(size);
+			}
+		}
+		db.throwDice();
+	}
+
+</script>
+
+</body></html>

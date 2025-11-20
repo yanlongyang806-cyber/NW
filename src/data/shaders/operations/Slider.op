@@ -1,0 +1,26 @@
+OperationDef
+	Name "Slider" // Name of the operation
+	Description "Simple slider node."
+	Type SIMPLE
+
+	Input
+		Name A
+		Description "Input 1"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 1
+		FloatRange 0.0 1.0
+		Default
+			Floats 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Value of the slider"
+		Float 1
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

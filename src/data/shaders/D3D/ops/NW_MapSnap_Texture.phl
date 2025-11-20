@@ -1,0 +1,9 @@
+// NW_MapSnap_Texture.phl
+{
+	 float4 color = nw_mapsnap_sampleTexcolor(TexSampler%Texture%);
+
+	 color.rgb = nw_mapsnap_colorize(color.rgb);
+
+	 %Result% = color;
+}
+

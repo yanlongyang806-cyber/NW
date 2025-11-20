@@ -1,0 +1,736 @@
+'use strict';
+
+var ProxyRequestHandlers = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var isInternalIp = require('cryptic/isInternalIp');
+var locale = require('cryptic/locale');
+
+var proxy = require('./ProxyStartup');
+var prepareCommandSafe = require('cryptic/commands/prepareCommandSafe');
+
+var LoginRequest = require('./LoginRequest');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Set up the socket.io connection callback.
+//
+proxy.socketIO.sockets.on('connection', protectedCall(onClientConnection));
+
+
+//////////////////////////////////////////////////////////////////////////
+
+var sessionRequestHandlers = {};
+ProxyRequestHandlers.addSessionRequestHandler = function(messageName, handler)
+{
+	sessionRequestHandlers[messageName] = handler;
+}
+
+ProxyRequestHandlers.removeSessionRequestHandler = function(messageName)
+{
+	if(sessionRequestHandlers[messageName])
+		delete sessionRequestHandlers[messageName];
+}
+
+//////////
+//
+// onClientConnection
+//
+// When a client connects via socketio, they start here.
+// Before this, they will have made one or more other HTTP connections.
+//
+function onClientConnection(sockClient)
+{
+	dbg.trace();
+
+	// Fix up for the load balancer so we have the player's real ip address.
+	if(sockClient.handshake.headers['x-real-ip'])
+	{
+		sockClient.handshake.real_address = { address: sockClient.handshake.headers['x-real-ip'] };
+	}
+	else
+	{
+		sockClient.handshake.real_address = sockClient.handshake.address;
+	}
+
+	// Get the locale
+	sockClient.handshake.locale = locale.chooseBestLanguage(sockClient.handshake.headers['accept-language']);
+
+	// This gets the browser cookies to socket.io
+	proxy.cookieParser(sockClient.handshake, undefined, function() {});
+
+	// These will work even if a formal cryptic session doesn't exist.
+	sockClient.on('Client_RequestResource',                 protectedSocketCall(sockClient, onClient_RequestResource));
+	sockClient.on('Client_RequestDefaultResource',          protectedSocketCall(sockClient, onClient_RequestDefaultResource));
+	sockClient.on('Client_RequestDictionaryKeys',           protectedSocketCall(sockClient, onClient_RequestDictionaryKeys));
+
+	// All these absolutely require that a cryptic session already exists.
+	sockClient.on('Client_RequestLoginEntity',              protectedSocketSessionCall(sockClient, onClient_RequestLoginEntity));
+	sockClient.on('Client_RequestEntity',                   protectedSocketSessionCall(sockClient, onClient_RequestEntity));
+	sockClient.on('Client_RequestPet',                      protectedSocketSessionCall(sockClient, onClient_RequestPet));
+	sockClient.on('Client_RequestGuild',                    protectedSocketSessionCall(sockClient, onClient_RequestGuild));
+	sockClient.on('Client_RequestGroupProject',             protectedSocketSessionCall(sockClient, onClient_RequestGroupProject));
+	sockClient.on('Client_RequestPersonalProject',          protectedSocketSessionCall(sockClient, onClient_RequestPersonalProject));
+	sockClient.on('Client_RequestAuctionSearch',            protectedSocketSessionCall(sockClient, onClient_RequestAuctionSearch));
+	sockClient.on('Client_RequestCraftingList',             protectedSocketSessionCall(sockClient, onClient_RequestCraftingList));
+	sockClient.on('Client_RequestCraftingDetail',           protectedSocketSessionCall(sockClient, onClient_RequestCraftingDetail));
+	sockClient.on('Client_RequestMailList',                 protectedSocketSessionCall(sockClient, onClient_RequestMailList));
+	sockClient.on('Client_RequestMailDetail',               protectedSocketSessionCall(sockClient, onClient_RequestMailDetail));
+	sockClient.on('Client_RequestItemTooltip',              protectedSocketSessionCall(sockClient, onClient_RequestItemTooltip));
+	sockClient.on('Client_RequestExchangeAccountData',      protectedSocketSessionCall(sockClient, onClient_RequestExchangeAccountData));
+	sockClient.on('Client_SendCommand',                     protectedSocketSessionCall(sockClient, onClient_SendCommand));
+	sockClient.on('Client_SendAnalyticTick',                protectedSocketSessionCall(sockClient, onClient_SendAnalyticTick));
+	sockClient.on('Client_PurchaseMicrotransaction',        protectedSocketSessionCall(sockClient, onClient_PurchaseMicrotransaction));
+	sockClient.on('Client_RequestCStore',                   protectedSocketSessionCall(sockClient, onClient_RequestCStore));
+	sockClient.on('Client_RequestVendor',                   protectedSocketSessionCall(sockClient, onClient_RequestVendor));
+	sockClient.on('Client_ReleaseCraftingList',             protectedSocketSessionCall(sockClient, onClient_ReleaseCraftingList));
+
+	// Add in any new messages other modules want to poke in
+	for(var messageName in sessionRequestHandlers)
+	{
+		sockClient.on(messageName, protectedSocketSessionCall(sockClient, sessionRequestHandlers[messageName]));
+	}
+
+	// Some helpers
+	sockClient.disconnectWithMessage = disconnectWithMessage.bind(sockClient, sockClient);
+	sockClient.disconnectInvalidRequest = disconnectWithMessage.bind(sockClient, sockClient, 'Invalid request made by browser.');
+
+	var clientSession = findClientSession(sockClient.handshake);
+	if(clientSession)
+	{
+		log.log('Reconnecting client:'
+			+ ' account ' + clientSession.idAccount
+			+ ', addr ' + clientSession.address
+			+ ', magic ' + clientSession.magic
+			+ ', sid ' + clientSession.sessionid);
+
+		clientSession.setClientSocket(sockClient);
+
+		sockClient.emit('Proxy_LoginSuccess', clientSession.loginInfo);
+	}
+	else
+	{
+		var session_id = sockClient.handshake.signedCookies['gw_st'];
+
+		log.log('New client connection:'
+			+ ' addr ' + sockClient.handshake.real_address.address
+			+ ', sid ' + session_id);
+
+		proxy.sessionStore.get(session_id, function(error, session)	{
+			// These should all be set by httpHandlers.jspp:checkLogin().
+			// If they aren't, then they haven't tried to log in yet, which
+			//   is cheating.
+			if(!session)
+			{
+				log.error('New client connection attempted with no HTTP session.'
+					+ ' sid ' + session_id);
+
+				sockClient.emit('Proxy_ForceReload');
+				// That should disconnect this socket, but we'll do it forcefully
+				//  after a short bit just to make sure.
+				setTimeout(function() { if(sockClient) sockClient.disconnect(); }, 2000);
+			}
+			else if(!session.idAccount || !session.idTicket || !session.idBrowser)
+			{
+				log.error('New client connection attempted with incomplete parameters.'
+					+ ' account ' + session.idAccount
+					+ ', ticket ' + session.idTicket
+					+ ', browserid ' + session.idBrowser);
+
+				sockClient.emit('Proxy_ForceReload');
+				// That should disconnect this socket, but we'll do it forcefully
+				//  after a short bit just to make sure.
+				setTimeout(function() { if(sockClient) sockClient.disconnect(); }, 2000);
+			}
+			else
+			{
+				dbg.trace('Creating LoginRequest with session: ', session);
+				sockClient.on('Client_OneTimeCode', function(data) { onClient_OneTimeCode(sockClient, data); });
+
+				sockClient.loginRequest = new LoginRequest(sockClient,
+					session.idAccount,
+					session.idTicket,
+					session.idBrowser,
+					function(error, loginInfo) {
+						loginComplete(sockClient, error, loginInfo);
+					}
+				);
+			}
+		});
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+function disconnectWithMessage(socket, message)
+{
+	if(socket)
+	{
+		socket.emit('Proxy_DisconnectWithMessage', { msg: message });
+		// Forcibly shut down in two seconds in case the client doesn't do so.
+		socket.timeoutID = setTimeout(function() { socket.disconnect(); }, 2000);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// Client message handlers
+
+function onClient_RequestResource(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!proxy.resourceManager.isValidDictName(data.dictname) || !data.id || data.id.length > 256)
+	{
+		log.error('Incorrect params for onClient_RequestResource from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		var clientSession = findClientSession(sockClient.handshake);
+		var lang = clientSession ? clientSession.locale.crypticLanguage : 0;
+
+		proxy.resourceManager.fetchForLanguage(lang, data.dictname, data.id, function(error, obj) {
+			sockClient.emit('Proxy_Resource', { 'dictname': obj.dictname, 'id': data.id, 'value': obj.value });
+		});
+	}
+}
+
+function onClient_RequestDefaultResource(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!proxy.resourceManager.isValidDictName(data.dictname))
+	{
+		log.error('Incorrect params for onClient_RequestDefaultResource from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		var dict = proxy.resourceManager.findOrCreateDictionary(data.dictname);
+		if(dict)
+		{
+			dict.fetchDefaultResource(function(error, obj) {
+				dbg.trace();
+				sockClient.emit('Proxy_DefaultResource', { 'dictname': data.dictname, 'value': obj.prototype });
+			});
+		}
+	}
+}
+
+function onClient_RequestDictionaryKeys(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!proxy.resourceManager.isValidDictName(data.dictname))
+	{
+		log.error('Incorrect params for onClient_RequestDictionaryKeys from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		var dict = proxy.resourceManager.findOrCreateDictionary(data.dictname);
+		if(dict)
+		{
+			dict.fetchKeys(function(error, obj) {
+				if(error)
+				{
+					sockClient.emit('Proxy_DictionaryKeys', { 'dictname': data.dictname, 'value': undefined });
+				}
+				else
+				{
+					sockClient.emit('Proxy_DictionaryKeys', { 'dictname': data.dictname, 'value': Object.keys(dict.dict) });
+				}
+			});
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_RequestLoginEntity(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string' || data.id.indexOf('@') < 0)
+	{
+		log.error('Incorrect params for onClient_RequestLoginEntity from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestLoginEntity(data.id);
+	}
+}
+
+function onClient_RequestEntity(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string' || data.id.indexOf('@') < 0)
+	{
+		log.error('Incorrect params for onClient_RequestEntity from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestEntity(data.id);
+	}
+}
+
+function onClient_RequestPet(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'number' || data.id <= 0)
+	{
+		log.error('Incorrect params for onClient_RequestPet from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestPet(data.id);
+	}
+}
+
+function onClient_RequestGuild(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestGuild from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestGuild(data.id);
+	}
+}
+
+function onClient_RequestGroupProject(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'number' || data.id <= 0)
+	{
+		log.error('Incorrect params for onClient_RequestGroupProject from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestGroupProject(data.id);
+	}
+}
+
+function onClient_RequestPersonalProject(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'number' || data.id <= 0)
+	{
+		log.error('Incorrect params for onClient_RequestGroupProject from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestPersonalProject(data.id);
+	}
+}
+
+function onClient_RequestAuctionSearch(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestAuctionSearch from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestAuctionSearch(data.id, data.params);
+	}
+}
+
+function onClient_RequestCraftingList(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestCraftingList from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestCraftingList(data.id);
+	}
+}
+
+function onClient_RequestExchangeAccountData(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestExchangeAccountData from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestExchangeAccountData(data.id);
+	}
+}
+
+function onClient_RequestCraftingDetail(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestCrafingDetail from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestCraftingDetail(data.id);
+	}
+}
+
+function onClient_RequestMailList(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestMailList from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestMailList(data.id);
+	}
+}
+
+function onClient_RequestMailDetail(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id || typeof data.id !== 'string')
+	{
+		log.error('Incorrect params for onClient_RequestMailDetail from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestMailDetail(data.id);
+	}
+}
+
+function onClient_RequestItemTooltip(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id)
+	{
+		log.error('Incorrect params for onClient_RequestItemTooltip from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestItemTooltip(''+data.id);
+	}
+}
+
+function onClient_RequestCStore(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id)
+	{
+		log.error('Incorrect params for onClient_RequestCStore from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestCStore(data.id);
+	}
+}
+
+function onClient_RequestVendor(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id)
+	{
+		log.error('Incorrect params for onClient_RequestVendor from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.requestVendor(data.id);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_ReleaseCraftingList(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.id)
+	{
+		log.error('Incorrect params for onClient_CraftingList from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.releaseCraftingList(data.id);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_PurchaseMicrotransaction(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.productid || typeof data.productid !== 'number' || data.productid < 0
+		|| !data.price || typeof data.price !== 'number' || data.price < 0)
+	{
+		log.error('Incorrect params for onClient_PurchaseMicrotransaction from client.', sockClient.clientSession.sessionid);
+		sockClient.disconnectInvalidRequest();
+	}
+	else
+	{
+		sockClient.clientSession.purchaseMicrotransaction(data.productid, data.price);
+	}
+
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_SendCommand(sockClient, data)
+{
+	dbg.trace(data);
+	var cmdString = '';
+
+	//
+	// Expected:
+	//   data.cmd = 'CommandName'
+	//   data.params = { paramname: val, paramname: val, ... }
+	//
+	try
+	{
+		cmdString = prepareCommandSafe(data);
+	}
+	catch(e)
+	{
+		log.error('Bad server command from client.', sockClient.clientSession.sessionid, data, e);
+		sockClient.disconnectInvalidRequest();
+		return;
+	}
+
+	dbg.trace(cmdString);
+	sockClient.clientSession.sendCommand(cmdString);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_OneTimeCode(sockClient, data)
+{
+	dbg.trace(data);
+
+	if(!data.code || typeof data.code !== 'string'
+		|| typeof data.name !== 'string'
+		|| !sockClient.loginRequest)
+	{
+		log.error('Incorrect params for onReceivedOneTimeCode from client.', data, sockClient.loginRequest);
+		sockClient.disconnect();
+	}
+	else
+	{
+		sockClient.loginRequest.sendOneTimeCode(data.code, data.name);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function onClient_SendAnalyticTick(sockClient, data)
+{
+	dbg.trace(data);
+
+	// if there is no bucket, ignore this. I call shenanigans.
+	if(data.bucket)
+	{
+		sockClient.clientSession.analyticTick(data.bucket, data.count);
+	}
+
+}
+
+// End of handlers
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+//
+// loginComplete
+//
+// Called when a LoginRequest completes.
+//
+function loginComplete(sockClient, error, loginInfo)
+{
+	dbg.trace(error, loginInfo.idAccount, loginInfo.publicaccountname);
+
+	// Mark this session as authenticated.
+	var session_id = sockClient.handshake.signedCookies['gw_st'];
+	proxy.sessionStore.get(session_id, function(error, session) {
+		if(session)
+		{
+			session.idTicket = undefined;
+			if(!error)
+				session.authenticated = true;
+
+			proxy.sessionStore.set(session_id, session);
+		}
+	});
+
+	// We're done with the loginRequest, get rid of it.
+	sockClient.loginRequest = undefined;
+
+	if(error)
+	{
+		var msg = error.message ? error.message : 'Login failed, probably because the one-time code was incorrect.';
+
+		log.log('Login failed: account ' + loginInfo.idAccount
+			+ ', addr '+ sockClient.handshake.real_address.address
+			+ ', sid '+ sockClient.handshake.signedCookies['gw_st']
+			+ ' Error (' + msg + ')');
+
+		sockClient.disconnectWithMessage(msg);
+	}
+	else
+	{
+		if(isInternalIp(sockClient.handshake.real_address.address))
+		{
+			loginInfo.isInternalIP = true;
+		}
+
+		proxy.clientSessionManager.createClientSession(sockClient.handshake.signedCookies['gw_st'], sockClient, loginInfo);
+		// dbg.trace('Sending LoginSuccess', loginInfo);
+		sockClient.emit('Proxy_LoginSuccess', loginInfo);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+//////////
+//
+// findClientSession
+//
+// Given a socket.io handshake, look for the session assigned to
+// the connection.
+//
+function findClientSession(handshake)
+{
+	if(handshake && handshake.signedCookies && handshake.signedCookies['gw_st'])
+	{
+		return proxy.clientSessionManager.findClientSessionBySessionId(handshake.signedCookies['gw_st']);
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Helpers for catching bad sockets and thrown errors.
+//
+
+function logProtectedCallError(error, socket)
+{
+	var session = socket ? socket.clientSession : undefined;
+	var blame = '';
+
+	if(session)
+	{
+		blame = 'Disconnecting session for:' +	JSON.stringify({
+			account: session.idAccount,
+			magic:   session.magic,
+			addr:    session.address,
+			sid:     session.sessionid,
+			publicaccountname: session.loginInfo ? session.loginInfo.publicacountname : '<unknown>'
+		});
+	}
+
+	log.error('Exception occurred. ' + blame);
+	log.error('Exception:' + error.stack);
+
+	if(session)
+	{
+		session.destroy('There was an internal server error.');
+	}
+}
+
+function protectedCall(fn)
+{
+	return function(params)
+	{
+		try
+		{
+			var args = Array.prototype.slice.call(arguments)
+			fn.apply(this, args);
+		}
+		catch(err)
+		{
+			args = args.map(function(a) { return (typeof a === 'object' ? '['+a.constructor.name+']' : Object.prototype.toString.call(a)); });
+			var errorString = 'Attempted '+fn.name+'('+args.join(', ')+')\n';
+			err.message = errorString + err.message;
+			logProtectedCallError(err, undefined);
+		}
+	}
+}
+
+function protectedSocketCall(socket, fn)
+{
+	return function(data)
+	{
+		try
+		{
+			fn(socket, data);
+		}
+		catch(err)
+		{
+			logProtectedCallError(err, socket);
+		}
+	}
+}
+
+function protectedSocketSessionCall(socket, fn)
+{
+	return function(data)
+	{
+		if(!socket || !socket.clientSession)
+		{
+			return;
+		}
+
+		try
+		{
+			fn(socket, data);
+		}
+		catch(err)
+		{
+			logProtectedCallError(err, socket);
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

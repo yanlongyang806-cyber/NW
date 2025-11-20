@@ -1,0 +1,19 @@
+</head>
+<body>
+<center>
+<table id="maintable" width="90%%">
+<tr><td>
+<table width="100%%">
+<tr>
+<td><span class="title"><a href="/">Ticket Tracker</a></span></td>
+<td align=right>
+%s
+[<a href="/search">Search</a>]
+[<a href="/user">Users</a>]
+[<a href="/usergroup">Groups</a>]
+[<a href="/rules">Rules</a>]
+[<a href="/newticket">Create Ticket</a>]
+</td>
+</tr>
+</table>
+<hr size=1>

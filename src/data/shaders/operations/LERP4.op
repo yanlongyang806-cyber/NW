@@ -1,0 +1,32 @@
+OperationDef
+	Name "LERP4"
+	Description "Four Way Linear Interpolation (Blend)"
+	Type SIMPLE
+
+	Input: A, "First value, gets multiplied by weight.r"
+	Input: B, "Second value, gets multiplied by weight.g"
+	Input: C, "Third value, gets multiplied by weight.b"
+	Input: D, "Fourth value, gets multiplied by weight.a"
+
+	Input
+		Name Weight
+		Description "Weighting between A, B, C and D"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 1 0 0 0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Blended result of A, B, C, and D (weight.r * A + weight.g * B + weight.b * C + weight.a * D)"
+		Float 4
+		AlphaFrom A
+		AlphaFrom B
+		AlphaFrom C
+		AlphaFrom D
+	EndOutput
+
+EndOperationDef

@@ -1,0 +1,97 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(target_sampler, 0);
+
+// -----------------------------------------------------------------------
+
+struct PS_OUTPUT
+{
+	float4 color : SEM_COLOR(0);
+};
+
+float maxv4(float4 v4)
+{
+	return max( v4.x, max( v4.y, max( v4.z, v4.w ) ) );
+}
+
+float4 filter_coefficients[1] = { float4( (1.f/16.f), (4.f/16.f), (6.f/16.f), 0) };
+
+
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+#ifdef ALPHATOWHITE
+	output.color = sampleTex2D(target_sampler, fragment.texcoord.xy).a > 0;
+
+#elifdef SMOOTHING
+	float3 sstx = float3( inv_screen_params.xy, 0.0);
+
+	output.color.rgba = sampleTex2D(target_sampler, fragment.texcoord.xy);
+#ifndef DISTANCE_FIELD
+	float center = output.color.a;
+	float4 haloSample;
+
+	haloSample.r = sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.xz).a;
+	haloSample.g = sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.xz).a;
+	haloSample.b = sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.zy).a;
+	haloSample.a = sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.zy).a;
+
+	if ( center < 1 )
+	{
+		//output.color.r = sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.xz).a;
+		//output.color.g = sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.xz).a;
+		//output.color.b = sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.zy).a;
+		//output.color.a = sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.zy).a;
+
+		//output.color.rgba = max( center,	maxv4(output.color - 0.4) );
+		//output.color.rgba = max( center,	maxv4(output.color - 0.125) ) * 0.5 + 
+			//center *0.25 + dot( output.color.rgba, 0.0625 );
+		output.color.rgba = max( center,	maxv4(haloSample - 0.125) ) * 0.5 + 
+			center *0.25 + dot( haloSample.rgba, 0.0625 );
+	}
+
+#else
+	float center = sampleTex2D(target_sampler, fragment.texcoord.xy).r;
+	if ( center < 1 )
+	{
+		// weighted average neighbors
+		output.color.rgba = 
+			center*0.2 + (
+			sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.xz).r+
+			sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.xz).r+
+			sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.zy).r+
+			sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.zy).r ) * 0.125;
+	}
+#endif
+
+#elifdef OUTLINE
+	float3 sstx = float3( inv_screen_params.xy, 0.0);
+
+	output.color.a = sampleTex2D(target_sampler, fragment.texcoord.xy).a;
+	/*
+	output.color.a = 
+		sampleTex2D(target_sampler, fragment.texcoord.xy).a * (4.0/16)+
+		sampleTex2D(target_sampler, float4(fragment.texcoord.xyyy + sstx.xzzz).xy).a * (12.0/16);
+	//*/
+	/*
+	output.color.a = 
+		sampleTex2D(target_sampler, fragment.texcoord.xy).a * (4.0/16)+
+		(
+		sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.xz).a +
+		sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.xz).a +
+		sampleTex2D(target_sampler, fragment.texcoord.xy + sstx.zy).a +
+		sampleTex2D(target_sampler, fragment.texcoord.xy - sstx.zy).a
+		) * (0.25*12.0/16);
+	//*/
+
+	output.color.rgb = float3(1,1,0);
+	output.color.a *= 2;
+	//if (output.color.a >= 1)
+	//	output.color.a = 0.0;
+#endif
+
+	return output;
+}

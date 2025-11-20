@@ -1,0 +1,62 @@
+.room {
+	background-color: #fff;
+	border: none;
+	margin: 0;
+}
+
+.hall {
+	background: url('img/hall-nswe.png');
+	border: none;
+	margin: 0;
+}
+
+/* ----------------------------------------------------- */
+
+.room.wall-n { background: url('img/n.png'); }
+.room.wall-s { background: url('img/s.png'); }
+.room.wall-w { background: url('img/w.png'); }
+.room.wall-e { background: url('img/e.png'); }
+
+.room.wall-n.wall-w { background: url('img/nw.png'); }
+.room.wall-n.wall-e { background: url('img/ne.png'); }
+.room.wall-s.wall-w { background: url('img/sw.png'); }
+.room.wall-s.wall-e { background: url('img/se.png'); }
+
+.room.wall-n.wall-s { background: url('img/ns.png') }
+.room.wall-w.wall-e { background: url('img/we.png'); }
+
+.room.wall-s.wall-w.wall-e { background: url('img/swe.png'); }
+.room.wall-n.wall-w.wall-e { background: url('img/nwe.png'); }
+.room.wall-n.wall-s.wall-e { background: url('img/nse.png'); }
+.room.wall-n.wall-s.wall-w { background: url('img/nsw.png'); }
+
+.room.wall-n.wall-s.wall-w.wall-e { background: url('img/nswe.png'); }
+
+/* ----------------------------------------------------- */
+
+.hall.wall-n { background: url('img/hall-swe.png'); }
+.hall.wall-s { background: url('img/hall-nwe.png'); }
+.hall.wall-w { background: url('img/hall-nse.png'); }
+.hall.wall-e { background: url('img/hall-nsw.png'); }
+
+.hall.wall-n.wall-w { background: url('img/hall-se.png'); }
+.hall.wall-n.wall-e { background: url('img/hall-sw.png'); }
+.hall.wall-s.wall-w { background: url('img/hall-ne.png'); }
+.hall.wall-s.wall-e { background: url('img/hall-nw.png'); }
+
+.hall.wall-n.wall-s { background: url('img/hall-we.png') }
+.hall.wall-w.wall-e { background: url('img/hall-ns.png'); }
+
+.hall.wall-s.wall-w.wall-e { background: url('img/hall-n.png'); }
+.hall.wall-n.wall-w.wall-e { background: url('img/hall-s.png'); }
+.hall.wall-n.wall-s.wall-e { background: url('img/hall-w.png'); }
+.hall.wall-n.wall-s.wall-w { background: url('img/hall-e.png'); }
+
+.hall.wall-n.wall-s.wall-w.wall-e { background: url('img/hall.png'); }
+
+/* ----------------------------------------------------- */
+
+.open-n { background: url('img/open-n.png'); }
+.open-s { background: url('img/open-s.png'); }
+.open-w { background: url('img/open-w.png'); }
+.open-e { background: url('img/open-e.png'); }

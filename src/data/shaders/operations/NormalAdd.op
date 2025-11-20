@@ -1,0 +1,29 @@
+OperationDef
+	Name "NormalAdd" // Name of the operation
+	Description "Apply one normal on top of another."
+	Type SIMPLE
+
+	Input
+		Name TangentNormal
+		Description "Tangent Space Normal"
+		Float 4
+		Type Normal
+	EndInput
+
+	Input
+		Name DetailNormal
+		Description "Detail Normal Map"
+		Float 4
+		Type Normal
+	EndInput
+
+	Output
+		Name Result
+		Description "Normalized result (alpha from detail)"
+		Float 4
+		Type Normal
+		AlphaFrom DetailNormal
+	EndOutput
+
+EndOperationDef
+

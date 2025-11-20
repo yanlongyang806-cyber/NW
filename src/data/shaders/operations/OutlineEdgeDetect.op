@@ -1,0 +1,44 @@
+OperationDef
+	Name "OutlineEdgeDetect" // Name of the operation
+	Description "Draw outlines using the depth buffer"
+	Type ADVANCED
+
+	Input
+		Name OutlineColor
+		Description "Outline Color"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Color0
+			Floats 1.0 0.0 0.0 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinate to sample in outline"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenDepth
+		Description "Outline Texture for effects"
+		Type Texture_ScreenDepth
+		Texture 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Outline pixels"
+		Float 4
+		AutoConnect UnlitColor
+		AlphaFrom ScreenDepth
+	EndOutput
+
+EndOperationDef
+

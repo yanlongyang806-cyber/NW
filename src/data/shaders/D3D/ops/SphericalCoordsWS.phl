@@ -1,0 +1,25 @@
+{
+#ifdef NO_NORMALMAP
+	float3 norm = normal_vs;
+#else
+	#ifdef NORMAL_PRECALCULATED
+		float3 norm = %Normal%.xyz;
+	#else
+		float3 norm = fromTangentSpace(tangent_vs, binormal_vs, normal_vs.xyz, %Normal%.xyz);
+	#endif
+#endif
+
+// // Reflection vector:
+//  	float3 Rr;
+//  	Rr = -reflect(view_vs, norm); //2 * dot( view_vs, norm ) * norm - view_vs;
+//  	//Rr = normalize(float3(0,0,1) + Rr);
+//  	float2 texcoord = Rr * float2(0.5, -0.5) + float2(0.5, -0.5);
+
+// Just view-space normal:
+// 	float2 texcoord = norm * float2(0.5, -0.5) + float2(0.5, -0.5);
+
+// World-space normal:
+	float2 texcoord = comul_invview_mat(norm).xy * float2(0.5, -0.5) + float2(0.5, -0.5);
+
+	%Result% = texcoord.xyyy;
+}

@@ -1,0 +1,65 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// Resource
+//
+//
+var dbg = require('cryptic/dbg');
+
+//
+// new Resource
+//
+// Creates a basic stub of a Resource for tracking.
+//
+var Resource = function Resource(dictname, id, valueStub)
+{
+//	dbg.trace(dictname, id);
+
+	this.state = 'stub';
+	this.dictname = dictname;
+	this.id = id;
+	this.value = valueStub;
+
+	this._requesters = []; // callback for when 'ready'
+}
+
+
+//
+// destroy
+//
+// Clear out any dangling references in a resource and mark it as destroyed.
+//
+Resource.prototype.destroy = function()
+{
+	if(this._requesters.length > 0)
+	{
+		dbg.error('Destroying Resource '+this.dictname+'.'+this.id+' that has outstanding requests!');
+	}
+	this._requesters = null;
+
+	this.value = null;
+	this.state = 'destroyed';
+}
+
+//
+// setState
+//
+Resource.prototype.setState = function(state, error)
+{
+	this.state = state;
+
+	if(state === 'ready' || error)
+	{
+		while(this._requesters.length > 0)
+		{
+			var fn = this._requesters.pop();
+			fn(error, this);
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Resource;
+
+// End of File

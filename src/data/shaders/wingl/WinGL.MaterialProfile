@@ -1,0 +1,17 @@
+MaterialProfile WinGL
+	GenTemp "TEMP %s;"
+	GenParam "PARAM	%s = program.local[%d];"
+	CommentBegin "# "
+	CommentEnd ""
+	TexCoord0 "fragment.texcoord[0].xyzw"
+	TexCoord1 "fragment.texcoord[0].zwzw"
+	Color0 "color0"
+//	Color1 "color1"
+	GenConst1 "%f"
+	GenConst2 "{%f, %f}"
+	GenConst3 "{%f, %f, %f}"
+	GenConst4 "{%f, %f, %f, %f}"
+	GenTexName "%d"
+	GenShaderPath "shaders/%s/ops/%s.fp"
+	GenSpecialShaderPath "shaders/%s/effects/%s.fp"
+EndMaterialProfile

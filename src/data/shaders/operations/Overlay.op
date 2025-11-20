@@ -1,0 +1,17 @@
+OperationDef
+	Name "Overlay" // Name of the operation
+	Category "Combiner"
+	Description "Overlay (Screens or Multiplies depending on base color).  Ignores alpha."
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "Output"
+		Float 4
+	EndOutput
+
+EndOperationDef
+

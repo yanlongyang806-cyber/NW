@@ -1,0 +1,66 @@
+// TextureNormalDXT5nm_7.phl
+{
+#define HAS_NORMALMAP
+	float4 original = sampleTex2D(TexSampler%NormalMap%, %TexCoord%.xy);
+	float4 expanded;
+	expanded = float4(rangeExpand(original.xyz), original.w);
+	float4 dxt5nm;
+	dxt5nm.xy = rangeExpand2(original.wy);
+	dxt5nm.z = sqrt(saturate(1 - dot(dxt5nm.xy, dxt5nm.xy)));
+	dxt5nm.w = %AlphaIfDXT5nm%.x;
+	%Result% = lerp(expanded, dxt5nm, (%IsDXT5nm%).x);
+
+	float4 original2 = sampleTex2D(TexSampler%NormalMap%, %TexCoord2%.xy);
+	float4 expanded2;
+	expanded2 = float4(rangeExpand(original2.xyz), original2.w);
+	float4 dxt5nm2;
+	dxt5nm2.xy = rangeExpand2(original2.wy);
+	dxt5nm2.z = sqrt(saturate(1 - dot(dxt5nm2.xy, dxt5nm2.xy)));
+	dxt5nm2.w = %AlphaIfDXT5nm%.x;
+	%Result2% = lerp(expanded2, dxt5nm2, (%IsDXT5nm%).x);
+
+	float4 original3 = sampleTex2D(TexSampler%NormalMap%, %TexCoord3%.xy);
+	float4 expanded3;
+	expanded3 = float4(rangeExpand(original3.xyz), original3.w);
+	float4 dxt5nm3;
+	dxt5nm3.xy = rangeExpand2(original3.wy);
+	dxt5nm3.z = sqrt(saturate(1 - dot(dxt5nm3.xy, dxt5nm3.xy)));
+	dxt5nm3.w = %AlphaIfDXT5nm%.x;
+	%Result3% = lerp(expanded3, dxt5nm3, (%IsDXT5nm%).x);
+
+	float4 original4 = sampleTex2D(TexSampler%NormalMap%, %TexCoord4%.xy);
+	float4 expanded4;
+	expanded4 = float4(rangeExpand(original4.xyz), original4.w);
+	float4 dxt5nm4;
+	dxt5nm4.xy = rangeExpand2(original4.wy);
+	dxt5nm4.z = sqrt(saturate(1 - dot(dxt5nm4.xy, dxt5nm4.xy)));
+	dxt5nm4.w = %AlphaIfDXT5nm%.x;
+	%Result4% = lerp(expanded4, dxt5nm4, (%IsDXT5nm%).x);
+
+	float4 original5 = sampleTex2D(TexSampler%NormalMap%, %TexCoord5%.xy);
+	float4 expanded5;
+	expanded4 = float4(rangeExpand(original5.xyz), original5.w);
+	float4 dxt5nm5;
+	dxt5nm5.xy = rangeExpand2(original5.wy);
+	dxt5nm5.z = sqrt(saturate(1 - dot(dxt5nm5.xy, dxt5nm5.xy)));
+	dxt5nm5.w = %AlphaIfDXT5nm%.x;
+	%Result5% = lerp(expanded5, dxt5nm5, (%IsDXT5nm%).x);
+
+	float4 original6 = sampleTex2D(TexSampler%NormalMap%, %TexCoord6%.xy);
+	float4 expanded6;
+	expanded6 = float4(rangeExpand(original6.xyz), original6.w);
+	float4 dxt5nm6;
+	dxt5nm6.xy = rangeExpand2(original6.wy);
+	dxt5nm6.z = sqrt(saturate(1 - dot(dxt5nm6.xy, dxt5nm6.xy)));
+	dxt5nm6.w = %AlphaIfDXT5nm%.x;
+	%Result6% = lerp(expanded6, dxt5nm6, (%IsDXT5nm%).x);
+
+	float4 original7 = sampleTex2D(TexSampler%NormalMap%, %TexCoord7%.xy);
+	float4 expanded7;
+	expanded7 = float4(rangeExpand(original7.xyz), original7.w);
+	float4 dxt5nm7;
+	dxt5nm7.xy = rangeExpand2(original7.wy);
+	dxt5nm7.z = sqrt(saturate(1 - dot(dxt5nm7.xy, dxt5nm7.xy)));
+	dxt5nm7.w = %AlphaIfDXT5nm%.x;
+	%Result7% = lerp(expanded7, dxt5nm7, (%IsDXT5nm%).x);
+}

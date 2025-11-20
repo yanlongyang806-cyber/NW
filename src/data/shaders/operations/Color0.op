@@ -1,0 +1,21 @@
+OperationDef
+	Name "Color0" // Name of the operation
+	Description "Constant color 0"
+	Type SIMPLE
+
+	Input
+		Name DefaultInput
+		Description "Default input to get constant value"
+		Float 4
+		Default
+			Type Color0
+		EndDefault
+		Hidden 1
+	EndInput
+	Output
+		Name Color0
+		Description "Tint color 0"
+		Float 4
+		AlphaFrom DefaultInput
+	EndOutput
+EndOperationDef

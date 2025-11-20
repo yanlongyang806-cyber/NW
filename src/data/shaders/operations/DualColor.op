@@ -1,0 +1,35 @@
+OperationDef
+	Name "DualColor" // Name of the operation
+	DefaultOptionName "DualColor"
+	OptionName "Use Alpha from Diffuse"
+	Description "DualColor tinting"
+	Type ADVANCED
+
+	Input: Diffuse, "RGB: diffuse map, A: alpha output"
+	Input: TintMask, "RGB: how much tint to apply, A: ignored"
+	Input: TintColorMap, "RGB: how much of each tint color (black = all color 0), A: ignored"
+	Input
+		Name Color0
+		Description "Tint color 0"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Color0
+		EndDefault
+	EndInput
+	Input
+		Name Color1
+		Description "Tint color 1"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Color tinted output"
+		Float 4
+		AlphaFrom Diffuse
+	EndOutput
+
+EndOperationDef
+

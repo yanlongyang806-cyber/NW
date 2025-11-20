@@ -1,0 +1,37 @@
+id,name,face1,face2,face3,face4,face5,face6,face7,face8,face9,face10,face11,face12,color
+b4,,,,,,,,,,,,,,base
+b6,Dragonling Bone,m,p,t,c,2c,3c,,,,,,,base
+b6l,Sune's Favor,m,p,t,2c,3c,w:m/p/t/4c,,,,,,,base
+b8,,,,,,,,,,,,,,base
+b10,,,,,,,,,,,,,,base
+b12,,,,,,,,,,,,,,base
+s4,Token of Kossuth,m,m,3c,3c,,,,,,,,,sapphire
+s6,Kossuth's Favor,m,m,2m,3c,3c,4c,,,,,,,sapphire
+s8,Kossuth's Grace,m,m,2m,2m,3c,3c,4c,4c,,,,,sapphire
+s10,Kossuth's Boon,m,m,2m,2m,3c,3c,4c,4c,mc:m+3c,mc:m+3c,,,sapphire
+s12,Kossuth's Will,m,m,2m,2m,3c,3c,4c,4c,mc:m+3c,mc:m+3c,w:m/p/t/4c,w:m/p/t/4c,sapphire
+r4,Token of Tempus,p,p,3c,3c,,,,,,,,,ruby
+r6,Tempus' Favor,p,p,2p,3c,3c,4c,,,,,,,ruby
+r8,Tempus' Grace,p,p,2p,2p,3c,3c,4c,4c,,,,,ruby
+r10,Tempus' Boon,p,p,2p,2p,3c,3c,4c,4c,pc:p+3c,pc:p+3c,,,ruby
+r12,Tempus' Will,p,p,2p,2p,3c,3c,4c,4c,pc:p+3c,pc:p+3c,w:m/p/t/4c,w:m/p/t/4c,ruby
+o4,Token of Lolth,t,t,3c,3c,,,,,,,,,onyx
+o6,Lolth's Favor,t,t,2t,3c,3c,4c,,,,,,,onyx
+o8,Lolth's Grace,t,t,2t,2t,3c,3c,4c,4c,,,,,onyx
+o10,Lolth's Boon,t,t,2t,2t,3c,3c,4c,4c,tc:t+3c,tc:t+3c,,,onyx
+o12,Lolth's Will,t,t,2t,2t,3c,3c,4c,4c,tc:t+3c,tc:t+3c,w:m/p/t/4c,w:m/p/t/4c,onyx
+a4,Token of Tyr,m,m,p,p,,,,,,,,,amethyst
+a6,Tyr's Favor,m,m,2m,p,p,2p,,,,,,,amethyst
+a8,Tyr's Grace,m,m,2m,2m,p,p,2p,2p,,,,,amethyst
+a10,Tyr's Boon,m,m,2m,2m,p,p,2p,2p,mp:m+p,mp:m+p,,,amethyst
+a12,Tyr's Will,m,m,2m,2m,p,p,2p,2p,mp:m+p,mp:m+p,w:m/p/t/4c,w:m/p/t/4c,amethyst
+e4,Token of Oghma,m,m,t,t,,,,,,,,,emerald
+e6,Oghma's Favor,m,m,2m,t,t,2t,,,,,,,emerald
+e8,Oghma's Grace,m,m,2m,2m,t,t,2t,2t,,,,,emerald
+e10,Oghma's Boon,m,m,2m,2m,t,t,2t,2t,mt:m+t,mt:m+t,,,emerald
+e12,Oghma's Will,m,m,2m,2m,t,t,2t,2t,mt:m+t,mt:m+t,w:m/p/t/4c,w:m/p/t/4c,emerald
+t4,Token of Shar,p,p,t,t,,,,,,,,,topaz
+t6,Shar's Favor,p,p,2p,t,t,2t,,,,,,,topaz
+t8,Shar's Grace,p,p,2p,2p,t,t,2t,2t,,,,,topaz
+t10,Shar's Boon,p,p,2p,2p,t,t,2t,2t,pt:p+t,pt:p+t,,,topaz
+t12,Shar's Will,p,p,2p,2p,t,t,2t,2t,pt:p+t,pt:p+t,w:m/p/t/4c,w:m/p/t/4c,topaz

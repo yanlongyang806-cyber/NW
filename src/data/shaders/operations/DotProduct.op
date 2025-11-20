@@ -1,0 +1,18 @@
+OperationDef
+	Name "DotProduct" // Name of the operation
+	Category "Combiner"
+	Description "Dot Product"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "Output of A dot B"
+		Float 4
+		AlphaModeAnd 1
+	EndOutput
+
+EndOperationDef
+

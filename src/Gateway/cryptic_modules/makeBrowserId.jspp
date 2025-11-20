@@ -1,0 +1,78 @@
+'use strict';
+//
+// makeBrowserId
+//
+// Connect middleware which provides a Cryptic Browser ID.
+// Requires the session middleware, and must be used after it.
+//
+
+var crypto = require('crypto');
+var dbg = require('cryptic/dbg');
+
+//
+// makeBrowserId
+//
+// Generates an ID to be used for this machine/browser. A cookie is
+// set with this value, and req.session gets a matching idBrowser
+// value.
+//
+// When a user connects, the cookie is retreived. If there is no cookie,
+// one is generated. The cookie should begin with S, R (for Signature and
+// Random, which are no longer generated) or H (for Hex, which all
+// new browser_ids will be).
+//
+// The browser ids must be alphanumeric. The code makes them by taking 40
+// random bytes, turning them into a base64 string, and prepending an H.
+//
+// Example use:
+//
+// var app = connect()
+//    .use(connect.cookieParser('secret'))
+//        // Cookie for session management
+//    .use(connect.session({ key: 'gw_login' }))
+//        // Session management
+//    .use(makeBrowserId('browser_id', 30*24*60*60))
+//        // Confirm or generate a browser ID
+//
+// After this middleware, the session will have an idBrowser member set
+// to the BrowserId.
+//
+// This middleware sets a cookie with the browser ID in it. If not provided,
+// the cookie is named broswer_id and has a max-age of 30 days.
+//
+function makeBrowserId(cookieName, maxAge)
+{
+	cookieName = cookieName || 'browser_id';
+	maxAge = maxAge || 30*24*60*60;
+
+	return function makeBrowserId(req, res, next)
+	{
+		dbg.trace();
+		var id = req.cookies['browser_id'];
+		var expires = new Date(Date.now() + (maxAge * 1000));
+
+		var c = id ? id.charAt(0) : '';
+		if(c !== 'R' && c !== 'S' && c !== 'H')
+		{
+			// OK, so they don't have an id we recognize
+			var len = 40;
+			id = 'H' + crypto.randomBytes(Math.ceil(len*3/4))
+					.toString('base64')
+					.replace(/[^0-9a-zA-Z]/g, 'P')
+					.slice(0, len);
+			res.setHeader('Set-Cookie', cookieName + '=' + id + '; Expires=' + expires.toUTCString() + '; Path=/; Max-Age=' + maxAge + '; HttpOnly;');
+		}
+
+		if(req.session)
+		{
+			req.session.idBrowser = id;
+			req.session.save();
+		}
+
+		return next();
+	}
+}
+
+module.exports = makeBrowserId;
+
+// End of File

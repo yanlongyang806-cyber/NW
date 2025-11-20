@@ -1,0 +1,60 @@
+'use strict';
+
+var randomInt = require('./randomInt');
+
+var scaGlobals = require('./scaGlobals');
+
+function Die(die, id)
+{
+	this.id = id;
+
+	if(typeof die === 'string')
+	{
+		this.die = scaGlobals.diceDefs.get(die);
+	}
+	else
+	{
+		this.die = die;
+	}
+
+	this.used = false;
+	this.roll = {
+		side: null,
+		index: 0
+	};
+}
+
+Die.prototype.rollDie = function()
+{
+	var result = [];
+	var r = this.roll;
+
+	if(!this.used)
+	{
+		r.index = randomInt(0, this.die.count);
+		r.side = this.die.sides[r.index].getSide();
+	}
+
+	return r;
+}
+
+Die.prototype.use = function()
+{
+	this.used = true;
+}
+
+Die.prototype.unuse = function()
+{
+	this.used = false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+if(module && module.exports)
+	module.exports = Die;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

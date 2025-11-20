@@ -1,0 +1,158 @@
+<div class="project-slots">
+	<ul>
+		<li class="proj-slot-entry overview selectableNavSlot navSlot_main">
+			<div class="proj-slot-cap"></div>
+			<div class="proj-slot-body">
+				<a class="proj-slot-button main" data-set-style="background-image: url(/tex/{.image});" data-set-data-url="/reputation/{$root().queryParams.projectname}/overview/tier?tier=personalproject.states[.internalname={.internalname}].categories[0].tiers[0]"></a>
+			</div>
+			<div class="proj-slot-end">
+				<span class="proj-slot-end-top"></span>
+				<span class="proj-slot-end-bot"></span>
+			</div>
+		</li>
+	</ul>
+
+	<h3><span data-path=".typename">Embassy</span> Projects</h3>
+
+	<!-- STANDARD SLOTS -->
+	<ul data-update="personalproject" data-path=".tasks[.type eq Standard]">
+		<li data-set-class="proj-slot-entry task selectableNavSlot navSlot_{.taskslotnum}">
+			<div class="proj-slot-cap"></div>
+			<div class="proj-slot-body">
+				<span class="project-leader-view">
+					<span data-if="{.active}">
+						<a data-set-class="proj-slot-button current filled {.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/{.taskslotnum}">
+							<div class="proj-slot-info">
+								<h4>Active Project:</h4>
+								<h5 data-path=".taskdef.displayname.str">Lorem ipsum dolor sit amet, consectetur adipiscing elit</h5>
+								<span class="slot-status">
+									<span class="progress-container">
+										<span data-if="{.progresspercent} lt 100" class="progress-bar" data-set-style="width:{.progresspercent}%"></span>
+										<span data-if="{.progresspercent} ge 100" class="progress-bar complete" style="width: 100%"></span>
+									</span>
+								</span>
+							</div>
+							<div class="proj-slot-bg"></div>
+
+						</a>
+					</span>
+					<span data-if="!{.active}">
+						<a data-if=".nexttaskcandidates.$length()" data-set-class="proj-slot-button current empty {.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-label">
+								<h4>Select Active Project</h4>
+							</div>
+						</a>
+						<div data-if=".nexttaskcandidates.$length() == 0" class="proj-slot-button current empty disabled">
+							<div class="proj-slot-label">
+								<h4>None Available</h4>
+							</div>
+						</div>
+					</span>
+					<div class="proj-slot-next-arrow"></div>
+					<span data-if="{.next}">
+						<a data-set-class="proj-slot-button next filled {.nexttaskdef.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-info">
+								<h4>Next:</h4>
+								<h5 data-path=".nexttaskdef.displayname.str">Lorem ipsum dolor sit amet, consectetur adipiscing elit</h5>
+							</div>
+							<div class="proj-slot-bg"></div>
+						</a>
+					</span>
+					<span data-if="!{.next}">
+						<a data-if=".nexttaskcandidates.$length()" data-set-class="proj-slot-button next empty {.nexttaskdef.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-label">
+								<h4>Add Next Project</h4>
+							</div>
+						</a>
+						<div data-if=".nexttaskcandidates.$length() == 0" class="proj-slot-button next empty disabled">
+							<div class="proj-slot-label">
+								<h4>None Available</h4>
+							</div>
+						</div>
+					</span>
+				</span>
+			</div>
+			<div class="proj-slot-end">
+				<span class="proj-slot-end-top"></span>
+				<span class="proj-slot-end-bot"></span>
+			</div>
+		</li>
+		<script>
+			$('.selectableNavSlot.navSlot_' + client.shifter.hashInfo.urlsParams['navslot']).addClass('selected');
+		</script>
+	</ul>
+
+	<!-- UPGRADE SLOT -->
+	<ul data-update="personalproject" data-path=".tasks[.type eq Upgrade]">
+
+		<li data-set-class="proj-slot-entry task selectableNavSlot navSlot_{.taskslotnum}">
+
+			<div class="proj-slot-cap"></div>
+			<div class="proj-slot-body">
+				<span class="project-leader-view">
+					<span data-if="{.active}">
+						<a data-set-class="proj-slot-button current filled {.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/{.taskslotnum}">
+							<div class="proj-slot-info">
+								<h4>Upgrading:</h4>
+								<h5 data-path=".taskdef.displayname.str">Lorem ipsum dolor sit amet, consectetur adipiscing elit</h5>
+								<span class="slot-status">
+									<span class="progress-container">
+										<span data-if="{.progresspercent} lt 100" class="progress-bar" data-set-style="width:{.progresspercent}%"></span>
+										<span data-if="{.progresspercent} ge 100" class="progress-bar complete" style="width: 100%"></span>
+									</span>
+								</span>
+							</div>
+							<div class="proj-slot-bg"></div>
+
+						</a>
+					</span>
+					<span data-if="!{.active}">
+						<a data-if=".nexttaskcandidates.$length()" data-set-class="proj-slot-button current empty {.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-label">
+								<h4>Upgrades Available</h4>
+							</div>
+						</a>
+						<div data-if=".nexttaskcandidates.$length() == 0" class="proj-slot-button current empty disabled">
+							<div class="proj-slot-label">
+								<h4>No Upgrades Available</h4>
+							</div>
+						</div>
+					</span>
+
+					<div class="proj-slot-next-arrow"></div>
+
+					<span data-if="{.next}">
+						<a data-set-class="proj-slot-button next filled {.nexttaskdef.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-info">
+								<h4>Next:</h4>
+								<h5 data-path=".nexttaskdef.displayname.str">Lorem ipsum dolor sit amet, consectetur adipiscing elit</h5>
+							</div>
+							<div class="proj-slot-bg"></div>
+						</a>
+					</span>
+
+					<span data-if="!{.next}">
+						<a data-if=".nexttaskcandidates.$length()" data-set-class="proj-slot-button next empty {.nexttaskdef.category.$toLowerCase()}" data-set-data-url="/reputation/{$root().queryParams.projectname}/projects/next?next=personalproject.states[.internalname=Personal_Possession_{$root().queryParams.projectname}].tasks[.taskslotnum={.taskslotnum}]">
+							<div class="proj-slot-label">
+								<h4>Add Next Upgrade</h4>
+							</div>
+						</a>
+						<div data-if=".nexttaskcandidates.$length() == 0" class="proj-slot-button next empty disabled">
+							<div class="proj-slot-label">
+								<h4>None Available</h4>
+							</div>
+						</div>
+					</span>
+				</span>
+			</div>
+			<div class="proj-slot-end">
+				<span class="proj-slot-end-top"></span>
+				<span class="proj-slot-end-bot"></span>
+			</div>
+		</li>
+		<script>
+			$('.selectableNavSlot.navSlot_' + client.shifter.hashInfo.urlsParams['navslot']).addClass('selected');
+		</script>
+	</ul>
+
+</div>

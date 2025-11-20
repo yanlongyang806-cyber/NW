@@ -1,0 +1,7 @@
+{
+	%Result%.x = (%R%).x;
+	%Result%.y = (%G%).x;
+	%Result%.z = (%B%).x;
+	%Result%.w = (%A%).x;
+}
+

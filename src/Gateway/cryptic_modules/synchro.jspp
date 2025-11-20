@@ -1,0 +1,141 @@
+'use strict';
+
+////////////////////////////////////////////////////////////////////////
+//
+// synchro
+//
+// Helpers for dealing with asynchronous events, callbacks, and so on.
+//
+//
+
+
+function Synchro()
+{
+	this.aFuncs = [];
+}
+
+
+//
+// Synchro.add
+//
+// Adds a function to the list of functions being tracked.
+//
+Synchro.prototype.add = function(func)
+{
+	this.aFuncs = this.aFuncs.concat(func);
+}
+
+//
+// synchro.waitForAll
+//
+// Given a set of functions, calls and waits for all of them to return,
+// collecting their errors and results.
+//
+// The function to be called should take a single parameter, a function
+// (typically called "ready") which takes two parameters, error and
+// result.
+//
+//     var sync = new Synchro();
+//     sync.add(function(ready) {
+//        /* Do stuff asynchronously */
+//        asyncFunction(x, y, z, function(error, result) {
+//           ready(error, result);
+//        });
+//     });
+//
+// Since many async functions already expect a (error, result) callback,
+// you can use ready directly.
+//
+//     sync.add( function(ready) {
+//        /* Do stuff asynchronously */
+//        asyncFunction(x, y, z, ready);
+//     });
+//
+// Once you have an array of functions, you can execute and wait for all
+// of them to complete. The callback is given an array of all the errors
+// and all of the results it received. They are in the same index as
+// the function which returned them.
+//
+//     sync.waitForAll(function(aErrors, aResult) {
+//        /* Do what you want with the errors/results */
+//        if(errors.length > 0) { /* there were errors */ }
+//     });
+//
+Synchro.prototype.waitForAll = function waitForAll(callback)
+{
+	var cnt = this.aFuncs.length;
+	var errors = [];
+	var results = [];
+	if(!this.aFuncs.length)
+	{
+//		cutils.nextTick(function() {
+			callback(undefined, undefined);
+//		});
+	}
+	else
+	{
+		/*jshint loopfunc:true */
+		for(var i = 0; i < this.aFuncs.length; i++)
+		{
+			(function(id, func, callback) {
+//				cutils.nextTick(function() {
+					func(function(error, result) {
+						if(error) errors[id] = error;
+						results[id] = result;
+
+						cnt--;
+						if(cnt === 0)
+						{
+							if(callback)
+								callback(errors, results);
+						}
+					});
+//				});
+			})(i, this.aFuncs[i], callback);
+		}
+		/*jshint loopfunc:false */
+	}
+}
+
+
+Synchro.prototype.waitForAllSeries = function waitForAllSeries(callback)
+{
+	var cnt = this.aFuncs.length;
+	if(!this.aFuncs.length)
+	{
+//		cutils.nextTick(function() {
+			callback(undefined, undefined);
+//		}
+	}
+	else
+	{
+		var errors = [];
+		var results = [];
+		var self = this;
+
+		var i = 0;
+		var doNext = function(error, result) {
+			if(error) errors[i] = error;
+			results[i] = result;
+
+			i++;
+			if(i === self.aFuncs.length)
+			{
+				if(callback)
+					callback(errors, results);
+			}
+			else
+			{
+//				cutils.nextTick(function() {
+					self.aFuncs[i](doNext);
+//				}
+			}
+		}
+
+		self.aFuncs[0](doNext);
+	}
+}
+
+module.exports = Synchro;
+
+// End of File

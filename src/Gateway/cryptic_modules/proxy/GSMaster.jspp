@@ -1,0 +1,544 @@
+"use strict";
+
+///////////////////////////////////////////////////////////////////////////
+//
+// GSMaster
+//
+// Represents the master GatewayServer the proxy is talking to.
+//
+// Also provides a single interface to talk to multiple GatewayServers.
+// GSMaster handles making and fetching Sessions for entities regardless
+// of what shard they are on.
+//
+//
+var colors = require('colors');
+
+var util = require('cryptic/cutils');  // for util.inherits
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+
+var g_config = require('cryptic/configure')();
+var locale = require('cryptic/locale');
+
+var Synchro = require('cryptic/synchro');
+
+var GSConnection = require('cryptic/proxy/GSConnection');
+
+var CMD_CONNECTION = 0x10;
+
+///////////////////////////////////////////////////////////////////////////
+
+var RequestQueue = require('cryptic/RequestQueue');
+
+var qTextures = new RequestQueue();
+
+///////////////////////////////////////////////////////////////////////////
+
+var GSMaster = function GSMaster(ip, port)
+{
+	dbg.trace();
+
+	GSConnection.call(this);
+
+	this.gsconns = { };
+	this.gsconns[g_config.shardName] = this;
+
+	this.ipGatewayServer = ip || g_config.ipGatewayServer;
+	this.portGatewayServer = port || g_config.portGatewayServer;
+	this.connectionAttempts = 0;
+	this.cbConnected = null;
+
+	this.on('connecting', this.onConnecting.bind(this));
+	this.on('disconnecting', this.onDisconnecting.bind(this));
+	this.on('disconnected', this.onDisconnected.bind(this));
+}
+util.inherits(GSMaster, GSConnection);
+
+
+///////
+//
+// findConnectionForShard
+//
+GSMaster.prototype.findConnectionForShard = function findConnectionForShard(shard)
+{
+	// i18n: If shard names are ever non-ascii names, this will be a problem.
+	shard = typeof shard === 'string' ? shard.toLowerCase() : shard;
+	dbg.trace(shard, (shard in this.gsconns) ? 'found' : 'NOT FOUND');
+	return shard ? this.gsconns[shard]: this;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+//
+// Requests
+//
+
+///////////////////////////////////////////////////////////////////////////
+
+GSMaster.prototype.requestTranslations = function requestTranslations(lang, keys)
+{
+	dbg.trace();
+
+	var pkt = this.startConnectionPacket('Proxy_RequestTranslations');
+	pkt.sendUInt32(lang);
+	pkt.sendUInt32(keys.length);
+	for(var i = 0; i < keys.length; i++)
+	{
+		pkt.sendString(keys[i]);
+	}
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Receiving
+
+GSMaster.prototype.onServer_Hello = function onServer_Hello(pkt)
+{
+	GSConnection.prototype.onServer_Hello.call(this, pkt);
+
+	dbg.trace();
+
+	if(this.shard)
+	{
+		this.gsconns[this.shard] = this;
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+GSMaster.prototype.requestTexture = function requestTexture(texname, callback)
+{
+	dbg.trace();
+
+	if(qTextures.addRequest(texname, callback))
+	{
+		// Only ask for the texture if we don't have any requests pending for
+		// it (because they've already asked for it).
+		var pkt = this.startConnectionPacket('Proxy_RequestTexture');
+		pkt.sendString(texname);
+		pkt.endPacket();
+	}
+}
+
+GSMaster.prototype.onServer_Texture = function onServer_Texture(pkt)
+{
+	dbg.trace();
+
+	var texname = pkt.readString();
+	var error;
+	var buffer;
+
+	var count = pkt.readUInt32();
+	if(count)
+	{
+		buffer = pkt.readBytes(count);
+	}
+	else
+	{
+		error = pkt.readString();
+	}
+
+	qTextures.resolveRequest(texname, error, buffer);
+}
+
+GSMaster.prototype.onServer_Translations = function onServer_Translations(pkt)
+{
+	dbg.trace();
+
+	var lang = pkt.readUInt32();
+	var count = pkt.readUInt32();
+	var translations = {};
+	for(var i = 0; i < count; i++)
+	{
+		var key = pkt.readString();
+		translations[key] = pkt.readString();
+	}
+
+	locale.setTranslations(lang, translations);
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+////////
+//
+// attemptConnection
+//
+// Try to connect to the master GatewayServer
+//
+GSMaster.prototype.attemptConnection = function(onConnectedCallback)
+{
+	dbg.trace();
+
+	this.onConnectedCallback = onConnectedCallback;
+	this.connectionAttempts++;
+	dbg('Attempting to connect to GatewayServer. Try '+this.connectionAttempts);
+
+	if(this.ipGatewayServer && this.portGatewayServer)
+	{
+		this.connect(this.ipGatewayServer, this.portGatewayServer);
+		dbg('\tTrying:', this.ipGatewayServer, this.portGatewayServer);
+	}
+	else
+	{
+		throw(new Error('No GatewayServer configured. You need to set ipGatewayServer and portGatewayServer.'));
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Event handlers for connecting and disconnecting.
+// These are all internal functions that no one else should probably call.
+//
+
+GSMaster.prototype.onConnecting = function onConnecting()
+{
+	dbg.trace();
+	log.log('Connecting to Master GatewayServer...'.bold);
+}
+
+GSMaster.prototype.onConnected = function onConnected()
+{
+	GSConnection.prototype.onConnected.call(this);
+
+	dbg.trace();
+
+	log.info('Connected to Master GatewayServer: ' + this.ipGatewayServer +':'+ this.portGatewayServer);
+
+	var now = new Date();
+	log.info('Gateway Proxy - started ' + now.toUTCString());
+	log.log('Using config', g_config);
+
+	this.connectionAttempts = 0;
+
+	// Send perf data every 3 seconds
+	this.perfInterval = setInterval(this.sendPerf.bind(this), 3*1000);
+
+	if(this.onConnectedCallback)
+	{
+		this.onConnectedCallback();
+	}
+}
+
+GSMaster.prototype.onDisconnecting = function onDisconnecting()
+{
+	dbg.trace();
+
+	try
+	{
+		log.error('Master GatewayServer disconnecting...');
+		log.warn('Destroying all sessions.');
+
+		if(typeof this.perfInterval !== 'undefined')
+		{
+			clearInterval(this.perfInterval);
+			this.perfInterval = undefined;
+		}
+
+		this.destroyAllSessions();
+	}
+	catch(e)
+	{
+		// This might fail if the app isn't listening yet, which is fine.
+	}
+}
+
+GSMaster.prototype.onDisconnected = function onDisconnected()
+{
+	GSConnection.prototype.onDisconnected.call(this);
+
+	dbg.trace();
+
+	log.error('Master GatewayServer is disconnected.');
+
+	if(g_config.slave)
+	{
+		log.error('Exiting (in slave mode)');
+		process.exit();
+	}
+
+	log.log('Attempting reconnect in 5 seconds.');
+	setTimeout(this.attemptConnection.bind(this, this.onConnectedCallback), 5000);
+}
+
+
+GSConnection.prototype.onServer_ClusterInfo = function onServer_ClusterInfo(pkt)
+{
+	var json = pkt.readString();
+	var info;
+	try
+	{
+		info = JSON.parse(json);
+	}
+	catch(e)
+	{
+		log.error('Invalid JSON from server for cluster info!', json);
+		var fs = require('fs');
+		fs.writeFile('badcluster.json', json);
+	}
+
+	if(info && info.shards)
+	{
+		for(var i = info.shards.length - 1; i >= 0; i--)
+		{
+			var shard = info.shards[i];
+			if(shard.shardname)
+				shard.shardname = shard.shardname.toLowerCase();
+
+			if(shard.state === 'CONNECTED' && shard.mostrecentstatus)
+			{
+
+				var servers = shard.mostrecentstatus.serversbytype;
+				for (var j = servers.length - 1; j >= 0; j--)
+				{
+					if(servers[j].type === 'GATEWAYSERVER' && servers[j].servers[0].statestring === '/gslRunning')
+					{
+						// Add a connection if there wasn't one
+						if(!this.gsconns[shard.shardname])
+						{
+							log.info('Connecting to shard "' + shard.shardname + '"');
+							this.gsconns[shard.shardname] = new GSConnection(servers[j].servers[0].ip);
+							this.gsconns[shard.shardname].attemptConnection();
+						}
+						else if(this.gsconns[shard.shardname].state === 'disconnected')
+						{
+							log.warn('Reconnecting to shard "' + shard.shardname + '"');
+							this.gsconns[shard.shardname] = new GSConnection(servers[j].servers[0].ip);
+							this.gsconns[shard.shardname].attemptConnection();
+						}
+					}
+				}
+			}
+			else if(shard.state !== 'THATS_ME')
+			{
+				dbg.trace(shard);
+				dbg.trace(shard.mostrecentstatus);
+				// Shut down connection if I have one.
+				if(this.gsconns[shard.shardname])
+				{
+					log.warn('Disconnecting from shard "' + shard.shardname + '" because it was reported as not connected.');
+					this.gsconns[shard.shardname].disconnect();
+					this.gsconns[shard.shardname] = null;
+				}
+			}
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSMaster.prototype.makeLogger = function makeLogger(logname)
+{
+	var self = this;
+
+	var logger = {
+		write: function(message) {
+			if(self.state === 'connected')
+			{
+				if(message.substring(0, 8) === 'SHUTDOWN')
+				{
+					message = "\n" + message;
+					self.sendShutdownWithMessage(message);
+				}
+				else
+				{
+					message = message.replace(/\r*\n+/g, ' ');
+					self.sendLog(logname, message);
+				}
+			}
+		}
+	};
+
+	return logger;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSMaster.prototype.requestAllCharactersForAccountName = function requestAllCharactersForAccountName(accountName, callback)
+{
+	dbg.trace();
+
+	this.requestCharactersForAccountName(accountName, callback);
+}
+
+//
+// containerInfoForName
+//
+// Can be called as ('name@account', callback) or ('account', 'name', callback).
+//
+// Returns { id: containerID, name: 'name', accountid: id, publicaccountname: 'account', status : 'online'|'offline'|'deleted' }
+//
+GSMaster.prototype.containerInfoForName = function containerInfoForName(accountName, character, callback)
+{
+	dbg.trace(accountName, character);
+
+	if(typeof character === 'function')
+	{
+		callback = character;
+		character = undefined;
+
+		if(accountName.indexOf('@') >= 0)
+		{
+			var a = accountName.split('@');
+			accountName = a[1];
+			character = a[0];
+		}
+	}
+
+	dbg.trace(accountName, character, callback);
+	if(!accountName || !character || !callback)
+	{
+		dbg.trace('error');
+		callback(new Error('Invalid request for ContainerPair: ' + accountName + ', ' + character), undefined);
+		return;
+	}
+
+	this.requestAllCharactersForAccountName(accountName, function _requestAllCharactersForAccountName_cb(error, chars) {
+		dbg.trace();
+		if(error)
+		{
+			callback(error, undefined);
+		}
+		else
+		{
+			// i18n: This might be a problem
+			var lname = character.toLowerCase();
+			for(var i = chars.characterchoices.length - 1; i >= 0; i--)
+			{
+				// i18n: This might be a problem
+				if(chars.characterchoices[i].savedname.toLowerCase() === lname)
+				{
+					dbg.trace('Found ' + lname);
+					callback(error, chars.characterchoices[i]);
+					return;
+				}
+			}
+
+			callback(new Error('Character not found:' + character), undefined);
+		}
+	});
+}
+
+GSMaster.prototype.guildInfoForName = function guildInfoForName(guildname, callback)
+{
+	dbg.trace();
+
+	var sync = new Synchro();
+
+	var shards = []
+	for(var shardName in this.gsconns)
+	{
+		shards.push(shardName);
+
+		/*jshint loopfunc:true */
+		(function(gsconn) {
+			sync.add(function(ready) {
+				if(gsconn)
+				{
+					gsconn.requestGuildIdForName(guildname, ready);
+				}
+				else
+				{
+					ready(undefined, undefined);
+				}
+			});
+		})(this.gsconns[shardName]);
+		/*jshint loopfunc:false */
+	}
+
+	sync.waitForAll(function(aErrors, aResult) {
+		var guild = {
+			name: guildname,
+			id: 0,
+			shard: ''
+		};
+
+		for(var i = 0; i < aResult.length; i++)
+		{
+			if(aResult[i])
+			{
+				guild.id = aResult[i];
+				guild.shard = shards[i];
+				break;
+			}
+		}
+
+		callback(guild.id === 0 ? new Error('Failed to find guild') : undefined, guild);
+	});
+}
+
+var s_ActiveActivites = {};
+var s_ActiveEvents = {};
+
+GSMaster.prototype.onServer_ActiveEvents = function onServer_ActiveEvents(pkt)
+{
+	var json = pkt.readString();
+	var activeStruct;
+	var i;
+
+	//Clear out any possibly existing active activies and events
+	s_ActiveActivites = {};
+	s_ActiveEvents = {};
+
+	try {
+		activeStruct = JSON.parse(json);
+	}
+	catch(e) {
+		log.error('Invalid JSON from server for active events!', json, e);
+		var fs = require('fs');
+		fs.writeFile('badevents.json', json);
+	}
+
+	for(i=0;i<activeStruct.events.length;i++)
+	{
+		s_ActiveEvents[activeStruct.events[i]] = true;
+	}
+
+	for(i=0;i<activeStruct.activites.length;i++)
+	{
+		s_ActiveActivites[activeStruct.activites[i]] = true;
+	}	
+
+}
+
+GSMaster.prototype.onServer_StartActivity = function Server_StartActivity(pkt)
+{
+	var activity = pkt.readString();
+	s_ActiveActivites[activity] = true;
+
+}
+
+GSMaster.prototype.onServer_EndActivity = function onServer_EndActivity(pkt)
+{
+	var activity = pkt.readString();
+	delete s_ActiveActivites[activity];
+
+}
+
+GSMaster.prototype.onServer_StartEvent = function onServer_StartEvent(pkt)
+{
+	var sEvent = pkt.readString();
+	s_ActiveEvents[sEvent] = true;
+
+}
+
+GSMaster.prototype.onServer_EndEvent = function onServer_EndEvent(pkt)
+{
+	var sEvent = pkt.readString();
+	delete s_ActiveEvents[sEvent];
+
+}
+
+//
+// End Internal handlers
+//
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = GSMaster;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

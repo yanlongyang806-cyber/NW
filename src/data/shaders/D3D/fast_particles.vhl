@@ -1,0 +1,476 @@
+#include "vs_inc.hlsl"
+#include "rgb_hsv_inc.hlsl"
+
+SAMPLER_DECL(noise, 0);
+
+#ifndef TRANSGAMING
+
+float4 getJitter(inout float fJitterIndex, float fJitterStep, int4 indices, int offset)
+{
+#ifdef VFETCH
+	float4 result;
+	
+	float fJIndex = fJitterIndex + fJitterStep * (indices[0] - offset );
+	result[0] = sampleTex2DLod(noise, float2(frac(fJIndex), 0), 0).x;
+	
+		fJIndex = fJitterIndex + fJitterStep * (indices[1] - offset + 4 );
+		result[1] = sampleTex2DLod(noise, float2(frac(fJIndex), 0), 0).x;
+		
+		fJIndex = fJitterIndex + fJitterStep * (indices[2] - offset + 8 );
+		result[2] = sampleTex2DLod(noise, float2(frac(fJIndex), 0), 0).x;
+		
+		fJIndex = fJitterIndex + fJitterStep * (indices[3] - offset + 12 );
+		result[3] = sampleTex2DLod(noise, float2(frac(fJIndex), 0), 0).x;
+	
+	return result;
+#else
+	return float4( 0, 0, 0, 0 );
+#endif
+}
+
+#ifdef RGB_BLEND
+float4 calcLerpColorRGB( float4x4 value, float4x4 jitter, int4 iIndices, float4 time, float4 fJitter0, float4 fJitter1, float hue_shift)
+{
+	float4 result;
+	float3 bef;
+	float3 aft;
+
+	bef.x = value[iIndices.x-1].x + jitter[iIndices.x-1].x*fJitter0.x;
+	bef.y = value[iIndices.y-1].y + jitter[iIndices.y-1].y*fJitter0.y;
+	bef.z = value[iIndices.z-1].z + jitter[iIndices.z-1].z*fJitter0.z;
+
+	aft.x = value[iIndices.x].x + jitter[iIndices.x].x*fJitter1.x;
+	aft.y = value[iIndices.y].y + jitter[iIndices.y].y*fJitter1.y;
+	aft.z = value[iIndices.z].z + jitter[iIndices.z].z*fJitter1.z;
+
+	bef.x += hue_shift;
+	aft.x += hue_shift;
+	bef.x *= 6.0f;
+	aft.x *= 6.0f;
+
+	bef = HSVtoRGB(bef);
+	aft = HSVtoRGB(aft);
+
+	result.xyz = lerp(bef, aft, time.x);
+	result.w = lerp(value[iIndices.w-1].w + jitter[iIndices.w-1].w*fJitter0.w, value[iIndices.w].w + jitter[iIndices.w].w*fJitter1.w, time.w);
+
+	return result;
+}
+#else
+float4 calcLerpColorHSV( float4x4 value, float4x4 jitter, int4 iIndices, float4 time, float4 fJitter0, float4 fJitter1)
+{
+	float4 result;
+	result.x = lerp(value[iIndices.x-1].x + jitter[iIndices.x-1].x*fJitter0.x, value[iIndices.x].x + jitter[iIndices.x].x*fJitter1.x, time.x);
+	result.y = lerp(value[iIndices.y-1].y + jitter[iIndices.y-1].y*fJitter0.y, value[iIndices.y].y + jitter[iIndices.y].y*fJitter1.y, time.y);
+	result.z = lerp(value[iIndices.z-1].z + jitter[iIndices.z-1].z*fJitter0.z, value[iIndices.z].z + jitter[iIndices.z].z*fJitter1.z, time.z);
+	result.w = lerp(value[iIndices.w-1].w + jitter[iIndices.w-1].w*fJitter0.w, value[iIndices.w].w + jitter[iIndices.w].w*fJitter1.w, time.w);
+	return result;
+}
+#endif
+
+
+float4 calcLerpScale( float4x4 value, float4x4 jitter, int4 iIndices, float4 time, float4 fJitter0, float4 fJitter1)
+{
+	float4 result;
+	#ifdef _XBOX
+	#ifdef STREAK
+	fJitter1.x = 0.0f;
+	#endif
+	#endif
+	result.x = lerp(value[iIndices.x-1].x + jitter[iIndices.x-1].x*fJitter0.x, value[iIndices.x].x + jitter[iIndices.x].x*fJitter1.x, time.x);
+	#ifdef LINKSCALE
+	result.y = 0.0f;
+	#else
+	result.y = lerp(value[iIndices.y-1].y + jitter[iIndices.y-1].y*fJitter0.y, value[iIndices.y].y + jitter[iIndices.y].y*fJitter1.y, time.y);
+	#endif
+	#ifdef STREAK
+	result.z = result.w = 0.0f;
+	#else
+	result.z = lerp(value[iIndices.z-1].z + jitter[iIndices.z-1].z*fJitter0.z, value[iIndices.z].z + jitter[iIndices.z].z*fJitter1.z, time.z);
+	result.w = lerp(value[iIndices.w-1].w + jitter[iIndices.w-1].w*fJitter0.w, value[iIndices.w].w + jitter[iIndices.w].w*fJitter1.w, time.w);
+	#endif
+	return result;
+}
+
+float3 getCornerPos(int iCorner)
+{
+	float4x3 corner =
+	{
+	{ -0.5f, -0.5f,  0.0f },
+	{ -0.5f,  0.5f,  0.0f },
+	{  0.5f,  0.5f,  0.0f },
+	{  0.5f, -0.5f,  0.0f }
+	};
+	return corner[iCorner];
+}
+
+float randomBool( float f )
+{
+	return step( frac( f * 130955.12383 ), 0.5f );
+}
+
+float2 applyTextureFlipping( float2 fInput, float2 fRand)
+{
+	float2 fOutput;
+	float2 fToFlip;
+
+	fToFlip.x = tex_params.x * randomBool( fRand.x);
+	fToFlip.y = tex_params.y * randomBool( fRand.y);
+
+	fOutput.x = fInput.x * ( 1 - 2 * fToFlip.x) + fToFlip.x;
+	fOutput.y = fInput.y * ( 1 - 2 * fToFlip.y) + fToFlip.y;
+
+	return fOutput;
+}
+
+float2 getCornerTex(int iCorner)
+{
+	float4x2 corner = 
+	{
+	{ 0.0f, 1.0f },
+	{ 0.0f, 0.0f },
+	{ 1.0f, 0.0f },
+	{ 1.0f, 1.0f }
+	};
+	return corner[iCorner];
+}
+
+float2 getQuadCornerTex(int iCorner, float2 fRand)
+{
+	float2 result;
+	float4x2 corner = 
+	{
+	{ 0.0f, 0.5f },
+	{ 0.0f, 0.0f },
+	{ 0.5f, 0.0f },
+	{ 0.5f, 0.5f }
+	};
+	
+	result = corner[iCorner];
+	
+	if ( randomBool(fRand.x) )
+	{
+		result.x += 0.5f;
+	}
+	if ( randomBool(fRand.y) )
+	{
+		result.y += 0.5f;
+	}
+	return result;
+}
+
+
+float3 scaleAndRotate(float3 vec, float2 scale, float rot)
+{
+	float fCos, fSin;
+	sincos(-rot, fSin, fCos);
+	float2x2 rotMat = 
+	{
+	{ fCos, fSin }, 
+	{ -fSin, fCos }, 
+	};
+	return float3(mul(vec.xy * scale, rotMat), vec.z);
+}
+
+float3 streak(int corner, float2 scale, float3 streakDir)
+{
+	float2x3 sides = {
+				float3(0.5f * normalize(float2( streakDir.y, -streakDir.x )) * scale.x, 0.0f), 
+				streakDir * scale.y
+				//float3(streakDir.xy * scale.y, streakDir.z)
+				};
+	
+	float4x2 cornMult = 
+	{
+	{ -1.0f, 1.0f },
+	{ -1.0f, 0.0f },
+	{  1.0f, 0.0f },
+	{  1.0f, 1.0f },
+	};
+	
+	
+	return mul(cornMult[corner], sides);
+}
+
+
+float calcLerpParam(float fTimeA, float fTimeB, float fTime)
+{
+	float denom = fTimeB - fTimeA;
+	if (denom == 0)
+		denom = 1;
+	return (fTime - fTimeA) / (denom);
+}
+
+int findIndex( out float newTime, float4 time, float fScaledTime )
+{
+	int result;
+	if (time[1] >= fScaledTime)
+	{
+		result = 1;
+		newTime = calcLerpParam(time[0], time[1], fScaledTime);
+	}
+	else if (time[2] >= fScaledTime)
+	{
+		result = 2;
+		newTime = calcLerpParam(time[1], time[2], fScaledTime);
+	}
+	else if (time[3] >= fScaledTime)
+	{
+		result = 3;
+		newTime = calcLerpParam(time[2], time[3], fScaledTime);
+	}
+	else
+	{
+		result = 4;
+		newTime = 1.0f;
+	}
+	
+	return result;
+}
+
+
+int4 findIndicesColor(float4x4 time, float fNormalTime, float4 time_scale, out float4 newTimes)
+{
+	int4 result = { 5, 5, 5, 5 };
+	float4 fScaledTimes;
+	
+	fScaledTimes = frac( time_scale * fNormalTime );
+	float4x4 ttime = transpose(time);
+	
+	result.x = findIndex(newTimes.x, ttime[0], fScaledTimes.x);
+	result.y = findIndex(newTimes.y, ttime[1], fScaledTimes.y);
+	result.z = findIndex(newTimes.z, ttime[2], fScaledTimes.z);
+	result.w = findIndex(newTimes.w, ttime[3], fScaledTimes.w);
+	
+	return result;
+}
+
+int4 findIndicesScale(float4x4 time, float fNormalTime, float4 time_scale, out float4 newTimes)
+{
+	int4 result = { 5, 5, 5, 5 };
+	float4 fScaledTimes;
+	
+	fScaledTimes = frac( time_scale * fNormalTime );
+	float4x4 ttime = transpose(time);
+	
+	result.x = findIndex(newTimes.x, ttime[0], fScaledTimes.x);
+	#ifndef LINKSCALE
+		result.y = findIndex(newTimes.y, ttime[1], fScaledTimes.y);
+	#else
+		result.y = 1;
+		newTimes.y = 0.0f;
+	#endif
+	#ifndef STREAK
+		result.z = findIndex(newTimes.z, ttime[2], fScaledTimes.z);
+		result.w = findIndex(newTimes.w, ttime[3], fScaledTimes.w);
+	#else
+		result.z = result.w = 1;
+		newTimes.z = newTimes.w = 0.0f;
+	#endif
+	
+	return result;
+}
+
+#endif
+
+void fastparticle_cpu_vertexshader(in VS_INPUT_PARTICLE vIn, 
+							   out VS_OUTPUT_PARTICLE vOut
+							   )
+{
+	// CPU fast particles
+	float4 position_in = float4(vIn.position, 1);
+	float4 position_ws;
+
+	position_ws = mul_model_mat(position_in, model_mat);
+	position_ws.w = 1;
+	vOut.position_vs.xyz = mul_view_mat(position_ws).xyz;
+
+	vOut.color = vIn.color;
+	vOut.texcoord = vIn.texcoord.xy;
+
+	// Transform to clip space
+	calcClipPosition(vOut.position_clip, vOut.position_vs.xyz);
+
+	// TODO: move this (or full/complicated version below) to CPU?
+	//vOut.position_vs.w = fogVertexFog(length(vOut.position_vs.xyz));
+	vOut.position_vs.w = fogCalculateHeightCoord(vOut.position_vs.xyz);
+
+	{
+		float distance_to_camera = length(vOut.position_vs.xyz);
+		float fog_coord_low = saturate((distance_to_camera - fog_dist.x) * fog_dist.y) * fog_color_low.a;
+		float fog_coord_high = saturate((distance_to_camera - fog_dist.z) * fog_dist.w) * fog_color_high.a;
+		float fog_height_coord = saturate(vOut.position_vs.w);
+		// Split verison of lerp(lerp(color, fog_color_low.rgb, fog_coord_low), lerp(color, fog_color_high.rgb, fog_coord_high), fog_height_coord)
+		float3 colorparam = lerp(fog_coord_low * fog_color_low, fog_coord_high * fog_color_high, fog_height_coord).xyz;
+		float scalarparam = lerp((1-fog_coord_low), (1 - fog_coord_high), fog_height_coord);
+		vOut.fogvalues = float4(colorparam, scalarparam);
+
+		vOut.vpos_xyw_and_unused = float4(vOut.position_clip.xyw, 0);
+	}
+
+
+}
+
+#ifdef TRANSGAMING
+  #define UNSUPPORTED_GPUPARTICLES
+#else
+  #ifndef SM30
+    #define UNSUPPORTED_GPUPARTICLES
+  #endif
+#endif
+
+void fastparticle_vertexshader(in VS_INPUT_FASTPARTICLE vIn, 
+							   out VS_OUTPUT_PARTICLE vOut
+							   )
+{
+	#ifndef UNSUPPORTED_GPUPARTICLES
+	{
+		float fJitterIndex = vIn.seed;
+		//float fJitterStep = 0.0001220703125; // 8192
+		float fJitterStep = 0.000244140625; // 4096
+		//float fJitterStep = 0.0009765625; // 1024
+		//float fJitterStep = 0.00048828125; // 2048
+		float4 fJitter[6];
+	
+	 
+		float fAbsTime = time_info[0] - vIn.time; // abs time in seconds
+		float fNormalTime = fAbsTime * time_info[1]; // normalized over the lifespan
+	
+		float4 vColorTimes;
+		int4 iColorIndices = findIndicesColor(color_time, fNormalTime, color_time_scale, vColorTimes);
+	
+		float4 vScaleTimes;
+		int4 iScaleIndices = findIndicesScale(scale_rot_time, fNormalTime, scale_rot_time_scale, vScaleTimes);
+	
+		int4 iOnes = { 1, 1, 1, 1 };
+	
+		fJitter[0] = getJitter(fJitterIndex, fJitterStep, iColorIndices, 1);
+		fJitter[1] = getJitter(fJitterIndex, fJitterStep, iColorIndices, 0);
+		fJitterIndex += fJitterStep * 16;
+		fJitter[2] = getJitter(fJitterIndex, fJitterStep, iScaleIndices, 1);
+		fJitter[3] = getJitter(fJitterIndex, fJitterStep, iScaleIndices, 0);
+		fJitterIndex += fJitterStep * 16;
+		fJitter[4] = getJitter(fJitterIndex, fJitterStep, iOnes, 1);
+		fJitterIndex += fJitterStep * 16;
+		fJitter[5] = getJitter(fJitterIndex, fJitterStep, iOnes, 1);
+	
+		#ifdef RGB_BLEND
+		vOut.color = calcLerpColorRGB(color, color_jitter, iColorIndices, vColorTimes, fJitter[0], fJitter[1], time_info[2]);
+		vOut.color.w *= time_info[3] * vIn.alpha;
+		#else
+		vOut.color = calcLerpColorHSV(color, color_jitter, iColorIndices, vColorTimes, fJitter[0], fJitter[1]);
+		vOut.color.x += time_info[2];
+		vOut.color.x *= 6.0f;
+		vOut.color.w *= time_info[3] * vIn.alpha;
+
+		vOut.color.y += hsv_info[1];
+		vOut.color.z += hsv_info[2];
+
+		vOut.color.xyz = HSVtoRGB(vOut.color.xyz);
+		#endif
+	
+		float4 vScaleRot = calcLerpScale(scale_rot, scale_rot_jitter, iScaleIndices, vScaleTimes, fJitter[2], fJitter[3]);
+		#ifndef STREAK
+		float fSpinTime = frac(fNormalTime * scale_rot_time_scale.w) - scale_rot_time[iScaleIndices.w-1].w;
+		float fRot = vScaleRot.z + spin_integrals[iScaleIndices.w-1] + (vScaleRot.w*0.5f + scale_rot[iScaleIndices.w-1].w + scale_rot_jitter[iScaleIndices.w-1].w * fJitter[2].w) * fSpinTime ;
+		#endif
+
+		float4x3 at_mat = at_nodes[vIn.corner_nodeidx[1]];
+
+		vOut.position_vs.xyz = mul_view_mat(float4(
+				mul(float4(vIn.position, 1.0f), at_mat)
+			, 1.0f)).xyz;
+
+		#ifdef LINKSCALE
+		float2 vScale = float2(vScaleRot.x * scale_info.x, vScaleRot.x * scale_info.x) * lerp(1.0f, -vOut.position_vs.z * 0.01, scale_info.z);
+		vOut.position_vs.xyz += scaleAndRotate(getCornerPos(vIn.corner_nodeidx[0]), vScale, fRot);
+		#elseif STREAK
+		float3 vVSStreakDir = mul_view_mat(float4(
+				mul(float4(vIn.streak_dir + vIn.position, 1.0f), at_mat)
+			, 1.0f)
+			).xyz - vOut.position_vs.xyz;
+	
+		vOut.position_vs.xyz += streak(vIn.corner_nodeidx[0], float2(vScaleRot.x * scale_info.x, vScaleRot.y * scale_info.y), vVSStreakDir);
+	
+		#else
+		vOut.position_vs.xyz += scaleAndRotate(getCornerPos(vIn.corner_nodeidx[0]), float2(vScaleRot.x * scale_info.x, vScaleRot.y * scale_info.y) * lerp(1.0f, -vOut.position_vs.z * 0.01, scale_info.z), fRot);
+		#endif
+		float3 vNormalViewPos = normalize(vOut.position_vs.xyz);
+		vOut.position_vs.xyz -= float3(vNormalViewPos * more_params[0]); // tighten up
+
+
+		float fNearPlaneAlpha = min((-vOut.position_vs.z + scale_info.w) * 0.5f, 1.0f);
+		vOut.color.w *= fNearPlaneAlpha;
+
+	
+		// Transform to clip space
+		calcClipPosition(vOut.position_clip, vOut.position_vs.xyz);
+
+		vOut.position_vs.w = fogCalculateHeightCoord(vOut.position_vs.xyz);
+
+		#ifdef ANIMATEDTEXTURE
+			
+			float fInvAnimRowCols = 1.0 / scroll_and_animation.y; 
+			float fAnimNumFrames = scroll_and_animation.x;
+			float fAnimFrame = floor(fNormalTime * fAnimNumFrames);
+
+			if (tex_params.z) {
+				vOut.texcoord.xy = getQuadCornerTex(vIn.corner_nodeidx[0], fJitter[4].zw) * fInvAnimRowCols;
+			} else {
+				vOut.texcoord.xy = getCornerTex(vIn.corner_nodeidx[0]) * fInvAnimRowCols;
+			}
+
+			vOut.texcoord.y += floor(fAnimFrame * fInvAnimRowCols) * fInvAnimRowCols;
+			vOut.texcoord.x += frac(fAnimFrame * fInvAnimRowCols);
+
+		#else
+
+			if (tex_params.z)
+			{
+				vOut.texcoord.xy = getQuadCornerTex(vIn.corner_nodeidx[0], fJitter[4].zw);
+			}
+			else
+			{
+				vOut.texcoord.xy = getCornerTex(vIn.corner_nodeidx[0]);
+				vOut.texcoord.x += (scroll_and_animation.x + scroll_and_animation.z * fJitter[5].x)  * fAbsTime;
+				vOut.texcoord.y += (scroll_and_animation.y + scroll_and_animation.w * fJitter[5].y)  * fAbsTime;
+			}
+
+		#endif
+
+		vOut.texcoord.xy = applyTextureFlipping( vOut.texcoord.xy, fJitter[4].xy);
+
+		// Calculate fog
+		{
+			float distance_to_camera = length(vOut.position_vs.xyz);
+			float fog_coord_low = saturate((distance_to_camera - fog_dist.x) * fog_dist.y) * fog_color_low.a;
+			float fog_coord_high = saturate((distance_to_camera - fog_dist.z) * fog_dist.w) * fog_color_high.a;
+			float fog_height_coord = saturate(vOut.position_vs.w);
+			// Split verison of lerp(lerp(color, fog_color_low.rgb, fog_coord_low), lerp(color, fog_color_high.rgb, fog_coord_high), fog_height_coord)
+			float3 colorparam = lerp(fog_coord_low * fog_color_low, fog_coord_high * fog_color_high, fog_height_coord).xyz;
+			float scalarparam = lerp((1-fog_coord_low), (1 - fog_coord_high), fog_height_coord);
+			vOut.fogvalues = float4(colorparam, scalarparam);
+		}
+
+		vOut.vpos_xyw_and_unused = float4(vOut.position_clip.xyw, 0);
+
+		vOut.color.rgb *= modulate_color.rgb;
+
+	}
+	#else
+	{
+		// Should never be called!
+		vOut.color = float4(0, 1, 0, 1);	
+		vOut.position_vs = float4(0, 0, 0, 1);
+	
+		// Transform to clip space
+		calcClipPosition(vOut.position_clip, vOut.position_vs.xyz);
+
+		vOut.texcoord = 0;
+
+		vOut.fogvalues = 0;
+
+		vOut.vpos_xyw_and_unused = float4(vOut.position_clip.xyw, 0);
+	}
+	#endif
+}

@@ -1,0 +1,9 @@
+{
+	#ifndef DEPTH_ONLY
+		float distToPlane = abs(v.normal_vs_and_unused.w) / max(%FadeEnd%.x,0.01);
+		float falloff = min(1.0 - (distToPlane - %Atten%.x) * %Atten%.y, 1.0);
+		%Result% = falloff;
+	#else
+		%Result% = 1;
+	#endif
+}

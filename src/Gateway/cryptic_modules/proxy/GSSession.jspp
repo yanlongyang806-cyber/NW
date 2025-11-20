@@ -1,0 +1,766 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// GSSession
+//
+// Tracks a specific session with the GS.
+//
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var locale = require('cryptic/locale');
+var unescapeCrypticString = require('cryptic/unescapeCrypticString');
+
+
+var handlersGenerated = false;
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// new GSSession
+//
+// Creates a new session and adds it to the list of sessions.
+//
+var GSSession = function GSSession(ownerSession, conn, cbCreate)
+{
+	dbg.trace();
+
+	if(!handlersGenerated)
+	{
+		generateBuiltinHandlers();
+		handlersGenerated = true;
+	}
+
+	this.ownerSession = ownerSession;
+	this.cbCreate = cbCreate;
+	this.conn = conn;
+
+	this.idxServer = GSSession.UNASSIGNED;
+	this.magic = ownerSession.magic;
+	this.locale = ownerSession.locale;
+	this.idAccount = ownerSession.idAccount;
+
+	this.entityForBundle = null;
+	this.entityBundleString = undefined;
+	this.idEntName = undefined;
+	this.idGuildName = undefined;
+
+	this.timeCreated = Date.now();
+
+	//
+	// Register this session with the GS
+	//
+	conn.requestCreateSession(this);
+}
+
+GSSession.UNASSIGNED = 0xffffffff;
+
+GSSession.prototype.destroy = function()
+{
+	dbg.trace();
+
+	dbg.trace('account '+this.idAccount+', magic '+this.magic+', idxServer '+this.idxServer);
+
+	// Tell the server we're done with the session
+	if(this.conn)
+	{
+		if(this.idxServer !== GSSession.UNASSIGNED)
+		{
+			dbg.trace('Tell GS to destroy session with server index:' + this.idxServer);
+			this.conn.requestDestroySession(this);
+		}
+
+		this.conn = null;
+	}
+	else
+	{
+		dbg.trace('No GS connection to notify about deletion.');
+	}
+
+	var secsOnline = Math.round((Date.now() - this.timeCreated) / 1000);
+	log.log('DestroyGSSession: account ' + this.idAccount
+		+ ', addr ' + this.ownerSession.address
+		+ ', magic '+ this.magic
+		+ ', sid ' + this.ownerSession.sessionid
+		+ ', duration ' + secsOnline + 's');
+
+	this.ownerSession = null;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.requestPing = function requestPing()
+{
+	dbg.trace();
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_Ping');
+	pkt.sendString('session test');
+	pkt.endPacket();
+}
+
+GSSession.prototype.onServer_Ping = function(pkt)
+{
+	dbg.trace();
+
+	var s = pkt.readString();
+
+	dbg("GSSession ping received", s);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+function moveEntityOnline(gssession, info, callback)
+{
+	dbg.trace(info, gssession.conn.shard);
+
+	if(info.isdeleted)
+	{
+		callback({ id: info.savedname, status: 'deleted' }, undefined);
+	}
+	else if(info.isoffline)
+	{
+		gssession.conn.requestOnlineEntityByName(info.savedname+'@'+info.pubaccountname, function(error, result) {
+			if(error)
+			{
+				callback({ id: info.savedname, status: 'offline' }, undefined);
+			}
+			else
+			{
+				callback(undefined, info.containerid);
+			}
+		});
+	}
+	else
+	{
+		callback(undefined, info.containerid);
+	}
+}
+
+GSSession.prototype.requestEntityByInfo = function requestEntityByInfo(info)
+{
+	dbg.trace(info, this.conn.shard);
+
+	var self = this;
+	moveEntityOnline(this, info, function(e, r) {
+		if(e)
+		{
+			this.ownerSession.sockClient.emit('Proxy_Entity', e);
+		}
+		else
+		{
+			if(info.accountid === self.idAccount)
+			{
+				self.requestLoginEntity(info.containerid);
+			}
+
+			self.requestEntity(info.containerid);
+		}
+	});
+}
+
+GSSession.prototype.requestLoginEntityByInfo = function requestLoginEntityByInfo(info)
+{
+	dbg.trace(info, this.conn.shard);
+
+	var self = this;
+	moveEntityOnline(this, info, function(e, r) {
+		if(e)
+		{
+			this.ownerSession.sockClient.emit('Proxy_LoginEntity', e);
+		}
+		else
+		{
+			self.requestLoginEntity(info.containerid);
+		}
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.onServer_ClientCmd = function onServer_ClientCmd(pkt)
+{
+	dbg.trace(this.magic);
+
+	var cmdString = pkt.readString();
+	try
+	{
+		if(this.ownerSession.sockClient)
+		{
+			dbg.trace(cmdString);
+
+			var args = splitCmd(cmdString);
+			var cmd = args.shift()
+
+			if(cmd && args)
+			{
+				cmd = 'Server_CC_' + cmd;
+				dbg.trace("Client command", cmd, args);
+				this.ownerSession.sockClient.emit(cmd, args);
+			}
+		}
+	}
+	catch(e)
+	{
+		log.error('Unable to parse client command string', e, cmdString);
+	}
+}
+
+function splitCmd(str)
+{
+	var args = [];
+
+	var inArg = false;
+	var inString = false;
+	var inObj = 0;
+	var start;
+	var pos = 0;
+	while(pos < str.length)
+	{
+		if(inArg)
+		{
+			if(str[pos] === ' ')
+			{
+				args.push(unescapeCrypticString(str.slice(start, pos)));
+				inArg = false;
+			}
+			pos++;
+		}
+		else if(inString)
+		{
+			if(str[pos] === '"')
+			{
+				args.push(unescapeCrypticString(str.slice(start, pos)));
+				inString = false;
+			}
+			pos++;
+		}
+		else if(inObj)
+		{
+			if(str[pos] === '{')
+			{
+				inObj++;
+			}
+			if(str[pos] === '}')
+			{
+				inObj--;
+				if(inObj === 0)
+				{
+					var obj;
+					var s = str.slice(start, pos + 1);
+					try
+					{
+						obj = JSON.parse(s);
+					}
+					catch(e)
+					{
+						log.error('Bad client command object:', s);
+						obj = { badjson: s };
+					}
+					args.push(obj);
+				}
+			}
+			pos++;
+		}
+		else
+		{
+			if(str[pos] === ' ')
+			{
+				pos++;
+			}
+			if(str[pos] === '"')
+			{
+				inString = 1;
+				start = pos+1;
+				pos++;
+			}
+			else if(str[pos] === '{')
+			{
+				inObj = 1;
+				start = pos;
+				pos++;
+			}
+			else
+			{
+				inArg = true;
+				start = pos++;
+			}
+		}
+	}
+
+	if(inArg || inString)
+	{
+		args.push(unescapeCrypticString(str.slice(start)));
+	}
+
+	return args;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.onServer_DestroySession = function onServer_DestroySession(pkt)
+{
+	dbg.trace(this.magic);
+
+	// The GatewayProxy has disowned or knows nothing about us. Clean up.
+	this.idxServer = GSSession.UNASSIGNED;
+
+	if(this.ownerSession)
+		this.ownerSession.destroy();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.onServer_UpdateInteger = function onServer_UpdateInteger(pkt)
+{
+	var cmdString = pkt.readString();
+	var integer = pkt.readUInt32();
+
+	if(this.ownerSession.sockClient)
+	{
+		//console.log("Command" + cmd[0]);
+		dbg.trace("Update Integer");
+		dbg.trace(cmdString + "+" + integer);
+
+		this.ownerSession.sockClient.emit('Server_Update_' + cmdString, integer);
+	}
+}
+
+GSSession.prototype.onServer_TradeBagResult = function onServer_TradeBagResult(pkt)
+{
+	dbg.trace(this.magic);
+
+	var json = pkt.readString();
+	try
+	{
+		dbg.trace('TradeBagResult!' + json);
+		var tradeBag = JSON.parse(json);
+
+		if(this.ownerSession.sockClient)
+		{
+			this.ownerSession.sockClient.emit('Proxy_TradeBagResult', tradeBag);
+		}
+
+	}
+	catch(e)
+	{
+		log.error('Invalid JSON from server for trade bag result');
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+var RequestQueue = require('cryptic/RequestQueue');
+
+var qHeadshots = new RequestQueue({
+    absoluteMax: 30, // If zero, no absolute max is set. Otherwise, the total
+                     //   number of requests that can be outstanding at one time.
+    max: 0,          // If zero, no rate limiting is done. Otherwise, the maximum
+                     //   number of allowed requests that accrue over time.
+    fill: 1,         // How many allowed requests are added every update period.
+    msPeriod: 1000,  // How often the number of allowed requests is increased (by fill).
+                     //   in miliseconds.
+    msTimeout: 10000 // If the request takes longer than this time to complete,
+                     //   call the callback with failure. This is the MINUMUM
+                     //   timeout time. The timeout is only checked every
+                     //   msPeriod. Zero means no timeout.
+});
+
+GSSession.prototype.requestHeadshot = function(url, costumeIndex, callback)
+{
+	dbg.trace(url);
+
+	if(qHeadshots.addRequest(url, callback))
+	{
+		var pkt = this.conn.startSessionPacket(this, 'Proxy_RequestHeadshot');
+		pkt.sendString(url);
+		pkt.sendUInt32(costumeIndex);
+		pkt.endPacket();
+	}
+}
+
+GSSession.prototype.onServer_Headshot = function(pkt)
+{
+	dbg.trace();
+
+	var texname = pkt.readString();
+	var error;
+	var buffer;
+
+	var count = pkt.readUInt32();
+	if(count)
+	{
+		buffer = pkt.readBytes(count);
+	}
+	else
+	{
+		error = pkt.readString();
+	}
+
+	qHeadshots.resolveRequest(texname, error, buffer);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.onServer_PurchaseMicrotransaction = function(pkt)
+{
+	dbg.trace();
+
+	var success = pkt.readUInt32();
+	var productid = pkt.readUInt32();
+	var error = pkt.readString();
+
+	this.ownerSession.sockClient.emit('Proxy_PurchaseMicrotransaction', { success: success, productid: productid, error: error } );
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.onServer_PurchaseVendorItem = function(pkt)
+{
+	dbg.trace();
+
+	var success = pkt.readUInt32();
+	var contactName = pkt.readString();
+	var storeName = pkt.readString();
+	var itemName = pkt.readString();
+	var count = pkt.readUInt32();
+
+	var hdef = '@ItemDef[' + itemName + ']';
+
+	this.ownerSession.sockClient.emit('Proxy_PurchaseVendorItem', {
+		success: success,
+		contact: contactName,
+		store: storeName,
+		hdef: hdef,
+		count: count
+	} );
+}
+
+GSSession.prototype.onServer_SellItemToVendor = function(pkt)
+{
+	dbg.trace();
+
+	var success = pkt.readUInt32();
+	var itemName = pkt.readString();
+	var count = pkt.readUInt32();
+	var cost = pkt.readUInt32();
+
+	var hdef = '@ItemDef[' + itemName + ']';
+
+	this.ownerSession.sockClient.emit('Proxy_SellItemToVendor', {
+		success: success,
+		hdef: hdef,
+		count: count,
+		cost: cost
+	} );
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.grantReward = function (rewardTable, tier, idCompanion)
+{
+	dbg.trace(rewardTable);
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_GatewayGameGrantReward');
+	pkt.sendString(rewardTable);
+	pkt.sendUInt32(tier);
+	pkt.sendUInt32(1); //For 1 companion pet
+	pkt.sendString('' + idCompanion);
+	pkt.endPacket();
+}
+
+GSSession.prototype.queueReward = function (rewardTable, tier)
+{
+	dbg.trace(rewardTable);
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_GatewayGameQueueReward');
+	pkt.sendString(rewardTable);
+	pkt.sendUInt32(tier);
+	pkt.endPacket();
+}
+
+GSSession.prototype.claimQueuedRewards = function (idCompanionArray)
+{
+	dbg.trace();
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_GatewayGameClaimQueuedRewards');
+	pkt.sendUInt32(idCompanionArray.length); //Send the amount of companions
+	for(var i = 0; i < idCompanionArray.length; i++)
+	{
+		pkt.sendString(''+idCompanionArray[i]);
+	}
+	pkt.endPacket();
+}
+
+GSSession.prototype.discardQueuedRewards = function ()
+{
+	dbg.trace();
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_GatewayGameDiscardQueuedRewards');
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSSession.prototype.sendCommand = function sendCommand(commandString)
+{
+	dbg.trace("sendCommand: " + commandString);
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_SendCommand');
+	pkt.sendString(commandString);
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+//
+// All these are basically boilerplate functions, so I wrote a generator
+// to make them all.
+//
+// Most of these simply take what is given and passes it off to the
+// server (or client, as appropriate). However, there is occasional fixup
+// that has to be done. If an appropriately named function is available
+// for the fixup, it will be called.
+//
+// GSSession.prototype.onReceive_[ContainerName](packet)
+//    Called immediately after unpacking the packet. Gets an object with the packet
+//    data. This data can be modified and will be used by subsequent code.
+//       packet = { id, fullUpdate, data (string)}
+//
+// GSSession.prototype.onFullUpdate_[ContainerName](packet)
+//    Called immediately after taking packet.data and turning it into an object. The
+//    object is available as packet.obj. This data can be modified and will be used by subsequent code.
+//       packet = { id, fullUpdate, data (string), obj (object from data)}
+//
+// GSSession.prototype.onDiff_[ContainerName](packet)
+//    Called if the update is a diff and not a full object. packet.diff is a string of
+//    the diff. This data can be modified and will be used by subsequent code.
+//       packet = { id, fullUpdate, data (string), diff (string)}
+//
+//  packet.id is used as the name sent to the client.
+//  packet.obj or packet.diff is sent to the client as appropriate.
+//
+
+var containerNames = [
+	'LoginEntity',
+	'Entity',
+	'Pet',
+	'Guild',
+	'GroupProject',
+	'PersonalProject',
+	'AuctionSearch',
+	'CraftingList',
+	'CraftingDetail',
+	'MailList',
+	'MailDetail',
+	'ItemTooltip',
+	'CStore',
+	'Vendor',
+	'ExchangeAccountData'
+];
+
+function generateBuiltinHandlers()
+{
+	containerNames.forEach(function(name) {
+		generateHandlers(name);
+	});
+}
+
+function generateHandlers(name)
+{
+	var reqName = 'request' + name;
+	if(!GSSession.prototype[reqName])
+	{
+		GSSession.prototype[reqName] = makeRequestHandler(name);
+	}
+
+	reqName = 'release' + name;
+	if(!GSSession.prototype[reqName])
+	{
+		GSSession.prototype[reqName] = makeReleaseHandler(name);
+	}
+
+	reqName = 'onServer_' + name;
+	if(!GSSession.prototype[reqName])
+	{
+		GSSession.prototype[reqName] = makeOnServerHandler(name);
+	}
+}
+
+function makeOnServerHandler(containerName)
+{
+	return function _onServerContainer(pkt)	{
+		dbg.trace('_onServer_'+containerName);
+
+		if(!this.ownerSession.sockClient)
+			return;
+
+		var packet = {
+			id: pkt.readString(),
+			fullUpdate: pkt.readUInt8(),
+			data: pkt.readString()
+		};
+
+		if(typeof this['onReceive_'+containerName] === 'function')
+			this['onReceive_'+containerName].call(this, packet);
+
+		if(packet.fullUpdate)
+		{
+			try
+			{
+				packet.obj = JSON.parse(packet.data);
+
+				if(typeof this['onFullUpdate_'+containerName] === 'function')
+					this['onFullUpdate_'+containerName].call(this, packet);
+
+				this.ownerSession.sockClient.emit('Proxy_'+containerName, { id: packet.id, container: packet.obj, status: 'online' });
+			}
+			catch(e)
+			{
+				log.error('Invalid JSON from server for a '+containerName+'!', packet.data);
+				var fs = require('fs');
+				fs.writeFile('bad'+containerName+'.json', packet.data);
+				this.ownerSession.sockClient.emit('Proxy_'+containerName, { id: packet.id, status: 'Bad JSON' });
+			}
+		}
+		else
+		{
+			packet.diff = packet.data;
+
+			if(typeof this['onDiff_'+containerName] === 'function')
+				this['onDiff_'+containerName].call(this, packet);
+
+			this.ownerSession.sockClient.emit('Proxy_'+containerName, { id: packet.id, diff: packet.diff, obj: packet.obj, status: 'online' });
+		}
+	};
+
+}
+
+function makeRequestHandler(containerName)
+{
+	return function _requestContainer(id, params) {
+		dbg.trace('_request'+containerName, id, this.conn.shard)
+
+		if(!this.conn)
+			return;
+
+		var pkt = this.conn.startSessionPacket(this, 'Proxy_RequestContainer');
+		pkt.sendString(containerName);
+		pkt.sendString(''+id);
+		if(params)
+		{
+			pkt.sendNameValuePairsSafer(params);
+		}
+		pkt.endPacket();
+	};
+}
+
+function makeReleaseHandler(containerName)
+{
+	return function _releaseContainer(id) {
+		dbg.trace('_release'+containerName, id, this.conn.shard)
+
+		if(!this.conn)
+			return;
+
+		var pkt = this.conn.startSessionPacket(this, 'Proxy_ReleaseContainer');
+		pkt.sendString(containerName);
+		pkt.sendString(''+id);
+		pkt.endPacket();
+	};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// A handful of the types have some special work to do.
+//
+
+GSSession.prototype.requestItemTooltip = function requestItemTooltip(id)
+{
+	dbg.trace(id, this.conn.shard);
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_RequestItemTooltip');
+	pkt.sendString(id);
+	pkt.endPacket();
+}
+
+GSSession.prototype.onFullUpdate_Entity = function onFullUpdate_Entity(packet)
+{
+	this.idEntName = packet.obj.name + '@' + packet.obj.publicaccountname;
+
+	this.entityBundleString = undefined;
+	this.entityForBundle = packet.obj;
+		// NOTE: This entity will get out of date. It's only used for calculating a
+		//   resource bundle.
+
+	packet.id = this.idEntName;
+}
+
+GSSession.prototype.onDiff_Entity = function onDiff_Entity(packet)
+{
+	packet.id = this.idEntName;
+}
+
+
+GSSession.prototype.onFullUpdate_Guild = function onServer_Guild(packet)
+{
+	this.idGuildName = packet.obj.name;
+
+	packet.id = this.idGuildName;
+}
+
+GSSession.prototype.onDiff_Guild = function onDiff_Guild(packet)
+{
+	packet.id = this.idGuildName;
+}
+
+GSSession.prototype.onFullUpdate_LoginEntity = function onFullUpdate_LoginEntity(packet)
+{
+	// LoginEntities are always sent FullUpdate.
+	if(this.ownerSession && this.ownerSession.loginInfo)
+	{
+		this.ownerSession.loginInfo.loginentity = packet.obj;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Used by external modules to add and hook in new containers.
+
+GSSession.addContainerHandlers = function (containerName, onReceive, onFullUpdate, onDiff, onDestroy)
+{
+	generateHandlers(containerName);
+
+	if(onReceive)
+		GSSession.prototype['onReceive_'+containerName] = onReceive;
+
+	if(onFullUpdate)
+		GSSession.prototype['onFullUpdate_'+containerName] = onFullUpdate;
+
+	if(onDiff)
+		GSSession.prototype['onDiff_'+containerName] = onDiff;
+}
+
+//
+// Let others hook into the packet handling.
+// These could be done directly in a trivial way, but I like the semantics of calling these.
+//
+GSSession.addHandler = function (name, handler)
+{
+	GSSession.prototype['on' + name] = handler;
+}
+
+GSSession.addRequester = function (name, requester)
+{
+	GSSession.prototype[name] = requester;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = GSSession;
+
+// End of File

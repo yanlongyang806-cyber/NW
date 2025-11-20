@@ -1,0 +1,325 @@
+Light
+
+// Inputs: position_vs.xyz, N_vs (no mapping, assume these names from an Output.phl equivalent)
+// Mapped per-light inputs: See GfxMaterialProfile.c
+
+NormalText <<
+						// directional_light.Light
+#ifdef SINGLE_DIRLIGHT
+	#ifdef NO_NORMALMAP
+		// Special-case directional light code
+		// Just extracting parameters
+		light_shadow_mask = %light.shadow_mask%;
+		lightdir_vs = %light.dir_vs%;
+		light_diffuse_term = %light.diffuse%;
+		light_secondary_diffuse_term = %light.secondary_diffuse% * ambient_occlusion;
+		light_spec_term = %light.specular%;
+		light_shadow_color = %light.shadow_color%;
+	#else
+						lightDirectional(diffuseComponent, diffuseLightingValue, specularComponent, shadow_term, 
+							spec_exponent, light_bleed, N_vs, reflect_vs, view_vs, bitangent,
+							%light.dir_vs%, %light.secondary_diffuse% * ambient_occlusion,
+							%light.diffuse%, %light.specular%, %light.shadow_mask%, %light.shadow_color%
+							DIFFUSE_WARP_SAMPLER_CALL()
+							);
+	#endif
+#else
+						// Identical to above, but duplicated because of #ifdef logic (no && support)
+						lightDirectional(diffuseComponent, diffuseLightingValue, specularComponent, shadow_term, 
+							spec_exponent, light_bleed, N_vs, reflect_vs, view_vs, bitangent,
+							%light.dir_vs%, %light.secondary_diffuse% * ambient_occlusion,
+							%light.diffuse%, %light.specular%, %light.shadow_mask%, %light.shadow_color%
+							DIFFUSE_WARP_SAMPLER_CALL()
+							);
+#endif
+#ifdef ShowNumLightsPerObject
+	#define DEBUG_OUT
+	debug_out += 0.2;
+#endif
+
+>>
+
+
+ShadowTestText <<
+							// directional_light.Light
+							{
+								float shadow_value;
+								float4 shadow_coord;
+
+#ifdef SCATTERING
+								shadow_term = 0;
+
+								/*
+								// limit scattering media volume to maximum worldspace elevation
+								float elevation = mul_invview_mat(float4(position_vs, 1)).y;
+								float camera_elev = mul_invview_mat(float4(0,0,0, 1)).y;
+								float max_elevation = 70.0;
+								if (elevation > max_elevation)
+								{
+									position_vs *= (max_elevation - camera_elev) / ( elevation - camera_elev);
+								}
+								*/
+
+								float delta_len = length(position_vs);
+								float scattering = 0.0f;
+								
+								// DEBUG show effect of steady state scatter for entire distance, needs amplification to be visible
+								//scattering = scatter_param.z * (1 - exp(scatter_param.y * length(position_vs)));
+								//scattering *= 10;
+
+								#ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+								#endif
+								//float debug_category = 0;
+								//float far_limit = %shadowmap1.far_fade%;
+								float far_limit = 60;
+								if (delta_len > far_limit)
+								{
+									// full scattering outside outer shadowmap, no shadows calc'd
+									//float alpha = delta_len - far_limit;
+									//scattering = scatter_param.z * (1 - exp(scatter_param.y * alpha));
+									
+									// bring initial sample position start pos in to the outer shadowmap
+									position_vs *= far_limit / delta_len;
+
+									delta_len = far_limit;
+									//debug_category = 1;
+								}
+
+						
+								float4 sm_c2sm_x, sm_c2sm_y, sm_c2sm_z, sm_c2sm_w;
+
+								const int SAMPLES = 64;
+
+								float3 position_delta;
+								float alpha;
+								/* Enable to use very large area shadowmap
+								if (delta_len > %shadowmap1.far_fade%)
+								{
+									alpha = (delta_len - %shadowmap0.far_fade%) / (delta_len * SAMPLES);
+
+									sm_c2sm_x = %shadowmap2.camera_to_shadowmap_x%;
+									sm_c2sm_y = %shadowmap2.camera_to_shadowmap_y%;
+									sm_c2sm_z = %shadowmap2.camera_to_shadowmap_z%;
+									sm_c2sm_w = %shadowmap2.camera_to_shadowmap_w%;
+									
+									//debug_category = 1;
+								}
+								else
+								//*/
+								#ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+								#endif
+								if (delta_len > %shadowmap0.far_fade%)
+								{
+									alpha = (delta_len - %shadowmap0.far_fade%) / (delta_len * SAMPLES);
+
+									sm_c2sm_x = %shadowmap1.camera_to_shadowmap_x%;
+									sm_c2sm_y = %shadowmap1.camera_to_shadowmap_y%;
+									sm_c2sm_z = %shadowmap1.camera_to_shadowmap_z%;
+									sm_c2sm_w = %shadowmap1.camera_to_shadowmap_w%;
+
+									//debug_category = 2;
+								}
+								else
+								{
+									alpha = 0.5 / SAMPLES;
+
+									sm_c2sm_x = %shadowmap0.camera_to_shadowmap_x%;
+									sm_c2sm_y = %shadowmap0.camera_to_shadowmap_y%;
+									sm_c2sm_z = %shadowmap0.camera_to_shadowmap_z%;
+									sm_c2sm_w = %shadowmap0.camera_to_shadowmap_w%;
+
+									//debug_category = 3;
+								}
+
+								position_delta = position_vs * -alpha;
+								delta_len *= alpha;
+
+
+								float decay_per_step = exp( scatter_param.y * delta_len );
+								float scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+
+								#ifndef _PS3
+								#ifndef TRANSGAMING
+								[unroll(SAMPLES)]
+								#endif
+								#endif
+								for (int sample = 0; sample < SAMPLES; ++sample)
+								{
+									shadow_coord.x = dot(sm_c2sm_x, float4(position_vs, 1));
+									shadow_coord.y = dot(sm_c2sm_y, float4(position_vs, 1));
+									shadow_coord.z = dot(sm_c2sm_z, float4(position_vs, 1));
+									shadow_coord.w = dot(sm_c2sm_w, float4(position_vs, 1));
+									
+									shadow_value = shadowLookupSingle(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%);
+									float bScatterThisStep = shadow_value;
+									scattering *= decay_per_step;
+									scattering += bScatterThisStep * scatter_per_step;
+
+									position_vs += position_delta;
+								}
+
+								position_delta = position_vs * (-1.0 / (SAMPLES+1));
+								delta_len = length(position_delta);
+
+								decay_per_step = exp( scatter_param.y * delta_len );
+								scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+								#ifndef _PS3
+								#ifndef TRANSGAMING
+								[unroll(SAMPLES)]
+								#endif
+								#endif
+								for (int sample1 = 0; sample1 < SAMPLES; ++sample1)
+								{
+									shadow_coord.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+									shadow_coord.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+									shadow_coord.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+									shadow_coord.w = dot(%shadowmap0.camera_to_shadowmap_w%, float4(position_vs, 1));
+									
+									shadow_value = shadowLookupSingle(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%);
+									float bScatterThisStep = shadow_value;
+									scattering *= decay_per_step;
+									scattering += bScatterThisStep * scatter_per_step;
+
+									position_vs += position_delta;
+								}
+							
+								shadow_term = %light.shadow_mask% * sqrt( scattering * scatter_param.w );
+								
+								//if ( debug_category == 1 )
+								//	shadow_term.z = 1.0f;
+
+#else
+
+	#ifdef PSSM_DISPLAY
+								shadow_coord.x = dot(%shadowmap2.camera_to_shadowmap_x%, float4(position_vs, 1));
+								shadow_coord.y = dot(%shadowmap2.camera_to_shadowmap_y%, float4(position_vs, 1));
+								shadow_coord.z = dot(%shadowmap2.camera_to_shadowmap_z%, float4(position_vs, 1));
+								shadow_coord.w = dot(%shadowmap2.camera_to_shadowmap_w%, float4(position_vs, 1));
+								shadow_coord.xyz /= shadow_coord.w;
+ 								if (shadow_coord.x >= 0 && shadow_coord.x < 0.3333f && shadow_coord.y >= 0.5f && shadow_coord.y <= 1)
+ 									shadowmap_visible = float3(0,0,0.5);
+
+								shadow_coord.x = dot(%shadowmap1.camera_to_shadowmap_x%, float4(position_vs, 1));
+								shadow_coord.y = dot(%shadowmap1.camera_to_shadowmap_y%, float4(position_vs, 1));
+								shadow_coord.z = dot(%shadowmap1.camera_to_shadowmap_z%, float4(position_vs, 1));
+								shadow_coord.w = dot(%shadowmap1.camera_to_shadowmap_w%, float4(position_vs, 1));
+								shadow_coord.xyz /= shadow_coord.w;
+ 								if (shadow_coord.x >= 0.3333f && shadow_coord.x <= 0.6666f && shadow_coord.y > 0 && shadow_coord.y < 0.5f)
+ 									shadowmap_visible = float3(0,0.5,0);
+
+								shadow_coord.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+								shadow_coord.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+								shadow_coord.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+								shadow_coord.w = dot(%shadowmap0.camera_to_shadowmap_w%, float4(position_vs, 1));
+								shadow_coord.xyz /= shadow_coord.w;
+ 								if (shadow_coord.x >= 0 && shadow_coord.x < 0.3333f && shadow_coord.y >= 0 && shadow_coord.y < 0.5f)
+ 									shadowmap_visible = float3(0.5,0,0);
+	#endif
+
+								float poisson_kernel_size;
+
+                                #ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+                                #endif
+								if (-position_vs.z > %shadowmap1.far_fade%)
+								{
+									shadow_coord.x = dot(%shadowmap2.camera_to_shadowmap_x%, float4(position_vs, 1));
+									shadow_coord.y = dot(%shadowmap2.camera_to_shadowmap_y%, float4(position_vs, 1));
+									shadow_coord.z = dot(%shadowmap2.camera_to_shadowmap_z%, float4(position_vs, 1));
+									shadow_coord.w = dot(%shadowmap2.camera_to_shadowmap_w%, float4(position_vs, 1));
+									poisson_kernel_size = 1;
+	#ifdef PSSM_DISPLAY
+									shadowmap_visible.z *= 2;
+	#endif
+								}
+								else 
+                                #ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+                                #endif
+								if (-position_vs.z > %shadowmap0.far_fade%)
+								{
+									shadow_coord.x = dot(%shadowmap1.camera_to_shadowmap_x%, float4(position_vs, 1));
+									shadow_coord.y = dot(%shadowmap1.camera_to_shadowmap_y%, float4(position_vs, 1));
+									shadow_coord.z = dot(%shadowmap1.camera_to_shadowmap_z%, float4(position_vs, 1));
+									shadow_coord.w = dot(%shadowmap1.camera_to_shadowmap_w%, float4(position_vs, 1));
+									poisson_kernel_size = 2;
+	#ifdef PSSM_DISPLAY
+									shadowmap_visible.y *= 2;
+	#endif
+								}
+								else
+								{
+									shadow_coord.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+									shadow_coord.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+									shadow_coord.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+									shadow_coord.w = dot(%shadowmap0.camera_to_shadowmap_w%, float4(position_vs, 1));
+									poisson_kernel_size = 3;
+	#ifdef PSSM_DISPLAY
+									shadowmap_visible.x *= 2;
+	#endif
+								}
+
+								shadow_value = shadowLookup(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%, poisson_kernel_size);
+								shadow_value = (1 - shadow_value);
+
+                                #ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+                                #endif
+								if (distance_to_camera > %shadowmap1.far_fade%)
+									shadow_value *= (1 - interp_safe(%shadowmap2.near_fade%, %shadowmap2.far_fade%, distance_to_camera));
+
+								#ifndef DISABLE_CLOUD_SHADOWS
+								{
+									float2 cloud_shadow_coord;
+									cloud_shadow_coord.x = dot(%clouds.camera_to_texture0_x%, float4(position_vs, 1));
+									cloud_shadow_coord.y = dot(%clouds.camera_to_texture0_y%, float4(position_vs, 1));
+									float cloud_shadow_value = sampleTex2DNoMips(%clouds.texture%, cloud_shadow_coord).x * %clouds.multiplier0%;
+
+									cloud_shadow_coord.x = dot(%clouds.camera_to_texture1_x%, float4(position_vs, 1));
+									cloud_shadow_coord.y = dot(%clouds.camera_to_texture1_y%, float4(position_vs, 1));
+									cloud_shadow_value += sampleTex2DNoMips(%clouds.texture%, cloud_shadow_coord).x * %clouds.multiplier1%;
+
+	#ifdef DEFERRED_CLOUD_SHADOWS_AS_AO
+									outColor.a = max(outColor.a, saturate(cloud_shadow_value));
+	#endif
+									shadow_value = max(shadow_value, saturate(cloud_shadow_value));
+								}
+								#endif
+
+								shadow_term = %light.shadow_mask% * clamp(shadow_value, %light.max_shadow_val%, %light.min_shadow_val%);
+#endif
+							}
+>>
+
+// these line up with doVertexLighting in vs_inc.hlsl
+VertexLightParams
+{
+	// approximated as a point light
+	Param light.diffuse, negative_one
+	Param light.dir_vs_scaled_one_thousand, one_million
+	Param light.secondary_diffuse, zero
+	Param zero_vec, one
+}
+
+SingleDirLightParams
+{
+	Param light.dir_vs
+	Param light.diffuse
+	Param light.secondary_diffuse
+	Param light.specular
+}
+
+
+EndLight

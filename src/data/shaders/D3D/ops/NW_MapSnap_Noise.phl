@@ -1,0 +1,9 @@
+// NW_MapSnap_Noise.phl
+{
+	float3 world_position = comul_invview_mat(float4(v.position_vs.xyz,1));
+	float2 uv = float2(world_position.x,world_position.z);
+	float4 color = sampleTex2D(TexSampler%Texture%,uv*0.005);
+
+	%Result% = color;
+}
+

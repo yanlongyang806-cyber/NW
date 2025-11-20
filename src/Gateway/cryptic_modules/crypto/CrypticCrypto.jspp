@@ -1,0 +1,42 @@
+'use strict';
+var Crypto = require('./crypto-min-230-node.js');
+var CryptoJS = require('./md5-min-node.js');
+
+var CrypticCrypto = {};
+
+function cryptic_pass_hash_add_salt(password_hash, password_hash_raw, salt)
+{
+	var salted_raw = Crypto.SHA256(salt + ':' + password_hash, { asBytes: true });
+	for (var i = 0; i < salted_raw.length; i++) {
+		salted_raw[i] ^= password_hash_raw[i];
+	}
+	return salted_raw;
+}
+
+CrypticCrypto.cryptic_pass_hash_v2 = function(accountname, password, salt)
+{
+	var unsalted_raw = Crypto.SHA256(password, { asBytes: true });
+	var unsalted = Crypto.util.bytesToBase64(unsalted_raw);
+	// i18n: This could be a problem.
+	var salted_raw = cryptic_pass_hash_add_salt(unsalted, unsalted_raw, accountname.toLowerCase());
+	var salted = Crypto.util.bytesToBase64(salted_raw);
+	salted_raw = cryptic_pass_hash_add_salt(salted, salted_raw, salt);
+	salted = Crypto.util.bytesToBase64(salted_raw);
+	return salted;
+}
+
+CrypticCrypto.pwe_hash = function(username, password, saltArray)
+{
+	var pass = password.substring(0,255);
+	// i18n: This could be a problem.
+	var user = username.toLowerCase();
+	var hash = CryptoJS.MD5(user + pass);
+	hash = hash.toString().toUpperCase();
+	hash = Crypto.charenc.Binary.stringToBytes(hash);
+	hash = hash.concat(saltArray[3],saltArray[2],saltArray[1],saltArray[0]);
+	hash = Crypto.SHA256(hash, { asBytes: true });
+	hash = Crypto.util.bytesToBase64(hash);
+	return hash;
+}
+
+module.exports = CrypticCrypto;

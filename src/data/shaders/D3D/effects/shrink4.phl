@@ -1,0 +1,191 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(color_texture, 0);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 tex_transform : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 param1 : PS_CONSTANT_MATERIAL_PARAM1() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+#ifdef SHRINK_BLOOM_CURVE
+	// match the one in NoAlphaBlit.phl
+	float getBloomIntensity(float intensity)
+	{
+		//TODO DJR find out if negative offsets in bloom curve are appropriate
+		intensity = max(0, intensity - param1.x - exposure_transform.y);
+		return param1.y * intensity;
+	}
+#endif
+
+float4 sample_tex(float2 texcoord, float2 offset)
+{
+	float4 color;
+
+#ifdef _XBOX
+	float offset_x = offset.x * 0.5f;
+	float offset_y = offset.y * 0.5f;
+	asm
+	{
+		tfetch2D color, texcoord.xy, color_texture, OffsetX = offset_x, OffsetY = offset_y
+	};
+#else
+	texcoord += tex_transform * offset;
+	color = sampleTex2D(color_texture, texcoord);
+#endif
+
+	#ifdef MAX_LUMINANCE
+		return float4(log(getLuminance(InvToneMapHDR(color.rgb))+1).xxx, color.a);
+	#elseifdef SHRINK_LOG
+		return float4(log(getIntensity(InvToneMapHDR(color.rgb))+1).xxx, color.a);
+		//return float4(log(getLuminance(InvToneMapHDR(color.rgb))+1).xxx, color.a);
+	#elseifdef SHRINK_HIGHPASS
+		float brightness = (getLuminance(color.rgb) - param1.x) * param1.y;
+		if (brightness > 0.0)
+			brightness = pow(abs(brightness), param1.z) * param1.w;
+		return float4(color.rgb * brightness, color.a);
+	#elseifdef SHRINK_BLOOM_CURVE
+		float intensity = getIntensity(InvToneMapHDR(color.rgb));
+		float bloom_intensity = getBloomIntensity(intensity);
+		return float4(color.rgb * (bloom_intensity / intensity), color.a);
+	#else
+		return color;
+	#endif
+}
+
+void sample_tex_max_depth(float2 texcoord, float2 offset, inout float4 color_accum, inout float max_depth_accum)
+{
+	float4 color = sample_tex(texcoord, offset);
+	float depth = calcHWDepth(color);
+
+	if( depth > max_depth_accum ) {
+		max_depth_accum = depth;
+		color_accum = color;
+	}
+}
+
+// -----------------------------------------------------------------------
+
+#ifdef SHRINK_2
+static const float2 offsets = float2(-2,2); // CD: these are multiplied by half a texel
+#else
+static const float4 offsets = float4(-3,-1,1,3); // CD: these are multiplied by half a texel
+#endif
+
+struct PS_OUTPUT
+{
+	float4 color : COLOR;
+	#ifdef SHRINK_MAX_DEPTH
+		float depth : DEPTH;
+	#endif
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	float4 avg_color;
+	
+#ifdef SHRINK_MAX
+	#ifdef SHRINK_2
+		avg_color = sample_tex(fragment.texcoord.xy, offsets.xx);
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yx));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.xy));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yy));
+	#else
+		avg_color = sample_tex(fragment.texcoord.xy, offsets.xx);
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yx));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.zx));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.wx));
+		
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.xy));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yy));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.zy));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.wy));
+		
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.xz));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yz));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.zz));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.wz));
+		
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.xw));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.yw));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.zw));
+		avg_color = max(avg_color, sample_tex(fragment.texcoord.xy, offsets.ww));
+	#endif
+#elseifdef SHRINK_MAX_DEPTH
+	float max_depth = -10000;
+	avg_color = float4(1, 0, 1, 1);
+		
+	#ifdef SHRINK_2
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xx, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yx, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xy, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yy, avg_color, max_depth);
+	#else
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xx, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yx, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.zx, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.wx, avg_color, max_depth);
+		
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xy, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yy, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.zy, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.wy, avg_color, max_depth);
+		
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xz, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yz, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.zz, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.wz, avg_color, max_depth);
+		
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.xw, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.yw, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.zw, avg_color, max_depth);
+		sample_tex_max_depth(fragment.texcoord.xy, offsets.ww, avg_color, max_depth);
+	#endif
+#else
+	#ifdef SHRINK_2
+		avg_color  = sample_tex(fragment.texcoord.xy, offsets.xx);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yx);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.xy);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yy);
+
+		avg_color *= 0.25f;
+	#else
+		avg_color  = sample_tex(fragment.texcoord.xy, offsets.xx);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yx);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.zx);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.wx);
+		
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.xy);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yy);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.zy);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.wy);
+		
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.xz);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yz);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.zz);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.wz);
+		
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.xw);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.yw);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.zw);
+		avg_color += sample_tex(fragment.texcoord.xy, offsets.ww);
+
+		avg_color *= 0.0625f;
+	#endif
+#endif
+
+    PS_OUTPUT output;
+
+	#ifdef SHRINK_EXP
+// 		return float4(avg_color.r, avg_color.r, 0, 0);
+		output.color =  float4(exp(avg_color.r)-1, avg_color.r, 0, 0);
+	#elseifdef SHRINK_MAX_DEPTH
+		output.color = float4( 0, 0, 0, 1 );
+		//output.color = avg_color;
+		output.depth = max_depth;
+	#else
+		output.color = avg_color;
+	#endif
+
+	return output;
+}

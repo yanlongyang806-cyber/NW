@@ -1,0 +1,14 @@
+// FresnelTerm.phl
+{
+#ifdef NO_NORMALMAP
+	float dotp = dot(normal_vs, view_vs);
+#else
+	#ifdef NORMAL_PRECALCULATED
+		float dotp = dot(%Normal%.xyz, view_vs);
+	#else
+		float dotp = dot(fromTangentSpace(tangent_vs, binormal_vs, normal_vs.xyz, (%Normal%).xyz), view_vs);
+	#endif
+#endif
+	dotp = saturate(1.0 - abs(dotp));
+	%Result% = dotp * dotp;
+}

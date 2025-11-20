@@ -1,0 +1,71 @@
+<div class="holdings-projects-selection">
+
+	<h2>Select Next Project</h2>
+	<p>Choose the next project for this slot. This project will begin after the current active project completes.</p>
+	<p>Complete projects in the same category to advance to the next tier.</p>
+
+	<div class="projects-container" data-path="">
+		<div class="list-group" data-path=".nexttaskcandidates">
+			<table class="fancy-list-header mobileList">
+				<tr>
+					<td>
+						<span class="list-arrow up"></span>
+					</td>
+					<td>
+						<h3 class="mobileListHeader">
+							<span data-set-class="tier-emblem {.category.$toLowerCase()}"></span>
+							<span data-path=".category">Military</span>
+						</h3>
+					</td>
+					<td class="last-child">
+						<span class="fancy-list-bar">
+							<span class="fancy-list-bar-left"></span>
+							<span class="fancy-list-bar-right"></span>
+						</span>
+					</td>
+				</tr>
+			</table>
+			<ul class="list-entries" data-path=".tasks">
+				<li>
+					<div data-set-class="project-info-box {.category.$toLowerCase()}">
+						<h3>
+							<span data-path=".displayname.str">Project Title Goes Here</span>
+						</h3>
+						<p data-path=".description.str">Provision fleet stores with personal equipment requisitioned from the Military Department's facilities. Includes Advanced Ground Shields.</p>
+
+						<span class="project-time" data-path=".timetocomplete.$formatDuration()">20 Hour</span>
+
+						<div class="project-requirements">
+							<h4>Requirements</h4>
+							<ul data-path=".requirements">
+								<li>
+									<div class="item-icon medium">
+										<img alt="" data-set-src="/tex/{.requireditemicon}.png">
+									</div>
+								</li>
+							</ul>
+						</div>
+
+						<div class="project-rewards">
+							<h4>Rewards</h4>
+							<ul data-path=".rewards">
+								<li>
+									<div class="item-icon medium">
+										<img alt="" data-set-src="/tex/{.icon}.png">
+									</div>
+								</li>
+							</ul>
+						</div>
+						<span class="desktopOnly">
+							<a class="button-standard" data-set-data-url="/holdings/{$root().queryParams.projectname}/projects/{$back(2).taskslotnum}" data-set-onclick="client.guildProjectSelectNextTask('{$root().guild.id}', '{$root().queryParams.projectname}', {$back(2).taskslotnum}, '{.name}')">Select</a>
+						</span>
+						<span class="mobileOnly">
+							<a class="button-standard" data-set-data-url="/holdings/{$root().queryParams.projectname}/projects" data-set-onclick="client.guildProjectSelectNextTask('{$root().guild.id}', '{$root().queryParams.projectname}', {$back(2).taskslotnum}, '{.name}')">Select</a>
+						</span>
+
+					</div>
+				</li>
+			</ul>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,21 @@
+// TextureNormalDXT5nm_2+.phl
+{
+#define HAS_NORMALMAP
+	float4 original = sampleTex2D(TexSampler%NormalMap%, %TexCoord%.xy);
+	float4 expanded;
+	expanded = float4(rangeExpand(original.xyz), original.w);
+	float4 dxt5nm;
+	dxt5nm.xy = rangeExpand2(original.wy);
+	dxt5nm.z = sqrt(saturate(1 - dot(dxt5nm.xy, dxt5nm.xy)));
+	dxt5nm.w = %AlphaIfDXT5nm%.x;
+	%Result% = lerp(expanded, dxt5nm, (%IsDXT5nm%).x);
+
+	float4 original2 = sampleTex2D(TexSampler%NormalMap%, %TexCoord2%.xy);
+	float4 expanded2;
+	expanded2 = float4(rangeExpand(original2.xyz), original2.w);
+	float4 dxt5nm2;
+	dxt5nm2.xy = rangeExpand2(original2.wy);
+	dxt5nm2.z = sqrt(saturate(1 - dot(dxt5nm2.xy, dxt5nm2.xy)));
+	dxt5nm2.w = %AlphaIfDXT5nm%.x;
+	%Result2% = lerp(expanded2, dxt5nm2, (%IsDXT5nm%).x);
+}

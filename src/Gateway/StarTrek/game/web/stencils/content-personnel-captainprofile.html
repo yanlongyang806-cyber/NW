@@ -1,0 +1,283 @@
+<div data-path="ent" data-update="ent">
+	<h2>Captain Profile</h2>
+	<div class="profile">
+		<div class="profile-overview captain">
+			<div class="profile-basics captain">
+				<div class="profile-card">
+					<div class="profile-portrait">
+						<img data-set-src="/shot/head/{.$root().ent.idCaptain}.png" />
+					</div>
+					<div class="profile-ranks">
+						<span data-set-class="icon-class-player-small {.captain.classtype.$map(classTypeIcons)}"></span>
+						<span data-set-class="icon-rank-large {.main.rank.$map(rankIcons)}"></span>
+					</div>
+				</div>
+				<h3 data-path=".main.formalname">Stephen Hawking</h3>
+				<h4 data-path=".ship.name">U.S.S. Dark Matter</h4>
+				<ul>
+					<li data-path=".captain.classname">Starfleet Tactical Officer</li>
+					<li><span data-path=".main.formalrankname">Vice Admiral</span> (<span data-path=".main.levelui">50</span>)</li>
+					<li><span data-path=".captain.speciesname">Liberated Borg Human</span> <span data-path=".captain.gendername">Male</span></li>
+				</ul>
+			</div>
+
+			<div class="profile-equipment captain" data-path=".captain.inventory">
+				<div class="profile-body">
+					<img data-set-src="/shot/body/{.$root().ent.idCaptain}.png"/>
+				</div>
+				<div class="profile-items mobileList">
+					<h3 class="mobileOnly mobileListHeader">Equipment</h3>
+					<div class="profile-equipment-weapons">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Weapons</h3>
+							<ul data-path=".bags[bagid=ActiveWeapon].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Weapon Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-shields">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Shields</h3>
+							<ul data-path=".bags[bagid=Shield].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Shield Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-body">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Body</h3>
+							<ul data-path=".bags[bagid=Body].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Body Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-kit">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Kit</h3>
+							<ul data-path=".bags[bagid=Kit].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Kit Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-devices">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Devices</h3>
+							<ul data-path=".bags[bagid=Devices].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Device</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="profile-details captain">
+
+			<div class="profile-details-col-1">
+				<div class="desktopOnly">
+					<h3 class="stats-title">General</h3>
+					<table class="stats-table">
+						<tbody>
+							<tr>
+								<td>Full Name:</td>
+								<td data-path=".captain.formalname">Stephen Xavier Hawking</td>
+							</tr>
+							<tr>
+								<td>Species:</td>
+								<td data-path=".captain.speciesname">Liberated Borg Human</td>
+							</tr>
+							<tr>
+								<td>Gender:</td>
+								<td data-path=".captain.gendername">Male</td>
+							</tr>
+							<tr>
+								<td>Career:</td>
+								<td data-path=".captain.classname">Starfleet Tactical Officer</td>
+							</tr>
+							<tr>
+								<td>Rank and Grade:</td>
+								<td <span data-path=".main.formalrankname">Vice Admiral</span> (<span data-path=".main.levelui">50</span>)</td>
+							</tr>
+							<tr>
+								<td>Active Ship:</td>
+								<td data-path=".ship.name">U.S.S. Dark Matter</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div data-if=".main.description" class="mobileList">
+					<h3 class="stats-title mobileListHeader">Biography</h3>
+					<span class="mobileListEntry">
+						<div class="profile-bio" data-path=".main.description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio.
+
+						Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc. Maecenas dapibus nisi non sapien lacinia gravida non eget odio. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer eget tempus neque. Fusce eleifend vehicula odio id mattis. Donec rhoncus justo nec libero accumsan dapibus. Pellentesque vel turpis sem.
+
+						Ut pulvinar velit vel dui imperdiet nec suscipit leo pulvinar. Nam ac dolor quis sapien volutpat vehicula. Morbi sit amet odio et metus aliquam semper luctus sed eros.</div>
+					</span>
+
+				</div>
+	
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Traits</h3>
+					<span class="mobileListEntry">
+						<ul class="stats-list" data-path=".main.powers.characterpowers">
+							<li data-path=".powerdef.displayname.str"></li>
+						</ul>
+					</span>
+				</div>
+
+			</div>
+
+			<div class="profile-details-col-2">
+
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Skill Points</h3>
+					<span class="mobileListEntry">
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Skill Points Earned:</td>
+									<td data-path=".main.skill.earned.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Earn for Next Grade:</td>
+									<td data-path=".main.skill.nextgrade.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Skill Points Spent:</td>
+									<td data-path=".main.skill.spent.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Spend for Next Rank:</td>
+									<td data-path=".main.skill.nextrank.$commify">777</td>
+								</tr>
+							</tbody>
+						</table>
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Skill Points Available:</td>
+									<td data-path=".main.skill.left.$commify">777</td>
+								</tr>
+							</tbody>
+						</table>
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Expertise Earned:</td>
+									<td data-path=".main.expertise.earned.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Expertise Spent:</td>
+									<td data-path=".main.expertise.spent.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Expertise Available:</td>
+									<td data-path=".main.expertise.left.$commify">777</td>
+								</tr>
+							</tbody>
+						</table>
+					</span>
+				</div>
+
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Diplomacy</h3>
+					<span class="mobileListEntry">
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Diplomatic Rank:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Diplomacy_Rank].count">777</td>
+								</tr>
+								<tr>
+									<td>Diplomatic Experience:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Dxp].count.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Earn for Next Rank:</td>
+									<td data-path=".main.diplomacynextrank.$commify">777</td>
+								</tr>
+							</tbody>
+						</table>
+					</span>
+				</div>
+
+				<div class="mobileList" data-if="ent.main.viewerIsOwner">
+					<h3 class="stats-title mobileListHeader">Currency</h3>
+					<span class="mobileListEntry">
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Refined Dilithium:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Dilithium].count.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Dilithium Ore:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Dilithium_Ore].count.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Energy Credits:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Resources].count.$commify">777</td>
+								</tr>
+								<tr>
+									<td>Gold-Pressed Latinum:</td>
+									<td data-path=".main.inventory.bags[bagid=Numeric].slots[name=Gpl].count.$commify">777</td>
+								</tr>
+							</tbody>
+						</table>
+					</span>
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>
+

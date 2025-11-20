@@ -1,0 +1,66 @@
+<!-- if(dev) -->
+<div class="holdings-projects-contributions" data-update="personalproject">
+
+	<div data-set-class="project-info-box {.category.$toLowerCase()}">
+		<h3>
+			<span data-path=".taskdef.displayname.str"></span>
+			<span class="tier-emblem"></span>
+		</h3>
+		<p data-path=".taskdef.description.str">Provision fleet stores with personal equipment requisitioned from the Military Department's facilities. Includes Advanced Ground Shields.</p>
+		<div class="project-rewards">
+			<h4>Rewards</h4>
+			<ul data-path=".taskdef.rewards">
+				<li>
+					<div class="item-icon medium">
+						<img alt="" data-set-src="/tex/{.icon}.png">
+						<span data-path=".playerquantity" class="quantity">300</span>
+					</div>
+				</li>
+			</ul>
+		</div>
+
+		<!-- Temporary, until Zach and/or Kevin can hook up the real timer -->
+		<p data-if=".timetocomplete">Will be completed on <span data-path=".timetocomplete.$fullDateTime()"></span></p>
+
+		<span class="progress-container">
+			<span data-if="{.progresspercent} lt 100" class="progress-bar" data-set-style="width: {.progresspercent}%"></span>
+			<span data-if="{.progresspercent} ge 100" class="progress-bar complete" style="width: 100%"></span>
+			<span class="progress-label">Progress: <span data-path=".progresspercent">23</span>%</span>
+		</span>
+	</div>
+	<ul class="project-buckets" data-path=".buckets">
+		<li>
+			<div class="bucket-entry">
+				<div class="item-icon medium">
+					<img alt="" data-set-src="/tex/{.requireditemicon}">
+				</div>
+
+
+				<div class="bucket-info">
+					<h4 data-path=".requireditemdisplayname.str">Phaser Turret Fabricators</h4>
+					<h5><span data-path=".currentquantity">200,000</span> / <span data-path=".requiredquantity">200,000</span></h5>
+
+
+					<span class="progress-container">
+						<span data-if="{.progresspercent} lt 100" class="progress-bar" data-set-style="width: {.progresspercent}%"></span>
+						<span data-if="{.progresspercent} ge 100" class="progress-bar complete" style="width: 100%"></span>
+					</span>
+				</div>
+
+
+
+
+				<span data-if="{.playerquantity} gt 0 && {.currentquantity} lt {.requiredquantity} && {.requireditemname} ne '' ">
+					<a class="button-standard" data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/projects/{$back(1).taskslotnum}/contributenumeric/{.name}">Contribute</a>
+				</span>
+				<span data-if="{.playerquantity} gt 0 && {.currentquantity} lt {.requiredquantity} && {.requireditemname} eq '' ">
+					<a class="button-standard" data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/projects/{$back(1).taskslotnum}/contributeitems/{.name}/{$back(1).taskdef.name}">Contribute</a>
+				</span>
+				<span data-if="{.playerquantity} eq 0 || {.currentquantity} ge {.requiredquantity}">
+					<span class="button-standard disabled">Contribute</span>
+				</span>
+			</div>
+		</li>
+	</ul>
+</div>
+<!-- endif(dev) -->

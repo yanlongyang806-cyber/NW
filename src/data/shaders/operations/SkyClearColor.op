@@ -1,0 +1,22 @@
+OperationDef
+	Name "SkyClearColor" // Name of the operation
+	Description "The clear color set in the sky file"
+	Type SIMPLE
+
+	Input
+		Name SkyClearColor
+		Description "Sky clear color (internally generated value)."
+		NoAutoConnect 1
+		NoManualConnect 1
+		Hidden 1
+		Type SkyClearColor
+		Float 3
+	EndInput
+	
+	Output
+		Name Result
+		Description "RGB color of the sky clear color."
+		Float 3
+	EndOutput
+
+EndOperationDef

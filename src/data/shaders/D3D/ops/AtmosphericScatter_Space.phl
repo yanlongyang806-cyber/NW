@@ -1,0 +1,21 @@
+{
+	float3 lut_texcoords;
+
+	// intersect view ray with atmosphere sized sphere
+ 	float B = 2.0 * dot(%ModelPositionViewSpace%.xyz, view_vs);
+ 	float C = (%ModelPositionViewSpace%).w - (%ActualAtmosphereRadiusSquared%).x;
+ 	float fDet = B*B - 4.0 * C;
+	float collided = step(0, fDet);
+	fDet = collided * fDet;
+ 	float near_dist = 0.5f * max(-B - sqrt(fDet), 0); // dist goes negative if inside the sphere, in which case we want the current position
+	float3 Pv = -view_vs * near_dist - %ModelPositionViewSpace%.xyz; // vector from center of sphere to view position (view position must be in or on sphere)
+
+	Pv = normalize(Pv).xyz;
+	lut_texcoords.x = rangeCompress(dot(-view_vs, (%SunDirectionViewSpace%).xyz)).x;
+	lut_texcoords.y = clamp(rangeCompress(dot(-view_vs, Pv)).x, 0.05, 0.95);
+	lut_texcoords.z = rangeCompress(dot((%SunDirectionViewSpace%).xyz, Pv)).x;
+
+	float4 scatter = sampleTex3D(TexSampler%AtmosphericScatterLUT%, lut_texcoords);
+
+	%UnlitResult%.xyz = %UnlitColor%.xyz + collided * 4 * scatter.w * scatter.xyz * %SunColor%.xyz;
+}

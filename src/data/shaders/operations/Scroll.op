@@ -1,0 +1,35 @@
+OperationDef
+	Name "Scroll" // Name of the operation
+	Description "Scroll"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name ScrollRate
+		Description "Rate of scrolling, in texture tiles per tick"
+		Float 2
+		FloatRange -10 10
+		Type Scroll
+		NoManualConnect 1
+		Default
+			Floats 0.1 0.1
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Type TexCoord
+		Description "Scrolled texture coordinates"
+		Float 2
+		AlphaFrom TexCoord
+	EndOutput
+EndOperationDef

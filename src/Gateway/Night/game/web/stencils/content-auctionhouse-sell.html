@@ -1,0 +1,302 @@
+<script type="text/javascript">
+	client.requestAuctionOwnedLots();
+</script>
+
+<div class="page-content">
+	<div class="page-auction-sell">
+		<div class="page-sidebar">
+			<div class="auction-consignment-form" id='newConsignment'>
+				<div class="consignment-form-item mobileOnly">
+					<h3>Item for consignment:</h3>
+
+					<div class="panel-inner silver auction-item-box">
+						<span class="mobileOnly"
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+						</span>
+						<div class="panel-content">
+							<div class="auction-item-selector">
+								<a data-url-silent="/auctionhouse-sell/select-item">
+									<div class="icon-slot large empty"></div>
+									<div class="selector-desc">Select an item from your inventory</div>
+								</a>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="desktopOnly">
+
+
+
+					<h3>Item for consignment:</h3>
+
+
+					<div class="panel-inner silver auction-item-box">
+						<span class="mobileOnly"
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+						</span>
+						<div class="panel-content">
+							<div id="consignmentItem">
+								<div class="auction-item-selector">
+									<a data-url-silent="/auctionhouse-sell/select-item">
+										<div class="icon-slot large empty"></div>
+										<div class="selector-desc">Select an item from your inventory</div>
+									</a>
+								</div>
+								<!-- stencil: content-auctionItem.html fills here when an item is selected -->
+							</div>
+						</div>
+					</div>
+
+
+
+
+
+
+					<h3>Starting Bid:</h3>
+					<div class="input-field text currency">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<span class="currency-icon astral"></span>
+						<input type="text" maxlength="9" placeholder="0" name='startingBid' onchange="client.auctionSellUpdatePostingFee()">
+					</div>
+
+					<h3>Buyout Price:</h3>
+					<div class="input-field text currency">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<span class="currency-icon astral"></span>
+						<input type="text" maxlength="9" placeholder="0" name='buyout' onchange="client.auctionSellUpdatePostingFee()"><br>
+					</div>
+
+					<h3>Duration:</h3>
+					<div class="input-field dropdown">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<select name='duration' onchange="client.auctionSellUpdatePostingFee()" data-path="ent.main.auctionsettings.auctiondurations">
+							<option data-if="!{.defaultduration}" data-set-value=".duration" data-path=".displayname.str">Short</option>
+							<option data-if="{.defaultduration}" data-set-value=".duration" selected data-path=".displayname.str">Short</option>
+						</select>
+					</div>
+
+
+					<h3>Posting Fee:</h3>
+					<div class="info-entry">
+						<span class="currency-icon astral"></span> <span id="postingFee">0</span>
+					</div>
+
+					<h3>Trade House Cut:</h3>
+					<div class="info-entry">
+						10% (~ <span class="currency-icon astral"></span> <span id="saleFee">0</span>)<br>
+					</div>
+
+					<div class="input-field button auction-post">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button onclick="client.auctionSellPostNewAuction()">Post</button>
+					</div>
+					<div class="input-field button auction-clear">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button onclick="client.auctionSellClearForm()">Clear</button>
+					</div>
+				</div>
+			</div>
+
+		</div>
+
+		<div class="page-body with-sidebar" data-update="auctionList.ownedlots">
+			<h3 class="page-title desktopOnly">My Consignments</h3>
+			<h3 class="page-title mobileOnly">Current Consignments:</h3>
+			<div id="auctionLotList">
+				<table data-if="auctionList.ownedlots.list.auctionlots.$length() ge 1" id="gatewayTableAuctionOwned">
+					<thead>
+						<tr>
+							<th class="auction-sell-item"><span>Item Name</span></th>
+							<th class="auction-sell-quantity desktopOnly"><span>Qty</span></th>
+							<th class="auction-sell-expires"><span>Expires In</span></th>
+							<th class="auction-sell-bid"><span>High Bid</span></th>
+							<th class="auction-sell-buyout"><span>Buyout</span></th>
+							<th class="desktopOnly single-row-cell"></th>
+							<th class="mobileOnly single-row-cell"></th>
+						</tr>
+					</thead>
+					<tbody data-path="auctionList.ownedlots.list.auctionlots">
+						<tr>
+
+							<!-- EMPTY CELLS (for data sorting) -->
+							<td class="emptyCell">
+								<span data-path=".slots"><span data-path='.itemdef.displaynamemsg.str'>Item Name</span></span>
+							</td>
+							<td class="emptyCell" data-if=".slots[0].count" data-path='.slots[0].count'></td>
+							<td class="emptyCell" data-path=".currentbid"></td>
+							<td class="emptyCell" data-if=".price" data-path='.price'></td>
+							<td class="emptyCell" data-if="!{.price}"></td><!-- paired with previous cell -->
+							<td class="emptyCell" data-path=".expiretime.$dateParse()"></td>
+
+							<!-- DESKTOP CELL -->
+							<td class="desktopOnly single-row-cell" colspan="5">
+								<div class="single-row-button" data-set-onclick="client.auctionSellItemSelected({.numbids},{.index},'ownedlots')" data-set-data-index="{.index}">
+
+									<span class="single-cell auction-sell-item">
+										<span data-path=".slots">
+											<div class="auction-img">
+												<div data-set-class="icon-slot simple tiny {.itemdef.quality}" data-set-data-tt-item=".itemdef.name">
+													<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+												</div>
+											</div>
+											<div class="auction-entry-name">
+												<span data-set-class="{.itemdef.quality}" data-path='.itemdef.displaynamemsg.str'>Item Name</span>
+											</div>
+										</span>
+									</span>
+									<span class="single-cell auction-sell-quantity">
+										<span data-if=".slots[0].count" data-path='.slots[0].count'>999</span>
+									</span>
+									<span class="single-cell auction-sell-expires">
+										<span data-set-data-timer=".expiretime" data-timer-length="2">2 Days Remaining</span>
+									</span>
+									<span class="single-cell auction-sell-bid">
+										<span data-if=".canbid">
+											<span class="currency-icon astral"></span>
+											<span data-path=".currentbid.$commify()">999</span>
+											(<span data-path=".numbids">99</span> Bids)
+										</span>
+										<span data-if="!{.canbid}">N/A</span>
+									</span>
+									</span>
+									<span class="single-cell auction-sell-buyout">
+										<span data-if=".price">
+											<span class="currency-icon astral"></span>
+											<span data-path='.price.$commify()'>999</span>
+										</span>
+										<span data-if="!{.price}">N/A</span>
+									</span>
+
+
+								</div>
+							</td>
+
+							<!-- MOBILE CELL -->
+							<td class="mobileOnly single-row-cell" colspan="4">
+								<a class="single-row-button" data-set-data-url-silent="/auctionhouse-sell/remove-details?idx={.index}">
+									<span class="single-cell auction-sell-item">
+										<span data-path=".slots">
+											<div class="auction-img">
+												<div data-set-class="icon-slot simple tiny {.itemdef.quality}">
+													<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+													<span data-if=".count ge 2" data-path='.count.$commify()' class="quantity">9</span>
+												</div>
+											</div>
+											<div class="auction-entry-name">
+												<span data-set-class="{.itemdef.quality}" data-path='.itemdef.displaynamemsg.str'>Item Name</span>
+											</div>
+										</span>
+									</span>
+
+									<span class="single-cell auction-sell-expires">
+										<span data-set-data-timer=".expiretime" data-timer-length="2">2 Days Remaining</span>
+									</span>
+									<span class="single-cell auction-sell-bid">
+										<span data-if=".canbid">
+											<span class="currency-icon astral"></span>
+											<span data-path=".currentbid.$commify()">999</span>
+											(<span data-path=".numbids">99</span> Bids)
+										</span>
+										<span data-if="!{.canbid}">N/A</span>
+										<h6>Ends: <span data-set-data-timer=".expiretime" data-timer-length="2">2d 6h</span></h6>
+									</span>
+
+									<span class="single-cell auction-sell-buyout">
+										<span data-if=".price">
+											<span class="currency-icon astral"></span>
+											<span data-path='.price.$commify()'>999</span>
+										</span>
+										<span data-if="!{.price}">N/A</span>
+									</span>
+									<div class="clear"></div>
+								</a>
+							</td>
+						</tr>
+					</tbody>
+				</table>
+				<script data-if="auctionList.ownedlots.list.auctionlots.$length() ge 1">
+					client.auctionSellDataTable();
+					client.startCountdowns();
+				</script>
+
+				<h3 class="center-message" data-if="auctionList.ownedlots.list.auctionlots.$length() eq 0">No items found</h3>
+			</div>
+
+
+
+		</div>
+
+	</div>
+</div>
+<div class="box-footer-block">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<div class="current-money">
+							<span class="currency-icon astral"></span> <span data-path="ent.main.currencies.diamonds.$commify()">diamonds</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+						<!-- make this button disable or enable according to the radio buttons in the table -->
+						<div class="input-field button auctionRemoveButton disabled">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button onclick="client.auctionSellRemoveItem()">Remove Lot</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>

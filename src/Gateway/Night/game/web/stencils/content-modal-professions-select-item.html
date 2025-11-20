@@ -1,0 +1,30 @@
+<button class="close-button" data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}"></button>
+
+<div class="mobileOnly sticky-mobile-back-button">
+	<div class="main-buttons">
+		<a class="nav-button mobile-back-button" data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}">
+			<span class="cap-left"></span>
+			<span class="cap-right"></span>
+			<span class="nav-icon"></span>
+		</a>
+	</div>
+	<hr />
+</div>
+
+<h3>Select the item to use:</h3>
+<div class="modal-item-list">
+	<span data-path=".items">
+		<a data-set-class="icon-block simple {.hdef.quality}" data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}" data-set-onclick="client.professionSlotItem('{$back().slot.assignmentslot}','{.uid}');">
+			<div class="icon-slot">
+				<img data-set-src="/tex/{.hdef.icon}.png" alt="" />
+			</div>
+			<div class="icon-info" data-path='.hdef.displaynamemsg.str'>Item Name</div>
+		</a>
+	</span>
+</div>
+<span class="clear-item-slot">
+	<hr />
+	<a data-set-data-url-silent="/professions-tasks/{$root().queryParams.categoryName}/{$root().queryParams.taskName}" data-set-onclick="client.professionSlotItem('{.slot.assignmentslot}','0');">
+		Clear Slot
+	</a>
+</span>

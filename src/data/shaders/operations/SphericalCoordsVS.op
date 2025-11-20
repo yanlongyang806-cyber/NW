@@ -1,0 +1,25 @@
+OperationDef
+	Name "SphericalCoordsVS" // Name of the operation
+	Description "View-space Spherical Coords"
+	DefaultOptionName "SphericalCoordsVS"
+	OptionName "View-space Spherical Coords (cheap)"
+	Type ADVANCED
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Converts the normal into spherical texture coordinates"
+		Float 2
+	EndOutput
+
+EndOperationDef

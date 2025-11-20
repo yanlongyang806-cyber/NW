@@ -1,0 +1,48 @@
+<div data-path="ent">
+	<h2>Bridge Officers</h2>
+	<div class="horiz-menu-wrapper">
+		<span id="boff-prev" data-if="{.officers.length}" class="horiz-menu-prev disabled" onclick="client.bridgeOfficersPagePrev()">
+			<span class="nav-arrow"></span>
+		</span>
+		<span id="boff-next" data-if="{.officers.length}" class="horiz-menu-next disabled" onclick="client.bridgeOfficersPageNext()">
+			<span class="nav-arrow"></span>
+		</span>
+
+		<!-- IF BRIDGE OFFICERS -->
+		<div id="boff-paginate" data-if="{.officers.length}" class="horiz-menu-container">
+			<div class="horiz-menu-container-inner" data-path=".officers">
+				<div class="horiz-menu-entry">
+					<a data-set-data-url="/personnel-bridgeofficers/{.id}" class="horiz-menu-card">
+						<div class="horiz-menu-card-body desktopOnly">
+							<span data-set-class="icon-class-officer-mini {.classtype.$map(classTypeIcons)}"></span>
+							<span data-set-class="icon-rank-small {.rank.$map(rankIcons)}"></span>
+							<img data-set-data-img="/shot/body/{.id}.png" alt="" />
+						</div>
+						<div class="horiz-menu-card-portrait mobileOnly">
+							<img data-set-src="/shot/head/{.id}.png"/>
+							<span data-set-class="icon-class-officer-mini {.classtype.$map(classTypeIcons)}"></span>
+							<span data-set-class="icon-rank-small {.rank.$map(rankIcons)}"></span>
+						</div>
+						<div class="horiz-menu-card-info">
+							<span class="boff-info-name" data-path=".formalname">Roger Wilco</span>
+							<span class="boff-info-rank" data-path=".rankname">Commander</span>
+							<span class="boff-info-class" data-path=".classname">Engineering Bridge Officer</li>
+						</div>
+						<div class="clear"></div>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- IF NO BRIDGE OFFICERS -->
+		<div data-if="!{.officers.length}" class="horiz-menu-empty boff-none">
+			<h1>You have no bridge officers</h1>
+		</div>
+
+	</div>
+
+	<script data-if="{.officers.length}">
+		client.bridgeOfficersInit();
+	</script>
+
+</div>

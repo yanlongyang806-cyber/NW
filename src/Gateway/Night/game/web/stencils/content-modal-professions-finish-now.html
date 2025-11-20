@@ -1,0 +1,23 @@
+<button class="close-button" data-url="back"></button>
+
+<div class="modal-confirm">
+	<h3>Finish Early</h3>
+	<p>Finishing this assignment early will cost you <span class="currency-icon astral"></span> <span data-path=".sfinishearlycost.$commify()">999</span> Astral Diamonds. Do you wish to continue?</p>
+
+	<p>Current Astral Diamonds:<br />
+	<span class="currency-icon astral"></span> <span data-path="$root().ent.main.currencies.diamonds.$commify()">99,999</span></p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back">Cancel</button>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back" data-set-onclick="client.professionTaskFinishEarly('{.uassignmentid}',{.sfinishearlycost})">OK</button>
+	</div>
+
+</div>

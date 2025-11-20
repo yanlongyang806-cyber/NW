@@ -1,0 +1,15 @@
+{
+#define HAS_DEPTH_FADE
+	float depthbuffer;
+	float4 weight;
+	float deltaDepth;
+
+	float mydepth = -v.position_vs.z;
+
+	depthbuffer = calcDepthNormalized(%ScreenDepth%);
+	deltaDepth = saturate((depthbuffer - mydepth) / (%FadeEnd%).x);
+
+	weight = pow(deltaDepth, 0.5f) * %Scale%.x;
+
+	%Result% = lerp(%ForegroundColor%, %BackgroundColor%, weight);
+}

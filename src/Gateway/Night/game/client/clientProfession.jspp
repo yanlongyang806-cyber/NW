@@ -1,0 +1,530 @@
+'use strict';
+
+var clientProfession = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+var dbg = require('cryptic/dbg');
+var Synchro = require('cryptic/synchro');
+var Prefs = require('cryptic/client/clientPrefs');
+var buildCommand = require('cryptic/commands/buildCommand');
+
+var s_listName;
+
+var stencils = require(''+'/game/client/Stencils.js');
+
+///////////////////////////////////////////////////////////////////////////
+// JavaScript for stencil:
+//
+// content-professions-tasklist
+//
+var s_professionPrefs = {};
+var s_taskListTable;
+var s_taskSearchHasFocus = false;
+clientProfession.professionsDataTable = function professionsDataTable()
+{
+	$(document).ready(function _professions_ready() {
+		var dataModel = client.dataModel;
+		s_listName = 'craft_'+dataModel.model.queryParams.categoryName.toLowerCase();
+
+		if(!s_professionPrefs[s_listName])
+		{
+			s_professionPrefs[s_listName] = {};
+
+			// Sort initialized with default value
+			s_professionPrefs[s_listName].taskListSort = 'desc';
+
+			// Filters initialized with default values
+			//     true  = checked
+			//     false = unchecked
+			s_professionPrefs[s_listName].taskListFilter = {
+				'hide_unmetreqs': false,
+				'hide_abovelevel': true
+			};
+
+			// Initial search value
+			s_professionPrefs[s_listName].taskListSearch = '';
+		}
+
+		// Mark the last time the previous category was seen.
+		if(s_professionPrefs['lastCategory'])
+		{
+			var oldListName = 'craft_' + s_professionPrefs['lastCategory'].toLowerCase();
+			if(dataModel.model.craftinglist[oldListName])
+				dataModel.model.craftinglist[oldListName]._lastSeen = Date.now();
+		}
+		s_professionPrefs['lastCategory'] = dataModel.model.queryParams.categoryName;
+
+		if(!dataModel.model.craftinglist || !dataModel.model.craftinglist[s_listName])
+			return;
+
+		var entries = dataModel.model.craftinglist[s_listName].entries;
+		if(!entries)
+			return;
+
+		var sync = new Synchro();
+		var aaData = [];
+		for(var i = 0; i < entries.length; i++)
+		{
+			if(typeof entries[i] === 'undefined')
+				continue;
+
+			var h = entries[i].header.toLowerCase();
+			var task = [
+				h === 'rare' ? 2 : h === 'common' ? 3 : 9,
+				entries[i].isheader ? 1 : 0,
+				0,  // 2 - rank - delayed lookup
+				entries[i].isheader ? 0 : entries[i].failslevelrequirementsfilter ? 1 : 0,
+				entries[i].isheader ? 0 : entries[i].failsresourcesrequirements ? 1 : 0,
+				'', // 5 - name - delayed lookup
+				'<div data-set-class="task-list-entry"></div>' // 6 - HTML for cell - delayed lookup
+			];
+
+			/*jshint loopfunc:true */
+			(function(task, entry, idx) {
+				if(!entry.isheader)
+				{
+					sync.add(function(done) {
+						dataModel.resolvePath('.hdef.requiredrank', entry, function(e, r) {
+							task[2] = r;
+							done();
+						});
+					});
+				}
+				sync.add(function(done) {
+					dataModel.resolvePath('.hdef.displayname.str', entry, function(e, r) {
+						task[5] = r;
+						done();
+					});
+				});
+				sync.add(function(done) {
+					dataModel.render(stencils['content-professions-tasklist-task'],
+						'content-professions-tasklist-task',
+						'.craftinglist.'+s_listName+'.entries['+idx+']',
+						function(e, r) {
+							task[6] = r.join('');
+							done();
+						});
+				});
+			})(task, entries[i], i);
+			/*jshint loopfunc:false */
+
+			aaData.push(task);
+		}
+
+		sync.waitForAll(function() {
+			s_taskListTable = undefined;
+			try
+			{
+				$('table#tasklist').dataTable({
+					'bDestroy': true,       // Autodestroy the previous table if there was one.
+					'bSortClasses': false,  // Don't augment cells with css classes for sorting
+					'bLengthChange': false, // User cannot select the length of the table
+					'iDisplayLength': 8,
+					'gatewayUsesInfinateScroll': true,
+					'gatewayDesktopLength': 8,
+					'gatewayMobileLength': 8,
+					'oLanguage': client.dataTableLanguage,
+					'fnDrawCallback': client.dataTableInfinateScrollDrawCallback,
+
+					// The data for the table, filled in above
+					'aaData': aaData,
+					'aoColumns': [
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },  // rarity
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },  // header
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },  // required level
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },  // fails level requirements
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },  // fails resource requirements
+						{ 'bVisible': false,  'bSearchable': true,  'sType': 'string' },   // name
+						{ 'bVisible': true,   'bSearchable': false, 'sType': 'html' }      // HTML
+					],
+
+					// Default sort
+					'aaSorting': [[0, 'asc'], [1, 'desc'], [2, s_professionPrefs[s_listName].taskListSort]],
+
+					// Initial search value
+					'oSearch': { 'sSearch': s_professionPrefs[s_listName].taskListSearch },
+
+					// Initial filter values
+					'aoSearchCols': [
+						null, null, null,
+						{ 'sSearch': (s_professionPrefs[s_listName].taskListFilter['hide_abovelevel']?'0':''), 'bRegex': false, 'bSmart': false }, // level requirements
+						{ 'sSearch': (s_professionPrefs[s_listName].taskListFilter['hide_unmetreqs']?'0':''), 'bRegex': false, 'bSmart': false },  // resource requirements
+						null, null
+					],
+
+					'bStateSave': true, // Save state information for pagination, sorting, etc.
+					'fnStateSave': function _professions_fnStateSave(oSettings, oData) {
+						// Makes sure timers are drawn (they may have shut down from inactivity)
+						clientProfession.startCountdowns();
+
+						// Saves what the user typed into the search box
+						s_professionPrefs[s_listName].taskListSearch = oData.oSearch.sSearch;
+
+						// Save prefs for later now that one was updated.
+						Prefs.setCharPref('prof', s_professionPrefs);
+					},
+
+					// Once the table is ready to go, set the filter and sort comboboxes
+					'fnInitComplete': function _professions_fnInitComplete(oSettings) {
+						s_taskListTable = this;
+
+						// Init filter check boxes to the defaults.
+						for(var name in s_professionPrefs[s_listName].taskListFilter)
+						{
+							if(s_professionPrefs[s_listName].taskListFilter[name])
+							{
+								$("input[name='" + name + "']")
+									.attr('checked', true)
+									.closest('label').addClass('checked');
+							}
+							else
+							{
+								$("input[name='" + name + "']")
+									.attr('checked', false)
+									.closest('label').removeClass('checked');
+							}
+						}
+
+						// Make sure we have the right radio selected by default
+						$("select[name='sort_level']").val(s_professionPrefs[s_listName].taskListSort);
+
+						// Maintain search box focus in case of update
+						$('div.dataTables_filter input')
+							.on('focus', function() {
+								s_taskSearchHasFocus = true;
+							});
+
+						$('div.dataTables_filter input')
+							.on('blur', function() {
+								s_taskSearchHasFocus = false;
+							});
+
+						if(s_taskSearchHasFocus)
+						{
+							$('div.dataTables_filter input').focus();
+						}
+
+						// if we're in mobile, do the infinate scroll thing
+						if(client.WINDOW_SIZE < 2)
+						{
+							client.dataTableInfinateScrollCheck();
+						}
+						else
+						{
+							client.onWindowResize(client.WINDOW_SIZE);
+						}
+					}
+				});
+			}
+			catch (e)
+			{
+				if(e.message !== "Cannot read property 'parentNode' of null")
+				{
+					dbg.error(e.message, e);
+				}
+			}
+
+			client.onAfterSetStencil();
+		});
+	});
+
+	// Overload checkbox handler for this page's use
+	this.handleCheckBox = function handleCheckBox(cbox)
+	{
+		// Keep track of the filter settings
+		s_professionPrefs[s_listName].taskListFilter[cbox.attr('name')] = cbox.is(':checked');
+		clientProfession.professionTaskFilterChange(cbox);
+
+		// Save prefs for later now that one was updated.
+		Prefs.setCharPref('prof', s_professionPrefs);
+	}
+
+	$(document).ready(function() {
+		$('select[name="sort_level"]').on('change', function() {
+			client.professionTaskSortChange($(this).val());
+		})
+	})
+}
+
+// Change the sorting order of tasks
+clientProfession.professionTaskSortChange = function professionTaskSortChange(sort)
+{
+	if(s_taskListTable)
+	{
+		s_professionPrefs[s_listName].taskListSort = sort;
+		s_taskListTable.fnSort([ [0, 'asc'], [1, 'desc'], [2, s_professionPrefs[s_listName].taskListSort ] ]);
+
+		// Save prefs for later now that one was updated.
+		Prefs.setCharPref('prof', s_professionPrefs);
+	}
+}
+
+// Filter out tasks
+clientProfession.professionTaskFilterChange = function professionTaskFilterChange(cbox)
+{
+	if(s_taskListTable)
+	{
+		var name = cbox.attr('name');
+		if(name === 'hide_unmetreqs')
+		{
+			if(cbox.is(':checked'))
+			{
+				s_taskListTable.fnFilter(0, 4, false, false, false, true);
+			}
+			else
+			{
+				s_taskListTable.fnFilter('', 4, false, false, false, true);
+			}
+		}
+
+		if(name === 'hide_abovelevel')
+		{
+			if(cbox.is(':checked'))
+			{
+				s_taskListTable.fnFilter(0, 3, false, false, false, true);
+			}
+			else
+			{
+				s_taskListTable.fnFilter('', 3, false, false, false, true);
+			}
+		}
+
+		// Reset to default size when filtering. (But only on mobile)
+		if(client.WINDOW_SIZE < 2)
+		{
+			// Using the resize event trigger to assure the infinate scroll
+			// timer is started as well.
+			client.dataTableOnWindowResize(client.WINDOW_SIZE)
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+clientProfession.releaseOldLists = function releaseOldLists()
+{
+	if(!s_professionPrefs['lastCategory'])
+		return;
+
+	var expiration = Date.now() - 3 * 60 * 1000;
+	var lastCategory = 'craft_' + s_professionPrefs['lastCategory'].toLowerCase();
+	for(var name in client.dataModel.model.craftinglist)
+	{
+		if(name !== lastCategory)
+		{
+			if((client.dataModel.model.craftinglist[name]._lastSeen || expiration ) < expiration)
+			{
+				client.dataModel.cmgr.releaseCraftingList(name);
+				delete client.dataModel.model.craftinglist[name];
+			}
+		}
+	}
+}
+
+// Every thirty seconds, see if there are any crafting lists to drop.
+setInterval(clientProfession.releaseOldLists, 30 * 1000);
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Countdown timers
+//
+// TODO: Move this into clientRender as it is also used on Auction lots.
+var s_cntEmptyCountdowns;
+var s_countdownIntervalId;
+clientProfession.startCountdowns = function startCountdowns()
+{
+	s_cntEmptyCountdowns = 0;
+	doCountdowns(); // Get one done immediately.
+	if(!s_countdownIntervalId)
+	{
+		s_countdownIntervalId = setInterval(doCountdowns, 1000);
+	}
+}
+
+clientProfession.stopCountdowns = function stopCountdowns()
+{
+	if(s_countdownIntervalId)
+	{
+		clearInterval(s_countdownIntervalId);
+		s_countdownIntervalId = undefined;
+	}
+}
+
+function doCountdowns()
+{
+	var cnt = 0;
+
+	// This handles taking a RFC822 date and making a "16h 22m 5s" string
+	$('[data-timer]').each(function(i, el) {
+		cnt++;
+		var time = $(el).attr('data-timer');
+		var len = $(el).attr('data-timer-length') || 2;
+		client.dataModel.resolvers.timerAgoShort(null, time, [ len ], function(e, r) {
+			$(el).text(r);
+		});
+	});
+
+	// This handles taking a start and end RFC822 date and showing a bar
+	// with the percent complete.
+	$('[data-timer-end]').each(function(i, el) {
+		cnt++;
+		var start = new Date($(el).attr('data-timer-start'));
+		var end = new Date($(el).attr('data-timer-end'));
+		var now = client.offsetDate();
+
+		var pct = 100;
+		if(now < end && now > start)
+		{
+			pct = 100 * (now - start) / (end - start);
+			pct = pct >>> 0; // integerify
+		}
+
+		$(el).css('width', '' + pct + '%');
+	});
+
+	// If we go ten seconds without any data-timers, stop doing updates.
+	if(cnt === 0)
+	{
+		s_cntEmptyCountdowns++;
+		if(s_cntEmptyCountdowns > 10)
+		{
+			dbg.log('Shutting off timer interval');
+			clientProfession.stopCountdowns();
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+clientProfession.professionFetchTaskList = function(categoryName)
+{
+	dbg.trace(categoryName);
+
+	if(typeof categoryName !== 'undefined')
+		client.dataModel.fetchCraftingList(categoryName);
+}
+
+clientProfession.professionFetchTaskDetail = function(taskName)
+{
+	dbg.trace(taskName);
+
+	if(typeof taskName !== 'undefined')
+		client.dataModel.fetchCraftingDetail(taskName);
+}
+
+// This function will always forward the user to their /professions page
+// This is to put them on their 'overview' page just like in the game.
+// Stencil: content-professions-details.html
+clientProfession.professionStartAssignment = function(taskName)
+{
+	var cmd = buildCommand('GatewayItemAssignments_StartAssignment', {
+		taskName: taskName
+	});
+
+	if(cmd)
+	{
+		client.analyticTick('User:ProfessionStartTask');
+		client.sendCommand(cmd);
+
+		client.dataModel.cmgr.invalidateContainer('CraftingDetail', taskName);
+		client.dataModel.model.craftingdetail = null;
+
+		client.shifter.updateHash('/professions', true);
+	}
+}
+
+// Slot an item in the item details page
+// Stencil:content-modal-professions-select-item.html
+clientProfession.professionSlotItem = function(itemSlot, id)
+{
+	var cmd = buildCommand('GatewayItemAssignments_SlotItem', {
+		slot: itemSlot,
+		id: id
+	});
+
+	if(cmd)
+	{
+		client.sendCommand(cmd);
+	}
+}
+
+clientProfession.professionTaskCollectRewards = function(assignmentId)
+{
+	var cmd = buildCommand('GatewayItemAssignments_CollectRewards', {
+		id: assignmentId
+	});
+
+	if(cmd)
+	{
+		client.analyticTick('User:ProfessionCollectReward');
+		client.sendCommand(cmd);
+	}
+}
+
+clientProfession.professionTaskFinishEarly = function(assignmentId, estimatedCost)
+{
+	var cmd = buildCommand('GatewayItemAssignments_FinishEarly', {
+		id: assignmentId
+	});
+
+	if(cmd)
+	{
+		if(typeof estimatedCost === 'string')
+			estimatedCost = parseInt(estimatedCost, 10);
+
+		if(estimatedCost < 0)
+		{
+			estimatedCost = 0;
+		}
+
+		client.analyticTick('User:ProfessionFinishEarly');
+		client.analyticTick('User:ProfessionDiamondsSpent', estimatedCost);
+		client.sendCommand(cmd);
+	}
+}
+
+clientProfession.professionTaskCancelAssignment = function(assignmentId)
+{
+	var cmd = buildCommand('GatewayItemAssignments_CancelAssignment', {
+		id: assignmentId
+	});
+
+	if(cmd)
+	{
+		client.analyticTick('User:ProfessionCancelTask');
+		client.sendCommand(cmd);
+	}
+}
+
+clientProfession.professionGoToTaskList = function()
+{
+	// Default to Leadership as a last profession selected
+	if(!s_professionPrefs['lastCategory'])
+	{
+		s_professionPrefs['lastCategory'] = "Leadership";
+	}
+
+	client.shifter.updateHash('/professions-tasks/' + s_professionPrefs['lastCategory'], true);
+}
+
+clientProfession.professionLoadPrefs = function()
+{
+	Prefs.setChar(client.selectedChar());
+	s_professionPrefs = Prefs.getCharPref('prof') || {};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

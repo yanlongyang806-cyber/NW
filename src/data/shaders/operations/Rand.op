@@ -1,0 +1,21 @@
+OperationDef
+	Name "Rand" // Name of the operation
+	Description "Gives back a random value between 0 and 1"
+	Type SIMPLE
+
+	Input
+		Name Seed
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Random Output"
+		Float 1
+	EndOutput
+EndOperationDef

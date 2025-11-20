@@ -1,0 +1,20 @@
+<div class="project-description" data-if="{.displayname}">
+
+	<div class="fleet-facility-info-mobile mobileOnly">
+		<h3 data-path=".displayname">Omega Task Force Reputation Tier I</h3>
+		<h4>Unlocks at <span data-path=".unlocksat">5,000 Reputation</span></h4>
+	</div>
+
+	<div class="fleet-facility-header" data-set-style="background-image: url(./tex/{.image});">
+		<div class="fleet-facility-info">
+			<h3 data-path=".displayname">Omega Task Force Reputation Tier I</h3>
+			<h4>Unlocks at <span data-path=".unlocksat">5,000 Reputation</span></h4>
+		</div>
+	</div>
+	
+	<p data-path=".description"><!-- description --></p>
+</div>
+
+<div data-if="!{.displayname}" class="project-description-empty">
+	<p>Select a Tier Level to View Details</p>
+</div>

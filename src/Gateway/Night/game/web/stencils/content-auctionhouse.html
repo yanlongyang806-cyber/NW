@@ -1,0 +1,44 @@
+<div data-path="ent">
+	<div class="page-auction">
+		<div class="box-tabs-block auctionResults">
+			<div class="tabs-horizontal">
+				<div class="tabs-container">
+					<ul>
+						<li>
+							<a data-url="/auctionhouse" class="tab subNav auctionhouse-browse">
+								<span class="tab-name">Browse</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/auctionhouse-sell" class="tab subNav auctionhouse-sell">
+								<span class="tab-name desktopOnly">My Consignments</span>
+								<span class="tab-name mobileOnly">Sell</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/auctionhouse-buy" class="tab subNav auctionhouse-buy">
+								<span class="tab-name desktopOnly">My Bids</span>
+								<span class="tab-name mobileOnly">Bids</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="box-top">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+			</div>
+		</div>
+		<div id="content_auction" class="innerContent">
+		</div>
+	</div>
+</div>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>

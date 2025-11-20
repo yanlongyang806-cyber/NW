@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="XenonTest"
+	ProjectGUID="{626ABA8F-BD20-49FC-95DD-24424B459474}"
+	Keyword="XenonProj"
+	>
+	<Platforms>
+		<Platform
+			Name="Xenon"
+		/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="Debug|Xenon"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="1"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				AdditionalIncludeDirectories="../../libs/UtilitiesLib/network;../../libs/UtilitiesLib/utils;../../libs/UtilitiesLib/components;../../libs/UtilitiesLib/assert;../../libs/UtilitiesLib/;.;../../libs/Renderers/pub"
+				PreprocessorDefinitions="_XBOX;_DEBUG;_WINDOWS;CLIENT;USEZLIB=1;_CRTDBG_MAP_ALLOC=1;BRANCH=12"
+				ExceptionHandling="FALSE"
+				RuntimeLibrary="1"
+				BufferSecurityCheck="FALSE"
+				UsePrecompiledHeader="0"
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="FALSE"
+				DebugInformationFormat="3"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				AdditionalDependencies="Xonline.lib d3d9d.lib d3dx9d.lib xgraphicsd.lib xapilibd.lib xaudiod.lib xboxkrnl.lib xbdm.lib"
+				LinkIncremental="2"
+				IgnoreDefaultLibraryNames="LIBCMT"
+				GenerateDebugInformation="TRUE"
+				SubSystem="2"
+				OptimizeForWindows98="1"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="XboxDeploymentTool"
+				DeploymentType="0"
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath=".\main.c"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+		</Filter>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

@@ -1,0 +1,13 @@
+OperationDef
+	Name "ScreenTexCoord" // Name of the operation
+	Description "Texture coords to plug into screen shot texture"
+	Type TEXTURE
+    
+	Output
+		Name TexCoord
+        Type TexCoord
+		Description "Screen Texture Coord"
+		Float 2
+	EndOutput
+
+EndOperationDef

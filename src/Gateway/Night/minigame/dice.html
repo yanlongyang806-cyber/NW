@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Dice</title>
+		<link rel="stylesheet" href="./dice.css">
+		<link rel="stylesheet" href="./mapMaker.css">
+		<link rel="stylesheet" href="./theme/tileset-demo-25x25_01.css">
+	</head>
+
+	<body>
+		<div id="tooltip" class="tooltip"></div>
+		<div class="choose-quest choose-encounter choose-pile choose-party">
+			<div id="choose-list">
+			</div>
+		</div>
+		<div class="play-dice">
+			<div class="board">
+				<div id="challenge" class="challenge">
+				</div>
+				<div id="pile">
+				</div>
+			</div>
+			<div class="controls-roll-button">
+				<button class="roll-button">ROLL!</div>
+			</div>
+			<div class="controls">
+				<span class="choose-die">Choose which die to use</span>
+				<span class="trash-die disabled">Choose a die to discard</span>
+			</div>
+			<div id="end">
+			</div>
+			<div class="end">
+				<button onclick="dg.restartQuest()">Restart Quest</button>
+			</div>
+			<div class="success">
+				<button onclick="dg.startChooseEncounter()">Next encounter</button>
+			</div>
+			<!--
+			<div id="pile-info">
+			</div>
+			<div id="challenge-info">
+			</div>
+			-->
+			<div id="map">
+			</div>
+			<div id='choose-wild'>
+				Choose what the wild should be:
+				<div id='choose-wild-dice'>
+				</div>
+			</div>
+		</div>
+		<!-- JQuery and bootstrapping ************************************** -->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<script src="./dice-bundle.jsb"></script>
+
+		<script src="./defsDice.js"></script>
+		<script src="./defsCompanions.js"></script>
+		<script src="./defsChallenges.js"></script>
+		<script src="./defsMaps.js"></script>
+		<script src="./defsQuests.js"></script>
+
+		<script>
+		</script>
+
+		<script type='text/html' id='tmpl-die'>
+			<span draggable="true" data-id="die-{{id}}" class="face color-{{color}} sym-{{roll.side.sym}} count-{{roll.side.count}} {{used ? ' used' : ''}}">{{roll.side.sym}}</span>
+		</script>
+		<script type='text/html' id='tmpl-dielist'>
+			<span data-id="die-{{name}}" class="face color-{{color}}" onclick=>{{count}}</span>
+		</script>
+		<script type='text/html' id='tmpl-trial'>
+			<span dropzone="true" data-sym="{{symbol}}" class="face need sym-{{symbol}} count-{{requires}}">{{symbol}}</span>
+		</script>
+		<script type='text/html' id='tmpl-tile'>
+			<img class="tile {{exitsStr()}}" src="{{img ? img : 'tile-'+exitsStr()+'.png'}}">
+		</script>
+		<script type='text/html' id='tmpl-wild'>
+			<span class="face sym-{{sym}} count-{{count}}">{{sym}}</span>
+		</script>
+		<script type='text/html' id='tmpl-wild-selectable'>
+			<span class="face sym-{{sym}} count-{{count}} selectable" onClick="dg.clickWild({{idx}})">{{sym}}</span>
+		</script>
+		<script type='text/html' id='tmpl-encounter'>
+			<li class="challenge selectable" onClick="dg.chooseEncounter('{{id}}')">{{challenge ? challenge.name : taglist}}</li>
+		</script>
+		<script type='text/html' id='tmpl-encounter-complete'>
+			<li class="challenge complete">{{challenge ? challenge.name : taglist}} (complete)</li>
+		</script>
+		<script type='text/html' id='tmpl-challenge'>
+			<h1>{{name}}</h1>
+			<h4>{{description}}</h4>
+		</script>
+		<script type='text/html' id='tmpl-quest'>
+			<h1>{{quest.name}}</h1>
+			<h4>{{quest.description}}</h4>
+			Choose your next encounter:
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,35 @@
+<html>
+<head>
+<title>Server Monitor</title>
+<link rel="stylesheet" type="text/css" href="http://www.crypticstudios.com/external/css/mcp.css">
+
+<script src="http://www.google.com/jsapi"></script>
+<script>
+	google.load("yui", "2.8.0r4");
+	google.load("jquery", "1");
+</script>
+
+<!--[if IE]><script language="javascript" type="text/javascript" src="http://www.crypticstudios.com/external/js/flot/excanvas.pack.js"></script><![endif]-->
+<script language="javascript" type="text/javascript" src="http://www.crypticstudios.com/external/js/flot/jquery.flot.js"></script>
+<script language="javascript" type="text/javascript" src="http://www.crypticstudios.com/external/js/logparsergraphing.js"></script>
+<script type="text/javascript" src="http://www.crypticstudios.com/external/js/savegraph.js"></script>
+<script type="text/javascript" src="http://www.crypticstudios.com/external/js/base64.js"></script>
+<script type="text/javascript" src="http://www.crypticstudios.com/external/js/canvas2image.js"></script>
+
+
+
+
+<!-- auto refresh mojo -->
+<script src="http://www.crypticstudios.com/external/js/auto-refresh.js"></script>
+
+<!-- commands as widgets -->
+<script type="text/javascript" src="http://www.crypticstudios.com/external/js/command-gui.js"></script>
+
+
+</head>
+<body class="yui-skin-sam">
+<div id="content">
+<span id="auto-update-swap" style="display:none"></span>
+<span id="auto-update">
+
+<input type='button' value="Save Graph" onclick="saveGraph()"/>

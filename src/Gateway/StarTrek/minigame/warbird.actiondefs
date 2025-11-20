@@ -1,0 +1,83 @@
+({
+	id: 'warbird',
+	name: 'Warbird',
+	actions: [
+		{
+			id: 'plasmaShockwave',
+			name: 'Plasma Shockwave',
+			description: "Target: All enemies. Attack each enemy with 120% auxiliary and 50% of weapons.",
+			notes: "Attack each enemy with 1.2 auxiliary and .5 attack value",
+			icon: 'Space_Singularity_Plasma_Shockwave_0',
+
+			cooldown: 2,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.2 }) ),
+				attack(0.5)
+			] &>
+		},
+
+		{
+			id: 'quantumAbsorption',
+			name: 'Quantum Absorption',
+			description: "Target: Self. Repair 25% of shields and boost defense to 150%.",
+			notes: "Repair 25% of shields and defense gets a 50% boost",
+			icon: 'Space_Singularity_Shielding_0',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSelf() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ evasionRating: 1.5 }) ),
+				attribModifyMultiplyBase({ shield: 0.25 })
+			] &>
+		},
+
+		{
+			id: 'singularityJump',
+			name: 'Singularity Jump',
+			description: "Target: Enemy. Attack the target and next turn double attacking ship's engines.",
+			notes: "1 target; do standard attack and on hit place 1 counter on self; next upkeep remove the counter to double current speed",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(),
+				onSource( addCounter(1) )
+			] &>,
+			onEachTargetLateUpkeep: <& onSource( useCounter(1, attribMultiply({ speed: 2 })) ) &>
+		},
+
+		{
+			id: 'singularityOvercharge',
+			name: 'Singularity Overcharge',
+			description: "Target: Enemy. Attack with 140% auxiliary and weapons.",
+			notes: "1 target; attack with 1.4 auxiliary and attack value",
+			icon: 'Space_Singularity_Overcharge_0',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.4 }) ),
+				attack(1.4)
+			] &>
+		},
+
+		{
+			id: 'warpShadow',
+			name: 'Warp Shadow',
+			description: "Target: Enemy. Before target can act, it will be attacked with 0% of weapons. This ship, if hit, drops its auxiliary to 10%.",
+			notes: "1 target; onEachTargetEarlyResolve, onHit, reduce that ship's auxiliary to 10% of its current value",
+			icon: 'Space_Singularity_Warp_Shadow_0',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onEachTargetEarlyResolve: <& onHit( attribMultiply({ accuracyRating: 0.1 }) ) &>
+		},
+	]
+})

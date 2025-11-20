@@ -1,0 +1,28 @@
+{
+	"predef": [
+
+		"io",
+		"Buffer",
+		"ActiveXObject",
+		"__LINE__",
+		"__FUNCTION__",
+		"__FILE__",
+		"unescape",
+		"client",
+		"crypticMessages",
+		"matchMedia",
+		"IS_DEBUG",
+		"IS_PROD"
+	],
+
+	// Environments
+	"node": true,
+	"browser": true,
+	"jquery": true,
+	"es5": true,
+
+	"globalstrict": true, // Don't complain about global strict
+	"asi": true,          // Don't complain about missing semicolons
+	"sub": true,          // Don't complain about using [] instead of .
+	"laxbreak": true      // Don't complain about things like || at beginning of line
+}

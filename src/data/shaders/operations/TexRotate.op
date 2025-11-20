@@ -1,0 +1,73 @@
+OperationDef
+	Name "TexRotate" // Name of the operation
+	Description "Texture coordinate scale, translation, and rotation"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+// 	Input
+// 		Name Translation
+// 		Description "Translation"
+// 		Float 2
+// 		FloatRange -1 1
+// 	EndInput
+
+	Input
+		Name Scale
+		Description "Texture scale"
+		Float 2
+		NotForAssembler 1
+		FloatRange -1 10
+		Default
+			Type Value
+			Floats 1 1
+		EndDefault
+	EndInput
+	Input
+		Name Rotation
+		Description "Rotation"
+		Float 1
+		NotForAssembler 1
+		FloatRange 0 1
+		Default
+			Type Value
+			Floats 0
+		EndDefault
+	EndInput
+	Input
+		Name RotationRate
+		Description "Rotation Rate"
+		Float 1
+		NotForAssembler 1
+		FloatRange -10 10
+		Default
+			Type Value
+			Floats 0
+		EndDefault
+	EndInput
+	
+	Input
+		Name RotationMatrix
+		Description "Internal result of time and above parameters"
+		Float 4
+		Type RotationMatrix
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "New texture coordinates"
+		Float 2
+		Type TexCoord
+		AlphaFrom TexCoord
+	EndOutput
+
+EndOperationDef
+

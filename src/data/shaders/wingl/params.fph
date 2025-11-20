@@ -1,0 +1,23 @@
+PARAM	clip_mat[4]				= { state.matrix.mvp };				# model -> clip space matrix
+PARAM	modelview_mat[4]		= { state.matrix.modelview };		# model -> view space matrix
+PARAM	worldclip_mat[4]		= { state.matrix.texture[0] };		# world -> clip space matrix
+PARAM	view_mat[4]				= { state.matrix.texture[1] };		# world -> view space matrix
+
+PARAM	postprocess_tex_size	= program.local[0];					# (width, height, 1/virtual_width, 1/virtual_height)
+PARAM	basepose_offset			= program.local[1];
+
+ATTRIB	position				= vertex.attrib[0];
+ATTRIB	color					= vertex.attrib[1];
+ATTRIB	normal					= vertex.attrib[2];
+
+#ifdef HAS_BUMP
+	ATTRIB	tangent				= vertex.attrib[3];
+	ATTRIB	binormal			= vertex.attrib[4];
+#endif
+
+#ifdef HAS_SKIN
+	ATTRIB	boneidxs			= vertex.attrib[5];
+	ATTRIB	boneweights			= vertex.attrib[6];
+	PARAM	bonemats[48]		= { program.local[16..63] };         # each matrix has 3 rows
+#endif
+

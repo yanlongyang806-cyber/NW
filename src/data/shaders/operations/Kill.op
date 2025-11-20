@@ -1,0 +1,16 @@
+OperationDef
+	Name "Kill" // Name of the operation
+	Description "Eliminate pixel if Test Value (e.g. alpha) input < 1/256"
+	Type SIMPLE
+
+	Input: A, "Test Value"
+
+	Output
+		Name Result
+		Description "Outputs the Test Value as dummy"
+		Float 1
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

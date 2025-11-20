@@ -1,0 +1,35 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+#include "light_inc.hlsl"
+
+SAMPLER_DECL(scatter_sampler, 0);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 scatter_color : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+// -----------------------------------------------------------------------
+
+struct PS_OUTPUT
+{
+	float4 color : SEM_COLOR(0);
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+	float3 position_vs;
+	{
+		float2 texcoord = fragment.texcoord.xy / fragment.texcoord.w;
+		float4 scatter = sampleTex2DNoMips(scatter_sampler, texcoord);
+
+		output.color.rgb = scatter_color.rgb * (scatter.r * scatter.r * scatter_color.w);
+		output.color.a = 1;
+	}
+	
+
+	return output;
+}
+
+

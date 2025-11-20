@@ -1,0 +1,29 @@
+<div class="charselect-welcome">
+	<h1>Account Verification</h1>
+
+	<div class="charselect-text">
+		<p>An email containing an authorization code has been delivered to the email address associated with your account.</p>
+		<p>Select "Save Browser" to bypass this prompt the next time you log in from this web browser.</p>
+		<br>
+		<form method="post" action="" id="login-form" class="login-form accountguard" name="onetimecodeform">
+			<label>One-Time Code</label>
+			<input id="onetimecode-code" name="one_time_code" maxlength="5" type="text"><br>
+
+			<label>Browser Name</label>
+			<input id="onetimecode-name" name="name" value="My Browser" maxlength="32" type="text"><br>
+
+
+			<label class="save_browser">
+				<input checked="checked" name="save" id="onetimecode-save" type="checkbox" onclick="document.onetimecodeform.name.disabled = !document.onetimecodeform.name.disabled">
+				Save Browser
+			</label>
+			<span class="accountguard_note">Unselect this if you are using a public computer.</span><br>
+
+
+
+			<div class="modal-buttons">
+				<button type="button" class="modal-button onetimecode-submit">Submit</button>
+			</div>
+		</form>
+	</div>
+</div>

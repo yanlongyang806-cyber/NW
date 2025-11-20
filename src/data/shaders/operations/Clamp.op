@@ -1,0 +1,16 @@
+OperationDef
+	Name "Clamp" // Name of the operation
+	Description "Clamps all channels between 0 and 1"
+	Type SIMPLE
+
+	Input: A, "Value to clamp"
+
+	Output
+		Name Result
+		Description "Clamps all channels between 0 and 1"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

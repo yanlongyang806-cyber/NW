@@ -1,0 +1,21 @@
+OperationDef
+	Name "Dither_Pattern_4" // Name of the operation
+	Description "Creates a Regular Dither Pattern"
+	Type SIMPLE
+
+	Input
+		Name Seed
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Dither Pattern"
+		Float 1
+	EndOutput
+EndOperationDef

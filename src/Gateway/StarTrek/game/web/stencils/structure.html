@@ -1,0 +1,180 @@
+<div class="viewport">
+	<div class="loginContainer hide">
+		<div class="span12">
+			<div class="login-header">
+				<div class="login-header-left"></div>
+				<div class="login-header-right"></div>
+			</div>
+		</div>
+		<div class="span12">
+			<div class="loginWindowOuter">
+				<div id="loginWindowInner" class="login-body">
+					<div id="content_login"><!-- This is replaced with more stencil-generated stuff --></div>
+				</div>
+			</div>
+		</div>
+		<div class="span12">
+			<div class="login-footer">
+				<div class="login-footer-left"></div>
+				<div class="login-footer-right"></div>
+			</div>
+		</div>
+	</div>
+	<div class="structureContainer hide">
+		<div class="header">
+			<div class="header-corner span2 structure-span2">
+				<div id="headerLogin" class="header-login" data-update="loginInfo.loginentity">
+					<span data-if="loginInfo.loginEntity" data-path="loginInfo.loginentity.name">Character Name</span>@<span data-path="loginInfo.publicaccountname">PublicAccountName</span>
+					<br />
+					<a href="#/characterselect">Select Character</a> | <a href="/logout">Log out</a>
+				</div>
+				<div id="headerButtonBack" class="hide">
+					<a id="headerButtonBack" class="button-back" data-url="/">
+						<span class="button-left"></span>
+						<span class="button-mid"></span>
+						<span class="button-right"></span>
+						<span class="button-text">Main Screen</span>
+					</a>
+				</div>
+
+			</div>
+
+			<!--
+			<div class="span10 structure-span10 header-main" data-update="ent">
+				<h1 class="header-ship-name" data-path="ent.ship.name"></h1>
+				<h1 class="header-fleet-name" data-path="guild.name.$escapeForHTML()"></h1>
+				<h2 id="headerSubtitle" class="sectionTitle hide"></h2>
+				<div id="headerKitBar" class="kit-header-bar cap-right hide"></div>
+			</div>
+			-->
+
+			<div class="span10 structure-span10 header-main">
+				<span data-update="ent">
+					<h1 class="header-ship-name"><span data-path="ent.ship.name"></span></h1>
+				</span>
+				<span data-update="guild">
+					<h1 class="header-fleet-name"><span data-path="guild.name.$escapeForHTML()"></span></h1>
+				</span>
+				<h2 id="headerSubtitle" class="hide"><span class="sectionTitle"></h2>
+				<div id="headerKitBar" class="kit-header-bar cap-right hide"></div>
+			</div>
+
+
+		</div>
+		<div id="bodyRow" class="overflow-container">
+			<span class="layoutFront layout-block">
+				<!-- FRONT CONTENT -->
+				<div class="front-main span10 structure-span10">
+					<!-- FLEET-SPECIFIC BUTTON TO RETURN TO CHARACTER PAGES -->
+					<span class="desktopOnly">
+						<div class="span2 structure-span2 frontButtonBack">
+							<a class="button-back" data-url="char">
+								<span class="button-left"></span>
+								<span class="button-mid"></span>
+								<span class="button-right"></span>
+								<span class="button-text">Return to Front</span>
+							</a>
+						</div>
+					</span>
+
+					<div class="kit-top cap-left"></div>
+					<div id="frontWindowOuter" class="contentWindowOuter">
+						<div id="frontWindowInner" class="contentWindowInner content">
+							<div id="contentFront">
+								<div id="content_one"><!-- This is replaced with more stencil-generated stuff --></div>
+							</div>
+						</div>
+					</div>
+					<div class="kit-bot cap-left"></div>
+				</div>
+				<!-- FRONT CONTENT -->
+
+				<!-- FRONT NAV -->
+				<div class="front-nav span2 structure-span2">
+					<div class="nav-container">
+						<div class="kit-top-right">
+							<span class="kit-bg-left"></span>
+							<span class="kit-bg-right"></span>
+						</div>
+						<div class="kit-mid-right contentNavOuter">
+							<div id="frontNavInner" class="contentNavInner">
+								<span class="kit-bg-left"></span>
+								<span class="kit-bg-right"></span>
+								<div class="kit-button-container">
+									<div class="kit-nav" id="navFront">
+										<div id="nav_one"><!-- This is replaced with more stencil-generated stuff --></div>
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="kit-bot-right">
+							<span class="kit-bg-left"></span>
+							<span class="kit-bg-right"></span>
+						</div>
+					</div>
+				</div>
+				<!-- FRONT NAV -->
+			</span>
+			<span class="layoutSection layout-block">
+				<!-- SECTION NAV -->
+				<div class="section-nav span2 structure-span2">
+					<div class="nav-container">
+						<div class="kit-top-left">
+							<span class="kit-bg-left"></span>
+							<span class="kit-bg-right"></span>
+						</div>
+						<div class="kit-mid-left contentNavOuter">
+							<div id="sectionNavInner" class="contentNavInner">
+								<span class="kit-bg-left"></span>
+								<span class="kit-bg-right"></span>
+								<div class="kit-button-container">
+
+									<a class="mobileOnly button-nav button-back" data-url="back">
+										<span class="back-arrow"></span>
+									</a>
+
+									<div class="kit-nav" id="navSection">
+										<div id="nav_two"><!-- This is replaced with more stencil-generated stuff --></div>
+										<!-- if(dev) -->
+										<!--
+										<div id="nav_two_ad" class="dev-hide">
+											<a href="" style="background-image: url(./img/sample_ad_3.png);">
+												<span class="ad_copy_top">Something Awesome</span>
+												<span class="ad_copy_bot">Available Now</span>
+												<span class="ad_overlay"></span>
+											</a>
+										</div>
+										-->
+										<!-- endif(dev) -->
+
+									</div>
+								</div>
+							</div>
+						</div>
+						<div class="kit-bot-left">
+							<span class="kit-bg-left"></span>
+							<span class="kit-bg-right"></span>
+						</div>
+					</div>
+				</div>
+				<!-- SECTION NAV -->
+
+				<!-- SECTION CONTENT -->
+				<div class="section-main span10 structure-span10">
+
+					<div class="kit-top cap-right"></div>
+					<div id="sectionWindowOuter" class="contentWindowOuter">
+						<div id="sectionWindowInner" class="contentWindowInner content">
+							<div id="contentSection">
+								<div id="content_two"><!-- This is replaced with more stencil-generated stuff --></div>
+							</div>
+						</div>
+					</div>
+					<div class="kit-bot cap-right"></div>
+
+				</div>
+				<!-- SECTION CONTENT -->
+			</span>
+		</div>
+	</div>
+</div>

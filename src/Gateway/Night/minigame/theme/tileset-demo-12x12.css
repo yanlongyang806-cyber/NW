@@ -1,0 +1,53 @@
+.tile {
+	width: 12px;
+	height: 12px;
+}
+.room,
+.hall {
+	background-image: url('img/tileset_demo_v01_12x12.png');
+	border: 0;
+	margin: 0;
+}
+.room {		background-position: -12px -12px;	}
+
+.room.wall-n { background-position: -12px 0;		}
+.room.wall-s { background-position: -12px -24px;	}
+.room.wall-w { background-position: 0 -12px;		}
+.room.wall-e { background-position: -24px -12px;	}
+
+.room.wall-n.wall-w { background-position: 0 0;			}
+.room.wall-n.wall-e { background-position: -24px 0;		}
+.room.wall-s.wall-w { background-position: 0 -24px;		}
+.room.wall-s.wall-e { background-position: -24px -24px;	}
+
+.room.wall-n.wall-s { background-position: -24px -36px;	}
+.room.wall-w.wall-e { background-position: 0 -48px;		}
+
+.room.wall-s.wall-w.wall-e { background-position: 0 -60px; }
+.room.wall-n.wall-w.wall-e { background-position: 0 -36px; }
+.room.wall-n.wall-s.wall-e { background-position: -36px -36px; }
+.room.wall-n.wall-s.wall-w { background-position: -12px -36px; }
+
+.room.wall-n.wall-s.wall-w.wall-e { background-position: -12px -48px;	}
+
+.hall {		background-position: -48px -12px;	}
+
+.hall.wall-n { background-position: -48px 0;		}
+.hall.wall-s { background-position: -48px -24px;	}
+.hall.wall-w { background-position: -36px -12px;	}
+.hall.wall-e { background-position: -60px -12px;	}
+
+.hall.wall-n.wall-w { background-position: -36px 0;		}
+.hall.wall-n.wall-e { background-position: -60px 0;		}
+.hall.wall-s.wall-w { background-position: -36px -24px;	}
+.hall.wall-s.wall-e { background-position: -60px -24px;	}
+
+.hall.wall-n.wall-s { background-position: -96px 0;	}
+.hall.wall-w.wall-e { background-position: -84px 0;	}
+
+.hall.wall-s.wall-w.wall-e { background-position: -84px 0;		}
+.hall.wall-n.wall-w.wall-e { background-position: -84px 0;		}
+.hall.wall-n.wall-s.wall-e { background-position: -96px 0;		}
+.hall.wall-n.wall-s.wall-w { background-position: -96px 0;		}
+
+.hall.wall-n.wall-s.wall-w.wall-e {		background-position: -48px -12px;	}

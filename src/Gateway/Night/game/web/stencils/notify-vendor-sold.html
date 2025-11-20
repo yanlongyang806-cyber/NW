@@ -1,0 +1,18 @@
+
+	<div class="notify-zenmarket">
+		<div data-set-class="icon-slot small {.hdef.quality}">
+			<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+			<span class="quantity" data-if="{.count} gt 1">
+				x<span data-path=".count">10</span>
+			</span>
+		</div>
+
+		<span data-if="{.count} le 1">
+			<span data-path=".hdef.displaynamemsg.str">Thingy</span> sold for <span data-path=".cost.$displayAsCoins()">20</span>.
+		</span>
+		<span data-if="{.count} gt 1">
+			<span data-path=".count">2</span> <span data-path=".hdef.displaynamemsg.str">Thingy</span> sold for <span data-path=".cost.$displayAsCoins()">20</span> each.
+		</span>
+
+	</div>
+

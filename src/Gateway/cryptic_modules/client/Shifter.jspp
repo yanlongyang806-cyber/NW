@@ -1,0 +1,1519 @@
+'use strict';
+/*******************************************************************************
+ * Shifter.jspp
+ * Author: Kevin Savage
+ * Email: ksavage@crypticstudios.com
+ *
+ *   Shifter is meant for deep linking a dynamic web site.  It manages urls as
+ * hash tags. (ex: #anchor)  It does this with a urls file defining urls, and
+ * another file for transition effects and when to populate content.
+ *
+ */
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+var dataModel = require('./DataModel');
+var content = require('./contentHelpers');
+
+// Shifter is all Shifty
+function Shifter(shifterInfo, setTheme, setContent)
+{
+	dbg.trace();
+
+	/////////////////////////////////////////////
+	this.urls = shifterInfo.urls;
+	this.transitions = shifterInfo.transitions;
+	this.rememberScrollY = (shifterInfo.rememberScrollY?true:false);
+	/////////////////////////////////////////////
+
+	// Shifter Constants
+	this.DEFAULT_EMPTY_HASH = '**';
+	this.LOADING_INTERVAL = 1000; // miliseconds
+	this.LOADING_TIMEOUT = 45000;  // miliseconds
+
+	this.setTheme = setTheme;
+	this.setContent = setContent;
+
+	return this;
+}
+
+// Reset to 'empty' conditions. (First entry)
+Shifter.prototype.reset = function()
+{
+	dbg('Shifter Reset.');
+
+	/////////////////////////////////////////////
+	// Clean state of the structure
+	/////////////////////////////////////////////
+	this.shifting = false;
+	this.now = {      // current status info (urls entry)
+		url: '',
+		str: '',
+		loc: '',
+		con: {},
+		extra: {},
+	};
+
+	this.beforeModal = { now: {}, hashInfo: {} }; // state before a modal showed up.
+
+	this.hashInfo = {
+		path: '',    // current 'path' part of the hash
+		qString: '', // current query string portion of the hash
+		qParams: {}, // current param object of the parsed qString
+		focus: {     // current focus of the app (Character, Fleet, etc.)
+			'path': '',     // Literally what appears in the hash for this focus
+			'sec': 'noent', // What section. (character, fleet)
+			'ent': ''       // Entity being focused on. (name@name,The Awesome Fleet)
+		}
+	};
+
+	// Used by loadingUntil()
+	this.loadingIntervalId = false;
+	this.loadingIntervalStarted = 0;
+
+	// When resetting, set to some value that will never be a real hash
+	this.lastShifted = this.DEFAULT_EMPTY_HASH;  // Needed for Velocity checks. (and other things)
+	this.lastPath = this.DEFAULT_EMPTY_HASH;     // Needed to not double bounce pages.
+	this.lastActualShift = ''; // What was the last hash we really acted on. (Silent or not)
+
+	this.onFinishedQueue = [];
+	this.scrollY = {};    // Y coordinate to remember when leaving a page
+
+	this.ignoreHashChange = false; // Used when you want to ignore a change once
+
+}
+
+// Setup all the things _o/
+Shifter.prototype.init = function()
+{
+
+	dbg("Shifter Initialized.");
+
+	var self = this;
+
+	self.reset();
+
+	// FORCE this hash change, even if we are currently on that hash
+	$(document).on('click', '[data-url-force]',  function(e) {
+		if((!self.shifting) && (!$(this).hasClass('disabled')))
+		{
+			var hash = $(this).attr('data-url-force');
+			if(hash === decodeURI(window.location.hash))
+			{
+				// Make sure this couldnt possibly match where we are.
+				this.lastShifted = this.DEFAULT_EMPTY_HASH;
+
+				self.shift(self.resolveHash(hash), true);
+			}
+			else
+			{
+				self.updateHash(hash, true);
+			}
+		}
+
+		return false;
+	});
+
+	$(document).on('click', '[data-url-silent]',  function(e) {
+		// Only act on this if we are not shifting.
+		if((!self.shifting) && (!$(this).hasClass('disabled')))
+		{
+			var hash = $(this).attr('data-url-silent');
+			if(hash === 'closemodal')
+			{
+				self.closeModal();
+			}
+			else if(hash === 'back')
+			{
+				// 'back' type functionality
+				self.shiftBack();
+			}
+			else
+			{
+				self.shift(self.resolveHash(hash), false, true);
+			}
+		}
+
+		return false;
+	})
+
+	$(document).on('click', '[data-url]',  function(e) {
+		// Only act on this if we are not shifting.
+		if((!self.shifting) && (!$(this).hasClass('disabled')))
+		{
+			var hash = $(this).attr('data-url');
+			if(hash === 'back')
+			{
+				// 'back' type functionality
+				self.shiftBack();
+			}
+			else if(hash === 'char')
+			{
+				// Shift back to the selected character, or character select
+				self.shiftToChar();
+			}
+			else if(hash === 'guild')
+			{
+				// Go to the currently loaded character's guild.
+				self.shiftToGuild();
+			}
+			else
+			{
+				self.updateHash(hash, true);
+			}
+		}
+
+		return false;
+	});
+
+	$(window).hashchange( function() {
+
+		var hash = decodeURI(window.location.hash);
+
+		if(!hash || (hash.indexOf('/') < 0))
+		{
+			hash = hash + '/';
+			dbg('Shifter: hashchange: Invalid hash found. Changing hash from: ' + decodeURI(window.location.hash) + ' to: ' + hash);
+			window.location.hash = hash;
+			return;
+		}
+
+		dbg('Shifter: hashchange: ' + self.lastShifted + ' --> ' + hash);
+
+		self.shift(hash);
+	});
+
+	$(window).trigger( 'hashchange' );
+}
+
+// I've started shifting, anything I need to know/do?
+Shifter.prototype.onStart = function()
+{
+	this.shifting = true;
+}
+
+// I'm done shifting, anything I need to know/do?
+Shifter.prototype.onFinished = function(hash, stop, callback)
+{
+	dbg('Shifter.onFinished: done with [' + hash + ']');
+
+	this.shifting = false;
+
+	// Stop, just stop.
+	if(!stop)
+	{
+		// Temporary speed trap. Are we where we think we are?
+		var hashNow = decodeURI(window.location.hash);
+		if(hash !== hashNow)
+		{
+			dbg('Expecting to finish here: ' + hash + ' ,but hash says we are here: ' + window.location.hash + ' Shifting...');
+			// obliterate the onFinishedQueue, we arent sticking around..
+			this.onFinishedQueue = [];
+			this.shift(hashNow); // Better get there.
+			return;
+		}
+
+		// Process all the onFinished queue items
+		if(this.onFinishedQueue.length)
+		{
+			for(var f = 0;f < this.onFinishedQueue.length; f++)
+			{
+				if(typeof this.onFinishedQueue[f] !== 'undefined')
+				{
+					this.onFinishedQueue[f]();
+				}
+			}
+			this.onFinishedQueue = [];
+		}
+
+		// Set the screen location to where we left it..
+		if(this.rememberScrollY && this.scrollY[hash])
+		{
+			window.scrollTo(0,this.scrollY[hash]);
+		}
+	}
+
+	if(callback)
+		callback(); // callback from shift();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// shift to the appropriate location for a
+// given #tag in the appropriate way.
+// The real meat and potatoes.
+// - hash: string. The hash we're shifting to. (ex: '#/characterselect')
+// - queue: boolean. If we're busy, queue it for when its finished.
+// - silent: boolean. Don't update lastShifted so when its done it stays here.
+// - callback: optional callback function to call when shifting has completed.
+////////////////////////////////////////////////////////////////////////////////
+Shifter.prototype.shift = function(hash, queue, silent, callback)
+{
+	dbg.trace(hash, queue, silent);
+
+	var from = {}, to = {}, urls, hashInfo;
+	var self = this;
+
+	// If we are processing, ignore other hash changes.
+	// Also, if the has was set to the same thing, ignore it.
+	// If the queue flag is set push it onto the queue.
+	if(self.shifting)
+	{
+		if(queue)
+		{
+			dbg.trace('Busy shifting, shift pushed to queue.',hash);
+			self.onFinishedQueue.push(function() {
+				dbg.trace('Executing queued shift.',hash);
+				self.shift(hash, queue, silent);
+			});
+		}
+		else
+		{
+			dbg.trace('Busy shifting, hash change ignored.',hash);
+		}
+		return;
+	}
+
+	// Didn't we just do this?
+	// Can happen sometimes with loading page.
+	// Also if the queue flag is true, we REALLY want to see this shift
+	// even if it is the same one we did before.  (ex: /characterselect)
+	if((hash === self.lastActualShift) && !queue)
+	{
+		dbg.trace("Already shifted to " + hash + " ignoring shift.");
+		return;
+	}
+
+	hashInfo = self.parseHash(hash);
+
+	// Are we supposed to ignore this type of hash change? (ex: internal params)
+	if(self.canIgnoreHashChange(hashInfo)) return;
+
+	// Save this for verification on completion of the shift.
+	// Only if we're not all sneaky and 'silent'.
+	// This is what we expect the user to be viewing in the URL
+	if(!silent)
+	{
+		self.lastShifted = hash;
+	}
+
+	// Keep track of what was acted on last, even if it isnt in the address bar
+	self.lastActualShift = hash;
+
+	// Keep previous hashInfo in case we need it down the line
+	// it gets replaced when we call processHashInfo()
+	var previousHashInfo = self.hashInfo;
+
+	// Handle any focus change if we have to
+	var path = self.processHashInfo(hashInfo);
+
+	// False means stop here
+	// But if we also came through here and rendered the same path stop.
+	// This is here to stop double bouncing on the loading page when loading
+	// a character or fleet from a bookmark.
+	if((path === false)
+		|| ((path.substr(0,8) === '/loading') && (self.lastPath.substr(0,8) === '/loading')))
+	{
+		return; // End processing, we're done.
+	}
+
+	self.lastPath = path;
+
+	// Adding Google analytics tracking of URL's here
+	// This will only track 'URL's
+	// This does not add whatever is appended such as parameters or
+	// focus values such as Character@DisplayName
+	// Though we do want to distinguish a fleet page '/'
+	// from a character page '/'.  So prepend a generic focus.
+	// Ex: /char or /fleet
+
+	if(hashInfo.focus.sec === 'noent')
+	{
+		window._gaq.push(['_trackPageview', path]);
+	}
+	else
+	{
+		window._gaq.push(['_trackPageview', '/' + hashInfo.focus.sec + path]);
+	}
+
+	// Start getting shifty
+	self.onStart();
+
+	// This is where we came from
+	from = self.now;
+
+	// Use self.hashInfo, should be current after 'process' above
+	urls = self.hashInfo.urlsEntry;
+
+	// This is where we're going to.
+	// Make a new object because we're fiddling with it and don't want to modify urls.
+	to = {};
+	cutils.extend(to, urls);
+	to.hash = hash;
+	to.url = path;
+	to.isPrivileged = false;
+	to.hasPrivilegedContent = false;
+
+	// Does this urls entry have seperate content for a priviliged container?
+	if(to.content && to.content.privileged)
+	{
+		to.hasPrivilegedContent = true;
+		// Determine that if we have a focus, can we see privileged information about it
+		if(hashInfo.focus.ent !== '')
+		{
+			to.isPrivileged = dataModel.isPrivilegedContainerByName(hashInfo.focus.ent);
+		}
+
+		if(to.isPrivileged)
+		{
+			to.content = to.content.privileged;
+		}
+		else
+		{
+			to.content = to.content.other;
+		}
+	}
+
+	// If there is a title for this page, set it.
+	// Also support privileged/other title
+	if(typeof to.title !== 'undefined')
+	{
+		if(to.title.privileged)
+		{
+			if(to.isPrivileged)
+			{
+				to.title = to.title.privileged;
+			}
+			else
+			{
+				to.title = to.title.other;
+			}
+		}
+
+		document.title = to.title;
+	}
+
+	// If we are just now opening a modal, save the information below for later.
+	if(to.modal && !from.modal)
+	{
+		self.beforeModal.now = self.now;
+		self.beforeModal.hashInfo = previousHashInfo;
+	}
+
+	// What we are currently displaying, silent or not.
+	self.now = to;
+	var setContent = [], dropUpdates = [];
+
+	var p = {}; // Throw away object, need a new reference
+	$.extend(p, self.hashInfo.qParams, self.hashInfo.urlsParams);
+	to.params = p;
+
+
+	/////////////////////////////////////////////////////////////////
+	// This section deals with setting only the content that has
+	// changed.  It also drops the updates for stencils that are
+	// no longer being viewed.
+	//
+
+	// Only do this if its not a modal.
+	// And not the first page loaded (from.content is false when we view our first page)
+	if((!to.modal) && (from.content))
+	{
+		// Only change the content that has actually changed.
+		// Start from the parent, and check down the list.
+		// Only set content for stencils that are new, or have a rootpath that differs.
+		// And if a parent stencil is new, then the children must be new.
+		var same = true;
+		for(var toIndex = 0; toIndex < to.content.length; toIndex++)
+		{
+//			console.log("same: ", same);
+//			console.log("rootpath: ", to.content[toIndex].rootpath);
+//			console.log("from.content[toIndex]", from.content[toIndex]);
+//			if(from.content[toIndex])
+//			{
+//				console.log("from.content[toIndex].selector: ", from.content[toIndex].selector);
+//				console.log("to.content[toIndex].selector: ", to.content[toIndex].selector);
+//				console.log("from.content[toIndex].stencil: ", from.content[toIndex].stencil);
+//				console.log("to.content[toIndex].stencil:", to.content[toIndex].stencil);
+//			}
+			if( ((same) && (from.content[toIndex])
+				&& ( (from.content[toIndex].selector === to.content[toIndex].selector)
+				&&   (from.content[toIndex].stencil === to.content[toIndex].stencil) ))
+				&& ((!to.content[toIndex].rootpath)
+					|| (
+						(from.content[toIndex].rootpath && to.content[toIndex].rootpath)
+						&& (from.params[from.content[toIndex].rootpath] === to.params[to.content[toIndex].rootpath])
+					)
+				)
+			)
+			{
+				// If we are still the same and there is from content to compare
+				// and the selectors are the same
+				// and the stencils are the same
+				// And if there is no rootpath,
+				//    OR that rootpath is the exact same
+				//    AND has the exact same value
+				// Then:
+				//   Continue looking, these are the same
+//				console.log("--- CONTINUE ---");
+				continue;
+			}
+			else
+			{
+//					console.log("SET CONTENT!", to.content[toIndex]);
+					same = false;
+					if(from.content[toIndex])
+					{
+						dropUpdates.push(from.content[toIndex]);  // Drop these updates.
+					}
+					setContent.push(to.content[toIndex]);     // These will be added to the update list.
+			}
+		}
+
+		// Drop apropriate stencil updates.
+		dropStencilUpdates(dropUpdates);
+	}
+	else
+	{
+		// Simply use the modal's content then.
+		setContent = to.content;
+	}
+
+	// Done dropping updates, setContent is going through
+	// transition, which will set content and add them to
+	// the list for new updates.
+	////////////////////////////////////////////////////////////
+
+	dbg('Shifter activate(): ', from, to, setContent);
+
+	// Transitions handled here, if any
+	// Also the setting of content is expected to be in transitions.
+	self.transitions.activate({
+		// Data
+		from: from, // from urls entry
+		to:   to,   // to urls entry
+		setContent: setContent, // The content that needs to be drawn
+
+		// Calback function
+		finished: function() {
+			self.onFinished(self.makeHash(hashInfo), silent, callback);
+		}
+	});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Resolve the given hash to a full hash. (#focus(something)/path/to?params=too)
+//
+//  Example of a full URL hash:
+//    #char(Fred@Flintstone)/path/goes/here?param=.some.param
+//
+//  Example of a 'relative' URL hash:
+//    item?boff=officer[id=2]&item=.some.path.to.item[0]
+//
+//  Example hashes where the current focus will be appended:
+//    /personnel/bridgeofficer
+//    /personnel/bridgeofficer/profile?boff=.officer[id=2]
+//
+// Note: Any existing URL params will be lost with a relative URL hash.
+//
+Shifter.prototype.resolveHash = function(hash, hashInfo)
+{
+	dbg.trace(hash);
+
+	var self = this;
+
+	var firstChar = hash.charAt(0);
+	var tmp;
+
+	if(!hashInfo)
+	{
+		hashInfo = self.hashInfo;
+	}
+
+	if(firstChar === '#') // Literal Path, do not modify
+	{
+		return hash;
+	}
+	else if(firstChar === '/') // Normal hash that needs a focus prepended.
+	{
+		return '#' + hashInfo.focus.path + hash;
+	}
+	else if(firstChar === '?') // Parameter change
+	{
+		tmp = decodeURI(window.location.hash).split('?');
+		var add, obj = {};
+		if(tmp[1])
+		{
+			obj = qStringToObj(tmp[1]);
+		}
+		add = qStringToObj(hash.substr(1));
+		$.extend(obj,add);
+		obj = objToqString(obj); // re-use obj
+		if(obj)
+		{
+			obj = '?' + obj;
+		}
+		return tmp[0] + obj;
+	}
+	else // relative path, please modify
+	{
+		// This destroys params in the url.
+		tmp = decodeURI(window.location.hash).split('?');
+		dbg.trace(tmp,hash);
+		return tmp[0] + '/' + hash;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Update the hash in the address bar.
+Shifter.prototype.updateHash = function(hash, resolve)
+{
+	dbg.trace(hash, resolve);
+
+	if(this.rememberScrollY)
+	{
+		// Remember the scroll position of the current page
+		// We will use this if we ever come back.
+		this.scrollY[window.location.hash] = window.pageYOffset;
+	}
+
+	if(resolve)
+	{
+		hash = this.resolveHash(hash);
+	}
+
+	window.location.hash = hash
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Parses the hash tag info into things we need to know about it
+Shifter.prototype.parseHash = function(hash)
+{
+	dbg.trace(hash);
+
+	var self = this;
+	var hashInfo = {
+		path: '',           // The path we were given in the url.
+		qString: '',        // Query string intact for reuse
+		qParams: {},        // Query string parameters as an object
+		focus: {},          // The focus information.  (See: parseFocus())
+		urlsPath: false,    // Actual path in urls.jspp
+		urlsParams: {},     // Any urls wildcards in the path, and their values
+		urlsEntry: {}       // The complete entry for this path in urls.jspp
+	};
+
+	// If no tag given, get the one from the url
+	if(typeof hash === 'undefined')
+	{
+		hash = decodeURI(window.location.hash);
+	}
+
+	// If there is a slash, we probably have a path
+	if(hash.indexOf('/') > -1)
+	{
+		hashInfo.focus = self.parseFocus(hash.substr(1, hash.indexOf('/') - 1));
+		hashInfo.path = hash.substr(hash.indexOf('/'));
+	}
+	else
+	{
+		// We dont have a path, so dont expect one,
+		// though we might be lucky enough to have a focus
+		hashInfo.focus = self.parseFocus(hash.substr(1));
+		hashInfo.path = '/'; // default path
+	}
+
+	var pair = hashInfo.path.split('?');
+	hashInfo.path = pair[0];     // just the path
+	hashInfo.qString = pair[1];  // any params if they exist in the url
+	hashInfo.qParams = qStringToObj(hashInfo.qString);
+
+	// Add qParams for search and replace in wildcard urls
+	var wildcards = {};
+	for(var p in hashInfo.qParams)
+	{
+		wildcards['{' + p + '}'] = hashInfo.qParams[p];
+	}
+
+	// The part below deals with wildcard urls, and possible 404s
+	if(typeof self.urls[hashInfo.focus.sec] === 'undefined')
+	{
+		return hashInfo;
+	}
+	else if(typeof self.urls[hashInfo.focus.sec][hashInfo.path] !== 'undefined')
+	{
+		hashInfo.urlsPath = hashInfo.path;
+
+		// Support for 'duplicateof'
+		// Will map one path to another within the same focus section.
+		if(self.urls[hashInfo.focus.sec][hashInfo.path].duplicateof)
+		{
+			hashInfo.urlsEntry = self.urls[hashInfo.focus.sec][self.urls[hashInfo.focus.sec][hashInfo.path].duplicateof];
+		}
+		else
+		{
+			hashInfo.urlsEntry = self.urls[hashInfo.focus.sec][hashInfo.path];
+		}
+	}
+	else
+	{
+		// Find possible wildcard urls entry
+		var x, hashParts, urlsParts,  wildcard, matched = false;
+		hashParts = hashInfo.path.split('/');
+		for(var entry in self.urls[hashInfo.focus.sec])
+		{
+			urlsParts = entry.split('/');
+			if(hashParts.length === urlsParts.length) // should I even bother
+			{
+				for(x=0; x<hashParts.length; x++)
+				{
+					wildcard = (urlsParts[x].indexOf('{') > -1);
+					if((wildcard) || (hashParts[x].toLowerCase() === urlsParts[x].toLowerCase()))
+					{
+						if(wildcard)
+						{
+							// going to need these
+							hashInfo.urlsParams[urlsParts[x]] = hashParts[x];
+						}
+						// End of the compare?
+						if(x === (hashParts.length - 1))
+						{
+							hashInfo.urlsPath = entry;
+							hashInfo.urlsEntry = self.urls[hashInfo.focus.sec][entry];
+							matched = true;
+						}
+					}
+					else
+					{
+						break;
+					}
+				}
+			}
+			if(matched)
+			{
+				break;
+			}
+		}
+	}
+
+	// Replace any wildcards in params.
+	// urlsParams would have been added in the for loops above if they were
+	// provided by wildcards.  Otherwise expecting an empty object.
+	cutils.extend(wildcards, hashInfo.urlsParams);
+	hashInfo.urlsParams = cutils.findAndReplaceObjects(hashInfo.urlsEntry.params, wildcards);
+
+	dbg.trace(hashInfo);
+	return hashInfo;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Does the actionable things shifter needs to do when a focus changes
+// returns the tag that shifter should be shifting to right now.
+// This may not be the tag we started with, but this is where
+// we intercept the process and forward to something like #/loading
+Shifter.prototype.processHashInfo = function(hashInfo)
+{
+	dbg.trace(hashInfo);
+
+	var self = this;
+	var newHash;
+
+	////////////////////////////////////////////////////////////////////////////
+	// Do we have a valid path?
+	//
+	if(!hashInfo.urlsPath)
+	{
+		dbg.trace('Url entry not found not found in urls. sec: ' + hashInfo.focus.sec + ' path: ' + hashInfo.path);
+
+		// Tell shifter to display a 404 page instead.
+		self.hashInfo = self.parseHash('#/error?e=404');
+
+		return self.hashInfo.path;
+	}
+	////////////////////////////////////////////////////////////////////////////
+	// Are we redirecting?
+	else if(typeof hashInfo.urlsEntry.redirect !== 'undefined')
+	{
+		// We want to be at this new hash instead:
+		newHash = self.resolveHash(hashInfo.urlsEntry.redirect);
+
+		dbg.trace('Redirect found for path: ' + hashInfo.path + ' --> redirecting to: ' + newHash);
+
+		// Even if this page was the last one that was represented in the address bar
+		// We need to shift to it.  But if its not, then its as simple as a hash change.
+		if(window.location.hash === newHash)
+		{
+			self.shift(newHash, true);
+		}
+		else
+		{
+			// Not expecting this hash change to be ignored.
+			window.location.hash = newHash;
+		}
+
+		return false;
+	}
+	////////////////////////////////////////////////////////////////////////////
+	// What about character select?
+	else if(typeof hashInfo.urlsEntry.characterselect !== 'undefined')
+	{
+		dbg.trace();
+
+		// For character select:
+		// - need loginInfo to exist
+		// - need loginInfo.choices to exist, and have things to choose
+
+		// If we dont have loginInfo, the assumption is
+		// we are in the process of logging in, so lets wait for it.
+		if(!dataModel.model.loginInfo)
+		{
+			self.loadingUntil(self.makeHash(hashInfo),'loginInfo','characterselect');
+			self.hashInfo = self.parseHash('#/loading');
+
+			return self.hashInfo.path;
+		}
+		// But if we ARE logged in, and dont have any character choices.
+		// We want to tell you to GTFO.
+		// TODO: We force logout on nocharacters.html to stop redirection nightmares.
+		//       Maybe there's a better way to handle this.
+		else if(!dataModel.model.loginInfo.choices || dataModel.model.loginInfo.choices.length === 0)
+		{
+			// If there are no characters, i should forward to the nocharacters.html page
+			// Otherwise, just load the character select page normally.
+			window.location = '/nocharacters.html';
+			return false;
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////
+	// No else, let it fall down to normal processing.
+	////////////////////////////////////////////////////////////////////////////
+
+	////////////////////////////////////////////////////////////////////////////
+	// If we require an entity to view the URL we're on,
+	// we should be sure to wait for loginInfo to exist.
+	// Note: The assumption being made here, is that you can never
+	//       get this far without getting past the proxy's checkLogin();
+	//       So we must be waiting for loginInfo to come back to send
+	//       the user to a bookmarked character, or fleet, etc.
+	// TODO: Can this be an issue if the page is cached, and
+	//       requests dont get sent to the Proxy?
+	//       Ex: Open browser -> Click Bookmark -> loading -> disconnected.
+	//
+	if((hashInfo.focus.sec !== 'noent')  // if our section requires an entity/container
+		&& (!dataModel.model.loginInfo)) // and the user is actually not logged in
+	{
+		dbg.trace('First entry after login, displaying loading page,', hashInfo);
+
+		// Present the loading screen, but don't change the actual hash
+		// The assumption here is that they are coming in from
+		// the login page, and the current hash (if any) is where they
+		// wanted to be after logging in.
+		self.loadingUntil(self.makeHash(hashInfo),'loginInfo');
+
+		self.hashInfo = self.parseHash('#/loading');
+
+		return self.hashInfo.path;
+	}
+
+
+	// If there is a focus
+	// AND we already have a login entity selected
+	// AND there is a redirect for a non-privileged user
+	// AND that user does not have privileges.
+	// ...make with the redirect.
+	if((hashInfo.focus.ent !== '')
+		&& (dataModel.model.loginInfo.loginentity)
+		&& (hashInfo.urlsEntry.ifNotPrivilegedRedirect)
+		&& (!dataModel.isPrivilegedContainerByName(hashInfo.focus.ent)))
+	{
+		// We want to be at this new hash instead:
+		newHash = self.resolveHash(hashInfo.urlsEntry.ifNotPrivilegedRedirect, hashInfo);
+
+		dbg.trace('Redirect if not privileged for path: ' + hashInfo.path + ' --> redirecting to: ' + newHash);
+
+		// Even if this page was the last one that was represented in the address bar
+		// We need to shift to it.  But if its not, then its as simple as a hash change.
+		if(window.location.hash === newHash)
+		{
+			self.shift(newHash, true);
+		}
+		else
+		{
+			// Not expecting this hash change to be ignored.
+			window.location.hash = newHash;
+		}
+
+		return false;
+	}
+
+	////////////////////////////////////////////////////////////////////////////
+	// If we have an entity to focus,
+	// and its not the same as our current one.
+	// We need to load the new entity, and present a loading screen.
+	if((hashInfo.focus.ent !== '') && (self.hashInfo.focus.ent != hashInfo.focus.ent))
+	{
+
+		dbg.trace('Focus change. Requesting new entity.', hashInfo.focus);
+
+		////////////////////////////////////////////////////////////////////////////
+		// EVERYTHING requires that we have not only loginInfo,
+		// but loginInfo.loginentity cases which bring us here:
+		//
+		// CHARACTER:
+		// 1. Login Normally, select a character.
+		//    - character select changes URL to #char(name@name)/
+		//    - by the time we get here, we should already have loginInfo AND loginentity
+		//
+		// 2. Go to a URL via bookmark etc, while logged in - #char(name@name)/
+		//    - by the time we get here, we should already have loginInfo, but NOT loginentity
+		//
+		// 3. Go to a URL via bookmark etc, while NOT logged in - #char(name@name)/
+		//    - user is forwarded to login, and logs in.
+		//      + if they are the owner of this character, proceed to character.
+		//      + if they are NOT the owner of this character, go to character select.
+		//        * user selects a character.
+		//    - by the time we get here, we should already have loginInfo AND loginentity
+		//
+		// GUILD:
+		// 1. Login Normally, select a character, navigate to their guild.
+		//    - by the time we get here, we should already have loginInfo AND loginentity
+		//
+		// 2. Go to a URL via bookmark etc, while logged in - #guild(guildname)/
+		//    - by the time we get here, we should already have loginInfo, but NOT loginentity
+		//
+		// 3. Go to a URL via bookmark etc, while NOT logged in - #guild(guildname)/
+		//    - user forwarded to login.
+		//    - user is prompted to select a character
+		//    - by the time we get here, we should already have loginInfo AND loginentity
+
+		if(!dataModel.model.loginInfo.loginentity)
+		{
+			dbg.trace("No login entity, better go get one.", hashInfo, dataModel.model.loginInfo);
+
+			// If they are trying to view their own char, let them pass.
+			// But if NOT, then make them go select one.
+			if(!((hashInfo.focus.sec === 'char')
+				&& (hashInfo.focus.ent.split('@')[1] === dataModel.model.loginInfo.publicaccountname))
+				)
+			{
+				dbg.trace('loginInfo.loginentity MISSING. forwarding silently to #/characterselect');
+
+				// We need this user to select a character.
+				// The assumption is they will never get this far without loginInfo.
+				// But they may not have loginInfo.loginentity.
+				// So go make them choose a character.
+
+				if(!dataModel.model.loginInfo.choices || dataModel.model.loginInfo.choices.length === 0)
+				{
+					// If there are no characters, i should forward to the nocharacters.html page
+					//  They cannot proceed without any characters.
+					window.location = '/nocharacters.html';
+					return false;
+				}
+				else
+				{
+					// They have characters to choose from, make them pick one.
+					self.hashInfo = self.parseHash('#/characterselect');
+					return self.hashInfo.path;
+				}
+			}
+		}
+
+		(function(hash, focus) {
+			dbg.trace(hash, focus);
+
+			// This is done on the next tick to avoid a race condition
+			//   when we try to load the same character we already have.
+			// It's also less spooky to do something which could change the
+			//   hash outside of the function that is called when a hash
+			//   is changed.
+			cutils.nextTick( function() {
+				var loadingIntervalId = self.loadingUntil(hash);
+				dbg.trace("loadingIntervalId: ",loadingIntervalId);
+
+				if(focus.sec === 'fleet' || focus.sec === 'guild')
+				{
+					dataModel.loadGuildByName(focus.ent, function(error, guild) {
+						if(self.isStillLoading(loadingIntervalId))
+						{
+							dbg.trace('stillLoading... clearing timeout and displaying if nessecary.');
+							self.clearInterval(); // Clear timeout, we have a response
+
+							// Make sure we're still waiting for this entity
+							var hashNow = decodeURI(window.location.hash);
+							if(hash === hashNow)
+							{
+								// if no guild found, let them know
+								if(error)
+								{
+									dbg.trace(error);
+									// error.message should tell you what error occurred.
+									// It could be 'offline', 'deleted', or some other error.
+									self.shift('#/error?e=guild' + error.message, true, true);
+								}
+								else
+								{
+									dbg.trace('Shifter: Focus Change Callback: loadGuildByName(); Loading info for hash: ' + hash);
+									self.setTheme(focus.sec);
+									self.hashInfo.focus = focus;
+									self.shift(hash, true);
+								}
+							}
+							else
+							{
+								dbg.trace('Shifter: Focus Change Callback: loadGuildByName(); hash changed, aborting.');
+							}
+						}
+					})
+				}
+				else if(focus.sec === 'char')
+				{
+					dataModel.loadEntityByName(focus.ent, function(error, metaEnt) {
+						dbg.trace("loadingIntervalId: ",loadingIntervalId);
+						if(self.isStillLoading(loadingIntervalId))
+						{
+							dbg.trace('stillLoading... clearing timeout and displaying if nessacary.');
+							self.clearInterval(); // Clear timeout, we have a response
+
+							// Make sure we're still waiting for this entity
+							var hashNow = decodeURI(window.location.hash);
+							if(hash === hashNow)
+							{
+								// if no character found, let them know
+								if(error)
+								{
+									// error.message should tell you what error occurred.
+									// It could be 'offline', 'deleted', or some other error.
+									self.shift('#/error?e=char' + error.message, true, true);
+								}
+								else
+								{
+									dbg.trace('Shifter: Focus Change Callback: loadEntityName(): Loading info for hash: ' + hash);
+									self.setTheme(focus.sec, metaEnt);
+									self.hashInfo.focus = focus;
+									self.shift(hash, true);
+								}
+							}
+							else
+							{
+								dbg.trace('Shifter: Focus Change Callback: loadEntityName(): hash changed, aborting.');
+							}
+						}
+					})
+				}
+				else
+				{
+					dbg.error('Unknown section:', focus.sec);
+				}
+			});
+		})(self.makeHash(hashInfo), hashInfo.focus)
+
+		self.hashInfo = self.parseHash('#/loading/' + hashInfo.focus.sec + '?loc=' + hashInfo.urlsEntry.loc);
+
+		return self.hashInfo.path;
+	}
+	dbg.trace("Nothing fancy, continuing like a normal path.", hashInfo.path);
+
+	// Tell shifter where we are now.
+	self.hashInfo = hashInfo;
+
+	// Continue normally
+	return self.hashInfo.path;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Make a full hash using hashInfo
+Shifter.prototype.makeHash = function(hashInfo)
+{
+	if(typeof hashInfo === 'undefined')
+	{
+		hashInfo = this.hashInfo;
+	}
+
+	var hash = '#' + hashInfo.focus.path + hashInfo.path;
+	var qString = objToqString(hashInfo.qParams);
+
+	if(qString)
+	{
+		hash += '?' + qString;
+	}
+
+	return hash;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Parse information out of the focus part of a hash tag
+Shifter.prototype.parseFocus = function(focus_path)
+{
+	// expecting:
+	// - char(name@name)
+	// - fleet(The Awesome Fleet)
+	// - empty string will return default noent
+	var focus = {
+		'path': '', // The given focus path in the url.
+		'sec': '',  // the section of fucus. ('fleet', 'char', 'noent', in urls.jspp)
+		'ent': ''   // the entity container we plan to load. (Char name@name, or fleet name, etc)
+	};
+
+	focus.path = unescape(focus_path);
+	focus.sec = focus.path.substr(0,focus.path.indexOf('('));
+	focus.ent = focus.path.substring(focus.path.indexOf('(') + 1, focus.path.indexOf(')'));
+
+	// No focus section is defaulted to 'noent'
+	if(focus.sec === '')
+	{
+		focus.path = '';
+		focus.sec = 'noent';
+		focus.ent = '';
+	}
+	return focus;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Returns true if its ok to ignore this hash change
+// false if not
+// - I would like a better way to do this.
+Shifter.prototype.canIgnoreHashChange = function(hashInfo)
+{
+	var self = this;
+	dbg.trace(self.hashInfo,hashInfo);
+
+	// If the path, or focus have changed, we cant ignore it.
+	if((self.hashInfo.path !== hashInfo.path)
+	|| (self.hashInfo.focus.path !== hashInfo.focus.path))
+	{
+		dbg.trace('Not Ignoring hash change. (one): ',(self.hashInfo.path !== hashInfo.path), (self.hashInfo.focus.path !== hashInfo.focus.path));
+		return false;
+	}
+
+	// does the given page have any internal page params?
+	// if this even references a page at all.
+	if(hashInfo.urlsEntry.internal)
+	{
+		// array of internal page params to ignore when changed/added
+		var internal = hashInfo.urlsEntry.internal;
+		dbg.trace('internal: ', internal);
+
+		// Check existing params against given params
+		for(var idx in self.hashInfo.qParams)
+		{
+			// If we arent supposed to ignore this param
+			// and param also exists in the given list
+			// and it changed...
+			if((internal.indexOf(idx) === -1)
+			&& (hashInfo.qParams[idx])
+			&& (self.hashInfo.qParams[idx] !== hashInfo.qParams[idx]))
+			{
+				dbg.trace('Not ignoring hash change. (two)', (internal.indexOf(idx) === -1), (hashInfo.qParams[idx]), (self.hashInfo.qParams[idx] !== hashInfo.qParams[idx]));
+				return false;
+			}
+		}
+
+		// Check given params against existing params
+		for(idx in hashInfo.qParams)
+		{
+			// If we arent supposed to ignore this param
+			// and param also exists in the existing list
+			// and it changed...
+			if(internal.indexOf(idx) === -1)
+			{
+				// If its a new param, we cant ignore it
+				// But if it isnt new, and changed, we cant ignore it.
+				if((!self.hashInfo.qParams[idx])
+				|| (hashInfo.qParams[idx] !== self.hashInfo.qParams[idx]))
+				{
+					// New param we cant ignore
+					dbg.trace('Not ignoring hash change. (three)', (!self.hashInfo.qParams[idx]), (hashInfo.qParams[idx] !== self.hashInfo.qParams[idx]));
+					return false;
+				}
+			}
+		}
+
+		// If we get here, everything should be ignorable
+		dbg.trace('Ignoring hash change.',hashInfo);
+		return true;
+	}
+	else
+	{
+		// can't ignore this change
+		dbg.trace('Not Ignoring hash change. (four): ', hashInfo.urlsEntry.internal);
+		return false;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Reload the current stencils!
+// This is independant of transitions and
+// just recalls the stencils for the current page
+// Note: This is for dev uses only and never used in normal navigation.
+Shifter.prototype.reload = function()
+{
+	dbg.trace();
+
+	if(this.shifting)
+	{
+		dbg('Cannot reload() - Still Shifting!');
+		return;
+	}
+
+	dbg("Reloading: ", this.now);
+
+	// reload, all the things!
+	this.setContent(this.now.content, this.now.params, [], function() {});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Special case 'back' function.
+// Trims off the last part of a tag to go
+// to 1 step higher in the url tree.
+// NOTE: This works off of 'lastActualShift'
+Shifter.prototype.shiftBack = function()
+{
+	// I want to go from:
+	// #/personnel/bridgeofficer/profile
+	// to:
+	// #/personnel/bridgeofficers
+
+	// Any params needed by the destination page
+	// will be preserved, but they have to exist
+
+	var ts = this.lastActualShift.split("/");
+	ts.pop();
+	if(ts.length > 1)
+	{
+		ts = ts.join('/');
+	}
+	else
+	{
+		ts = ts[0] + '/';
+	}
+
+	var params = this.getPageParamNames(ts);
+
+	if(params.length)
+	{
+		ts = ts + '?';
+		var pa = [];
+		var self = this; // needed for inside closure
+		params.forEach(function(p) {
+			if(typeof self.hashInfo.qParams[p] !== 'undefined')
+			{
+				pa.push(p + '=' + self.hashInfo.qParams[p]);
+			}
+		})
+		ts = ts + pa.join('&');
+	}
+
+	// If this wasn't a silent shift, just change the hash
+	// but if it was silent, go back silently.
+	if(this.lastActualShift === this.lastShifted)
+	{
+		window.location.hash = ts;
+	}
+	else
+	{
+		this.shift(ts, true, true);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Special case 'char' function.
+// Checks to see if we have a char loaded, and if so goes to it.
+// if not, sends you to character select.
+//
+Shifter.prototype.shiftToChar = function()
+{
+	dbg.trace();
+
+	var hash;
+
+	if(dataModel.model.ent && dataModel.model.ent.main)
+	{
+		hash = '#char(' + dataModel.model.ent.main.name + '@' + dataModel.model.ent.main.publicaccountname + ')/'
+	}
+	else
+	{
+		hash = '#/characterselect';
+	}
+	dbg("updating hash to " + hash);
+
+	window.location.hash = hash;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Special case 'guild' function.
+// Checks to see if we have a char loaded, and if so goes to its guild.
+// Note: Used in NW, Not used in STO.
+Shifter.prototype.shiftToGuild = function()
+{
+	dbg.trace();
+
+	var hash;
+
+	if(dataModel.model.ent && dataModel.model.ent.main)
+	{
+		if(dataModel.model.ent.main.guildname)
+		{
+			dbg("updating hash to #guild(" + dataModel.model.ent.main.guildname + ")");
+			window.location.hash = '#guild(' + dataModel.model.ent.main.guildname + ')/';
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Get the params valid for the page found at the path for this hash
+Shifter.prototype.getPageParamNames = function(hash)
+{
+	var ret = [];
+	if(!hash)
+	{
+		return ret;
+	}
+
+	var path = hash.substr(hash.indexOf('/'));
+
+	var q = hash.indexOf('?');
+	if(q > -1)
+	{
+		path = path.substr(0, q);
+	}
+
+	if(this.urls[this.hashInfo.focus.sec][path])
+	{
+		// Maintain any content parameters
+		for(var key in this.urls[this.hashInfo.focus.sec][path].con) {
+			if(typeof this.urls[this.hashInfo.focus.sec][path].con[key] === 'object')
+			{
+				ret.push(this.urls[this.hashInfo.focus.sec][path].con[key][1]);
+			}
+		}
+		// also maintain any internal parameters to the page, if they exist
+		if(this.urls[this.hashInfo.focus.sec][path].internal)
+		{
+			for(key = 0; key < this.urls[this.hashInfo.focus.sec][path].internal.length; key++)
+			{
+				ret.push(this.urls[this.hashInfo.focus.sec][path].internal[key]);
+			}
+		}
+	}
+
+	return ret;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Takes a param object, and updates the query string in the hash
+Shifter.prototype.updateQString = function(paramObj)
+{
+	dbg.trace(paramObj);
+
+	$.extend(this.hashInfo.qParams, paramObj);
+	for(var p in this.hashInfo.qParams)
+	{
+		// empty out anything that no longer has a value
+		if(!this.hashInfo.qParams[p])
+		{
+			delete this.hashInfo.qParams[p];
+		}
+	}
+	// TODO: Use something like updateHash() for this, when updateHash() doesnt
+	//       mess with the focus, and supports qStrings.
+	var hash = '#' + this.hashInfo.focus.path + this.hashInfo.path;
+	this.hashInfo.qString = objToqString(this.hashInfo.qParams);
+	if(this.hashInfo.qString)
+	{
+		hash += '?' + this.hashInfo.qString;
+	}
+	dbg.trace('Changing to hash: ' + hash);
+	this.lastShifted = hash;
+	window.location.hash = hash;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// 'Close' a Modal
+// Current requirement for modals is that there is a div in index.html that
+// has id="modal" that will be the place where all modal content goes.
+// Only one modal can exist at a time.
+// NOTE: This assumes ALL modals have been 'silent' URLs.
+Shifter.prototype.closeModal = function()
+{
+	this.lastActualShift = this.lastShifted;
+	this.now = this.beforeModal.now;
+	this.hashInfo = this.beforeModal.hashInfo;
+	this.transitions.closeModal(this.now);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Keep checking to see if something we are waiting for has happenned.
+// Currently only supports waiting for one thing at a time.
+Shifter.prototype.loadingUntil = function(hash, untilWhat, specificError)
+{
+	dbg.trace(hash, untilWhat);
+
+	var self = this;
+
+	// be sure this is cleared before starting anything else
+	if(self.loadingIntervalId)
+	{
+		self.clearInterval();
+	}
+
+	if(untilWhat === 'loginInfo')
+	{
+		return self.setInterval(function() {
+
+			var hashNow = decodeURI(window.location.hash);
+
+			dbg.trace('loadingUntil(loginInfo): ' + hash, dataModel.model.loginInfo, hashNow);
+
+			// We get what we need?
+			if(dataModel.model.loginInfo && (hash === hashNow))
+			{
+				self.shift(hash, true, true);
+				return true; // yes.
+			}
+
+			return false; // no.
+
+		}, specificError);
+	}
+	else if(untilWhat === 'loginentity')
+	{
+		return self.setInterval(function() {
+
+			var hashNow = decodeURI(window.location.hash);
+
+			dbg.trace('loadingUntil(loginEntity): ' + hash, (typeof dataModel.model.loginInfo), hashNow);
+
+			// We get what we need?
+			if(dataModel.model.loginInfo.loginentity && (hash === hashNow))
+			{
+				self.shift(hash, true, true);
+				return true; // yes.
+			}
+
+			return false; // no.
+
+		}, specificError);
+	}
+	else // Generic Timeout
+	{
+		// Generic timeout is used when the actual loading vent is handled via callback
+		// This is simply used to enforece a timeout on that callback.
+		return self.setInterval(function() {
+			dbg.trace('loadingUntil(): ' + hash);
+
+			return false;  // Just spin until timeout.
+		})
+	}
+}
+
+Shifter.prototype.isStillLoading = function(loadingIntervalId)
+{
+	dbg.trace(loadingIntervalId, this.loadingIntervalId);
+
+	if(loadingIntervalId === this.loadingIntervalId)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+Shifter.prototype.clearInterval = function()
+{
+	dbg.trace(this.loadingIntervalId);
+
+	clearInterval(this.loadingIntervalId);
+	this.loadingIntervalId = false;
+	this.loadingIntervalStarted = 0;
+}
+
+// func should return false to continue waiting.
+Shifter.prototype.setInterval = function(func, specificError)
+{
+	dbg.trace();
+
+	var self = this;
+	var error;
+
+	if(specificError)
+	{
+		error = specificError;
+	}
+	else
+	{
+		error = 'timeout';
+	}
+
+	self.loadingIntervalStarted = new Date().valueOf();
+	self.loadingIntervalId = setInterval(function()
+		{
+			if(func())
+			{
+				self.clearInterval();
+			}
+			else
+			{
+				// did we timeout?
+				var d = new Date().valueOf();
+				if((self.loadingIntervalStarted + self.LOADING_TIMEOUT) <= d)
+				{
+					// yep, clear interval and show timeout page
+					self.clearInterval();
+					self.shift('#/error?e=' + error, true, true);
+				}
+			}
+		}, self.LOADING_INTERVAL);
+
+	return self.loadingIntervalId;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Query parameters to an object
+function qStringToObj(qString)
+{
+	var pair,obj = {};
+
+	if(typeof qString !== 'undefined')
+	{
+		qString = qString.split('&');
+		for(var i = 0; i < qString.length; i++)
+		{
+			obj[qString[i].substring(0, qString[i].indexOf('='))] = qString[i].substring(qString[i].indexOf('=') + 1);
+		}
+	}
+
+	return obj;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Object to query parameters
+function objToqString(obj)
+{
+	var x, params = [];
+
+	for(x in obj)
+	{
+		params.push(x + '=' + obj[x]);
+	}
+	return params.join('&');
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Drop stencil updates.
+function dropStencilUpdates(contentArr)
+{
+	if(contentArr.length)
+	{
+		for(var x = 0; x < contentArr.length; x++)
+		{
+			dataModel.dropUpdates(contentArr[x].stencil);
+		}
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+module.exports = Shifter;
+
+// End of File

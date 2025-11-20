@@ -1,0 +1,1423 @@
+module.exports = {
+	////////////////////////////////////////////////////////////////////////////
+	// URLs that have no entity focus
+	////////////////////////////////////////////////////////////////////////////
+	'noent': {
+		'/': {
+			redirect: '#/characterselect'
+		},
+		'/characterselect': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Character Selection',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-characterselect'
+				}
+			],
+			characterselect: true
+		},
+		'/nocharacters': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Character Selection',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-nocharacters'
+				}
+			]
+		},
+		'/loading': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Loading',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-front'
+				}
+			]
+		},
+		'/loading/char': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Loading',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-front'
+				}
+			]
+		},
+		'/loading/fleet': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Loading',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-front'
+				}
+			]
+		},
+		'/error': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Error',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-error'
+				}
+			]
+		},
+		'/accountguard': {
+			str: 'structure',
+			loc: 'login',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-accountguard'
+				}
+			]
+		},
+		// Modals ----------
+		'/disconnected': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-disconnected'
+				}
+			],
+			modal: true
+		}
+	},
+	////////////////////////////////////////////////////////////////////////////
+	// Character Entity related URLs
+	////////////////////////////////////////////////////////////////////////////
+	'char': {
+		// Main Page ----------
+		'/': {
+			str: 'structure',
+			loc: 'one',
+			title: 'Front Page',
+			extra: {
+				section: '',
+				navid: 'front',
+				subnavid: 'front'
+			},
+			content: [
+				{
+					selector: '#nav_one',
+					stencil: 'nav-front'
+				},
+				{
+					selector: '#content_one',
+					stencil: 'content-front'
+				}
+			]
+		},
+		// Ships ----------
+		'/ship-equipment': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Ship Equipment',
+			extra: {
+				section: 'Ship Systems',
+				navid: 'ship',
+				subnavid: 'ship_equipment'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-ship'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-ship-equipment'
+				}
+			]
+		},
+		'/ship-stations': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Officer Stations',
+			extra: {
+				section: 'Ship Systems',
+				navid: 'ship',
+				subnavid: 'ship_stations'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-ship'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-ship-stations'
+				}
+			]
+		},
+
+		// Personnel ----------
+		'/personnel-captainprofile': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Captain Profile',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel',
+				subnavid: 'personnel_captain'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-personnel'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-personnel-captainprofile'
+				}
+			]
+		},
+		'/personnel-bridgeofficers': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Bridge Officers',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel',
+				subnavid: 'personnel_bridge'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-personnel'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-personnel-bridgeofficer-roster'
+				}
+			]
+		},
+		'/personnel-bridgeofficers/{id}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Bridge Officer Profile',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel_bridge',
+				subnavid: 'personnel_bridge_profile',
+				backtosection: 'Back to Roster'
+			},
+
+			params: {
+				'boff':'ent.officers[id={id}]'
+			},
+
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-personnel-bridgeofficer'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-personnel-bridgeofficer-profile',
+					rootpath: 'boff'
+				}
+			]
+		},
+
+		// Reputation ---------
+		'/reputation': {
+			redirect: '/'
+		},
+		'/reputation/{projectname}': {
+			redirect: '/'
+		},
+		'/reputation/{projectname}/overview': {
+			redirect: '/'
+		},
+		'/reputation/{projectname}/overview/tier': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects',
+				uniqueid: 'reputation_projects_overview'
+			},
+			params: {
+				'rootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}]',
+				'projectname': '{projectname}',
+				'navslot': 'main'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-reputation'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-reputation-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_nav_mobile',
+					stencil: 'nav-reputation-mobile'
+				},
+				{
+					selector: '#reputation_project_slots',
+					stencil: 'content-reputation-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_view',
+					stencil: 'content-reputation-projects-overview',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_overview_details',
+					stencil: 'content-reputation-projects-overview-details',
+					rootpath: 'tier'
+				}
+			]
+		},
+		'/reputation/{projectname}/overview/tier/detail': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects'
+			},
+			params: {
+				'rootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'modal-frame-blank'
+				},
+				{
+					selector: '#modal_frame_content',
+					stencil: 'content-reputation-projects-overview-details',
+					rootpath: 'tier'
+				}
+			],
+			modal: true
+		},
+		'/reputation/{projectname}/projects': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects',
+				uniqueid: 'reputation_projects_slots',
+			},
+			params: {
+				'rootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}]',
+				'projectrootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}].tasks[taskslotnum={taskslotnum}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-reputation'
+				},
+				{
+					selector: '#reputation_subnav',
+					stencil: 'nav-fleet-reputation-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-reputation-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_nav_mobile',
+					stencil: 'nav-fleet-reputation-mobile'
+				},
+				{
+					selector: '#reputation_project_slots',
+					stencil: 'content-fleet-reputation-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_view',
+					stencil: 'content-fleet-reputation-projects-buckets',
+					rootpath: 'projectrootpath'
+				}
+			]
+		},
+		'/reputation/{projectname}/projects/next': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects',
+				uniqueid: 'reputation_projects_next'
+			},
+			params: {
+				'rootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-reputation'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-reputation-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_slots',
+					stencil: 'content-reputation-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_view',
+					stencil: 'content-reputation-projects-next',
+					rootpath: 'next'
+				}
+			]
+		},
+		'/reputation/{projectname}/projects/{taskslotnum}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects',
+				uniqueid: 'reputation_projects_task'
+			},
+			params: {
+				'rootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}]',
+				'projectrootpath': 'personalproject.states[.internalname=Personal_Possession_{projectname}].tasks[taskslotnum={taskslotnum}]',
+				'projectname': '{projectname}',
+				'navslot': '{taskslotnum}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-reputation'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-reputation-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_slots',
+					stencil: 'content-reputation-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#reputation_project_view',
+					stencil: 'content-reputation-projects-buckets',
+					rootpath: 'projectrootpath'
+				}
+			]
+		},
+		'/reputation/{projectname}/projects/{taskslotnum}/contributenumeric/{bucketname}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects'
+			},
+
+			params: {
+				'projectname':'{projectname}',
+				'bucketname':'{bucketname}',
+				'taskslotnum':'{taskslotnum}',
+				'bucket':'personalproject.states[internalname=Personal_Possession_{projectname}].tasks[taskslotnum={taskslotnum}].buckets[name={bucketname}]'
+			},
+
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-reputation-contribute-numerics',
+					rootpath: 'bucket'
+				}
+			],
+			modal: true
+		},
+		'/reputation/{projectname}/projects/{taskslotnum}/contributeitems/{bucketname}/{taskname}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Reputation',
+			extra: {
+				section: 'Reputation',
+				navid: 'reputation',
+				subnavid: 'reputation_projects'
+			},
+
+			params: {
+				'projectname':'{projectname}',
+				'bucketname':'{bucketname}',
+				'taskslotnum':'{taskslotnum}',
+				'taskname':'{taskname}',
+				'bucket':'personalproject.states[internalname=Personal_Possession_{projectname}].tasks[taskslotnum={taskslotnum}].buckets[name={bucketname}]'
+			},
+
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-reputation-contribute-items',
+					rootpath: 'bucket'
+				}
+			],
+			modal: true
+		},
+
+
+
+
+
+
+
+
+
+		// ZEN Store ------------------------------------------
+
+		'/zenstore': {
+			str: 'structure',
+			loc: 'two',
+			title: 'ZEN Store',
+			extra: {
+				section: 'ZEN Store',
+				navid: 'zenstore',
+				subnavid: 'zenstore-front'
+			},
+			params: {
+				'category': '.cstore.categories[name=Mainfeatured]',
+				'categoryName': 'Mainfeatured',
+				'subnavid': 'Mainfeatured'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-zenstore'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-zenstore',
+					rootpath: 'category'
+				}
+
+			]
+		},
+		'/zenstore/{category}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'ZEN Store',
+			extra: {
+				section: 'ZEN Store',
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+				// true subnavid is in params
+			},
+			params: {
+				'category': '.cstore.categories[name={category}]',
+				'categoryName': '{category}',
+				'subnavid': '{category}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-zenstore'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-zenstore',
+					rootpath: 'category'
+				}
+			]
+		},
+		// ZEN Store MODALS -----------------------------------------
+
+		'/zenstore/buyzen': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'ZEN Store',
+			extra: {
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenstore-buyzen'
+				}
+			],
+			modal: true
+		},
+		'/zenstore/{category}/buyzen': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'ZEN Store',
+			extra: {
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenstore-buyzen',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true
+		},
+		'/zenstore/{category}/{item}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'ZEN Store',
+			extra: {
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenstore-item',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true
+		},
+
+
+
+
+
+
+
+
+
+
+
+		'/zenstore/{category}/{item}/confirmpurchase': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'ZEN Store',
+			extra: {
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenstore-item-confirmpurchase',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true
+		},
+		'/zenstore/{category}/{item}/screenshots': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'ZEN Store',
+			extra: {
+				navid: 'zenstore',
+				subnavid: 'zenstore-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenstore-item-screenshots',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true
+		},
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+		// Accolades ----------
+		'/accolades': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Accolades',
+			extra: {
+				section: 'Accolades',
+				navid: 'accolades',
+				subnavid: 'accolades_completed'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-accolades'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-accolades-completed'
+				}
+			]
+		},
+		'/loading': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Loading',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-front'
+				}
+			]
+		},
+		// Modals ------------------------------------------
+
+		'/ship-equipment/item': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Ship Equipment',
+			extra: {
+				section: 'Ship Systems',
+				navid: 'ship',
+				subnavid: 'ship_equipment'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-item',
+					rootpath: 'item'
+				}
+			],
+			modal: true
+		},
+		'/ship-stations/power': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Officer Stations',
+			extra: {
+				section: 'Ship Systems',
+				navid: 'ship',
+				subnavid: 'ship_stations'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-power',
+					rootpath: 'power'
+				}
+			],
+			modal: true
+		},
+
+		'/personnel-captainprofile/item': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Captain Profile',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel',
+				subnavid: 'personnel_captain'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-item',
+					rootpath: 'item'
+				}
+			],
+			modal: true
+		},
+
+		'/personnel-bridgeofficers/{id}/item': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Bridge Officer Profile',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel_bridge',
+				subnavid: 'personnel_bridge_profile'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-item',
+					rootpath: 'item'
+				}
+			],
+			modal: true
+		},
+		'/personnel-bridgeofficers/{id}/power': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Bridge Officer Profile',
+			extra: {
+				section: 'Personnel Files',
+				navid: 'personnel_bridge',
+				subnavid: 'personnel_bridge_profile'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-power',
+					rootpath: 'power'
+				}
+			],
+			modal: true
+		},
+		'/accolades/info': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Accolades',
+			extra: {
+				section: 'Accolades',
+				navid: 'accolades',
+				subnavid: 'accolades_completed'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-accolade',
+					rootpath: 'accolade'
+				}
+			],
+			modal: true
+		}
+	},
+	////////////////////////////////////////////////////////////////////////////
+	// Fleet entity URLs
+	////////////////////////////////////////////////////////////////////////////
+	'fleet': {
+		'/': {
+			str: 'structure',
+			loc: 'one',
+			title: 'Front Page',
+			extra: {
+				section: '',
+				navid: 'fleet_front',
+				subnavid: 'fleet_front',
+				fleet: true
+			},
+			content: [
+				{
+					selector: '#nav_one',
+					stencil: 'nav-fleet-front'
+				},
+				{
+					selector: '#content_one',
+					stencil: 'content-fleet-front'
+				}
+			]
+		},
+		'/loading': {
+			str: 'structure',
+			loc: 'login',
+			title: 'Loading',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-front'
+				}
+			]
+		},
+		'/roster': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Roster',
+			extra: {
+				section: 'Fleet Roster',
+				navid: 'fleet_roster',
+				subnavid: 'fleet_roster_view',
+				fleet: true
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-roster'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-roster'
+				}
+			],
+			params: {
+				'state': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+
+			internal: [
+				'sort',
+				'search'
+			]
+		},
+		'/events': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Events Calendar',
+			extra: {
+				section: 'Fleet Events',
+				navid: 'fleet_events',
+				subnavid: 'fleet_events_calendar',
+				fleet: true
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-events'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-events'
+				}
+			]
+		},
+
+		'/events/{id}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'View Event Details',
+
+			extra: {
+				section: 'Fleet Events',
+				navid: 'fleet_events_view',
+				subnavid: 'fleet_events_view',
+				fleet: true
+			},
+			params: {
+				'event':'guild.events[id={id}]'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-events-view'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-events-view',
+					rootpath: 'event'
+				}
+			]
+		},
+		'/logs': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Logs',
+			extra: {
+				section: 'Fleet Logs',
+				navid: 'fleet_logs',
+				subnavid: 'fleet_logs_view',
+				fleet: true
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-logs'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-logs'
+				}
+			]
+		},
+		'/info': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Fleet Info',
+			extra: {
+				section: 'Fleet Info',
+				navid: 'fleet_info',
+				subnavid: 'fleet_info_view',
+				fleet: true
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-info'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-info'
+				}
+			]
+		},
+
+		'/holdings': {
+			redirect: '/'
+		},
+		'/holdings/{projectname}': {
+			redirect: '/'
+		},
+		'/holdings/{projectname}/overview': {
+			redirect: '/'
+		},
+		'/holdings/{projectname}/overview/tier': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				uniqueid: 'fleet_holdings_projects_overview',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}',
+				'navslot': 'main'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_nav_mobile',
+					stencil: 'nav-fleet-holdings-mobile'
+				},
+				{
+					selector: '#holdings_project_slots',
+					stencil: 'content-fleet-holdings-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_view',
+					stencil: 'content-fleet-holdings-projects-overview',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_overview_details',
+					stencil: 'content-fleet-holdings-projects-overview-details',
+					rootpath: 'tier'
+				}
+			]
+		},
+		'/holdings/{projectname}/overview/tier/detail': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'modal-frame-blank'
+				},
+				{
+					selector: '#modal_frame_content',
+					stencil: 'content-fleet-holdings-projects-overview-details',
+					rootpath: 'tier'
+				}
+			],
+			modal: true
+		},
+
+		'/holdings/{projectname}/projects': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				uniqueid: 'fleet_holdings_projects_slots',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectrootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}].tasks[taskslotnum={taskslotnum}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_nav_mobile',
+					stencil: 'nav-fleet-holdings-mobile'
+				},
+				{
+					selector: '#holdings_project_slots',
+					stencil: 'content-fleet-holdings-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_view',
+					stencil: 'content-fleet-holdings-projects-buckets',
+					rootpath: 'projectrootpath'
+				}
+			]
+		},
+
+		'/holdings/{projectname}/projects/next': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				uniqueid: 'fleet_holdings_projects_next',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_slots',
+					stencil: 'content-fleet-holdings-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_view',
+					stencil: 'content-fleet-holdings-projects-next',
+					rootpath: 'next'
+				}
+			]
+		},
+
+		'/holdings/{projectname}/projects/{taskslotnum}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				uniqueid: 'fleet_holdings_projects_task',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}]',
+				'projectrootpath': 'guildproject.states[.internalname=Fleet_Possession_{projectname}].tasks[taskslotnum={taskslotnum}]',
+				'projectname': '{projectname}',
+				'navslot': '{taskslotnum}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-projects',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_slots',
+					stencil: 'content-fleet-holdings-projects-slots',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_project_view',
+					stencil: 'content-fleet-holdings-projects-buckets',
+					rootpath: 'projectrootpath'
+				}
+			]
+		},
+
+		'/holdings/{projectname}/projects/{taskslotnum}/contributenumeric/{guildid}/{bucketname}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				fleet: true
+			},
+
+			params: {
+				'guildid':'{guildid}',
+				'projectname':'{projectname}',
+				'bucketname':'{bucketname}',
+				'taskslotnum':'{taskslotnum}',
+				'bucket':'guildproject.states[internalname=Fleet_Possession_{projectname}].tasks[taskslotnum={taskslotnum}].buckets[name={bucketname}]'
+			},
+
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-fleet-contribute-numerics',
+					rootpath: 'bucket'
+				}
+			],
+			modal: true
+		},
+
+		'/holdings/{projectname}/projects/{taskslotnum}/contributeitems/{guildid}/{bucketname}/{taskname}': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_projects',
+				fleet: true
+			},
+
+			params: {
+				'guildid':'{guildid}',
+				'projectname':'{projectname}',
+				'bucketname':'{bucketname}',
+				'taskslotnum':'{taskslotnum}',
+				'taskname':'{taskname}',
+				'bucket':'guildproject.states[internalname=Fleet_Possession_{projectname}].tasks[taskslotnum={taskslotnum}].buckets[name={bucketname}]'
+			},
+
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-fleet-contribute-items',
+					rootpath: 'bucket'
+				}
+			],
+			modal: true
+		},
+
+		'/holdings/{projectname}/provisions': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_provisions',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-provisions',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_nav_mobile',
+					stencil: 'nav-fleet-holdings-mobile'
+				}
+			]
+		},
+		'/holdings/{projectname}/leaderboard': {
+			str: 'structure',
+			loc: 'two',
+			title: 'Holdings',
+			extra: {
+				section: 'Holdings',
+				navid: 'fleet_holdings',
+				subnavid: 'fleet_holdings_leaderboard',
+				fleet: true
+			},
+			params: {
+				'rootpath': 'guildproject.states[internalname=Fleet_Possession_{projectname}]',
+				'projectname': '{projectname}'
+			},
+			content: [
+				{
+					selector: '#nav_two',
+					stencil: 'nav-fleet-holdings'
+				},
+				{
+					selector: '#holdings_subnav',
+					stencil: 'nav-fleet-holdings-subnav',
+					rootpath: 'projectname'
+				},
+				{
+					selector: '#content_two',
+					stencil: 'content-fleet-holdings-leaderboard',
+					rootpath: 'rootpath'
+				},
+				{
+					selector: '#holdings_nav_mobile',
+					stencil: 'nav-fleet-holdings-mobile'
+				}
+			]
+		}
+	}
+};

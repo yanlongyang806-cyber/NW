@@ -1,0 +1,55 @@
+#include "ps_inc.hlsl"
+
+SAMPLER_DECL(texture_sampler, 0);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 ppTexScale : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+struct PS_OUTPUT
+{
+	float4 color : COLOR;
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+	float2 texcoord = fragment.texcoord.xy;
+	float4 tl =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( -1, -1 ));
+	float4 tc =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( -1, 0 ));
+	float4 tr =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( -1, +1 ));
+	float4 ml =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( 0, -1 ));
+	float4 mc =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( 0, 0 ));
+	float4 mr =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( 0, +1 ));
+	float4 bl =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( +1, -1 ));
+	float4 bc =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( +1, 0 ));
+	float4 br =	sampleTex2D( texture_sampler, texcoord + ppTexScale.xy * float2( +1, +1 ));
+
+	float delta;
+	#ifdef NORMAL_ALPHA_BLEND
+	{
+		float gx = (-3 * tl.a + -10 * tc.a + -3 * tr.a
+					+ 3 * bl.a + 10 * bc.a + 3 * br.a);
+		float gy = (-3 * tl.a + -10 * ml.a + -3 * bl.a
+					+ 3 * tr.a + 10 * mr.a + 3 * br.a);
+		delta = ( gx * gx + gy * gy );
+	}
+	#else
+	{
+		float3 gx = (-3 * tl.rgb + -10 * tc.rgb + -3 * tr.rgb
+					 + 3 * bl.rgb + 10 * bc.rgb + 3 * br.rgb);
+		float3 gy = (-3 * tl.rgb + -10 * ml.rgb + -3 * bl.rgb
+					 + 3 * tr.rgb + 10 * mr.rgb + 3 * br.rgb);
+		float3 delta_rgb = ( gx * gx + gy * gy );
+
+		delta = max( max( delta_rgb.r, delta_rgb.g ), delta_rgb.b );
+	}
+	#endif
+
+	if( delta < 1.7*1.7 ) delta = 0;
+	else delta = 1;
+	output.color = float4( delta, delta, delta, 1 );
+	
+	return output;
+}

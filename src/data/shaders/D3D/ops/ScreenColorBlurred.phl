@@ -1,0 +1,12 @@
+// ScreenColorBlurred.phl
+{
+	float3 sample;
+
+	sample = sampleTex2DNoMips(TexSampler%ScreenColorBlurred%, %TexCoord%.xy).xyz;
+	sample = InvToneMapLDR(sample);
+
+	%Result%.xyz = sample;
+
+	// Set alpha
+	%Result%.w = 1;
+}

@@ -1,0 +1,10 @@
+{
+#define HAS_NORMALMAP
+	float4 original = sampleTex2D(TexSampler%NormalMap%, %TexCoord%.xy);
+	float4 expanded;
+	expanded = float4(rangeExpand(original.xyz), original.w);
+	float4 dxt5nm;
+	dxt5nm.xyz = dxt5nmExpand(original);
+	dxt5nm.w = %AlphaIfDXT5nm%.x;
+	%Result% = lerp(expanded, dxt5nm, (%IsDXT5nm%).x);
+}

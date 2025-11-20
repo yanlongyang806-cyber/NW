@@ -1,0 +1,93 @@
+# Visual Studio 编译产物
+*.obj
+*.pdb
+*.ilk
+*.exp
+*.pch
+*.idb
+*.res
+*.suo
+*.user
+*.ncb
+*.aps
+*.sdf
+*.opensdf
+*.ipch
+.vs/
+Debug/
+Release/
+x64/
+Win32/
+ipch/
+
+# 可执行文件和库（提交到 Git，在 GitHub Actions 编译）
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 静态库文件（太大，排除）
+*.lib
+*.a
+
+# 临时文件
+*.log
+*.tmp
+*.temp
+*~
+*.bak
+*.orig
+
+# Node.js 依赖（太大）
+node_modules/
+npm-debug.log
+
+# Python 缓存
+__pycache__/
+*.pyc
+*.pyo
+
+# 系统文件
+Thumbs.db
+.DS_Store
+
+# 大型打包文件
+*.zip
+*.rar
+*.7z
+*.tar
+*.gz
+
+# ========================================
+# 排除大型第三方库（在 GitHub 上不需要这些）
+# ========================================
+# 第三方库二进制文件
+src/3rdparty/*/lib/
+src/3rdparty/*/bin/
+src/3rdparty/*/Lib/
+src/3rdparty/*/*.lib
+src/3rdparty/*/*.dll
+src/3rdparty/*/*.exe
+
+# 特定的超大第三方库（只保留头文件）
+src/3rdparty/PhysX-2.8.1/
+src/3rdparty/DirectX/
+src/3rdparty/CUDA/
+src/3rdparty/python-2.5.4/
+src/3rdparty/simplygon/
+src/3rdparty/subversion-1.6.6/
+src/3rdparty/libtorrent-rasterbar-0.14.7/
+src/3rdparty/ICU/
+src/3rdparty/cef/
+
+# Gateway 的 Node.js 模块（太大）
+src/Gateway/node_modules/
+
+# 编译输出目录
+src/Core/bin/
+src/libs/bin/
+src/Night/bin/
+
+# 测试套件二进制
+src/TestSuites/bin/
+

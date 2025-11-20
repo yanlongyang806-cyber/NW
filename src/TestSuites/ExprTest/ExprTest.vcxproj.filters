@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AutoGen\ExprTest_AutoGen_1.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="autogen\ExprTest_AutoGen_2.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="ExprTest.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ExprTest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AutoGen">
+      <UniqueIdentifier>{ed09127c-ff29-4bb3-8178-b1c83771fde9}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,147 @@
+'use strict';
+
+var utils = require('./utils');
+var template = require('./template');
+
+var reSym = /([^:\/+]*?):(.*)/;
+var reChoices = /\s*\/\s*/;
+var rePluses = /\s*\+\s*/;
+function Side(sideDef)
+{
+	this.sym = '?';
+	this.count = 1;
+
+	this.vals = [];
+
+	this.sides = null;
+	this.wild = false;
+	this.parent = null;
+	this.idx = 0;
+
+	var res = reSym.exec(sideDef);
+	if(res)
+	{
+		// '*:5b/a/c'	a wild with one of 5b or a or c
+		// '*:5b+c'		5b and c
+		this.sym = res[1];
+		this.count = 1;
+
+		sideDef = res[2].split(reChoices);
+		if(sideDef.length > 1)
+		{
+			this.sides = [];
+			this.wild = true;
+			for(var i = 0; i < sideDef.length; i++)
+			{
+				var s = new Side(sideDef[i]);
+				s.parent = this;
+				s.idx = i;
+				this.sides.push(s);
+				this.vals = this.vals.concat(s.vals);
+			}
+			console.log(this.vals)
+		}
+		else
+		{
+			this.vals = parseVals(sideDef[0]);
+		}
+	}
+	else
+	{
+		// 2a
+		this.vals = parseVals(sideDef);
+		if(this.vals.length > 1)
+			console.error('Unable to choose a good symbol or count for multiple vals.');
+
+		this.sym = this.vals[0].sym;
+		this.count = this.vals[0].count;
+	}
+
+	if(!this.sym || Number.isNaN(this.count))
+	{
+		console.error('Bad side definition');
+		this.sym = '?';
+		this.count = 1;
+	}
+}
+
+var reParse = /(\d*)(\w+)/;
+function parseVals(str)
+{
+	var vals = [];
+
+	var a = str.split(rePluses);
+	for(var i = 0; i < a.length; i++)
+	{
+		var res = reParse.exec(a[i]);
+		if(res)
+		{
+			vals.push({ sym: res[2], count: +res[1] || 1 })
+		}
+	}
+
+	return vals;
+}
+
+
+Side.prototype.toString = function()
+{
+	var i;
+//	var str = this.sym + (this.count > 1 ? '*' + this.count : '');
+	var str = ''
+
+	if(this.wild)
+	{
+//		str += ':';
+		for(i = 0; i < this.sides.length; i++)
+		{
+			if(i > 0) str += ' or ';
+//			str += '(' + this.sides[i].toString() + ')';
+			str += this.sides[i].toString();
+		}
+	}
+	else
+	{
+//		str += ':';
+		for(i = 0; i < this.vals.length; i++)
+		{
+			if(i > 0) str += ' and ';
+			str += (this.vals[i].count > 1 ? this.vals[i].count : '') + this.vals[i].sym;
+		}
+
+	}
+
+	return str;
+}
+
+Side.prototype.getSide = function()
+{
+	return this;
+}
+
+Side.prototype.getWildSide = function(idx)
+{
+	return this.sides[idx];
+}
+
+Side.prototype.wildHtml = function(challenge)
+{
+	var str = '';
+
+	var s = this.parent ? this.parent : this;
+	for(var i = 0; i < s.sides.length; i++)
+	{
+		str += template(challenge.isSideUsable(s.sides[i]) ? 'tmpl-wild-selectable' : 'tmpl-wild', s.sides[i]);
+	}
+
+	return str;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = Side;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

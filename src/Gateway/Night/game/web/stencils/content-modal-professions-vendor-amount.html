@@ -1,0 +1,72 @@
+
+<button class="close-button" data-url-silent="/professions/vendor"></button>
+
+<div class="mobileOnly sticky-mobile-back-button">
+	<div class="main-buttons">
+		<a class="nav-button mobile-back-button" data-url-silent="/professions/vendor">
+			<span class="cap-left"></span>
+			<span class="cap-right"></span>
+			<span class="nav-icon"></span>
+		</a>
+	</div>
+	<hr />
+</div>
+
+<span data-path=".items">
+	<span data-if="{.storename} eq {$root().queryParams.storeName} && {.storeindex} is {$root().queryParams.storeIndex}">
+
+		<div class="modal-confirm">
+			<div data-if="{.storeName} eq 'Store_Crafting_Resources'" >
+				<h3>Select Amount</h3>
+				<p>How many <span class="vendor-confirm-itemname" data-path=".displayname">Item Name</span> would you like to purchase?</p>
+
+				<div class="vendor-quantity-block">
+					<div class="input-field text">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<input name="inventoryBuyQty" type="text" maxlength="2" value="1" onchange="client.inventoryBuyUpdateCost(this);"/>
+						<input id="baseCost" type="hidden" name="baseCost" data-set-value="{.costinfo[0].count}">
+					</div>
+					<span class="attention">Max 20</span>
+				</div>
+			</div>
+
+			<div data-if="{.storeName} ne 'Store_Crafting_Resources'" >
+				<h3>Purchase <span class="vendor-confirm-itemname" data-path=".displayname">Item Name</span></h3>
+				<p>Do you want to buy <span class="vendor-confirm-itemname" data-path=".displayname">Item Name</span>?</p>
+				<input name="inventoryBuyQty" type="hidden" value="1" />
+			</div>
+
+			<p>You will spend <span id="cost" data-path=".costinfo[0].count.$displayAsCoins()">200</span><br />
+			You have
+				<span data-update="$root().ent.main.currencies" data-path="$root().ent.main">
+					<img src="./tex/Currency_Icon_Tiny_Gold.png" alt=""><span data-path=".currencies.gold.$commify()">1,000</span>
+					<img src="./tex/Currency_Icon_Tiny_Silver.png" alt=""><span data-path=".currencies.silver.$commify()">24</span>
+					<img src="./tex/Currency_Icon_Tiny_Copper.png" alt=""><span data-path=".currencies.copper.$commify()">2</span>
+				</span>
+			</p>
+
+
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button data-url-silent="/professions/vendor">Cancel</button>
+			</div>
+
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+
+				<button data-url-silent="/professions/vendor" data-set-onclick="client.inventoryBuyItem('{$root().vendor.contactname}', '{$root().queryParams.storeName}', {$root().queryParams.storeIndex});">OK</button>
+
+			</div>
+
+		</div>
+	</span>
+</span>
+
+
+

@@ -1,0 +1,11 @@
+;
+; This file specifies what projects various 3rd party DLLs must be copied into
+;
+; Used by various 3rd party DLL update scripts: fmod, PhysX, D3DX, NVTT, etc
+;
+; One entry per line
+;
+Utilities
+TestSuites
+Night
+Core

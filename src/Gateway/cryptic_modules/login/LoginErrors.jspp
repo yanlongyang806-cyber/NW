@@ -1,0 +1,23 @@
+
+// From GlobalComm.h, possible failure codes
+var LoginFailureCode = {};
+LoginFailureCode.Unknown = 0;                    // Never sent by AS; but possibly returned by accountValidatorGetFailureCode()
+LoginFailureCode.Ok = 1;                         // Internal use only
+LoginFailureCode.NotFound = 2;                   // Generic failure; account not found
+LoginFailureCode.BadPassword = 3;                // Never sent by AS; for security; LoginFailureCode.NotFound is used instead
+LoginFailureCode.RateLimit = 4;                  // Failed due to rate limiting
+LoginFailureCode.Disabled = 5;                   // Account disabled
+LoginFailureCode.UnlinkedPWCommonAccount = 6;    // PW account needs manual linking before it can log in
+LoginFailureCode.InvalidTicket = 7;              // Login validate: The ticket is not valid.
+LoginFailureCode.DisabledLinked = 8;             // Login disabled because it has been linked already
+LoginFailureCode.InvalidLoginType = 9;           // AccountLoginType received was invalid
+LoginFailureCode.Banned = 10;                    // Temporary account-wide ban (game-agnostic) (used by PWE)
+LoginFailureCode.NewMachineID = 11;              // Login from an unknown machine ID - send one-time-code auth
+LoginFailureCode.CrypticDisabled = 12;           // Cryptic Account Login with DisallowCrypticAndPwLoginType
+
+
+LoginFailureCode.GatewayLocked = 100;            // Gateway is locked. No logins.
+LoginFailureCode.SessionTimeout = 101;           // User session has timed out.
+LoginFailureCode.AccountServerUnavailable = 102; // Unable to contact the AccountServer
+
+module.exports = LoginFailureCode;

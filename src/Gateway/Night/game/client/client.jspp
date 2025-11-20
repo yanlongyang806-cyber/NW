@@ -1,0 +1,112 @@
+'use strict';
+
+var client = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+var dbg = require('cryptic/dbg');
+//dbg.setLevel(dbg.DEBUG);
+dbg.disableFile('Resolver');
+dbg.disableFile('Shifter');
+dbg.disableFile('transition');
+dbg.disableFile('contentHelpers');
+dbg.disableFile('ResourceManager');
+dbg.disableFile('ResourceDictionary');
+dbg.disableFile('ClientResourceManager');
+
+var cutils = require('cryptic/cutils');
+
+///////////////////////////////////////////////////////////////////////////
+//
+// All the stencils (HTML) for the app
+//
+
+require('./Stencils.js');
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Build the client object.
+//
+
+cutils.extend(client, require('cryptic/client/clientCommon'));
+cutils.extend(client, require('./clientUpdate'));
+cutils.extend(client, require('./clientRender'));
+cutils.extend(client, require('./clientAuction'));
+cutils.extend(client, require('./clientProfession'));
+cutils.extend(client, require('./clientMail'));
+cutils.extend(client, require('./clientInventory'));
+cutils.extend(client, require('./clientExchange'));
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Initialization
+
+//
+// All the shifter stuff
+//
+var shifterInfo =
+{
+	'default': {
+		urls: require('../web/shifter/urls.js'),
+		transitions: require('../web/shifter/transition.js'),
+		rememberScrollY: false
+	}
+};
+
+//
+// Allocate all the sound stuff.
+//
+/*
+	var Sound = require('cryptic/client/Sound');
+	var sounds = new Sound();
+	sounds.init({
+		'hover':  4,
+		'button': 2,
+		'back':   1
+	}, true);
+*/
+
+//
+// Intialize the client
+//
+
+client.init(shifterInfo);
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Start everything up once the document is loaded.
+//
+
+$(document).ready(function() {
+
+	client.commonWidgets();
+	client.checkWindowSize();
+	client.onReady.call(client);
+});
+
+
+//
+//      ########  ########   #######  ######## #### ######## ####
+//      ##     ## ##     ## ##     ## ##        ##     ##    ####
+//      ##     ## ##     ## ##     ## ##        ##     ##    ####
+//      ########  ########  ##     ## ######    ##     ##     ##
+//      ##        ##   ##   ##     ## ##        ##     ##
+//      ##        ##    ##  ##     ## ##        ##     ##    ####
+//      ##        ##     ##  #######  ##       ####    ##    ####
+//
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

@@ -1,0 +1,7 @@
+{
+	%Result%.w = (%Diffuse%).w;
+
+	%Result%.xyz = lerp(%Color0%, %Color1%, (%TintColorMap%).x).xyz;
+	%Result%.xyz = lerp(float4(1.0,1.0,1.0,1.0), %Result%, %TintMask%).xyz;
+	%Result%.xyz = (%Diffuse% * %Result%).xyz;
+}

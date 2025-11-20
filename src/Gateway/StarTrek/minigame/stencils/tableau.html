@@ -1,0 +1,71 @@
+Round <span data-path=".round"></span>
+<div id='tooltip' class="tooltip"></div>
+<div class="players" data-path="players">
+	<div data-set-class="player {.id} {.isCurrentPlayer.$choose(player-current,)}">
+		<h1 data-path=".name">Test Name</h1>
+		<div class="player-actions" data-if="{.isCurrentPlayer} && !{.hasActionsToUse}">
+			<a class="button end-turn" onclick="mg.endRound(table)">End Turn</a>
+		</div>
+		<div class="player-actions" data-if="{.isCurrentPlayer} && {.hasActionsToUse}">
+			<a class="button end-turn disabled">Assign Actions...</a>
+		</div>
+		<div id="selecting" class="select-prompt" data-if="{.isCurrentPlayer}">
+			<span>Choose wisely...</span>
+		</div>
+		<ul class="cards" data-path=".cards">
+			<li data-set-class="card {.id} {.$back().id} {.attribs.hitpoints.$choose(,destroyed)} {.isDisabled.$choose(disabled,)}"
+					data-set-data-id=".{$back().id}.{.id}.">
+
+				<ul class="status-list">
+					<li class="status" data-if=".states.disabled">Disabled</li>
+					<li class="status" data-if=".states.confused">Confused</li>
+					<li class="status" data-if=".states.untargetable">Untargetable</li>
+					<li class="status" data-if=".states.allyUntargetable">Allies cannot target</li>
+					<li class="status" data-if=".states.opponentUntargetable">Foes cannot target</li>
+				</ul>
+				<h4><span data-path=".cardDef.name">card name</span></h4>
+				<div class="card-stats">
+					<span class="card-stats-left">
+						<h6>Shield: <span data-path=".attribs.shield">10</span></h6>
+						<h6>HP: <span data-path=".attribs.hitpoints">10</span></h6>
+						<h6>Accuracy: <span data-path=".attribs.accuracyRating">10</span></h6>
+						<h6>Evasion: <span data-path=".attribs.evasionRating">10</span></h6>
+					</span>
+					<span class="card-stats-right">
+						<h6>Speed: <span data-path=".attribs.speed">10</span> (<span data-path=".order">5</span>)</h6>
+						<h6>Attack: <span data-path=".attribs.attackMin">10</span> to <span data-path=".attribs.attackMax">10</span></h6>
+						<h6>Critical: <span data-path=".attribs.criticalMult">120</span>x</h6>
+					</span>
+				</div>
+
+				<span class="destroyed-text" data-if="{.attribs.hitpoints} le 0">Destroyed</span>
+
+				<ul class="card-log" data-path=".logLines">
+					<li class="card-log-line" data-path=".">blah</li>
+				</ul>
+
+				<div class="card-actions" data-path=".actions">
+					<a data-set-class="button action {.canExecute.$choose(,disabled)} {.chosen.$choose(chosen,)}"
+							data-set-data-id=".{.$back(2).id}.{.$back().id}.{.id}."
+							data-set-data-tt="{.actionDef.description}">
+						<div class="bar-inner" data-set-style="width: {.$cooldownPercent()}%;"></div>
+						<span class="bar-text">
+							<span data-path=".actionDef.name">Name</span>
+							<span data-if="{.noTargets}">: no targets</span>
+						</span>
+						<span class="right">
+							<span data-if="{.actionDef.cooldown} gt 0" data-path=".actionDef.cooldown.$subtract(1)">2</span>
+							<span data-if="{.actionDef.cooldown} eq 0">0</span>
+						</span>
+						<span class="left" data-if="{.cooldown} gt 1 && !{.chosen}">in <span data-path=".cooldown">2</span></span>
+						<span class="left" data-if="{.cooldown} eq 1 && !{.chosen}">next turn</span>
+					</a>
+				</div>
+			</li>
+		</ul>
+	</div>
+</div>
+<script>
+	var mg = require('mg');
+	var table = require('mgStartup').table;
+</script>

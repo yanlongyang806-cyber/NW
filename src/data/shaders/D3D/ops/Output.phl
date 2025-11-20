@@ -1,0 +1,709 @@
+// Texture samplers
+%TEXSAMPLERS%
+
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+#ifndef DEPTH_ONLY
+#include "light_inc.hlsl"
+#endif
+
+#include "debug_inc.hlsl"
+#include rgb_hsv_inc.hlsl
+
+#include "outline_edge_detect.phl"
+
+// Parameters
+%PARAMS%
+
+#ifdef DEFERRED_LIGHTING
+#define MRT4
+#define DisableFog
+#define NoHDR
+#else
+#undef MRT4
+#endif
+
+#ifndef HAS_HDR_TEXTURE
+	#undef MRT2
+#endif
+
+// Main function prototype
+struct PS_OUTPUT
+{
+#ifdef DEPTH_ONLY
+	// depth-only still uses alpha cut-out in this case
+	float4 depth_objectid : SEM_COLOR(0);
+#else
+	#ifdef MRT4
+		float4 color[4] : SEM_COLOR(0);
+	#elseifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+#endif
+};
+
+PS_OUTPUT main_output (PS_INPUT_NORMAL v)
+{
+	#ifdef MANUAL_DEPTH_TEST
+	{
+		float2 coord;
+		getVPosNormalized(coord, v);
+	
+		float mydepth = -v.position_vs.z;
+		float depth_buffer_z = sampleTexDepthVS(depth_buffer_sampler, coord);
+		clip(depth_buffer_z - mydepth);
+	}
+	#endif
+	
+	PS_OUTPUT output;
+
+	float3 debug_out=0;
+	float3 bitangent;
+
+    #ifdef OVERRIDE_HDR
+        float4 colorHdr;
+    #endif
+	
+	#ifdef DEPTH_ONLY
+		float3 normal_vs = float3(1,0,0);
+		#ifndef NO_NORMALMAP
+			float3 binormal_vs = float3(0,1,0);
+			float3 tangent_vs = float3(0,0,1);
+		#endif
+		float3 view_vs = float3(0,0,0);
+		float one_over_distance_to_camera = 1;
+		float distance_to_camera = 1;
+	#else
+		// compute some commonly used values, they should get optimized out if unused
+		float one_over_distance_to_camera = 1 / length(v.position_vs.xyz);			// CD: hopefully the compiler turns this into rsqrt of dp3 instead if rcp of rcp of rsqrt of dp3
+		float distance_to_camera = 1 / one_over_distance_to_camera;
+		float3 view_vs = -v.position_vs.xyz * one_over_distance_to_camera;			// view vector (used by lighting and various effects)
+		#ifdef SM30
+			float3 normal_vs = fragmentIsFrontFacingSign(v) * v.normal_vs_and_unused.xyz;	// normalized vertex normal, invert if this is a backfacing poly
+		#else
+			float3 normal_vs = v.normal_vs_and_unused.xyz;	// normalized vertex normal, TODO invert if this is a backfacing poly
+		#endif
+		#ifndef NO_NORMALMAP
+			#ifdef SM30
+				float3 binormal_vs = fragmentIsFrontFacingSign(v) * rangeExpand(v.binormal_vs.xyz);		// vertex binormal, invert if this is a backfacing poly
+			#else
+				float3 binormal_vs = v.binormal_vs;			// vertex binormal, TODO invert if this is a backfacing poly
+			#endif
+			float3 tangent_vs = rangeExpand(v.tangent_vs.xyz);
+		#endif
+	#endif
+	
+	%TEMPS%
+
+	%CODE%
+
+	// Parameters from snippets, need to get passed on down for deferred rendering
+	//   %LitColor% - color to be lit
+	//   %Normal% - normal in tangent space
+	//   %Alpha% - alpha value
+	//   %UnlitColor% - color to be added
+	//   %AlphaRef% - value to use for alpha cutout
+	//   %LightBleed% - amount of light bleed-through
+	//   %ReflectionWeight% - amount of reflection to apply
+	//   %ReflectionColorMask% - mask for the reflection color
+	//   %Special% - special parameter for project/lighting model-specific effects
+	//   ReflectionTexture - (optional) sampler for cubemap or spheremap reflection
+
+	#ifdef OPAQUE_AFTER_ZPRE || NOALPHAKILL
+		#define NO_ALPHA
+	#endif
+
+	float4 special = %Special%;
+
+	#ifndef NO_ALPHA
+		float alpha = saturate((%Alpha%).w);
+	#else
+		// OPAQUE_AFTER_ZPRE or DEPTH_ONLY w/ NOALPHAKILL
+		// These need not concern itself with alpha
+		float alpha = 1.0;
+	#endif
+
+	#ifndef DEPTH_ONLY
+		#ifndef VERTEX_ONLY_LIGHTING
+			float ambient_occlusion = v.vertex_lighting.w;
+			float3 vertex_lighting = v.vertex_lighting.xyz; // just vertex lighting on SM30, vertex_lighting + ambient color on <SM30
+		#endif
+		#ifdef SM30
+			float3 ambient_lighting = ambient_light.xyz;
+		#else
+			float3 ambient_lighting = 0; // combined with vertex_lighting
+		#endif
+
+		#ifdef ShowSSAmbientOcclusion
+			ambient_occlusion = 1; //clear the existing ambient color so we only see ssao
+		#endif	
+
+		#ifdef NO_NORMALMAP
+			float3 N_vs = normal_vs;
+		#else
+			#ifdef NORMAL_PRECALCULATED
+				float3 N_vs = %Normal%.xyz;
+			#else
+				float3 N_vs = normalize(fromTangentSpace(tangent_vs, binormal_vs, normal_vs, %Normal%.xyz));
+				#ifdef AnisotropicSpec
+					bitangent = normalize(float3(binormal_vs.xyz * %Normal%.y) + float3(N_vs * (1 - %Normal%.z)));
+				#endif
+			#endif
+			#ifndef NO_DELTA_NORMAL_AO
+			#ifndef ShowSSAmbientOcclusion
+				ambient_occlusion *= saturate(dot(N_vs, normal_vs));
+			#endif
+			#endif
+		#endif
+
+		float groundlight_param=0;
+		float4 shadow_buffers;
+		#ifdef SHADOW_BUFFER
+			float2 coord;
+			getVPosNormalized(coord, v);
+
+			#ifdef D3D11
+				coord += inv_screen_params.xy * float2(-0.5, -0.5);
+			#endif
+
+			shadow_buffers = sampleTex2DNoMips(shadow_buffer_texture, coord);
+			#ifdef HALFTONE
+				// Ambient occlusion is applied as part of diffuse lighting
+			#else
+				ambient_occlusion *= (1-shadow_buffers.a);
+			#endif
+		#else
+			shadow_buffers = 0;
+		#endif
+
+		float3 unlit_color = %UnLitColor%.xyz;
+
+		float3 extra_lighting = %Lightmap%.xyz;
+		#ifdef NoLightmap
+			extra_lighting = 0;
+		#endif
+
+		#ifdef SM30
+			#ifdef UseAmbientCube // material template flag
+				#ifndef NoAmbientCube
+					#define ACTUALLY_USE_AMBIENT_CUBE
+				#endif
+			#endif
+		#endif
+
+		#ifndef NO_SKY_AMBIENT
+			#ifdef VERTEX_ONLY_LIGHTING
+				// Done in VS
+			#elseifdef NO_NORMALMAP
+				#ifdef SM30
+					#define ACTUALLY_DO_SKY_AMBIENT
+				#endif
+			#else
+				#define ACTUALLY_DO_SKY_AMBIENT
+			#endif
+		#endif
+
+		#ifdef ACTUALLY_DO_SKY_AMBIENT
+			#ifdef ACTUALLY_USE_AMBIENT_CUBE
+				float3 N_ws = mul( float4(N_vs,0), invview_mat ).xyz;
+				float3 cubemapvalue = sampleTexCube(TexSampler%AmbientCube%, N_ws.xyz).xyz;
+				ambient_lighting.xyz += cubemapvalue*sky_dome_color_front.xyz;
+
+				groundlight_param = 0;
+			#else
+			{
+				float4 hemi = calcHemisphereLighting(N_vs, v.hemisphere_dir_vs_and_unused.xyz);
+				ambient_lighting.rgb += hemi.rgb;
+				groundlight_param = saturate((hemi.a*special.w+(1 - special.w)) * getIntensity(sky_dome_color_back.xyz) * exposure_transform.x);
+
+				#ifdef SIDE_AS_RIMLIGHT
+					unlit_color += sky_dome_color_side * saturate(dot(N_vs, float3(0.9, 0, -0.4356)) * 1.5 - 0.5); // uni-direcitonal side lighting
+				#endif
+			}
+			#endif
+			// Otherwise was added to ambient in the vertex shader
+			// CREATURES TODO: groundlight_param is not set appropriately here, pass from VS instead.
+			//   Should we just always calc this in the VS if there is no normal map?
+		#endif
+
+		#ifdef ShowLightingNoAmbient
+			ambient_lighting = 0;
+		#endif
+
+
+		float3 albedo = (%LitColor%).xyz;
+
+		#ifdef ShowLighting || ShowLightingNoAmbient || ShowLightingLevels
+			#define HANDLES_COLOR_TINT
+			unlit_color = float3(0, 0, 0);
+			albedo = float3(1, 1, 1);
+		#endif
+
+		#ifdef FORCE_TINT
+			albedo *= v.color0.xyz;
+		#endif
+
+		float reflection_weight = %ReflectionWeight%.x * (1 - saturate(%ReflectionAddPercent%).x);
+		float reflection_add_weight = %ReflectionWeight%.x * saturate(%ReflectionAddPercent%).x;
+		float3 reflection_value = 0;
+		#ifdef ReflectionValueForced
+			reflection_weight = 1.0;
+			reflection_add_weight = 1.0;
+		#endif
+
+		#ifdef ReflectionCubemap
+		{
+			#define HAS_CUBEMAP
+			#ifdef NoCubeMaps
+				// Do Nothing
+				reflection_weight = 0;
+				reflection_add_weight= 0;
+			#else
+				//unlit_color = 0;
+				#ifdef NO_NORMALMAP
+					float3 norm = normal_vs;
+				#else
+					float3 norm = N_vs;
+				#endif
+				// Compute the reflection vector
+				float3 vRef = -reflect(view_vs, norm); //2 * dot( view_vs, norm ) * norm - view_vs;
+				vRef = comul_invview_mat(vRef);
+
+				#ifdef AllowRefMIPBias
+					reflection_value = sampleTexCubeLod(TexSampler%ReflectionTexture%, vRef, (%ReflectionMIPBias%).x).xyz;
+				#else
+					reflection_value = sampleTexCube(TexSampler%ReflectionTexture%, vRef).xyz;
+				#endif
+
+				reflection_value = InvToneMapLDR(reflection_value*%ReflectionColorMask%.xyz);
+			#endif
+		} // ReflectionCubemap
+		#elifdef ReflectionSimple
+		{
+			#ifdef NO_NORMALMAP
+				float3 norm = normal_vs;
+			#else
+				float3 norm = N_vs; // normalize(N_vs); // 3 more instructions if nothing else is normalizing it
+			#endif
+			float3 Rr;
+			Rr = -reflect(view_vs, norm); //2 * dot( view_vs, norm ) * norm - view_vs;
+			//Rr = normalize(float3(0,0,1) + Rr);
+			float2 texcoord = Rr.xy * float2(0.5, -0.5) + float2(0.5, -0.5);
+			#ifdef AllowRefMIPBias
+				reflection_value = sampleTex2DLod(TexSampler%ReflectionTexture%, texcoord.xy, (%ReflectionMIPBias%).x).xyz;
+			#else
+				reflection_value = sampleTex2D(TexSampler%ReflectionTexture%, texcoord.xy).xyz;
+			#endif
+			reflection_value = InvToneMapLDR(reflection_value * %ReflectionColorMask%.xyz);
+		} // ReflectionSimple
+		#else
+		{
+			reflection_weight = 0;
+			reflection_add_weight = 0;
+			reflection_value = 0;
+		}
+		#endif
+		#ifndef USE_OLD_REFLECTION
+			albedo = lerp(albedo, albedo * reflection_value, reflection_weight);
+		#endif
+		// Reflection values applied in Standard.LightingModel
+
+		#ifdef SHOW_COLOR_DEBUG
+			#define HANDLES_COLOR_TINT
+			float orig_alpha = saturate((%Alpha%).w);
+			alpha = debug_map_color(orig_alpha.xxxx).w;
+			#ifdef SHOW_COLOR_DEBUG_ALPHA
+				unlit_color = debug_map_color(orig_alpha.xxxx).xyz;
+				albedo = 0;
+			#else
+				unlit_color = debug_map_color(float4(unlit_color, 1)).xyz;
+				albedo = debug_map_color(float4(albedo, 1));
+			#endif
+		#endif
+	#endif
+
+	float alpha_for_clip = alpha;
+	#ifdef AlphaToCoverage
+		// Just outputting regular/soft alpha
+
+		alpha *= 1.4; // Compensates/matches our alphacutout value of 0.6
+		#ifdef AlphaToCoverageDepthCorrect
+			float2 dx = ddx(v.texcoords.xy*512);
+			float2 dy = ddy(v.texcoords.xy*512);
+
+			// Compute the mipmap size using derivatives
+			float size = max(rsqrt(min(dot(dx, dx), dot(dy, dy))), 1.0);
+			size *= 1;
+			alpha = size * (alpha - 0.5) + 0.5;
+		#endif
+		#ifdef DEPTH_ONLY
+			alpha_for_clip = alpha - (%AlphaRef%).x;
+		#endif
+	#else
+		#ifndef NoAlphaCutout
+			#ifndef NO_ALPHA
+				alpha_for_clip = alpha = step((%AlphaRef%).x, alpha);
+			#endif
+		#else
+			#ifdef AllowAlphaRef
+				alpha_for_clip = alpha - (%AlphaRef%).x;
+			#endif
+		#endif
+	#endif
+
+	#ifndef DEPTH_ONLY
+		#ifndef NO_ALPHA
+			alpha = alpha * v.color0.w;
+			alpha_for_clip = alpha_for_clip * v.color0.w;
+		#endif
+		#ifndef HANDLES_COLOR_TINT
+			unlit_color = unlit_color * v.color0.xyz;
+			albedo = albedo * v.color0.xyz;
+		#endif
+	#endif
+
+	#ifndef NO_ALPHA
+		#ifndef NO_ALPHA_CLIP
+			clip(alpha_for_clip - 0.001);
+		#endif
+	#endif
+	
+	#ifdef NO_UNLIT
+		#ifndef DEPTH_ONLY
+			unlit_color = 0;
+		#endif
+	#endif
+
+	#ifdef DEPTH_ONLY
+		
+		// need to output alpha for alpha-cut-out geometry
+		output.depth_objectid = float4(0, 0, 0, alpha);
+
+	#else
+
+		float3 outColor;
+		float3 position_vs = v.position_vs.xyz;
+
+		// Note: this define is set manually in material templates
+		#ifdef BackLight
+			unlit_color *= unlit_color.rgb * 0.65 + 0.35;
+		#endif
+
+#ifdef DEFERRED_LIGHTING
+		// pack lighting inputs into render targets
+		output.color[0].rgb = outColor = (%LitColor%).rgb;
+		output.color[0].a   = (%Alpha%) .a;
+		output.color[1].rgb = rangeCompress(N_vs);
+		output.color[1].a   = 1.0;
+		output.color[2] = float4((%SpecularColor%).rgb, (%SpecularValue%).r);
+		output.color[3] = float4(unlit_color, (%DiffuseWarpY%).x);
+#elifdef DisableLights
+		outColor = unlit_color;
+#else
+		%LIGHTING_MODEL%
+
+		#ifdef ShowLightingLevels
+			#define NoHDR
+			// use an absolute scale of physical light, show isophotes
+			float lightLevel = getLuminance(outColor);
+
+			outColor = calcIsoBar(lightLevel.xxx, lightLevel, 0.125);
+		#endif
+
+		#ifdef SHADOW_BUFFER
+			//.w is the SSAO direct light attenuation amount
+			outColor.rgb *= 1 - shadow_buffers.a * sky_dome_color_side.w;
+		#endif
+
+		#ifdef BackLight
+			#ifdef NO_NORMALMAP
+				outColor *= v.backlight_params.x; // dot(normalize(N_vs + float3(0, -0.65, 0)), view_vs) * 1.8;
+				outColor += %BackLightColor%.xyz * (0.35 + albedo) * saturate(v.backlight_params.y * %BackLightBleed%.y + %BackLightBleed%.x);
+			#else
+				outColor *= dot(normalize(N_vs + float3(0, -0.65, 0)), view_vs) * 1.8;
+				outColor += %BackLightColor%.xyz * (0.35 + albedo) * saturate(-dot(N_vs, view_vs) * %BackLightBleed%.y + %BackLightBleed%.x);
+			#endif
+		#endif
+
+#endif
+
+		// fog
+#ifndef DisableFog
+	#ifndef UBERLIGHT_DEBUG
+			fogApply(outColor, FogMatrix_UNUSED, v.position_vs, distance_to_camera);
+	#endif
+#endif
+
+		#ifdef SPECIAL_DESATURATE
+			outColor = lerp(outColor, dot(outColor, float3(0.3, 0.59, 0.11)), saturate(special.x));
+		#endif
+
+		#ifdef ShowLumGradient
+			outColor.r = getLuminance(outColor);
+			outColor.rgb = float3(ddx(outColor.r)  + 0.5, ddy(outColor.r) + 0.5, 0.5); 
+		#endif
+		#ifdef ShowRGradient
+			outColor.rgb = float3(ddx(outColor.r)  + 0.5, ddy(outColor.r) + 0.5, 0.5); 
+		#endif
+		#ifdef ShowGGradient
+			outColor.rgb = float3(ddx(outColor.g)  + 0.5, ddy(outColor.g) + 0.5, 0.5); 
+		#endif
+		#ifdef ShowBGradient
+			outColor.rgb = float3(ddx(outColor.b)  + 0.5, ddy(outColor.b) + 0.5, 0.5); 
+		#endif
+
+		#ifdef NoHDR
+			output.color[0].rgb = outColor;
+		#else
+			output.color[0].rgb = ToneMapLDR(outColor);
+		#endif
+
+		#ifdef OPAQUE_AFTER_ZPRE
+			#ifdef OUTPUT_PACKED_NORMALS
+				#ifndef SM30
+					output.color[0].a = 1;
+				#else
+					// Pack the normal into 0-1 in two fixed-point values in a single float.
+					output.color[0].a = floor( saturate(N_vs[0]*0.5+0.5) * 15.99 ) + floor( saturate(N_vs[1]*0.5+0.5) * 15.99 ) * 16;
+					// Reverse the conversion scale by 255 to 8.0 fixed-point. The above value contains a scale of 256 which
+					// allows the bits to stay exactly in their bit field for 0.8 fixed point.
+					// This minimizes some overflows from one 4-bit field into the other, which corrupts the normals and causes 
+					// extraneous outlines.
+					output.color[0].a = output.color[0].a * 0.003921568627f; // = 1/255
+				#endif
+			#else
+				output.color[0].a = 1;
+			#endif
+		#else
+			output.color[0].a = alpha;
+		#endif
+
+		#ifdef MRT2
+            #ifdef OVERRIDE_HDR
+                output.color[1] = colorHdr;
+            #else
+			#ifdef NoHDR
+				output.color[1].rgb = 0;
+			#else
+				output.color[1].rgb = ToneMapHDR(outColor.rgb);
+			#endif
+			#ifdef SHOW_HDR
+				output.color[0].rgb = output.color[1].rgb;
+			#endif
+			#ifndef NO_NORMAL
+				#ifdef OPAQUE_AFTER_ZPRE
+					#ifdef OUTPUT_PACKED_NORMALS
+						// Pack the normal into 0-1 in two fixed-point values in a single float.
+						output.color[1].a = floor( saturate(N_vs[0]*0.5+0.5) * 15.99 ) + floor( saturate(N_vs[1]*0.5+0.5) * 15.99 ) * 16;
+						// Reverse the conversion scale by 255 to 8.0 fixed-point. The above value contains a scale of 256 which
+						// allows the bits to stay exactly in their bit field for 0.8 fixed point.
+						// This minimizes some overflows from one 4-bit field into the other, which corrupts the normals and causes 
+						// extraneous outlines.
+						output.color[1].a = output.color[1].a * 0.003921568627f; // = 1/255
+						//output.color[1].a = lerp(output.color[1].a, alpha, step(alpha, 0.99f));
+					#else
+						output.color[1].a = 1;
+					#endif
+				#else
+					output.color[1].a = alpha;
+				#endif
+			#else
+				output.color[1].a = alpha;
+			#endif
+            #endif
+		#endif
+
+		#ifdef SHOW_COLOR_DEBUG_ALPHA
+			#ifndef NoAlphaCutout
+				#ifndef AlphaToCoverage
+					if (orig_alpha < (%AlphaRef%).x) {
+						output.color[0].x = 1;
+					}
+				#endif
+			#endif
+		#endif
+
+		#ifdef ShowColor0
+			output.color[0] = v.color0;
+		#endif
+		#ifdef ShowAlbedo
+			output.color[0].rgb = albedo;
+		#endif
+        #ifdef ShowTouched
+            output.color[0].rgb = float3( 1, 1, 1 );
+        #endif
+		#ifdef ShowNormals
+			output.color[0].rgb = rangeCompress(comul_invview_mat(N_vs).rgb);
+		#endif
+		#ifdef ShowVertexNormals
+			output.color[0].rgb = rangeCompress(comul_invview_mat(normal_vs).rgb );
+		#endif
+		#ifdef ShowVertexBinormals
+			#ifdef NO_NORMALMAP
+				output.color[0].rgb = float3(0, 0, 0);
+			#else
+				output.color[0].rgb = rangeCompress(comul_invview_mat(binormal_vs).rgb);
+			#endif
+		#endif
+		#ifdef ShowVertexTangents
+			#ifdef NO_NORMALMAP
+				output.color[0].rgb = float3(0, 0, 0);
+			#else
+				output.color[0].rgb = rangeCompress(comul_invview_mat(tangent_vs).rgb);
+			#endif
+		#endif
+		#ifdef ShowVertexLighting
+			#ifdef VERTEX_ONLY_LIGHTING
+				output.color[0].rgb = ToneMapLDR(v.diffuse_value*4);
+			#else
+				output.color[0].rgb = ToneMapLDR(vertex_lighting.rgb * ambient_occlusion);
+			#endif
+		#endif
+		#ifdef ShowTangentNormals
+			output.color[0].rgb = rangeCompress((%Normal%).rgb);
+		#endif
+		#ifdef ShowVSNormals
+			output.color[0].rgb = rangeCompress(N_vs.rgb);
+		#endif
+		#ifdef ShowVSNormalsWithInvalidNormalsHighlighted
+			float nrmLen = length(%Normal%.xyz);
+			if (nrmLen < 0.25)
+				output.color[0].rgb = float3(0, 1, 0);
+			else
+			if (nrmLen < 0.81)
+				output.color[0].rgb = float3(0, 0, 0);
+			else
+				output.color[0].rgb = rangeCompress(N_vs.rgb);
+		#endif
+		#ifdef ShowVSVertexNormals
+			output.color[0].rgb = rangeCompress(normal_vs.rgb);
+		#endif
+		#ifdef ShowVSVertexBinormals
+			#ifdef NO_NORMALMAP
+				output.color[0].rgb = float3(0, 0, 0);
+			#else
+				output.color[0].rgb = rangeCompress(binormal_vs.rgb);
+			#endif
+		#endif
+		#ifdef ShowVSVertexTangents
+			#ifdef NO_NORMALMAP
+				output.color[0].rgb = float3(0, 0, 0);
+			#else
+				output.color[0].rgb = rangeCompress(tangent_vs.rgb);
+			#endif
+		#endif
+		#ifdef ShowTexcoord0
+			output.color[0].rgb = float3(fmod(v.texcoords.xy, 1), 0);
+		#endif
+		#ifdef ShowTexcoord1
+			output.color[0].rgb = float3(fmod(v.texcoords.zw, 1), 0);
+		#endif
+		#ifdef ShowTexcoord0Checker
+			output.color[0].rgb = saturate(fmod(floor(abs(v.texcoords.x)*50) + floor(abs(v.texcoords.y)*50), 2));
+		#endif
+		#ifdef ShowTexcoord0Precise
+			output.color[0].rgb = float3(fmod(abs(v.texcoords.x)*1024, 1), fmod(abs(v.texcoords.y)*1024, 1), 0);
+		#endif
+		#ifdef ShowSpecularValue
+			output.color[0].rgb = (%SpecularValue%).x;
+		#endif
+		#ifdef ShowSpecularColor
+			output.color[0].rgb = (%SpecularColor%).rgb;
+		#endif
+		#ifdef ShowSpecularExponent
+			output.color[0].rgb = (%SpecularExponent%).x;
+		#endif
+		#ifdef ShowHemisphereColor
+			output.color[0].rgb = hemisphere_color;
+		#endif
+		#ifdef ShowVSHemisphereDir
+			output.color[0].rgb = rangeCompress(v.hemisphere_dir_vs_and_unused.xyz);
+		#endif
+		#ifdef ShowHemisphereDir
+			output.color[0].rgb = rangeCompress(comul_invview_mat(v.hemisphere_dir_vs_and_unused.xyz).rgb);
+		#endif
+		#ifdef ShowRefract
+			#ifdef HAS_REFRACT
+				output.color[0] = float4(4, 0, 0, 1);
+				#ifdef MRT2
+					output.color[1].rgb = float3(1, 0, 0);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowCubeMap
+			#ifdef HAS_CUBEMAP
+				output.color[0] = float4(4, 0, 0, 1);
+				#ifdef MRT2
+					output.color[1].rgb = float3(0.2, 0.05, 0);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowHasNormalMap
+			#ifdef HAS_NORMALMAP
+				output.color[0] = float4(4, 0, 0, 1);
+				#ifdef MRT2
+					output.color[1].rgb = float3(0.2, 0.05, 0);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowHasNoNormalMap
+			#ifndef NO_NORMALMAP
+				output.color[0] = float4(4, 0, 0, 1);
+				#ifdef MRT2
+					output.color[1].rgb = float3(0.2, 0.05, 0);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowSingleDirNoNormalShader
+			#ifdef SINGLE_DIRLIGHT
+				#ifdef NO_NORMALMAP
+					output.color[0] = float4(0, 2, 0, 1);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowDepthFade
+			#ifdef HAS_DEPTH_FADE
+				output.color[0] = float4(4, 0, 0, 1);
+				#ifdef MRT2
+					output.color[1].rgb = float3(0, 0, 0.1);
+				#endif
+			#endif
+		#endif
+		#ifdef ShowFacing
+			#ifdef SM30
+				if (fragmentIsFrontFacingBool(v))
+					output.color[0].rgb = float3(0, 1, 0);
+				else
+					output.color[0].rgb = float3(1, 0, 0);
+			#endif
+		#endif
+		#ifdef ShowAmbientOcclusion
+				output.color[0].rgb = ambient_occlusion;
+		#endif
+		#ifdef ShowSSAmbientOcclusion
+				output.color[0].rgb = shadow_buffers.a; // ambient_occlusion;
+		#endif
+		#ifdef ShowUnlitColor
+				output.color[0].rgb = %UnLitColor%.xyz;
+		#endif
+
+		#ifdef DEBUG_OUT
+				output.color[0].rgb = debug_out;
+		#endif
+
+		#ifdef MEASURE_BRIGHTNESS
+			output.color[0].r = getIntensity(%UnLitColor%.xyz);
+			output.color[0].g = getIntensity(%LitColor%.xyz);
+			output.color[0].b = getIntensity((%SpecularValue%).x * %SpecularColor%.xyz);
+			output.color[0].a = 1;
+		#endif
+	
+	#endif
+
+	return output;
+}
+
+

@@ -1,0 +1,22 @@
+OperationDef
+	Name "CharacterBacklightColor" // Name of the operation
+	Description "The character backlight color set in the sky file"
+	Type SIMPLE
+
+	Input
+		Name BacklightColor
+		Description "Backlight color (internally generated value)."
+		NoAutoConnect 1
+		NoManualConnect 1
+		Hidden 1
+		Type CharacterBacklightColor
+		Float 3
+	EndInput
+	
+	Output
+		Name Result
+		Description "RGB color of the character backlight."
+		Float 3
+	EndOutput
+
+EndOperationDef

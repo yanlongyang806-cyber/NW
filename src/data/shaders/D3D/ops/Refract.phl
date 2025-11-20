@@ -1,0 +1,70 @@
+//Refract.phl
+{
+#define HAS_REFRACT
+
+#ifndef DEPTH_TEXTURE
+	float2 coord_orig, coord3;
+	float4 sample;
+	float3 normal_TS = %Normal%.xyz; // Using normal in tangent space, might want to adapt this to use viewspace instead...
+	float2 skewFromNormal = normal_TS.xy * float2(1, -1);
+	
+	// Sample depth at view pixel
+	getVPosNormalized(coord_orig, v);
+
+	float skewAmount = clamp((%SkewScale%).x, -(%MaxSkew%).x, (%MaxSkew%).x);
+	coord3 = coord_orig + skewFromNormal * skewAmount;
+
+	InvToneMapScreen(TexSampler%ScreenColor%, coord3, sample);
+	
+	%Result%.xyz = sample.xyz;
+	%Result%.w = 1;
+#else
+	float2 coord_orig, coord2, coord3;
+	float depthbuffer, depthbuffer2;
+
+
+	float4 sample;
+
+	float mydepth = -v.position_vs.z;
+
+	float3 normal_TS = %Normal%.xyz; // Using normal in tangent space, might want to adapt this to use viewspace instead...
+	float2 skewFromNormal = normal_TS.xy /* inv_screen_params.xy * 1024*/ * float2(1, -1);
+	float w = one_over_distance_to_camera;
+	float skewScale = (%SkewScale%).x;
+	float maxSkew = (%MaxSkew%).x;
+	
+	float skewScaleFalloff = 2; // Larger number makes more refraction happen shallower
+	
+	// "good" defaults (from CoH)
+	// skewScale = 0.13;
+	// maxSkew = 0.07;
+	
+	// Sample depth at view pixel
+	getVPosNormalized(coord_orig, v);
+	depthbuffer = sampleTexDepthVS(TexSampler%ScreenDepth%, coord_orig);
+	depthbuffer = depthbuffer - mydepth;
+	depthbuffer = w * depthbuffer;
+	depthbuffer = saturate(depthbuffer * skewScaleFalloff);
+	
+	// Sample depth at pixel we're about to draw
+	float skewAmount = skewScale * depthbuffer;
+	skewAmount = clamp(skewAmount, -maxSkew, maxSkew);
+	coord2 = coord_orig + skewFromNormal * skewAmount;
+	depthbuffer2 = sampleTexDepthVS(TexSampler%ScreenDepth%, coord2);
+	depthbuffer2 = depthbuffer2 - mydepth;
+	depthbuffer2 = w * depthbuffer2;
+	depthbuffer2 = saturate(depthbuffer2 * skewScaleFalloff);
+	
+	skewAmount = depthbuffer * depthbuffer2 * skewScale;
+	skewAmount = clamp(skewAmount, -maxSkew, maxSkew);
+
+	coord3 = coord_orig + skewFromNormal * skewAmount;
+
+	InvToneMapScreen(TexSampler%ScreenColor%, coord3, sample);
+
+	%Result%.xyz = sample.xyz;
+
+	// Set alpha
+	%Result%.w = 1;
+#endif
+}

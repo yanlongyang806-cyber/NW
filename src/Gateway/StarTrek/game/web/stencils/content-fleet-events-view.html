@@ -1,0 +1,69 @@
+<div class="fleet-event-details-container">
+	<h2>Event Details</h2>
+	<div class="fleet-event-details">
+		<h3 data-path=".title">Monthly All Hands Event</h3>
+		<ul class="event-basics">
+			<li class="event-basics-date" data-path=".starttime.$fullDateTime()">November 14, 2012 @ 7:00pm</li>
+			<li class="event-basics-duration">Lasts <span data-path=".duration.$formatDuration()">4 hours</span></li>
+			<li class="event-basics-repeat" data-if=".recurrencefrequency eq 1">Repeats Daily</li>
+			<li class="event-basics-repeat" data-if=".recurrencefrequency gt 1">Repeats every <span data-path=".recurrencefrequency">2</span> days</li>
+		</ul>
+		<dl>
+			<dt>Description:</dt>
+			<dd data-path=".description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</dd>
+
+			<dt>Allowed Ranks:</dt>
+			<dd><span data-path=".minlevel">Ensign 1</span> - <span data-path=".maxlevel">Vice Admiral 5</span></dd>
+
+			<dt>Minimum Fleet Rank:</dt>
+			<dd data-path=".minguildrank">Fleet Sergeant</dd>
+
+			<dt>Attendance Limits:</dt>
+			<dd><span data-path=".minaccepts">1</span> - <span data-path=".maxaccepts">50</span></dd>
+
+			<dt>Attending:</dt>
+			<dd>
+				<span class="event-Accept"><span data-path=".accepts">12</span> Accept</span>
+				<span class="event-Maybe"><span data-path=".maybes">5</span> Maybe</span>
+				<span class="event-Refuse"><span data-path=".refusals">10</span> No</span>
+			</dd>
+		</dl>
+	</div>
+	<div class="fleet-event-rsvp">
+		<!--
+		 <div class="rsvp-response">
+			<p>You have not responded to this event.</p>
+			<span class="button-standard">RSVP to this Event</span>
+		</div>
+		-->
+		<table id="rsvp_table">
+			<thead>
+				<tr>
+					<th class="rsvp-name">Name</th>
+					<th class="rsvp-response">Response</th>
+					<th class="rsvp-message">Message</th>
+					<th></th>
+				</tr>
+			</thead>
+
+			<tbody data-if="{.replies}" data-path=".replies">
+				<tr>
+					<td><span data-path=".name">Charactername</span><span></span></td>
+					<td><span data-path=".replytype.$map(Accept:Accept, Maybe:Maybe, Refuse:No)" data-set-class="event-{.replytype}"></span></td>
+					<td><span data-path=".replymessage">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</span></td>
+					<td></td>
+				</tr>
+			</tbody>
+			
+			<tbody data-if="!{.replies}">
+				<tr><td colspan="4"><span>There are no responses to this event</span></td></tr>
+			</tbody>
+			
+		</table>
+	</div>
+	<div class="clear"></div>
+</div>
+
+<script>
+	client.fleetEventsViewTableInit();
+</script>

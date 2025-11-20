@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="AutoGen\UtilitiesLibTest_AutoGen_1.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="AutoGen\UtilitiesLibTest_AutoGen_2.c">
+      <Filter>AutoGen</Filter>
+    </ClCompile>
+    <ClCompile Include="bitcount.c" />
+    <ClCompile Include="clearsilver.c" />
+    <ClCompile Include="crypt.c" />
+    <ClCompile Include="FilespecMap.c" />
+    <ClCompile Include="GenericWorkerThreadTest.c" />
+    <ClCompile Include="gimmetest.c" />
+    <ClCompile Include="HttpClient.c" />
+    <ClCompile Include="httpdate.c" />
+    <ClCompile Include="main.c" />
+    <ClCompile Include="memory.c" />
+    <ClCompile Include="netsmtp.c" />
+    <ClCompile Include="oneoff.c" />
+    <ClCompile Include="perf_oneoff.c" />
+    <ClCompile Include="synchronization.c" />
+    <ClCompile Include="taskServerDriver.c" />
+    <ClCompile Include="test_file.c" />
+    <ClCompile Include="TestDisasm.c" />
+    <ClCompile Include="TestPipes.c" />
+    <ClCompile Include="TestRingStream.c" />
+    <ClCompile Include="TestTiming.c" />
+    <ClCompile Include="TextParserTest.c" />
+    <ClCompile Include="TStringUtil.c" />
+    <ClCompile Include="url.c" />
+    <ClCompile Include="utils.c" />
+    <ClCompile Include="uuid.c" />
+    <ClCompile Include="zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="taskServerDriver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="AutoGen">
+      <UniqueIdentifier>{eb2c7785-6ccb-4b46-a675-3391c86e7da3}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

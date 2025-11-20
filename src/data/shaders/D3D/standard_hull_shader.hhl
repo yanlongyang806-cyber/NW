@@ -1,0 +1,117 @@
+
+#include "vs_outputs.hlsl"
+#include "hs_outputs.hlsl"
+
+cbuffer view_spec : register( b0 )
+{
+	uniform float4x4 projection_mat						: packoffset(c0);	// view -> clip space	(Objects may have force far depth, this goes here)
+	uniform float4x4 modelview_mat						: packoffset(c4);	// model -> view space
+	uniform float4x4 model_mat							: packoffset(c8);
+};
+
+HS_PatchConstOut HS_PatchConstFunc( InputPatch< VS_OUTPUT_NORMAL, 3 > I, uint PatchID : SV_PrimitiveID )
+{
+	HS_PatchConstOut output;
+	// The following two variables should probably be moved over to the constant buffer so they may be controlled by the user.
+	float scaler = 300;							// global scaler (higher the number, greater the triangle count)
+	float distanceFromCameraFalloff = 200;		// distance till tessellation falls off.
+#ifndef IGNORE_FACING
+	float3 edgeNormal[3];
+#endif IGNORE_FACING
+	float3 E;
+	float3 V;
+	float edgeLength[3];
+	float4 projectedPosition[3];
+	float highestTessellationAllowed = 6;
+	float3 edgeScaler;
+	float3 distanceScaler;
+	projectedPosition[0] = (mul(projection_mat,I[0].position_clip));
+	projectedPosition[1] = (mul(projection_mat,I[1].position_clip));
+	projectedPosition[2] = (mul(projection_mat,I[2].position_clip));
+	// edge lengths are calculated according to screen space.
+	edgeLength[0] = distance(projectedPosition[1].xy/projectedPosition[1].w*float2(0.5,-0.5), projectedPosition[2].xy/projectedPosition[2].w*float2(0.5,-0.5));
+	edgeLength[1] = distance(projectedPosition[0].xy/projectedPosition[0].w*float2(0.5,-0.5), projectedPosition[2].xy/projectedPosition[2].w*float2(0.5,-0.5));
+	edgeLength[2] = distance(projectedPosition[1].xy/projectedPosition[1].w*float2(0.5,-0.5), projectedPosition[0].xy/projectedPosition[0].w*float2(0.5,-0.5));
+
+#ifndef IGNROE_DISTANCE
+	distanceScaler.x = 1-(projectedPosition[0].z / distanceFromCameraFalloff);
+	distanceScaler.y = 1-(projectedPosition[1].z / distanceFromCameraFalloff);
+	distanceScaler.z = 1-(projectedPosition[2].z / distanceFromCameraFalloff);
+#else
+	distanceScaler = (1,1,1);
+#endif
+
+#ifndef IGNORE_FACING
+	edgeNormal[0] = normalize(I[2].normal_vs_and_unused.xyz + I[1].normal_vs_and_unused.xyz);
+	edgeNormal[1] = normalize(I[2].normal_vs_and_unused.xyz + I[0].normal_vs_and_unused.xyz);
+	edgeNormal[2] = normalize(I[0].normal_vs_and_unused.xyz + I[1].normal_vs_and_unused.xyz);
+	edgeScaler.x = (1-abs(dot(edgeNormal[0],float3(0,0,1))));
+	edgeScaler.y = (1-abs(dot(edgeNormal[1],float3(0,0,1))));
+	edgeScaler.z = (1-abs(dot(edgeNormal[2],float3(0,0,1))));
+#else
+	edgeScaler = (1,1,1);
+#endif
+
+	// Calculate tessellation amount as a combination of the length of the edge (in screen space) and the edge normal (if it doesn't point at the camera, tessellate more). 
+	output.edgeTess[ 0 ] = min(highestTessellationAllowed,max(3.0 * (edgeLength[0] * scaler) * edgeScaler.x * distanceScaler.x,1));
+	output.edgeTess[ 1 ] = min(highestTessellationAllowed,max(3.0 * (edgeLength[1] * scaler) * edgeScaler.y * distanceScaler.y,1));
+	output.edgeTess[ 2 ] = min(highestTessellationAllowed,max(3.0 * (edgeLength[2] * scaler) * edgeScaler.z * distanceScaler.z,1));
+	output.insideTess = (output.edgeTess[0] + output.edgeTess[1] + output.edgeTess[2]) / 3.0;
+
+	// Control Net used in the domain shader for triangulating new vert positions within the control patch.
+#ifdef PN_TRIANGLES
+	output.pnControlNet[0] = I[0].position_clip.xyz;
+	output.pnControlNet[1] = (2 * I[0].position_clip.xyz + I[1].position_clip.xyz - dot((I[1].position_clip.xyz - I[0].position_clip.xyz),I[0].normal_vs_and_unused.xyz) * I[0].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[2] = (2 * I[1].position_clip.xyz + I[0].position_clip.xyz - dot((I[0].position_clip.xyz - I[1].position_clip.xyz),I[1].normal_vs_and_unused.xyz) * I[1].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[3] = I[1].position_clip.xyz;
+	output.pnControlNet[4] = (2 * I[0].position_clip.xyz + I[2].position_clip.xyz - dot((I[2].position_clip.xyz - I[0].position_clip.xyz),I[0].normal_vs_and_unused.xyz) * I[0].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[6] = (2 * I[1].position_clip.xyz + I[2].position_clip.xyz - dot((I[2].position_clip.xyz - I[1].position_clip.xyz),I[1].normal_vs_and_unused.xyz) * I[1].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[7] = (2 * I[2].position_clip.xyz + I[0].position_clip.xyz - dot((I[0].position_clip.xyz - I[2].position_clip.xyz),I[2].normal_vs_and_unused.xyz) * I[2].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[8] = (2 * I[2].position_clip.xyz + I[1].position_clip.xyz - dot((I[1].position_clip.xyz - I[2].position_clip.xyz),I[2].normal_vs_and_unused.xyz) * I[2].normal_vs_and_unused.xyz) / 3;
+	output.pnControlNet[9] = I[2].position_clip.xyz;
+	E = (output.pnControlNet[1] + output.pnControlNet[2] + output.pnControlNet[4] + output.pnControlNet[6] + output.pnControlNet[7] + output.pnControlNet[8]) / 6;
+	V = (output.pnControlNet[0] + output.pnControlNet[3] + output.pnControlNet[9]) / 3;
+	output.pnControlNet[5] = E + (E - V) / 2;
+#endif
+
+	return output;
+}
+
+[domain("tri")]
+[partitioning("fractional_odd")]
+[outputtopology("triangle_cw")]
+[outputcontrolpoints(3)]
+[patchconstantfunc("HS_PatchConstFunc")]
+HS_OUTPUT_STANDARD standardHullShader( InputPatch< VS_OUTPUT_NORMAL, 3 > vs_input, uint uCPID : SV_OutputControlPointID )
+{
+	HS_OUTPUT_STANDARD hsOutput = (HS_OUTPUT_STANDARD)0;
+
+	hsOutput.position_clip = vs_input[uCPID].position_clip;
+	hsOutput.texcoords = vs_input[uCPID].texcoords;
+	hsOutput.position_vs = vs_input[uCPID].position_vs;	// view space position, world space fog height interpolater fog_value if VERTEX_FOG
+	hsOutput.color0 = vs_input[uCPID].color0;
+	hsOutput.instanceParam = vs_input[uCPID].instanceParam;
+
+	hsOutput.hemisphere_dir_vs_and_unused = vs_input[uCPID].hemisphere_dir_vs_and_unused;	// xyz: hemisphere lighting direction (unless NO_NORMALMAP, then nothing)
+														// w:   unused
+	hsOutput.vpos_xyw_and_unused = vs_input[uCPID].vpos_xyw_and_unused;	// xyz: view space position.xyw (for terrain_heightmap, detail fade alpha)
+														// w:   ambient intensity for HALFTONE
+	hsOutput.normal_vs_and_unused = vs_input[uCPID].normal_vs_and_unused;
+
+	#ifndef VERTEX_ONLY_LIGHTING
+		hsOutput.vertex_lighting = vs_input[uCPID].vertex_lighting;
+	#endif
+	#ifndef NO_NORMALMAP
+		hsOutput.tangent_vs = vs_input[uCPID].tangent_vs;				// view space tangent, range compressed
+		hsOutput.binormal_vs = vs_input[uCPID].binormal_vs;				// view space binormal, range compressed
+	#else
+		#ifdef SINGLE_DIRLIGHT
+			hsOutput.sdl_values = vs_input[uCPID].sdl_values;			// N*L, L*R
+		#elifdef VERTEX_ONLY_LIGHTING
+			hsOutput.diffuse_value = vs_input[uCPID].diffuse_value;		// alpha is specular_value
+		#endif
+		hsOutput.backlight_params = vs_input[uCPID].backlight_params;	// xy - backlight, zw - unused
+	#endif
+
+	return hsOutput;
+}

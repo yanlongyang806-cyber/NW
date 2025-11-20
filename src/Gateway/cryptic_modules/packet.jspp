@@ -1,0 +1,558 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// Packet
+//
+// Collects and builds Cryptic-Style packets.
+//
+//
+
+var assert = require('assert');
+
+var log = require('./log');
+var dbg = require('./dbg');
+var perf = require('./perf');
+var EBuffer = require('./EBuffer');
+
+///////////////////////////////////////////////////////////////////////////
+
+var Packet = function Packet(conn, buf)
+{
+	dbg.trace();
+
+	if(buf)
+	{
+		this.buffer = new EBuffer(buf);
+	}
+	else
+	{
+		this.buffer = new EBuffer(1024);
+	}
+
+	this.conn = conn;
+	this.uncommitted = false;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// startPacket
+//
+// Begins a new packet with the given command.
+//
+// This will reset the packet, deleting anything previously put in it. So,
+// make sure you send the packet (with endPacket) if you reuse Packets.
+//
+Packet.prototype.startPacket = function startPacket(cmd)
+{
+	dbg.trace();
+
+	if(this.uncommitted)
+	{
+		log.warn('There was uncommitted data in the packet when startPacket was called. This data was dropped.');
+	}
+
+	this.uncommitted = true;
+
+	this.buffer.reset();
+	this.buffer.appendUInt32(0); // the size will eventually get put here
+
+	if(this.conn.crc)
+	{
+		this.buffer.appendUInt32(0); // for the crc
+		this.buffer.appendUInt32(0); // for the sequence number
+	}
+
+
+	this.sendUInt8(cmd);
+}
+
+//
+// endPacket
+//
+// Finalizes and sends the packet.
+//
+Packet.prototype.endPacket = function endPacket()
+{
+	dbg.trace();
+
+	if(!this.uncommitted)
+	{
+		log.warn('There is no uncommitted data in the packet to send. Not sending.')
+		return;
+	}
+
+	if(this.conn.state === 'connected')
+	{
+		var self = this;
+		var data = this.prepareBufferForSend();
+
+		perf.count('packet:bytes_sent', data.length);
+		perf.count('packet:packets_sent', 1);
+
+		this.conn.writer.write(data); // writes through to the socket.
+		if(this.conn.writer.flush)
+		{
+			this.conn.writer.flush();
+		}
+
+		self.uncommitted = false;
+	}
+	else
+	{
+		log.error('Packet.endPacket: unable to send packet. Not connected to server. state='+this.conn.state);
+	}
+}
+
+//
+// prepareBufferForSend
+//
+// Prepares and returns a buffer suitable for sending. This will update the
+// packet length, sequence number, crc, and so on.
+//
+// Calling this function will modify the buffer, so it's not a good idea to
+// call it more than once on any one packet.
+//
+Packet.prototype.prepareBufferForSend = function prepareBufferForSend(callback)
+{
+	dbg.trace();
+
+	// Update the length
+	this.buffer.writeUInt32(this.buffer.end, 0);
+
+//	if(this.conn.crc)
+//	{
+//	}
+
+	return this.buffer.getBuffer();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// sendString
+//
+// Appends a null-terminated string to the packet.
+//
+Packet.prototype.sendString = function sendString(str)
+{
+	dbg.trace(str);
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(4); // verify string
+	}
+
+	// i18n: This may not be UTF-8 safe? seems to work in 8 bit chunks
+	this.buffer.appendString(str);
+}
+
+//
+// sendUInt8
+//
+// Appends a UInt8 to the packet.
+//
+Packet.prototype.sendUInt8 = function sendUInt8(val)
+{
+	dbg.trace(val);
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(1);  // verify as bits
+		this.buffer.appendUInt32(8); // verify length of 8
+	}
+
+	this.buffer.appendUInt8(val);
+}
+
+//
+// sendUInt32
+//
+// Appends a UInt32 to the packet.
+//
+Packet.prototype.sendUInt32 = function sendUInt32(val)
+{
+	dbg.trace(val);
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(1);   // verify as bits
+		this.buffer.appendUInt32(32); // verify length of 32
+	}
+
+	this.buffer.appendUInt32(val>>>0);
+}
+
+//
+// sendBits
+//
+// Appends the given number of bits to the packet.
+//
+Packet.prototype.sendBits = function sendBits(bits, val)
+{
+	dbg.trace(val);
+	var buf;
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(1);     // verify as bits
+		this.buffer.appendUInt32(bits); // verify length
+	}
+
+	if(bits < 32)
+	{
+		val &= (1<<bits)-1;
+	}
+
+	if(bits <= 8)
+	{
+		this.buffer.appendUInt8(val);
+	}
+	else if(bits <= 16)
+	{
+		buf = new Buffer([ val & 0xff, (val >> 8) & 0xff ]);
+		this.buffer.appendBytes(buf);
+	}
+	else if(bits <= 24)
+	{
+		buf = new Buffer([ val & 0xff, (val >> 8) & 0xff, (val >> 16) & 0xff ]);
+		this.buffer.appendBytes(buf);
+	}
+	else
+	{
+		this.buffer.appendUInt32(val);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// readString
+//
+Packet.prototype.readString = function readString()
+{
+	dbg.trace();
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 4);
+	}
+
+	return this.buffer.readString();
+}
+
+//
+// readUInt8
+//
+Packet.prototype.readUInt8 = function readUInt8()
+{
+	dbg.trace();
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 1);  // verify as bits
+		assert(this.buffer.readUInt32() === 8); // verify length of 8
+	}
+
+	return this.buffer.readUInt8();
+}
+
+//
+// readUInt32
+//
+Packet.prototype.readUInt32 = function readUInt32()
+{
+	dbg.trace();
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 1);   // verify as bits
+		assert(this.buffer.readUInt32() === 32); // verify length of 32
+	}
+
+	return this.buffer.readUInt32();
+}
+
+//
+// readBits
+//
+Packet.prototype.readBits = function readBits(bits)
+{
+	dbg.trace();
+	var buf;
+	var val = 0;
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 1);     // verify as bits
+		assert(this.buffer.readUInt32() === bits); // verify length
+	}
+
+	if(bits <= 8)
+	{
+		val = this.buffer.readUInt8();
+	}
+	else if(bits <= 16)
+	{
+		buf = this.buffer.readBytes(2);
+		val = buf[0] | buf[1]<<8;
+	}
+	else if(bits <= 24)
+	{
+		buf = this.buffer.readBytes(3);
+		val = buf[0] | buf[1]<<8 | buf[2]<<16;
+	}
+	else
+	{
+		val = this.buffer.readUInt32();
+	}
+
+	return val;
+}
+
+//
+// readBytes
+//
+Packet.prototype.readBytes = function readBytes(count)
+{
+	dbg.trace();
+	assert(typeof count !== 'undefined');
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 3);      // verify as bytes
+		assert(this.buffer.readUInt32() === count); // verify length
+	}
+
+	return this.buffer.readBytes(count);
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+//
+// sendNVPValue
+//
+Packet.prototype.sendNVPValue = function sendNVPValue(u32)
+{
+	dbg.trace(u32);
+
+	this.sendUInt32(4);
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(3);  // verify as bytes
+		this.buffer.appendUInt32(4); // and length
+	}
+
+	this.buffer.appendUInt32(u32>>>0);
+}
+
+//
+// readNVPValue
+//
+Packet.prototype.readNVPValue = function readNVPValue()
+{
+	dbg.trace();
+
+	var len = this.readUInt32();
+	assert(len === 4);
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 3);    // verify as bytes
+		assert(this.buffer.readUInt32() === len); // and length
+	}
+
+	return this.buffer.readUInt32();
+}
+
+//
+// sendNVPString
+//
+Packet.prototype.sendNVPString = function sendNVPString(name)
+{
+	dbg.trace(name);
+
+	this.sendUInt32(name.length+1); // \0 at end
+
+	if(this.conn.verify)
+	{
+		this.buffer.appendUInt8(3);               // verify as bytes
+		this.buffer.appendUInt32(name.length+1);  // and length
+	}
+
+	this.buffer.appendString(name);
+}
+
+//
+// readNVPString
+//
+Packet.prototype.readNVPString = function readNVPString()
+{
+	dbg.trace();
+
+	var len = this.readUInt32(); // \0 at end
+
+	if(this.conn.verify)
+	{
+		assert(this.buffer.readUInt8() === 3);    // verify as bytes
+		assert(this.buffer.readUInt32() === len); // and length
+	}
+
+	var str = this.buffer.readBytes(len).toString('utf8');
+
+	if(str[str.length-1] === '\u0000')
+	{
+		str = str.slice(0, -1);
+	}
+
+	return str;
+}
+
+//
+// sendNameValuePairs
+//
+// This send the weird name/value pair stuff sometimes used in
+// Cryptic protocols. (It's weird because it doesn't use the native Cryptic
+// UInt32 and String network types.)
+//
+Packet.prototype.sendNameValuePairs = function sendNameValuePairs(obj, maxString, maxParams)
+{
+	dbg.trace();
+	var pkt = this;
+
+	var count = 0;
+
+	var name;
+	for(name in obj)
+	{
+		if(typeof obj[name] === 'number')
+		{
+			pkt.sendNVPString(name);
+			pkt.sendUInt8(0 /* SENDTYPE_INT32 */ << 2); // << 2 because it's actually sendBitsAuto
+			pkt.sendNVPValue(obj[name]);
+		}
+		else if(typeof obj[name] === 'string')
+		{
+			if(maxString && obj[name].length > maxString)
+			{
+				log.warn('sendNameValuePairs didn\'t send a string because it was too long. '
+					+ obj[name].length + '>' + maxString + ' on string ' + obj[name].slice(0, 10)+'...');
+			}
+			else
+			{
+				pkt.sendNVPString(name);
+				pkt.sendUInt8(1 /* SENDTYPE_STRING */ << 2); // << 2 because it's actually sendBitsAuto
+				pkt.sendNVPString(obj[name]);
+			}
+		}
+
+		count++;
+		if(maxParams && count > maxParams)
+		{
+			log.warn('sendNameValuePairs didn\'t send some parameters because there were more than ' + maxParams + ' of them.');
+			break;
+		}
+	}
+
+	pkt.sendNVPString("");
+}
+
+//
+// sendNameValuePairsSafer
+//
+// A slightly restricted version of sendNameValuePairsSafer which keeps clients
+// from sending giant amounts of data to the server.
+//
+Packet.prototype.sendNameValuePairsSafer = function sendNameValuePairsSafer(obj)
+{
+	this.sendNameValuePairs(obj, 127, 10);
+}
+
+//
+// readNameValuePairs
+//
+// This reads the weird name/value pair stuff sometimes used in
+// Cryptic protocols. (It's weird because it doesn't use the native Cryptic
+// UInt32 and String network types.
+//
+// Returns an object with all the name/value pairs.
+//
+Packet.prototype.readNameValuePairs = function readNameValuePairs()
+{
+	dbg.trace();
+	var pkt = this;
+
+	var len;
+	var type;
+	var name;
+	var value;
+
+	var pairs = {};
+
+	name = pkt.readNVPString();
+	while(name)
+	{
+		value = undefined;
+
+		type = pkt.readUInt8();
+		if(type === 0 /* SENDTYPE_INT32 */ << 2) // << 2 because it's actually sendBitsAuto
+		{
+			value = pkt.readNVPValue();
+		}
+		else if(type === 1 /* SENDTYPE_STRING */ << 2) // << 2 because it's actually sendBitsAuto
+		{
+			value = pkt.readNVPString();
+		}
+
+		if(name && value)
+		{
+			dbg.trace(name, value);
+			pairs[name] = value;
+		}
+
+		name = pkt.readNVPString();
+	}
+
+	return pairs;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+//
+// rewind
+//
+Packet.prototype.rewind = function rewind()
+{
+	dbg.trace();
+
+	this.buffer.rewind();
+}
+
+//
+// seek
+//
+Packet.prototype.seek = function seek(loc)
+{
+	dbg.trace(loc);
+
+	this.buffer.seek(loc);
+}
+
+//
+// skip
+//
+Packet.prototype.skip = function skip(cnt)
+{
+	dbg.trace(cnt);
+
+	this.buffer.skip(cnt);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Packet;
+
+// End of File

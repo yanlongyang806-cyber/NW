@@ -1,0 +1,36 @@
+<!-- if(dev) -->
+<button class="close-button" data-url-silent="closemodal"></button>
+
+<div class="modal-confirm modal-exchangeoffer">
+	<h3>Confirm Offer</h3>
+
+	<p>You are about to make the following offer:</p>
+
+	<p class="exchange-desc">Sell <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path="queryParams.quantity">000</span> at <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span data-path="queryParams.price">000</span> each (receiving <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span class="total">000,000</span>)</p>
+
+	<p><span class="alert-yellow">Warning:</span> You will be permanently removing <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path="queryParams.quantity">000</span> from your personal balance. Even if you cancel the listing, the <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path="queryParams.quantity">000</span> will go to your Exchange Balance, not your personal balance.</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal" data-set-onclick="client.createSellOrder({queryParams.quantity},{queryParams.price})">OK</button>
+
+	</div>
+
+</div>
+
+<script>
+
+var iTotal = client.dataModel.model.queryParams.quantity * client.dataModel.model.queryParams.price;
+
+$('.total').text(iTotal.toLocaleString());
+</script>
+<!-- endif(dev) -->

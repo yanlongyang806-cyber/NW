@@ -1,0 +1,38 @@
+<div class="page-characterselect">
+	<div class="charselect">
+		<div data-path="loginInfo">
+			<ul data-path=".choices[virtualshardid ne 1]">
+
+				<!-- This is your current character -->
+				<li data-if="{.name} eq {ent.main.name} && {ent.main.publicaccountname} eq {loginInfo.publicaccountname}">
+					<a data-set-class="{.extradata2.$map(path)}" data-url="char">
+						<h4 class="char-list-name" data-path=".name">Warthog O'Posniewski</h4>
+						<h5 class="char-list-level">Level <span data-path=".level">00</span></h5>
+						<h5 class="char-list-class" data-path=".extradata1.$getResource(CharacterClass).displayname.str">Character Class</h5>
+						<h5 class="char-list-race" data-path=".extradata3.$getResource(SpeciesDef).displaynamemsg.str">Species</h5>
+					</a>
+				</li>
+
+				<!-- Not your current character -->
+				<li data-if="{.name} ne {ent.main.name} || {ent.main.publicaccountname} ne {loginInfo.publicaccountname}">
+					<a data-set-class="{.extradata2.$map(path)}" data-set-onclick="client.characterSelect('{.name.$escapeForString()}@{loginInfo.publicaccountname}');">
+						<h4 class="char-list-name" data-path=".name">Warthog O'Posniewski</h4>
+						<h5 class="char-list-level">Level <span data-path=".level">00</span></h5>
+						<h5 class="char-list-class" data-path=".extradata1.$getResource(CharacterClass).displayname.str">Character Class</h5>
+						<h5 class="char-list-race" data-path=".extradata3.$getResource(SpeciesDef).displaynamemsg.str">Species</h5>
+					</a>
+				</li>
+
+			</ul>
+		</div>
+	</div>
+	<!-- A bit of hackery to show/hide this button -->
+	<div data-if="{$root.queryParams.isModal}">
+		<div class="input-field button">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-url-silent="closemodal">Close</button>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,36 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+function QuestDef(def)
+{
+	cutils.extend(this, def);
+
+	// Expected fields (* are required):
+	//		id*
+	//		name*
+	//		description*
+	//      icon
+	//		tags
+	//
+	//		mapTags
+	//		tileSet
+	//
+	//		encounterTags
+	//		encounterEndTags
+	//		chance
+	//
+	//		reward
+	//		grantReward
+	//		sampleReward
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = QuestDef;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

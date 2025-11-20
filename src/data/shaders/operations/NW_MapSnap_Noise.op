@@ -1,0 +1,18 @@
+OperationDef
+	Name "NW_MapSnap_Noise" // Name of the operation
+	Description "Does things to a texture"
+	Type TEXTURE
+
+	Input
+		Name Texture // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	Output
+		Name Result
+		Description "Color and alpha from the texture"
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+EndOperationDef

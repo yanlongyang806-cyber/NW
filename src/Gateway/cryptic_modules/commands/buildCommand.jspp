@@ -1,0 +1,65 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+
+//
+// buildCommand
+//
+// Builds a command object, coercing arguments as necessary from a parameter
+// object or a list of arguments.
+//
+// If something cannot be coerced, this function throws an exception.
+//
+
+var autoCommands = require('cryptic/commands/autoCommands');
+var coerceExecutor = require('cryptic/commands/coerceExecutor');
+
+function buildCommand(cmdName, paramsObj)
+{
+	var useArgs = false;
+	var actualArgs = Array.prototype.slice.call(arguments);
+
+	if(typeof paramsObj !== 'object')
+	{
+		paramsObj = {};
+		useArgs = true;
+	}
+
+	dbg.trace(cmdName, paramsObj);
+
+	try
+	{
+		if(!cmdName || !paramsObj)
+			throw new Error('Missing command name or parameters.');
+
+		if(!(cmdName in autoCommands))
+			throw new Error('Command '+cmdName+' is not defined.');
+
+		var cmd = autoCommands[cmdName];
+		if(useArgs && cmd.length != actualArgs.length-1)
+			throw new Error('Command '+cmdName+' not enough parameters spcified.');
+
+		for(var i = 0; i < cmd.length; i++)
+		{
+			var paramName = cmd[i]._name;
+			if(!useArgs && !(paramName in paramsObj))
+				throw new Error('Command '+cmdName+' is missing a required parameter ('+paramName+')');
+
+			var param = useArgs ? actualArgs[i+1] : paramsObj[paramName];
+
+			paramsObj[paramName] = cmd[i][paramName].exec(coerceExecutor, param);
+		}
+	}
+	catch(e)
+	{
+		dbg.error(e.stack);
+		return undefined;
+	}
+
+	dbg.trace(paramsObj);
+	return { cmd: cmdName, params: paramsObj };
+}
+
+module.exports = buildCommand;
+
+// End of File

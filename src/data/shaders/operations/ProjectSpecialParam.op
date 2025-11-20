@@ -1,0 +1,29 @@
+OperationDef
+	Name "ProjectSpecialParam" // Name of the operation
+	Description "Special project-specific parameter"
+	Type Advanced
+
+	Input
+		Name Override
+		Description "Set this to 1 to override the special param to 0"
+		Float 1
+		FloatRange 0 1
+	EndInput
+
+	Input
+		Name ProjectSpecialParam
+		Description "Special project-specific parameter (internally generated value)."
+		NoAutoConnect 1
+		NoManualConnect 1
+		Hidden 1
+		Type Project_Special
+		Float 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Special project-specific parameter."
+		Float 1
+	EndOutput
+
+EndOperationDef

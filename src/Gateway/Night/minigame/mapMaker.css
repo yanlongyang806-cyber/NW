@@ -1,0 +1,109 @@
+.column {
+	float:left;
+	margin-left: 20px;
+}
+
+.clear {
+	clear: both;
+}
+
+body.mapmaker .tile {
+	border: 1px dotted black !important;
+	height: 23px !important;
+	width: 23px !important;
+}
+
+.overlay {
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	z-index: 2;
+}
+
+
+/* ----------------------------------------------------- */
+/* For the UI Selection                                  */
+/* ----------------------------------------------------- */
+
+.ui-selecting {
+	background: #ccc !important;
+}
+
+.ui-selected {
+	background: #00A2E8 !important;
+	border-color: #99D9EA !important;
+}
+
+.ui-selectable-helper {
+	position: absolute;
+	z-index: 100;
+	border: 2px dotted black;
+}
+
+/* ----------------------------------------------------- */
+
+#copy-box {
+	position: absolute;
+	z-index: 9002;
+	top: 25px;
+	left: 250px;
+	border:2px solid black;
+	background-color: white;
+	padding: 15px;
+	display: none;
+}
+
+#copy-box textarea {
+	width: 600px;
+	height: 400px;
+}
+
+#copy-box button {
+	width: 100px;
+	float: right;
+}
+
+/* ----------------------------------------------------- */
+
+.maplist-entry {
+	margin-left: 15px;
+	margin-top: 5px;
+	min-width: 250px;
+}
+
+.selected {
+	border: 1px solid red;
+	background-color: #ecc;
+}
+
+.selected a {
+	float: right;
+	margin-left: 5px;
+}
+
+.selected a img {
+	width: 16px;
+	height: 16px;
+}
+
+.loaded {
+	background-color: yellow;
+}
+
+/* ----------------------------------------------------- */
+/* Tooltips */
+
+.tooltip {
+	position: absolute;
+	display: none;
+	font-family: Arial, Helvetica, sans-serif;
+	border: 1px solid #000;
+	background: #ffc;
+	border-radius: 3px;
+	font-size: 11px;
+	padding: 5px;
+	width: 200px;
+	z-index: 9999;
+}
+
+/* ------------------------------------------------ */

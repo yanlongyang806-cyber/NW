@@ -1,0 +1,17 @@
+// OutlineTexture.phl
+{
+#define HAS_OUTLINE
+
+	float3 sstx = float3( inv_screen_params.xy, 0.0);
+
+	%Result% = 
+		sampleTex2D(TexSampler%Outline%, %TexCoord%.xy) + (
+		sampleTex2D(TexSampler%Outline%, %TexCoord%.xy + sstx.xz)+
+		sampleTex2D(TexSampler%Outline%, %TexCoord%.xy - sstx.xz)+
+		sampleTex2D(TexSampler%Outline%, %TexCoord%.xy + sstx.yz)+
+		sampleTex2D(TexSampler%Outline%, %TexCoord%.xy - sstx.yz) ) * 0.2;
+
+	%Result%.rgb = %Outlinecolor%.rgb;
+	
+	clip( %Result%.a - 1e-5 );
+}

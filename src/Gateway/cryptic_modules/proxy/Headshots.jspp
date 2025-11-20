@@ -1,0 +1,235 @@
+'use strict';
+
+var Headshots = module.exports;
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Headshots
+//
+// Dealing with requests to the Headshto server in the shard
+//
+//
+
+var gm = require('gm'); // GraphicsMagik
+var Stream = require('stream');
+var querystring = require('querystring');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+
+//////////////////////////////////////////////////////////////////////////
+// Expecting url to be in the form: /type/id.png
+// Examples:
+//   /head/1.png
+//   /ship/23.png
+//
+Headshots.generate = function(url, clientSession, callback)
+{
+	dbg.trace();
+
+	if(!clientSession || !clientSession.gsSession || clientSession.gsSession.idxServer === 0xffffffff)
+	{
+		log.warn('Request for headshot when gsSession hasn\'t been connected yet.', !!clientSession, clientSession ? !!clientSession.gsSession : '');
+		callback(undefined, undefined);
+		return;
+	}
+
+	var gsSession = clientSession.gsSession;
+
+	var parts = url.split('/');
+
+	if(!parts || parts.length !== 3)
+	{
+		callback(undefined, undefined);
+		return;
+	}
+
+	var type = parts[1];
+	var id = parseInt(parts[2], 10);
+
+	if(isNaN(id))
+		id = parts[2].replace(".png","");
+
+	var get_data = imageParams(type);
+
+	if(!get_data || !get_data.string || !id)
+	{
+		log.warn('Malformed headshot request.');
+		callback(undefined, undefined);
+		return;
+	}
+
+	dbg.trace('Direct Headshot URL: /HEADSHOTSERVER_0_headshot_' + id + containerTypeName(type) + '.png&' + get_data.string);
+	gsSession.requestHeadshot(id + containerTypeName(type) + '.png?' + get_data.string, costumeIndex(type), function(error, texbuf) {
+		if(error)
+		{
+			log.error('Headshots: Could not get headshot: ' + url + ' [Status: ' + error + ']');
+			callback(defaultImageRedirect(type), undefined); // Error, use default
+			return;
+		}
+		else
+		{
+			// The buffer is pointing directly into the packet, so we need to copy it
+			//   so it doesn't get trounced (since all of this is async) and packets
+			//   reuse their buffers.
+			var copy = new Buffer(texbuf.length);
+			texbuf.copy(copy);
+
+			// Need to setup a default stream for GM
+			var inputStream = new Stream();
+			inputStream.writable = true;
+			inputStream.readable = true;
+			inputStream.write = function(chunk) {
+				this.emit("data", chunk)
+			};
+			inputStream.end = function() {
+				this.emit("end");
+			};
+			inputStream.close = function() {
+				this.emit("close");
+			};
+
+			gm(inputStream).size({ bufferStream: true }, function(err, size) {
+				if(err || (size.width != get_data.size || size.height != get_data.size))
+				{
+					log.error('Headshots: Invalid image, or problem with GM. ' + url)
+					if(err) log.error(err);
+					else
+					{
+						log.error("Image size expected to be " + get_data.size + "x" + get_data.size + " instead returned " + size.width + "x" + size.height);
+					}
+					callback(defaultImageRedirect(type), undefined); // Error, use default
+					return;
+				}
+				else
+				{
+					finalizeImage(this, type);
+
+					this.stream(function(err, stdout, stderr) {
+						if(err)
+						{
+							log.error(err);
+							callback(undefined, undefined); // Error, use default
+							return;
+						}
+						callback(undefined, { stream: stdout });
+					});
+				}
+			});
+
+			inputStream.write(copy);
+			inputStream.end();
+		}
+	});
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+Headshots.defaultDefinitions = Headshots.definitions = {
+	'body' : {
+		defaultImageRedirect: '/img/shot/default_body.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Status',
+			jpgSizeX: '512',
+			jpgSizeY: '512',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+			gmObj.crop(256, 512, 128, 0);
+		}
+	},
+
+	/////////////////////////////////////////////////////////////////////
+
+	'head' : {
+		defaultImageRedirect: '/img/shot/default_head.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_StatusSelf',
+			jpgSizeX: '128',
+			jpgSizeY: '128',
+			transparent: '1'
+		}
+	}
+};
+
+//////////////////////////////////////////////////////////////////////////
+
+Headshots.setDefinitions = function(defs)
+{
+	Headshots.definitions = defs;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function defaultImageRedirect(type)
+{
+	var img_path = 'white';
+
+	if(Headshots.definitions[type])
+	{
+		img_path = Headshots.definitions[type].defaultImageRedirect || 'white';
+	}
+
+	return {
+		statusCode: 302,
+		headers: {
+			'Location': img_path
+		}
+	}
+}
+
+
+function imageParams(type)
+{
+	var get_data = {};
+
+	if(Headshots.definitions[type]
+		&& Headshots.definitions[type].imageParams
+		&& typeof Headshots.definitions[type].imageParams.jpgSizeX !== 'undefined')
+	{
+		get_data.string = querystring.stringify(Headshots.definitions[type].imageParams);
+		get_data.size = parseInt(Headshots.definitions[type].imageParams.jpgSizeX, 10);
+	}
+
+	return get_data;
+}
+
+function costumeIndex(type)
+{
+	if(Headshots.definitions[type]
+		&& Headshots.definitions[type].costumeIndex)
+	{
+		return Headshots.definitions[type].costumeIndex;
+	}
+
+	return 0;
+}
+
+function finalizeImage(gmObj, type)
+{
+	if(Headshots.definitions[type]
+		&& typeof Headshots.definitions[type].finalizeImage === 'function')
+	{
+		Headshots.definitions[type].finalizeImage(gmObj);
+	}
+}
+
+function containerTypeName(type)
+{
+	if(Headshots.definitions[type] && Headshots.definitions[type].containerTypeName)
+	{
+		return '_' + Headshots.definitions[type].containerTypeName.toUpperCase();
+	}
+	else
+	{
+		return '';
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

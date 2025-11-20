@@ -1,0 +1,34 @@
+<!-- this fills into the "Item for consignment" slot in the left sidebar on My Consignments -->
+<span data-if=".tradeSelected" data-path=".tradeSelected">
+	<div class="auction-item-selector">
+		<a data-url-silent="/auctionhouse-sell/select-item">
+			<div data-set-class="icon-slot large {.itemdef.quality}" data-set-data-tt-item=".itemdef.name">
+				<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+			</div>
+			<div data-path='.itemdef.displaynamemsg.str' class="selector-desc">Select an item from your inventory</div>
+		</a>
+	</div>
+
+	<span data-if=".count gt 1">
+		<span class="auction-quantity-block">
+			<h3>Quantity:</h3>
+			<div class="input-field text quantity">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<!-- THIS IS A NEW FIELD THAT NEEDS TO BE HOOKED UP -->
+				<input type="text" name="sellQty" data-set-value="{.count}" data-set-data-max-value="{.count}" maxlength="4">
+			</div>
+			<span class="quantity-note">(<span data-path=".count">count</span> available)</span>
+		</span>
+	</span>
+</span>
+
+<span data-if="!{.tradeSelected}">
+	<div class="auction-item-selector">
+		<a data-url-silent="/auctionhouse-sell/select-item">
+			<div class="icon-slot large empty"></div>
+			<div class="selector-desc">Select an item from your inventory</div>
+		</a>
+	</div>
+</span>

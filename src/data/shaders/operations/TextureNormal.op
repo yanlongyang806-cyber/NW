@@ -1,0 +1,34 @@
+OperationDef
+	Name "TextureNormal" // Name of the operation
+// 	ParentName "TextureNormal_3"
+// 	OptionName "1 texture coords"
+	Description "Normal map texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name NormalMap // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type TextureNormal
+		Default
+			Strings "default_bump"
+		EndDefault
+		Texture 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Normal in tangent space"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+EndOperationDef

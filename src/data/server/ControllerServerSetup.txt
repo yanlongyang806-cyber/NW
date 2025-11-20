@@ -1,0 +1,1277 @@
+
+{
+ServerInfo
+{
+	gServerType ObjectDB
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	LaunchFromCoreDirectory 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName ObjectDB.exe
+	executableName64 ObjectDBX64.exe
+	CanNotCrash 1
+
+	ServerDependencies
+	{
+		TypeToWaitOn TransactionServer
+		stateToWaitFor connected
+	}
+	monitoringWaitState HandleRequests
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+#	KeepAliveDelay 20
+#	keepAliveBeginState HandleRequests
+	MustShutItselfDown 1
+
+	SupportsAutoSettings 1
+	NonRelocatable 1
+}
+
+
+
+ServerInfo
+{
+	gServerType CloneObjectDB
+	IsUnique 0
+	IsUniquePerMachine 0
+	LaunchersDontKnowAboutMe 1
+	LaunchFromCoreDirectory 1
+	executableName "ObjectDB.exe -ContainerType CloneObjectDB"
+	executableName64 "ObjectDBX64.exe -ContainerType CloneObjectDB"
+	monitoringWaitState HandleLog
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	MustShutItselfDown 1
+	WaitForCrypticErrorBeforeRecreating 1
+	ReCreateOnCrash 1
+
+	SupportsAutoSettings 1
+	NonRelocatable 1
+
+	ServerDependencies
+	{
+		TypeToWaitOn TransactionServer
+		stateToWaitFor connected
+	}
+
+}
+
+
+ServerInfo
+{
+	gServerType CloneOfClone
+	IsUnique 0
+	IsUniquePerMachine 1
+	LaunchersDontKnowAboutMe 1
+	LaunchFromCoreDirectory 1
+	executableName "ObjectDB.exe -ContainerType CloneOfClone"
+	executableName64 "ObjectDBX64.exe -ContainerType CloneOfClone"
+	monitoringWaitState HandleLog
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	MustShutItselfDown 1
+	WaitForCrypticErrorBeforeRecreating 1
+	ReCreateOnCrash 1
+
+	SupportsAutoSettings 1
+	NonRelocatable 1
+
+	ServerDependencies
+	{
+		TypeToWaitOn TransactionServer
+		stateToWaitFor connected
+	}
+
+
+}
+
+
+ServerInfo
+{
+	gServerType TransactionServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	DontKillDuringKillAll 1
+	LaunchFromCoreDirectory 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName TransactionServer.exe
+	executableName64 TransactionServerX64.exe
+	ServerDependencies
+	{
+		TypeToWaitOn LogServer
+		stateToWaitFor ready
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn LogParser
+		stateToWaitFor ready
+		ProductionModeOnlyDependency 1
+	}
+	CanNotCrash 1
+	CanNotBeQueriedByControllerScripting 1
+	monitoringWaitState connected
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	InformAboutAllowShardVersionMismatch 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState connected
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	NonRelocatable 1
+
+	InformMeAboutShardCluster_State connected
+	PutInfoAboutMeInShardClusterSummary 1
+
+}
+
+
+ServerInfo
+{
+	gServerType LogParser
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	LaunchFromCoreDirectory 1
+	executableName LogParser.exe
+	executableName64 LogParserX64.exe
+	ServerDependencies
+	{
+		TypeToWaitOn LogServer
+		stateToWaitFor ready
+	}
+	CanNotBeQueriedByControllerScripting 1
+	monitoringWaitState ready
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	CanBeManagedInPerMachinePermissions 1
+	ReCreateOnCrash 1
+	MustShutItselfDown 1
+
+	KeepAliveDelay 300
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+	SupportsAutoSettings 1
+
+	NonRelocatable 1
+
+
+}
+
+
+ServerInfo
+{
+	gServerType Launcher
+	IsUniquePerMachine 1
+	DontKillDuringKillAll 1
+	LaunchersDontKnowAboutMe 1
+	LaunchFromCoreDirectory 1
+	IgnoredByControllerScripting 1
+	executableName Launcher.exe
+	CanNotBeQueriedByControllerScripting 1
+	CanNotBeHttpMonitored 1
+	Visibility_ProdMode HIDDEN
+
+	SupportsAutoSettings 1
+}
+
+
+ServerInfo
+{
+	gServerType MapManager
+	IsUnique 1
+	IsUniquePerMachine 1
+	InformAboutShardLockStatus 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType MapManager"
+	executableName64 "AppServerX64.exe -ContainerType MapManager"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	
+//at startup, map manager might start up re-publish jobs. If so, it needs
+//job manager already runnin
+	ServerDependencies
+	{
+		TypeToWaitOn JobManager
+		stateToWaitFor ready
+		ProductionModeOnlyDependency 1
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	InformAboutNumGameServerMachines 1
+
+	beginMemLeakTrackingState ready
+	MemLeakTracking_BeginDelay 600
+	MemLeakTracking_Frequency 120
+	MemLeakTracking_IncreaseAmountThatIsALeak_Megs 100
+	MemLeakTracking_FirstIncreaseAllowance_Megs 100
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+	PutInfoAboutMeInShardClusterSummary 1
+}
+
+
+ServerInfo
+{
+	gServerType Multiplexer
+	IsUniquePerMachine 1
+	LaunchFromCoreDirectory 1
+	executableName Multiplexer.exe
+	ServerDependencies
+	{
+		TypeToWaitOn TransactionServer
+		stateToWaitFor connected
+	}
+	CanNotBeQueriedByControllerScripting 1
+	monitoringWaitState ready
+	CanNotBeHttpMonitored 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	SupportsAutoSettings 1
+
+
+}
+
+
+ServerInfo
+{
+	gServerType MasterControlProgram
+	DontKillDuringKillAll 1
+	LaunchersDontKnowAboutMe 1
+	IgnoreCookies 1
+	IgnoredByControllerScripting 1
+	executableName MasterControlProgram.exe
+	CanNotBeQueriedByControllerScripting 1
+	LaunchFromCoreDirectory 1
+	IsScarce 1
+
+	SupportsAutoSettings 1
+
+}
+
+
+ServerInfo
+{
+	gServerType GameServer
+	KillExistingOnBigGreenButton 1
+	AllowMultiplesWhenSingleMCPButtonPressed 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+	InformAboutMTStatus 1
+
+	executableName "GameServer.exe -TransactionServerUsesMultiPlex -LogServerUsesMultiPlex"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn Multiplexer
+		stateToWaitFor ready
+		PerMachineDependency 1
+		AutoLaunchDependency 1
+	}
+
+	monitoringWaitState gslRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+}
+
+
+ServerInfo
+{
+	gServerType TestGameServer
+	LaunchFromCoreDirectory 1
+	KillExistingOnBigGreenButton 1
+	AllowMultiplesWhenSingleMCPButtonPressed 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "ObjectDB.exe -ContainerType TestGameServer"
+	executableName64 "ObjectDBX64.exe -ContainerType TestGameServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	monitoringWaitState fgsStateWaiting
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+}
+
+
+ServerInfo
+{
+	gServerType LogServer
+	IsUnique 1
+	ReCreateOnCrash 1
+	IsUniquePerMachine 1
+	LaunchFromCoreDirectory 1
+	CanBeManagedInPerMachinePermissions 1
+
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName LogServer.exe
+	executableName64 LogServerX64.exe
+	ReCreateOnCrash 1
+	CanNotBeQueriedByControllerScripting 1
+	monitoringWaitState ready
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	MustShutItselfDown 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+}
+
+
+ServerInfo
+{
+	gServerType Client
+	KillExistingOnBigGreenButton 1
+	AllowMultiplesWhenSingleMCPButtonPressed 1
+	executableName GameClient.exe
+	ServerDependencies
+	{
+		TypeToWaitOn LoginServer
+		stateToWaitFor ready
+		BuilderOnlyDependency 1
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn MapManager
+		stateToWaitFor ready
+		BuilderOnlyDependency 1
+	}
+	IgnoreCookies 1
+	monitoringWaitState gclBase
+}
+
+
+ServerInfo
+{
+	gServerType Controller
+	DontKillDuringKillAll 1
+	LaunchFromCoreDirectory 1
+	IgnoredByControllerScripting 1
+	executableName Controller.exe
+	CanNotBeQueriedByControllerScripting 1
+	IsUnique 1
+
+	MemLeakTracking_BeginDelay 30
+	MemLeakTracking_Frequency 30
+	MemLeakTracking_IncreaseAmountThatIsALeak_Megs 100
+	MemLeakTracking_FirstIncreaseAllowance_Megs 100
+}
+
+
+ServerInfo
+{
+	gServerType AppServer
+	executableName AppServer.exe
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+}
+
+
+ServerInfo
+{
+	gServerType ControllerTracker
+	DontKillDuringKillAll 1
+	LaunchFromCoreDirectory 1
+	executableName ControllerTracker.exe
+}
+
+
+ServerInfo
+{
+	gServerType LoginServer
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	InformAboutShardLockStatus 1
+	InformAboutMTStatus 1
+
+	executableName "AppServer.exe -ContainerType LoginServer"
+	executableName64 "AppServerX64.exe -ContainerType LoginServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountProxyServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+		ProductionModeOnlyDependency 1
+	}
+	ReCreateOnSameMachineOnCrash 1
+	monitoringWaitState ready
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	ScriptingLaunchesAsManyOfTheseAsAllowed 1
+
+	InformAboutNumGameServerMachines 1
+
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+	InformMeAboutShardCluster_State ready
+	PutInfoAboutMeInShardClusterSummary 1
+	InformMeAboutShardCluster_State ready
+
+}
+
+
+ServerInfo
+{
+	gServerType TeamServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType TeamServer"
+	executableName64 "AppServerX64.exe -ContainerType TeamServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+}
+
+ServerInfo
+{
+	gServerType AuctionServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	InformAboutMTStatus 1
+	executableName "AppServer.exe -ContainerType AuctionServer"
+	executableName64 "AppServerX64.exe -ContainerType AuctionServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+
+	KeepAliveDelay 20
+	keepAliveBeginState LoadingContainers
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+}
+
+ServerInfo
+{
+	gServerType CurrencyExchangeServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	InformAboutMTStatus 1
+	executableName "AppServer.exe -ContainerType CurrencyExchangeServer"
+	executableName64 "AppServerX64.exe -ContainerType CurrencyExchangeServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountProxyServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState LoadingContainers
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+}
+
+ServerInfo
+{
+	gServerType GuildServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType GuildServer"
+	executableName64 "AppServerX64.exe -ContainerType GuildServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+}
+
+ServerInfo
+{
+	gServerType QueueServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType QueueServer"
+	executableName64 "AppServerX64.exe -ContainerType QueueServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType TestServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "TestServer.exe"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	LaunchFromCoreDirectory 1
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType AccountProxyServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	InformAboutMTStatus 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType AccountProxyServer"
+	executableName64 "AppServerX64.exe -ContainerType AccountProxyServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+		ProductionModeOnlyDependency 1
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType ChatServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchFromCoreDirectory 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+
+	executableName ChatServer.exe
+	executableName64 ChatServerX64.exe
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+}
+
+ServerInfo
+{
+	gServerType ChatRelay
+	LaunchFromCoreDirectory 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+
+	executableName ChatRelay.exe
+	executableName64 ChatRelayX64.exe
+	ServerDependencies
+	{
+		TypeToWaitOn ChatServer
+		stateToWaitFor ready
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType GlobalChatServer
+	IsUniquePerMachine 1
+	LaunchFromCoreDirectory 1
+	executableName "GlobalChatServer.exe -ConnectToController"
+	executableName64 "GlobalChatServerX64.exe -ConnectToController"
+}
+
+ServerInfo
+{
+	gServerType LeaderboardServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType LeaderboardServer"
+	executableName64 "AppServerX64.exe -ContainerType LeaderboardServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	MustShutitselfdown 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+
+ServerInfo
+{
+	gServerType TestClient
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	LaunchFromCoreDirectory 1
+	executableName "TestClient.exe -TransactionServerUsesMultiplex -LogServerUsesMultiplex -TestServerUsesMultiplex"
+	ServerDependencies
+	{
+		TypeToWaitOn LoginServer
+		stateToWaitFor ready
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn MapManager
+		stateToWaitFor ready
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn Multiplexer
+		stateToWaitFor ready
+		PerMachineDependency 1
+		AutoLaunchDependency 1
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn TestServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+	}
+
+	Visibility VISIBLE
+	monitoringWaitState ClientIsReady
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType HeadshotServer
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	LaunchFromCoreDirectory 1
+	executableName "HeadshotServer.exe"
+	monitoringWaitState ClientIsReady
+	CanBeManagedInPerMachinePermissions 1
+	IsUnique 1
+	IsUniquePerMachine 1
+	ReCreateOnCrash 1
+
+
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+
+	Visibility VISIBLE
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ClientIsReady
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+	NonRelocatable 1
+}
+
+ServerInfo
+{
+	gServerType ClientBinner
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	LaunchFromCoreDirectory 1
+	executableName "ClientBinner.exe"
+	monitoringWaitState ClientIsReady
+	CanBeManagedInPerMachinePermissions 1
+
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+
+	Visibility VISIBLE
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 300
+	keepAliveBeginState ClientIsReady
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType WebRequestServer
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "GameServer.exe -WebRequestServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountProxyServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+	}
+
+	InformAboutMTStatus 1
+
+	monitoringWaitState gslRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	ReCreateOnCrash 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState gslRunning
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+}
+
+ServerInfo
+{
+	gServerType AccountServer
+	LaunchFromCoreDirectory 1
+	executableName "AccountServer.exe -httpport 8090 -billingEnabled 0 -SetAccountServer localhost -ConnectToController -DisableAutoCreate 0"
+	executableName64 "AccountServerX64.exe -httpport 8090 -billingEnabled 0 -SetAccountServer localhost -ConnectToController -DisableAutoCreate 0"
+}
+
+ServerInfo
+{
+	gServerType ObjectDB_Merger
+	DontKillDuringKillAll 1
+	LaunchFromCoreDirectory 1
+	executableName ObjectDB.exe
+	executableName64 ObjectDBX64.exe
+}
+
+
+ServerInfo
+{
+	gServerType JobManager
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType JobManager"
+	executableName64 "AppServerX64.exe -ContainerType JobManager"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType UGCDataManager
+	IsUnique 1
+	IsUniquePerMachine 1
+	InformAboutShardLockStatus 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType UGCDataManager"
+	executableName64 "AppServerX64.exe -ContainerType UGCDataManager"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+
+	//at startup, UGCDataManager manager might start up re-publish jobs. If so, it needs
+	//job manager already runnin
+	ServerDependencies
+	{
+		TypeToWaitOn JobManager
+		stateToWaitFor ready
+		ProductionModeOnlyDependency 1
+	}
+
+	// This is so we can send the in shard MapManager all playable namespaces when not in a cluster. In a cluster,
+	// this is handled by iterating over Cluster Overview.
+	ServerDependencies
+	{
+		TypeToWaitOn MapManager
+		stateToWaitFor ready
+	}
+
+	// This is so we can tell the ResourceDB to flush its namespace cache after republish jobs finish. In a cluster,
+	// this is handled by iterating over Cluster Overview.
+	ServerDependencies
+	{
+		TypeToWaitOn ResourceDB
+		stateToWaitFor ready
+	}
+
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	InformAboutNumGameServerMachines 1
+
+	beginMemLeakTrackingState ready
+	MemLeakTracking_BeginDelay 600
+	MemLeakTracking_Frequency 120
+	MemLeakTracking_IncreaseAmountThatIsALeak_Megs 100
+	MemLeakTracking_FirstIncreaseAllowance_Megs 100
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+	InformMeAboutShardCluster_State ready
+	PutInfoAboutMeInShardClusterSummary 1
+}
+
+ServerInfo
+{
+	gServerType UGCSearchManager
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType UGCSearchManager"
+	executableName64 "AppServerX64.exe -ContainerType UGCSearchManager"
+	ServerDependencies
+	{
+		TypeToWaitOn UGCDataManager
+		stateToWaitFor ready
+	}
+	ReCreateOnSameMachineOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+	SupportsAutoSettings 1
+
+	PutInfoAboutMeInShardClusterSummary 1
+}
+
+ServerInfo
+{
+	gServerType ResourceDB
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType ResourceDB"
+	executableName64 "AppServerX64.exe -ContainerType ResourceDB"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+	PutInfoAboutMeInShardClusterSummary 1
+}
+
+
+ServerInfo
+{
+	gServerType ServerBinner
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "GameServer.exe -ServerBinner"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+
+	monitoringWaitState gslRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType BcnMasterServer
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "GameServer.exe -beaconMasterServer"
+
+	monitoringWaitState bcnRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	ReCreateOnCrash 1
+	IsScarce 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType BcnSubServer
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "GameServer.exe -beaconRequestServer"
+	ServerDependencies
+	{
+		TypeToWaitOn BcnMasterServer
+		stateToWaitFor bcnRunning
+	}
+
+	monitoringWaitState bcnRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType BcnClientSentry
+	IsUniquePerMachine 1
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+
+	executableName "GameServer.exe -beaconclient"
+	ServerDependencies
+	{
+		TypeToWaitOn BcnMasterServer
+		stateToWaitFor bcnRunning
+	}
+
+	monitoringWaitState bcnSentryRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	ScriptingLaunchesAsManyOfTheseAsAllowed 1
+	ReCreateOnCrash 1
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType GetVrml
+
+	executableName "fake.exe -thisShouldNeverBeRunInThisFashion"
+}
+
+ServerInfo
+{
+	gServerType GroupProjectServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	InformAboutMTStatus 1
+	executableName "AppServer.exe -ContainerType GroupProjectServer"
+	executableName64 "AppServerX64.exe -ContainerType GroupProjectServer"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+}
+
+
+
+ServerInfo
+{
+	gServerType TextureServer
+	IsUnique 1
+	IsUniquePerMachine 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "TextureServer.exe"
+	LaunchFromCoreDirectory 1
+
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	SupportsAutoSettings 1
+}
+
+
+
+ServerInfo
+{
+	gServerType GatewayLoginLauncher
+	InformAboutGatewayLockStatus 1
+	InformAboutShardLockStatus 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	executableName "AppServer.exe -ContainerType GatewayLoginLauncher"
+	executableName64 "AppServerX64.exe -ContainerType GatewayLoginLauncher"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountProxyServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+	}
+
+	ReCreateOnCrash 1
+	monitoringWaitState ready
+	CanBeManagedInPerMachinePermissions 1
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	IsScarce 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState ready
+	StartupKeepAliveDelay 300
+
+	beginMemLeakTrackingState ready
+	MemLeakTracking_BeginDelay 600
+	MemLeakTracking_Frequency 120
+	MemLeakTracking_IncreaseAmountThatIsALeak_Megs 100
+	MemLeakTracking_FirstIncreaseAllowance_Megs 100
+
+	SupportsAutoSettings 1
+}
+
+ServerInfo
+{
+	gServerType GatewayServer
+	KillExistingOnBigGreenButton 1
+	LaunchersCanLaunchMeFromMonitorWindow 1
+	CanBeManagedInPerMachinePermissions 1
+	executableName "gameserver.exe -gatewayserver"
+	ServerDependencies
+	{
+		TypeToWaitOn ObjectDB
+		stateToWaitFor HandleRequests
+	}
+	ServerDependencies
+	{
+		TypeToWaitOn AccountProxyServer
+		stateToWaitFor ready
+		AutoLaunchDependency 1
+	}
+
+	InformAboutGatewayLockStatus 1
+	InformAboutShardLockStatus 1
+	InformAboutMTStatus 1
+
+	monitoringWaitState gslRunning
+	CanBeManuallyLaunchedThroughServerMonitor 1
+	ReCreateOnCrash 1
+
+	KeepAliveDelay 20
+	keepAliveBeginState gslRunning
+	StartupKeepAliveDelay 300
+	IsScarce 1
+
+
+	SupportsAutoSettings 1
+
+	InformObjectDBWhenThisDies 1
+
+	InformMeAboutShardCluster_State gslRunning
+	PutInfoAboutMeInShardClusterSummary 1
+}
+
+}
+

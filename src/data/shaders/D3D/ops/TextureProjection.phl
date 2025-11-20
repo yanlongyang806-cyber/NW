@@ -1,0 +1,9 @@
+{
+#ifdef NO_NORMALMAP
+	float3 rightVec = cross(view_vs,normal_vs);
+	%Result%.xy = calcUVProjection( rightVec, cross(view_vs,rightVec), view_vs );
+#else
+	%Result%.xy = calcUVProjection( tangent_vs, binormal_vs, view_vs );
+#endif
+	%Result% = float4(float2(%Result%.x, %Result%.y) * %Depth%.x, 0.0, 0.0) + %TexCoord%;
+}

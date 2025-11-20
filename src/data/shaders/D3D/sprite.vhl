@@ -1,0 +1,48 @@
+#include "vs_inc.hlsl"
+
+// Note portions of this file are also duplicated in rt_xshaderdata for our minimal shader loading
+
+void sprite_vertexshader(in VS_INPUT_SPRITE vIn, 
+						 out VS_OUTPUT_SPRITE vOut
+						 )
+{
+	vOut.position_vs.xyz = mul_modelview_mat(float4(vIn.position,1.0f), modelview_mat).xyz;
+	#ifdef TIGHTEN_UP
+		float3 vNormalViewPos = normalize(vViewPos.xyz);
+		vOut.position_vs.xyz = vViewPos + float4(vNormalViewPos * -vIn.tighten_up, 0);
+	#endif
+	#ifdef VERTEX_FOG
+		vOut.position_vs.w = fogVertexFog(length(vOut.position_vs.xyz));
+	#else
+		vOut.position_vs.w = fogCalculateHeightCoord(vOut.position_vs.xyz);
+	#endif
+
+	// Transform to clip space
+	calcClipPosition(vOut.position_clip, vOut.position_vs.xyz);
+
+#ifdef POSTPROCESSING
+	#ifdef NO_OFFSET
+		float2 fragment_pos = ((vOut.position_clip.xy / vOut.position_clip.w) * 0.5 + 0.5);
+		fragment_pos.y = 1-fragment_pos.y;
+		vOut.texcoord.xy = fragment_pos * vOut.position_clip.w;
+	#else
+		vOut.texcoord.xy = vOut.position_clip.xy * screen_size.xy + screen_size.zw;
+		vOut.texcoord.xy += postprocess_tex_size.zw;
+	#endif
+
+	vOut.texcoord.z = 0;
+	vOut.texcoord.w = vOut.position_clip.w;
+#elseifdef NO_TEXCOORD
+	vOut.texcoord = 0;
+#else
+	vOut.texcoord = vIn.texcoord;
+#endif
+#ifndef POSTPROCESSING
+	#ifdef HAS_VARIABLE_COLOR
+		vOut.color = vIn.color;
+	#else
+		vOut.color = color0;
+	#endif
+#endif
+
+}

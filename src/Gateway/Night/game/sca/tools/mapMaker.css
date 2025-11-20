@@ -1,0 +1,176 @@
+.column {
+	float:left;
+	margin-left: 20px;
+}
+
+.clear {
+	clear: both;
+}
+
+.hide {
+	display:none;
+}
+
+body.mapmaker #map-grid .tile {
+	border: 1px dotted black !important;
+	width: 23px;
+	height: 23px;
+	background: none;
+}
+
+body.mapmaker .dungeon-map {
+	position: relative;
+}
+
+#map-grid {
+	position: absolute;
+	left: 38px;
+}
+
+#map-grid div {
+	text-align:center;
+}
+
+.overlay {
+	width: 15px;
+	height: 15px;
+	position: absolute;
+	z-index: 2;
+}
+
+
+/* ----------------------------------------------------- */
+/* For the UI Selection                                  */
+/* ----------------------------------------------------- */
+
+.ui-selecting {
+	background-color: rgba(255, 255, 255, 0.5);
+}
+
+body.mapmaker .tile.ui-selected {
+	background-color: rgba(0, 0, 0, 0.5);
+	border-color: #99D9EA !important;
+}
+
+body.mapmaker .encounter.ui-selected,
+body.mapmaker .boss.ui-selected,
+body.mapmaker .stairs-up.ui-selected {
+	border: 2px dashed black;
+}
+
+.ui-selectable-helper {
+	position: absolute;
+	z-index: 100;
+	border: 2px dotted black;
+}
+
+/* ----------------------------------------------------- */
+
+#copy-box {
+	position: absolute;
+	z-index: 9002;
+	top: 25px;
+	left: 250px;
+	border:2px solid black;
+	background-color: white;
+	padding: 15px;
+	display: none;
+}
+
+#copy-box textarea {
+	width: 600px;
+	height: 400px;
+}
+
+#copy-box button {
+	width: 100px;
+	float: right;
+}
+
+/* ----------------------------------------------------- */
+
+#maplist {
+	height: 400px;
+	width: 300px;
+	overflow-y: auto;
+}
+
+.maplist-entry {
+	margin-left: 15px;
+	margin-top: 5px;
+	min-width: 250px;
+}
+
+.selected {
+	border: 1px solid red;
+	background-color: #ecc;
+}
+
+.selected a {
+	float: right;
+	margin-left: 5px;
+}
+
+.selected a img {
+	width: 16px;
+	height: 16px;
+}
+
+.loaded {
+	background-color: yellow;
+}
+
+/* ----------------------------------------------------- */
+/* Tooltips */
+
+.tooltip {
+	position: absolute;
+	display: none;
+	font-family: Arial, Helvetica, sans-serif;
+	border: 1px solid #000;
+	background: #ffc;
+	border-radius: 3px;
+	font-size: 11px;
+	padding: 5px;
+	width: 200px;
+	z-index: 9999;
+}
+
+/* ------------------------------------------------ */
+
+#font-test {
+	font-family: webdings;
+	font-size: 35px;
+}
+
+.icon-button {
+	font-family: webdings;
+	font-size: 20px;
+	line-height: 17px;
+	color: black;
+}
+
+.red {
+	color: red;
+}
+
+/* ------------------------------------------------ */
+
+.column-number {
+	position: absolute;
+	top: -18px;
+	font-size: 14px;
+	color: white;
+	display:block;
+	width: 100%;
+}
+
+.row-number {
+	position: absolute;
+	left: -24px;
+	top: 4px;
+	font-size: 14px;
+	color: white;
+	display: block;
+	width: 100%;
+}

@@ -1,0 +1,39 @@
+//
+// Global defines
+//
+
+#define IS_DEBUG(a) (true)
+#define IS_PROD(a) (false)
+
+// Performance tracing
+#define perf.start(a) perf.autoStart(__FUNCTION__)
+#define perf.end(a) perf.autoEnd(__FUNCTION__)
+#define perf.trace(a) perf.count(__FUNCTION__)
+
+// Logging sent to the console on both server and client.
+// pre-processed out in production mode
+#macro dbg.error(a) return 'if(dbg.isEnabled(dbg.ERROR, __ROOTNAME__)) console.error(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg.warn(a) return 'if(dbg.isEnabled(dbg.WARN, __ROOTNAME__)) console.warn(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg.log(a) return 'if(dbg.isEnabled(dbg.LOG, __ROOTNAME__)) console.log(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg.info(a) return 'if(dbg.isEnabled(dbg.INFO, __ROOTNAME__)) console.info(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg.debug(a) return 'if(dbg.isEnabled(dbg.DEBUG, __ROOTNAME__)) console.log(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg.dbg(a) return 'if(dbg.isEnabled(dbg.DEBUG, __ROOTNAME__)) console.log(' + Array.prototype.slice.call(arguments).join(',') + ')'
+#macro dbg(a) return 'if(dbg.isEnabled(dbg.DEBUG, __ROOTNAME__)) console.log(' + Array.prototype.slice.call(arguments).join(',') + ')'
+
+#macro dbg.trace(a) """
+var s = "if(dbg.isEnabled(dbg.DEBUG, __ROOTNAME__)) { ";
+if(arguments.length > 0)
+{
+	var args = Array.prototype.slice.call(arguments).join(',');
+	s += "dbg.consolelog.apply(console, dbg.inspectAt(__FUNCTION__+':'+__LINE_PP__, ["+args+"]));";
+}
+else
+{
+	s += "console.log(__FUNCTION__+':'+__LINE_PP__);";
+}
+s += '}';
+return s;
+"""
+
+
+// End of File

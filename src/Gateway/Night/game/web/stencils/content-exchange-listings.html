@@ -1,0 +1,74 @@
+<!-- if(dev) -->
+<div class="page-content" data-update="exchangeaccountdata">
+	<div data-if="!{exchangeaccountdata}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+		<script type="text/javascript">
+			client.exchangeFetchExchangeAccountData();
+		</script>
+	</div>
+	<div class="page-exchange-listings" data-if="exchangeaccountdata">
+		<div class="page-body">
+
+			<h3 class="page-title">Listings</h3>
+
+			<table id="gatewayTableExchangeListings">
+				<thead>
+					<tr>
+						<th class="exchange-listings-requested"><span>Requested Quantity</span></th>
+						<th class="exchange-listings-original desktopOnly"><span>Original Quantity</span></th>
+						<th></th>
+						<th class="exchange-listings-remaining"><span>Remaining Quantity</span></th>
+						<th></th>
+						<th class="exchange-listings-remove"><span>Remove Listing?</span></th>
+					</tr>
+				</thead>
+				<tbody data-path=".exchangeaccountdata.openorders">
+					<tr data-if=".ordertype eq 'Buy'">
+						<td>
+							Buy <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantity">900</span> at <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".price">350</span> each (earning <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".totaltc.$commify()">315,000</span>)
+						</td>
+						<td class="desktopOnly"><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantity.$commify()">900</span></td>
+						<td><span data-path=".quantity.$commify()">900</span></td>
+						<td><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantityremaining.$commify()">254</span></td>
+						<td><span data-path=".quantityremaining.$commify()">254</span></td>
+						<td>
+							<div class="input-field button light">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-set-data-url-silent="cancel/{.orderid}">Cancel</button>
+							</div>
+						</td>
+					</tr>
+					<tr data-if=".ordertype eq 'Sell'">
+						<td>
+							Sell <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantity">900</span> at <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".price">350</span> each (spending <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path=".totaltc.$commify()">315,000</span>)
+						</td>
+						<td class="desktopOnly"><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantity.$commify()">900</span></td>
+						<td><span data-path=".quantity.$commify()">900</span></td>
+						<td><img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantityremaining.$commify()">254</span></td>
+						<td><span data-path=".quantityremaining.$commify()">254</span></td>
+						<td>
+							<div class="input-field button light">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-set-data-url-silent="cancel/{.orderid}">Cancel</button>
+							</div>
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<script type="text/javascript">
+				client.exchangeListingsDataTable();
+			</script>
+
+		</div>
+	</div>
+</div>
+
+
+<!-- endif(dev) -->

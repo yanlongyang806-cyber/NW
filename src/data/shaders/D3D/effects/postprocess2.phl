@@ -1,0 +1,197 @@
+#include "ps_inc.hlsl"
+#ifdef TINT
+#include "rgb_hsv_inc.hlsl"
+#endif
+#ifdef COLOR_CORRECT
+#ifndef TINT
+#include "rgb_hsv_inc.hlsl"
+#endif
+#endif
+
+SAMPLER_DECL(blueshift_lut_texture, 0);
+SAMPLER_DECL(tonecurve_lut_texture, 1);
+SAMPLER_DECL(color_curve_lut_texture, 2);
+SAMPLER_DECL(intensity_tint_lut_texture, 3);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 bloom_glare_amount		: PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float3 hsv_scale				: PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float3 hsv_offset				: PS_CONSTANT_MATERIAL_PARAM2() ;
+
+uniform float  hsv_adjustment_overlap			: PS_CONSTANT_MATERIAL_PARAM3() ;
+uniform float4 hsv_adjustments[6]			: PS_CONSTANT_MATERIAL_PARAM4() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+// -----------------------------------------------------------------------
+
+float2 itexcoord(float intensity)
+{
+	float2 scale_offset = float2(255/256.f, 0.5f/256.f);
+	return float2(intensity * scale_offset.x + scale_offset.y, 0.5);
+}
+
+float2 itexcoord2(float intensity)
+{
+	float2 scale_offset = float2(511/512.f, 0.5f/512.f);
+	return float2(intensity * scale_offset.x + scale_offset.y, 0.5);
+}
+
+#ifdef COLOR_CORRECT
+// Adjust hue, saturation, and value based on which hue the color is
+// and the hsv_adjustments constants. Input is HSV, returns RGB.
+float3 adjustHSVPerHue(float3 hsv)
+{
+	if(hsv.y < 0.01) return HSVtoRGB(hsv);
+
+	int hueBucket1 = floor(hsv.x);
+
+	// Handle wrapping around hue
+	if(hueBucket1 <  0) hueBucket1 += 6;
+	if(hueBucket1 >= 6) hueBucket1 -= 6;
+
+	int hueBucket2 = hueBucket1 + 1;
+
+	// Wrap the second hue, but only for the one direction.
+	if(hueBucket2 >= 6) {
+		hueBucket2 -= 6;
+	}
+
+	float a = 1.0 - frac(hsv.x);
+	if(hsv_adjustment_overlap > 0) {
+		// The midpoint between hues needs to stay at 0.5,
+		// but we can change the range we interpolate across
+		// up to the entire distance between hues.
+		a = saturate( (a - 0.5) / hsv_adjustment_overlap + 0.5 );
+	} else {
+		// If the overlap is zero, the above equation would
+		// cause an error. This is what it's approaching.
+		a = (a > 0.5 ? 1 : 0);
+	}
+
+	float4 adjustBucket1;
+	float4 adjustBucket2;
+
+	#ifdef TRANSGAMING
+		// Transgaming's Cg compiler won't let us index into arrays,
+		// so we're doing this silliness here. Thankfully, this
+		// fragment shader should only run to make the 16x256 lookup
+		// table for the next postprocessing stage.
+		if(hueBucket1 == 0) adjustBucket1 = hsv_adjustments[0]; else
+		if(hueBucket1 == 1) adjustBucket1 = hsv_adjustments[1]; else
+		if(hueBucket1 == 2) adjustBucket1 = hsv_adjustments[2]; else
+		if(hueBucket1 == 3) adjustBucket1 = hsv_adjustments[3]; else
+		if(hueBucket1 == 4) adjustBucket1 = hsv_adjustments[4]; else
+		if(hueBucket1 == 5) adjustBucket1 = hsv_adjustments[5];
+		if(hueBucket2 == 0) adjustBucket2 = hsv_adjustments[0]; else
+		if(hueBucket2 == 1) adjustBucket2 = hsv_adjustments[1]; else
+		if(hueBucket2 == 2) adjustBucket2 = hsv_adjustments[2]; else
+		if(hueBucket2 == 3) adjustBucket2 = hsv_adjustments[3]; else
+		if(hueBucket2 == 4) adjustBucket2 = hsv_adjustments[4]; else
+		if(hueBucket2 == 5) adjustBucket2 = hsv_adjustments[5];
+	#else
+		adjustBucket1 = hsv_adjustments[hueBucket1];
+		adjustBucket2 = hsv_adjustments[hueBucket2];
+	#endif
+
+	float hueAdjust2 = hsv.x + adjustBucket2.x * 6.0;
+	float hueAdjust1 = hsv.x + adjustBucket1.x * 6.0;
+
+	// Saturation and value - multiply
+	hsv.yz = (adjustBucket1.yz * hsv.yz) * a +
+		 (adjustBucket2.yz * hsv.yz) * (1.0 - a);
+
+
+	// Hue - this needs to be interpolated in RGB space, otherwise
+	// we end up with unintended rainbows all over the place.
+	float3 rgb1 = HSVtoRGB(float3(hueAdjust1, hsv.yz));
+	float3 rgb2 = HSVtoRGB(float3(hueAdjust2, hsv.yz));
+	float3 finalOut = lerp(rgb2, rgb1, a);
+
+	//float3 finalOut = HSVtoRGB(
+	//	float3(lerp(hueAdjust1, hueAdjust2, a), hsv.yz));
+
+	return finalOut;
+}
+#endif
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	// FIXME: Replace this with a sampler lookup so we don't have
+	//   card/vendor-specific rounding issues.
+	float3 texcolor = float3(
+		frac((clamp(fragment.texcoord.x - 0.5 / 256.0, 0.0f, 1.0f)) * 16.0) * 16.0/15.5,
+		(fragment.texcoord.y - 0.5 / 16.0) * 16.0/15.5,
+		floor(fragment.texcoord.x * 16.0) / 16.0) * 16.0/15.0;
+
+	// Push the red in by one pixel on each side of a cell so that we
+	// never go over an edge regardless of stupid rounding behavior.
+	texcolor.x *= 18.0/16.0;
+	texcolor.x -= 1.0/16.0;
+
+	// apply blueshift
+	#ifndef DISABLE_BLUESHIFT
+	{
+		float4 blueshiftcolor = sampleTex2DNoMips(blueshift_lut_texture, itexcoord(getIntensity(texcolor)));
+		texcolor = blueshiftcolor.rgb + texcolor * blueshiftcolor.a;
+	}
+	#endif
+
+	// channel independent curve adjustment (color correction)
+	#ifdef COLOR_CORRECT
+	{
+		texcolor.r = sampleTex2DNoMips(color_curve_lut_texture, itexcoord(texcolor.r)).r;
+		texcolor.g = sampleTex2DNoMips(color_curve_lut_texture, itexcoord(texcolor.g)).g;
+		texcolor.b = sampleTex2DNoMips(color_curve_lut_texture, itexcoord(texcolor.b)).b;
+	}
+	#endif
+
+	float intensity = getIntensity(texcolor);
+
+	// tone curve and contrast adjustment
+	#ifndef DISABLE_TONE_CURVE
+	{
+		float intensityscale = sampleTex2DNoMips(tonecurve_lut_texture, itexcoord2(intensity)).r;
+		texcolor = saturate(texcolor * intensityscale);
+		intensity = saturate(intensity * intensityscale);
+	}
+	#endif
+
+	#ifdef COLOR_CORRECT
+	{
+		// saturate / desaturate (amount is stored in alpha channel range compressed)
+		// 0.0 = desaturate 100%
+		// 0.5 = unchanged
+		// 1.0 = saturate 100%
+		float4 itransform = sampleTex2DNoMips(intensity_tint_lut_texture, itexcoord(intensity));
+		texcolor = saturate(lerp(texcolor, intensity, 1 - itransform.a * 2));
+
+		// intensity based color tinting
+		texcolor = texcolor * (1 - getIntensity(itransform.rgb)) + itransform.rgb * intensity; // this is a lerp with the t factor pre-multiplied against the desired hue and saturation
+
+		#ifndef TINT
+			texcolor = RGBtoHSV( texcolor );
+			texcolor = adjustHSVPerHue( texcolor );
+		#endif
+	}
+	#endif
+
+	// Perform full-screen HSV adjustments
+	#ifdef TINT
+	{
+		texcolor = RGBtoHSV( texcolor );
+
+		texcolor = texcolor * hsv_scale + hsv_offset;
+		//texcolor.x = frac( texcolor.x + 1.0 );
+		//texcolor.yz = saturate( texcolor.yz );
+
+		#ifdef COLOR_CORRECT
+			texcolor = adjustHSVPerHue( texcolor );
+		#else
+			texcolor = HSVtoRGB( texcolor );
+		#endif
+	}
+	#endif
+
+	return float4(texcolor, 1);
+}
+

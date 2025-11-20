@@ -1,0 +1,162 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ASConnection
+//
+//
+var util = require('cryptic/cutils');  // for util.inherits
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var crypto = require('crypto');
+
+var CrypticProtocolConnection = require('cryptic/CrypticProtocolConnection');
+var Packet = require('cryptic/packet');
+var EBuffer = require('cryptic/EBuffer');
+
+var TO_ACCOUNTSERVER_TRUSTED_SET_REQUEST_IP = 45;
+var TO_ACCOUNTSERVER_TRUSTED_SET_SALT = 44;
+var TO_ACCOUNTSERVER_NVPSTRUCT_LOGIN = 43;
+var FROM_ACCOUNTSERVER_LOGIN_FAILED = 34;
+var FROM_ACCOUNTSERVER_FAILED = 11;
+var FROM_ACCOUNTSERVER_LOGIN_NEW = 21;
+
+var LoginFailureCode_UnlinkedPWCommonAccount = 6;
+var LoginFailureCode_CrypticDisabled = 12;
+
+///////////////////////////////////////////////////////////////////////////
+
+var ASConnection = function ASConnection(login)
+{
+	dbg.trace();
+	CrypticProtocolConnection.call(this);
+
+	this.login = login; // The login we're currently working on
+}
+
+util.inherits(ASConnection, CrypticProtocolConnection);
+
+///////////////////////////////////////////////////////////////////////////
+
+ASConnection.prototype.onDisconnected = function onDisconnected()
+{
+	dbg.trace();
+	this.login = null;
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+ASConnection.prototype.onPacket = function onPacket(pkt)
+{
+	dbg.trace();
+
+	var cmd = pkt.readUInt8();
+	var msg;
+	var fn;
+	switch(cmd)
+	{
+		case FROM_ACCOUNTSERVER_LOGIN_FAILED:
+			dbg.trace('FROM_ACCOUNTSERVER_LOGIN_FAILED');
+			this.onLoginFailedCode(pkt);
+			break;
+
+		case FROM_ACCOUNTSERVER_FAILED:
+			dbg.trace('FROM_ACCOUNTSERVER_FAILED');
+			this.onLoginFailedReason(pkt);
+			break;
+
+		case FROM_ACCOUNTSERVER_LOGIN_NEW:
+			dbg.trace('FROM_ACCOUNTSERVER_LOGIN_NEW');
+			this.onLoginNew(pkt);
+			break;
+
+		default:
+			pkt.rewind();
+			dbg.trace('emit packet   command = ', cmd);
+			this.emit('packet', pkt);
+			break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ASConnection.prototype.requestSetSalt = function ()
+{
+	dbg.trace();
+
+	var pkt = this.startPacket(TO_ACCOUNTSERVER_TRUSTED_SET_REQUEST_IP);
+	pkt.sendUInt32(this.login.ip);
+	pkt.endPacket();
+
+	pkt = this.startPacket(TO_ACCOUNTSERVER_TRUSTED_SET_SALT);
+	pkt.sendUInt32(this.login.saltValue);
+	pkt.endPacket();
+}
+
+ASConnection.prototype.requestLogin = function()
+{
+	var AccountNetStruct_ToAccountServerLogin = {
+		KeyVersion: 1, /* ASKEY_identity */
+		encryptedPassword: this.login.pw,
+		hashedCrypticPassword: this.login.cryptic_pw,
+		hashedPWPassword: this.login.pw_pw,
+		accountName: this.login.user,
+		LoginType: 3, /* ACCOUNTLOGINTYPE_CrypticAndPW */
+		machineID: this.login.idBrowser
+	};
+
+	var pkt = this.startPacket(TO_ACCOUNTSERVER_NVPSTRUCT_LOGIN);
+	pkt.sendNameValuePairs(AccountNetStruct_ToAccountServerLogin);
+	pkt.endPacket();
+}
+
+ASConnection.prototype.onLoginFailedCode = function (pkt)
+{
+	dbg.trace();
+
+	this.idFailure = pkt.readUInt32();
+	if(this.idFailure === LoginFailureCode_UnlinkedPWCommonAccount
+		|| this.idFailure === LoginFailureCode_CrypticDisabled)
+	{
+		this.idConflictTicket = pkt.readUInt32();
+	}
+}
+
+ASConnection.prototype.onLoginFailedReason = function (pkt)
+{
+	dbg.trace();
+
+	var reason = pkt.readString();
+
+	dbg.trace('Login failed:', reason);
+
+	this.login.fail(reason, this.idFailure, this.idConflictTicket);
+}
+
+ASConnection.prototype.onLoginNew = function (pkt)
+{
+	dbg.trace();
+
+	var idAccount = pkt.readUInt32();
+	var idTicket = pkt.readUInt32();
+
+	dbg.trace('Account', idAccount);
+	dbg.trace('Ticket', idTicket);
+
+	this.login.success(idAccount, idTicket);
+}
+
+ASConnection.prototype.startLogin = function()
+{
+	dbg.trace();
+
+	this.requestSetSalt();
+	this.requestLogin();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ASConnection;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

@@ -1,0 +1,4 @@
+{
+	float4 divisor = max(%B%,0.01);
+	%Result% = %A% / divisor;
+}

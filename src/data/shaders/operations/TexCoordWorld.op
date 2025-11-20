@@ -1,0 +1,12 @@
+OperationDef
+	Name "TexCoordWorld" // Name of the operation
+	Description "World Texture Coordinates"
+	Type TEXTURE
+
+	Output
+		Name TexCoord
+		Type TexCoord
+		Description "TexCoord"
+		Float 4
+	EndOutput
+EndOperationDef

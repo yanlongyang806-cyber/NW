@@ -1,0 +1,658 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+
+var content = require('cryptic/client/contentHelpers');
+
+var transitions = {};
+
+/*******************************************************************************\
+ * For transitions.activate(opt)
+ *  opt - object with all the options.
+ *    from:
+ *       all the information about the page you are coming from.
+ *
+ *    to:
+ *       all the information about the page you are going to.
+ *
+ *    setContent:
+ *       The minimum content that should be set for this page load. (optimized)
+ *
+ *    finished:
+ *       callback function.  Call this when you have finished all of the transitions
+ *       and have arrived on the 'to' page.
+ */
+var s_opt = {};
+
+// Array of functions to execute after content is complete
+var onContentComplete = [];
+
+transitions.activate = function(opt)
+{
+	var self = this;
+	s_opt = opt;
+
+
+	// Set the section name
+	/*
+	var section = '';
+	if(opt.to.extra && 'section' in opt.to.extra)
+	{
+		console.log('SECTION NAME: ' + opt.to.extra.section);
+		section = opt.to.extra.section;
+	}
+
+	if(section)
+	{
+		onContentComplete.push(function(callback) {
+			$('h2.sectionTitle').text(section);
+			callback();
+		});
+	}
+	*/
+
+
+
+
+
+
+	// Set the back to section link
+	var backtosection = '';
+	if (opt.to.extra && 'backtosection' in opt.to.extra)
+	{
+		backtosection = opt.to.extra.backtosection;
+	}
+	if (backtosection)
+	{
+		onContentComplete.push(function(callback) {
+			$('#backToSection').text(backtosection);
+			callback();
+		});
+	}
+
+	// ------------------------ FIRST SET THE STRUCTURE ------------------------
+	dbg('ACTIVATE: from ' + opt.from.loc + ', to ' + opt.to.loc);
+
+	// If the structure has changed, change it.
+	// And forward activate for the transition
+	if ((!(opt.to.modal || opt.from.modal)) && (opt.from.str !== opt.to.str))
+	{
+		dbg('Structure change from "' + opt.from.str  + '" to "' + opt.to.str + '"');
+		// The structure name is the stencil name
+		content.setContent([{selector: '#content', stencil: opt.to.str}], opt.to.params, undefined, function() {
+			opt.from.str = opt.to.str;
+			opt.from.loc = '';
+			self.activate(opt);
+		});
+		return;
+	}
+
+	// SUBSTITUTE NEW LOC FOR LOADING SCREENS ----------------------------
+
+	if (opt.to.extra && opt.to.extra.isLoadingScreen && client.shifter.hashInfo.qParams['loc'])
+	{
+		opt.to.loc = client.shifter.hashInfo.qParams['loc'];
+	}
+
+
+	// MODALS -------------------------------------
+
+	// if MODAL to MODAL
+	if(opt.from.modal && opt.to.modal)
+	{
+		dbg.log("MODAL TO MODAL");
+		setModalContent(opt.finished);
+		return;
+	}
+	// if OPENING A MODAL (NORMAL PAGE to MODAL)
+	if(!opt.from.modal && opt.to.modal)
+	{
+		dbg.log("OPENING MODAL");
+		setModalContent(opt.finished);
+		return;
+	}
+	// if CLOSING A MODAL (MODAL to NORMAL PAGE)
+	if(opt.from.modal && !opt.to.modal)
+	{
+		dbg.log("CLOSING MODAL");
+		emptyModal();
+		if (opt.to.extra && opt.from.extra.subnavid === opt.to.extra.subnavid)
+		{
+			dbg.log("AND WE'RE DONE");
+			opt.finished();
+			return;
+		} else {
+			dbg.log("CONTINUE ON");
+			// continue on and fill new content
+		}
+	}
+
+
+	// PAGES -----------------------------
+
+	// if STARTING on LOGIN:
+	if (opt.from.loc === '' && opt.to.loc === 'login')
+	{
+		dbg.log("STARTING on LOGIN");
+		setContent(function() {
+			fadeInLogin();
+			opt.finished();
+		});
+
+		return;
+	}
+
+	// if STARTING on FRONT:
+	if (opt.from.loc === '' && opt.to.loc === 'one')
+	{
+		dbg.log("STARTING on FRONT");
+		hideMobileLayout();
+		showMobileFront();
+		setContent(function() {
+			fadeInFront();
+			opt.finished();
+		});
+		return;
+	}
+
+	// if STARTING on SECTION:
+	if (opt.from.loc === '' && opt.to.loc === 'two')
+	{
+		dbg.log("STARTING on SECTION");
+		hideMobileLayout();
+		showMobileSection();
+		setContent(function() {
+			fadeInSection();
+			opt.finished();
+		});
+		return;
+	}
+
+	// if moving from LOGIN to LOGIN:
+	if (opt.from.loc === 'login' && opt.to.loc === 'login')
+	{
+		dbg.log("moving from LOGIN to LOGIN");
+		fadeOutLoginContent(function() {
+			setContent(function() {
+				fadeInLoginContent();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from LOGIN to FRONT:
+	if (opt.from.loc === 'login' && opt.to.loc === 'one')
+	{
+		dbg.log("moving from LOGIN to FRONT");
+		hideMobileLayout();
+		showMobileFront();
+		fadeOutLogin(function() {
+			setContent(function() {
+				fadeInFront();
+				opt.finished();
+			});
+		});
+		return;
+	}
+	// if moving from LOGIN to SECTION:
+	if (opt.from.loc === 'login' && opt.to.loc === 'two')
+	{
+		dbg.log("moving from LOGIN to SECTION");
+		hideMobileLayout();
+		showMobileSection();
+		fadeOutLogin(function() {
+			setContent(function() {
+				addHighlight();
+				hideFrontHeader();
+				fadeInSectionHeader();
+				fadeInSection();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from FRONT to LOGIN:
+	if (opt.from.loc === 'one' && opt.to.loc === 'login')
+	{
+		dbg.log("moving from FRONT to LOGIN");
+		hideMobileLayout();
+		fadeOutFront(function() {
+			setContent(function() {
+				fadeInLogin();
+				opt.finished();
+			});
+		});
+		return;
+	}
+	// if moving from SECTION to LOGIN:
+	if (opt.from.loc === 'two' && opt.to.loc === 'login')
+	{
+		dbg.log("moving from SECTION to LOGIN");
+		hideMobileLayout();
+		fadeOutSection(function() {
+			setContent(function() {
+				fadeInLogin();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from FRONT to SECTION:
+	if(opt.from.loc === 'one' && opt.to.loc === 'two') {
+		dbg.log("moving from FRONT to SECTION");
+		hideMobileLayout();
+		showMobileSection();
+		fadeOutFrontHeader();
+		fadeOutFrontNav();
+		fadeOutFrontContent();
+		slideLayout(function() {
+			fadeInSectionHeader();
+			setContent(function() {
+				addHighlight();
+				fadeInSectionNav();
+				fadeInSectionContent();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from SECTION to FRONT:
+	if(opt.from.loc === 'two' && opt.to.loc === 'one') {
+		dbg.log("moving from SECTION to FRONT");
+		hideMobileLayout();
+
+		fadeOutSectionHeader();
+		fadeOutSectionNav();
+		fadeOutSectionContent();
+		slideLayoutReverse(function() {
+			fadeInFrontHeader();
+			setContent(function() {
+				fadeInFrontNav();
+				fadeInFrontContent();
+				showMobileFront();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from FRONT to FRONT:
+	if(opt.from.loc === 'one' && opt.to.loc === 'one') {
+		dbg.log("moving from FRONT to FRONT");
+		fadeOutFrontContent(function() {
+			setContent(function() {
+				addHighlight();
+				fadeInFrontContent();
+				opt.finished();
+			});
+		});
+		return;
+	}
+
+	// if moving from SECTION to SECTION:
+	if(opt.from.loc === 'two' && opt.to.loc === 'two') {
+		dbg.log("moving from SECTION to SECTION");
+
+		if (opt.from.extra.subnavid === opt.to.extra.subnavid) {
+			setContent(function() {
+				addHighlight();
+				opt.finished();
+			});
+
+		}
+		else {
+			if (opt.from.extra.navid !== opt.to.extra.navid) {
+				fadeOutSectionNav();
+			}
+			fadeOutSectionContent(function() {
+				setContent(function() {
+					addHighlight();
+
+					if (opt.from.extra.navid !== opt.to.extra.navid) {
+						fadeInSectionNav();
+					}
+
+					fadeInSectionContent();
+					opt.finished();
+				});
+			});
+		}
+		return;
+	}
+
+	// It should never reach this.
+	// If it reaches this, you missed a case above.
+	dbg("YOU GET NOTHING! YOU LOSE! GOOD DAY SIR!");
+
+	// You shouldn't be here, but lets try to recover
+	// at least SOME functionality if you are here.
+	this.shifter.onFinished(opt.to.hash, true);
+
+	return;
+}
+
+
+
+
+
+// ------------------------ CHECK OUT THESE MOVES ------------------------
+
+
+// SET CONTENT
+function setContent(cb) {
+	if (typeof cb === 'undefined')
+	{
+		cb = s_opt.finished;
+	}
+
+	content.setContent(s_opt.setContent, s_opt.to.params, onContentComplete, function() {
+		addBodyMarkers();
+		cb();
+	});
+}
+
+// SLIDE LAYOUT
+function slideLayout(cb) {
+	$("#bodyRow").animate({left: '-=100%'}, 400);
+	$("#bodyRow").promise().done(cb);
+}
+function slideLayoutReverse(cb) {
+	$("#bodyRow").animate({left: '+=100%'}, 400);
+	$("#bodyRow").promise().done(cb);
+}
+
+// JUMP LAYOUT
+function jumpLayout(cb) {
+	$("#bodyRow").animate({left: '-=100%'}, 0);
+	$("#bodyRow").promise().done(cb);
+}
+function jumpLayoutReverse(cb) {
+	$("#bodyRow").animate({left: '+=100%'}, 0);
+	$("#bodyRow").promise().done(cb);
+}
+
+// STRUCTURE FADES
+
+function fadeInLogin() {
+	$(".loginContainer").fadeIn(350);
+}
+function fadeOutLogin(cb) {
+	$(".loginContainer").fadeOut(100);
+	$(".loginContainer").promise().done(cb);
+}
+function fadeInFront() {
+	$("#bodyRow").css({left: '0%'});
+	$(".structureContainer").fadeIn(350);
+}
+function fadeOutFront(cb) {
+	$(".structureContainer").fadeOut(100);
+	$(".structureContainer").promise().done(cb);
+}
+function fadeInSection() {
+	$("#bodyRow").css({left: '-100%'});
+	$(".structureContainer").fadeIn(350);
+}
+function fadeOutSection(cb) {
+	$(".structureContainer").fadeOut(100);
+	$(".structureContainer").promise().done(cb);
+}
+
+// LOGIN CONTENT FADES
+function fadeOutLoginContent(cb) {
+	$("#content_login").fadeOut(50);
+	$("#content_login").promise().done(cb);
+}
+function fadeInLoginContent() {
+	$("#content_login").fadeIn(100);
+}
+
+
+// HEADER FADE IN AND OUT
+function fadeOutFrontHeader() {
+	$("#headerLogin").fadeOut(200);
+}
+function hideFrontHeader() {
+	$("#headerLogin").hide();
+}
+function fadeOutSectionHeader() {
+	$("#headerButtonBack").fadeOut(200);
+	$("#headerSubtitle").fadeOut(300);
+	$("#headerKitBar").fadeOut(300);
+}
+function hideSectionHeader() {
+	$("#headerButtonBack").hide();
+	$("#headerSubtitle").hide();
+	$("#headerKitBar").hide();
+}
+function fadeInFrontHeader() {
+	$("#headerLogin").fadeIn(200);
+}
+function fadeInSectionHeader() {
+
+	if(s_opt.to.extra && 'section' in s_opt.to.extra) {
+		$('.sectionTitle').text(s_opt.to.extra.section);
+	}
+
+	$("#headerSubtitle").delay(100).fadeIn(300);
+	$("#headerKitBar").delay(100).fadeIn(300);
+	$("#headerButtonBack").delay(200).fadeIn(300);
+}
+
+// NAV FADE IN AND OUT
+function fadeOutFrontNav() {
+	$("#navFront").delay(50).fadeOut(200);
+}
+function fadeOutSectionNav() {
+	$("#navSection").fadeOut(50);
+}
+function fadeInFrontNav() {
+	$("#navFront").fadeIn(200);
+}
+function fadeInSectionNav() {
+	$("#navSection").fadeIn(300);
+}
+
+
+// CONTENT FADE IN AND OUT
+function fadeOutFrontContent(cb) {
+	$("#contentFront").fadeOut(50);
+	$("#contentFront").promise().done(cb);
+}
+function fadeOutSectionContent(cb) {
+	$("#contentSection").fadeOut(50);
+	$("#contentSection").promise().done(cb);
+}
+function fadeInFrontContent() {
+	$("#contentFront").fadeIn(100);
+}
+function fadeInSectionContent() {
+	$("#contentSection").fadeIn(100);
+}
+
+// MOBILE
+function hideMobileLayout() {
+	$('.showMobileLayout').removeClass('showMobileLayout');
+}
+function showMobileFront() {
+	$('.layoutFront').delay(100).addClass('showMobileLayout');
+}
+function showMobileSection() {
+	$('.layoutSection').addClass('showMobileLayout');
+}
+
+
+// MODALS
+function setModalContent(finished) {
+	content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+		addBodyMarkers();
+		if (s_opt.to.extra && s_opt.to.extra.complexpath)
+		{
+			$('.mobileModalArrowStandard').hide();
+		}
+		finished();
+	});
+}
+
+function emptyModal() {
+	addBodyMarkers();
+	$('#modal').empty();
+}
+function closeModal(optTo) {
+	s_opt.to = optTo;
+	emptyModal();
+}
+
+
+
+
+
+
+
+// MISCELLANEOUS HELPERS ---------------------------------------------
+
+function addHighlight() {
+	$('.highlighted').removeClass('highlighted');
+	$('.selected').removeClass('selected');
+	$('.selectedNext').removeClass('selectedNext');
+
+	if (s_opt.to.extra && $('#nav_' + s_opt.to.extra.subnavid))
+	{
+		$('#nav_' + s_opt.to.extra.subnavid).addClass('highlighted');
+	}
+
+
+	if (s_opt.to.extra && (s_opt.to.extra.navid === 'fleet_holdings'))
+	{
+		$('#nav_holdings_' + s_opt.to.params['projectname']).addClass('highlighted');
+	}
+	if (s_opt.to.extra && (s_opt.to.extra.navid === 'reputation'))
+	{
+		$('#nav_reputation_' + s_opt.to.params['projectname']).addClass('highlighted');
+	}
+
+
+
+	// SPECIAL HIGHLIGHTS
+	// This highlight is for selectable nav slots (e.g. Holdings project slots)
+	if (client.shifter.hashInfo.urlsParams['navslot'])
+	{
+		$('.selectableNavSlot.navSlot_' + client.shifter.hashInfo.urlsParams['navslot']).addClass('selected');
+	}
+	// This highlight is for "Next" selectable nav slots (e.g. Holdings project next slots)
+	if ('next' in s_opt.to.params)
+	{
+		$('[data-url="/holdings/' + s_opt.to.params['projectname'] + '/projects/next?next=' + s_opt.to.params['next'] + '"]')
+			.closest('.selectableNavSlot')
+			.addClass('selectedNext');
+		$('[data-url="/reputation/' + s_opt.to.params['projectname'] + '/projects/next?next=' + s_opt.to.params['next'] + '"]')
+			.closest('.selectableNavSlot')
+			.addClass('selectedNext');
+	}
+	// This highlight is for selectable tier levels (Fleet Holdings tiers)
+	if ('tier' in s_opt.to.params)
+	{
+		$('[data-url="?tier=' + s_opt.to.params['tier'] + '"]').addClass('selected');
+	}
+
+	// This highlight is for subtab groups (has "subnavid" in params)
+	if (client.shifter.hashInfo.urlsParams['subnavid'])
+	{
+		// highlight the current category
+		$('.nav_' + client.shifter.hashInfo.urlsParams['subnavid']).addClass('highlighted');
+
+		// show the subnav group
+		$('.subNavGroup').hide();
+		$('.subNavGroup.nav_group_' + client.shifter.hashInfo.urlsParams['subnavid']).show();
+
+		// hide children that are identical to parents
+		$('.subNavGroup.nav_group_' + client.shifter.hashInfo.urlsParams['subnavid'] + ' .nav_' + client.shifter.hashInfo.urlsParams['subnavid']).hide();
+
+		// open the parent group and highlight the parent category
+		$('.nav_' + client.shifter.hashInfo.urlsParams['subnavid']).closest('.subNavGroup').show();
+		$('.nav_' + client.shifter.hashInfo.urlsParams['subnavid']).closest('.subNavGroup').siblings('.navGroupMain').addClass('highlighted');
+	}
+}
+
+// MISCELLANEOUS HELPERS (COPIED FROM NW) ---------------------------------------------
+function fillTitle() {
+	$('#content_title').text(s_opt.to.title);
+	$('#content_title').show();
+}
+
+function addBodyMarkers() {
+	$('body').attr('class', 'body-' + s_opt.to.loc);
+	if (s_opt.to.extra && s_opt.to.extra.navid)
+	{
+		$('body').addClass('body-' + s_opt.to.extra.navid);
+	}
+	if (s_opt.to.extra && s_opt.to.extra.subnavid)
+	{
+		$('body').addClass('body-' + s_opt.to.extra.subnavid);
+	}
+	if (s_opt.to.extra && s_opt.to.extra.uniqueid)
+	{
+		$('body').addClass('body-' + s_opt.to.extra.uniqueid);
+	}
+	if (s_opt.to.modal)
+	{
+		$('body').addClass('body-modal');
+	}
+	if (s_opt.to.extra && s_opt.to.extra.fleet === true)
+	{
+		$('body').addClass('body-fleet');
+	}
+	/*
+	if (s_opt.to.extra && s_opt.to.extra.guildpage)
+	{
+		$('body').addClass('body-guildpage');
+	}
+	*/
+}
+
+
+
+
+/*
+function setMainNavHighlight(delay) {
+	if (s_opt.to.extra && s_opt.to.extra.navid)
+	{
+		$('.mainNav').delay(delay).promise().done(function() {
+			$('.mainNav.selected').removeClass('selected');
+			$('.mainNav.' + s_opt.to.extra.navid).addClass('selected');
+		});
+	} else {
+		$('.mainNav').delay(delay).promise().done(function() {
+			$('.mainNav.selected').removeClass('selected');
+		});
+	}
+}
+
+function addSubNavHighlight() {
+	$('.subNav').removeClass('selected');
+
+	if (s_opt.to.extra && s_opt.to.extra.subnavid)
+	{
+		$('.subNav.' + s_opt.to.extra.subnavid).addClass('selected');
+	}
+	if (client.shifter.hashInfo.urlsParams['subnavid'])
+	{
+		$('.subNav.' + client.shifter.hashInfo.urlsParams['subnavid']).addClass('selected');
+	}
+}
+*/
+
+
+
+
+
+// Usable outside transitions:
+transitions.closeModal = closeModal;
+
+module.exports = transitions;
+
+// End of File

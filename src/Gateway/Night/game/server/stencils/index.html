@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title data-no-translation>Neverwinter</title>
+		<meta charset="utf-8">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<!-- MOBILE META TAGS -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="viewport" content = "width = device-width, initial-scale = 1, minimum-scale = 1, maximum-scale = 1" />
+
+		<!-- GAME STYLES -->
+		<link href="./css/game-support.css?cb={$cachebuster()}" rel="stylesheet">
+		<link href="./css/style.css?cb={$cachebuster()}" rel="stylesheet" id="stylesheet">
+
+		<!--[if IE]>
+			<link href="./css/style-ie.css?cb={$cachebuster()}" rel="stylesheet" />
+		<![endif]-->
+		<!--[if lt IE 9]>
+			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+			<link href="./css/style-ie8.css?cb={$cachebuster()}" rel="stylesheet">
+		<![endif]-->
+
+		<!-- FAVICONS AND OTHER ICONS -->
+		<link rel="shortcut icon" href="/img/favicon.ico">
+		<link rel="apple-touch-startup-image" href="/img/mobile_splash.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/img/apple-touch-icon-144.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/img/apple-touch-icon-114.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/img/apple-touch-icon-72.png">
+		<link rel="apple-touch-icon" href="/img/apple-touch-icon-57.png">
+
+		<!-- GOOGLE ANALYTICS -->
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-992936-18']);
+			_gaq.push(['_setDomainName', 'playneverwinter.com']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+
+	</head>
+
+	<body>
+
+		<!-- NO JAVASCRIPT -->
+		<noscript>
+			<div class="errorpage">
+				<div class="login-logo"></div>
+				<p>You have JavaScript disabled. It is required to view this web page.</p>
+				<p>Please enable JavaScript in your browser settings and refresh this page.</p>
+			</div>
+			<style type="text/css">
+				#content { display: none; }
+			</style>
+		</noscript>
+
+		<!-- NO COOKIES OR UNSUPPORTED BROWSER -->
+		<div id="nocontent" class="errorpage">
+			<div class="login-logo"></div>
+			<div id="nocookies">
+				<p>Cookies need to be enabled for this site to work.</p>
+				<p>Please enable cookies in your browser settings and refresh this page.</p>
+			</div>
+			<div id="unsupportedbrowser">
+				<p>You are using an unsupported browser.</p>
+			</div>
+		</div>
+
+		<!-- CONTENT -->
+		<div id="content">
+			<!-- All content is going to get inserted here -->
+		</div>
+
+		<!-- MODAL -->
+		<div id="modal">
+			<!-- All modal content is going to get inserted here -->
+		</div>
+		<!-- MODAL -->
+
+		<!-- tooltip -->
+		<div id="tooltip">
+			<!-- All tooltip content is going to get inserted here -->
+		</div>
+		<!-- tooltip -->
+
+		<!-- NOTIFICATIONS -->
+		<div class="notification">
+			<button class="close-button closeNotification"></button>
+			<div class="messages">
+				<ul id="notify">
+				</ul>
+			</div>
+		</div>
+
+
+
+		<!-- if(dev) -->
+		<div id="debugmode">DEBUG MODE</div>
+		<!-- endif(dev) -->
+
+		<!-- THE JAVASCRIPT -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="./lang.js?cb={$cachebuster()}"></script>
+
+		<!-- GAME STUFF -->
+		<script src="./js/game-support.js?cb={$cachebuster()}"></script>
+		<script src="./socket.io/socket.io.js"></script>
+		<script src="./js/client.js?cb={$cachebuster()}"></script>
+
+		<script>
+			var client = require('client');
+			var cachebuster = '{$cachebuster()}';
+		</script>
+
+		<script>
+			$('input, textarea').placeholder();
+		</script>
+
+		<script>
+			// NOTE: IE WILL NOT SET COOKIES is there is an underscore in the domain name.
+			// ex: http://not_a_real_domain/  <- Never setting cookies in IE.
+			document.cookie = "testing=cookies_enabled; path=/";
+		    if(document.cookie.indexOf("testing=cookies_enabled") < 0)
+			{
+				$('#content').hide();
+				$('#nocontent').show();
+				$('#nocookies').show();
+			}
+			// Delete the cookie:
+			document.cookie = "testing=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/"
+
+			// NOTIFICATION CODE
+			$('.closeNotification').click(function() {
+				$('.notification').hide();
+				$('#notify').empty();
+			});
+
+		</script>
+
+	</body>
+</html>
+
+

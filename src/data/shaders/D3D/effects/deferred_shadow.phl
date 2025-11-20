@@ -1,0 +1,110 @@
+#define DEFERRED_SHADOW
+
+#macro NUM_SSAO_SAMPLES
+16
+#endmacro
+
+//#define DEFERRED_CLOUD_SHADOWS_AS_AO
+//#define PSSM_DISPLAY
+
+#include "ps_inc.hlsl" 
+#include "depth_inc.hlsl"
+#include "light_inc.hlsl"
+
+SAMPLER_DECL(depth_sampler, 0);
+
+#ifdef SSAO
+SAMPLER_DECL(plane_sampler, 1);
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 proj_mat_X	: PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 proj_mat_Y	: PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 plane_res	: PS_CONSTANT_MATERIAL_PARAM2() ;
+uniform float4 param_vec	: PS_CONSTANT_MATERIAL_PARAM3() ;
+uniform float4 depth_step	: PS_CONSTANT_MATERIAL_PARAM4() ;
+uniform float4 ssao_vectors[ NUM_SSAO_SAMPLES() ] 
+							: PS_CONSTANT_MATERIAL_PARAM5() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+#include "ssao.hlsl"
+
+SAMPLER_DECL(prepass_sampler, 2);
+#endif
+
+#ifdef SCATTERING
+// extinction rate, scatter rate
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 scatter_param : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+// -----------------------------------------------------------------------
+
+struct PS_OUTPUT
+{
+	float4 color : SEM_COLOR(0);
+};
+
+#macro MAXTEXRANGE
+150
+#endmacro
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+	float2 screen_texcoord = fragment.texcoord.xy / fragment.texcoord.w;
+	float depth = sampleTexDepthVS(depth_sampler, screen_texcoord);
+
+  #ifdef D3D11
+  	float3 position_vs = extractPositionUncompressedWithCorrection(depth, screen_texcoord);
+	#ifdef STEREOSCOPIC
+		float3 position_vs_for_ssao = extractPositionUncompressed(depth, screen_texcoord);
+	#else
+		float3 position_vs_for_ssao = position_vs;
+	#endif
+  #else
+  	float3 position_vs = extractPositionUncompressedWithOffsetWithCorrection(depth, screen_texcoord);
+	float3 position_vs_for_ssao = extractPositionUncompressed(depth, screen_texcoord);
+  #endif
+
+	float4 outColor = 0;
+
+#ifdef SSAO
+	bool bFailedPrePass = false;
+#ifdef SSAO_PREPASS_ENABLED
+#ifndef SSAO_PREPASS
+	// this is getting filtering already....
+	float4 prepass = sampleTex2DNoMips(prepass_sampler, float2(screen_texcoord.x,screen_texcoord.y));
+	bFailedPrePass = !prepass.a;
+#endif
+#endif
+	if (!bFailedPrePass) 
+		outColor.a = calcSSAO(depth_sampler, depth, position_vs_for_ssao, screen_texcoord, plane_sampler,0);
+
+		// for debugging "half-screen"
+#ifndef SSAO_PREPASS
+//	if (fragment.texcoord.x > 0.5)
+//		outColor.a = prepass.a;
+#endif
+
+#endif
+
+#ifdef PSSM_DISPLAY
+	float3 shadowmap_visible = 0;
+#endif
+
+	float3 shadow_term;
+	float distance_to_camera = length(position_vs);
+
+	$PerLight$
+
+	output.color.rgba = outColor;
+
+#ifdef PSSM_DISPLAY
+	output.color.rgba = float4(shadowmap_visible, 1);
+#endif
+
+	return output;
+}
+
+

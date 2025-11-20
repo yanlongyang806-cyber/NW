@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Map Maker</title>
+		<link rel="stylesheet" href="http://localhost:6860/css/sca.css">
+
+		<link rel="stylesheet" href="./mapMaker.css">
+
+		<!--
+		<link rel="stylesheet" href="./theme/dungeon-master.css">
+		-->
+		<!-- <link rel="stylesheet" href="./theme/tileset-demo-25x25_01.css"> -->
+	</head>
+
+	<body class="mapmaker">
+		<div id="tooltip" class="tooltip"></div>
+		<div id="copy-box"><p><h4>File: <span id="copy-box-name"></span></h4><textarea id="copy-text"></textarea><br>
+			<button id="copy-box-close" onclick="$('#copy-box').hide();">Close</button>
+			<button id="copy-box-import" onclick="importMapListFromCopyBox(); $('#copy-box').hide();">Import</button>
+			<button id="copy-box-import-thingy" onclick="importMapPicture(); $('#copy-box').hide();">Import Picture</button>
+		</div>
+		<div id="content">
+			<p>
+				Map name: <input type="text" name="map-name"><button onclick="saveMap()">Save Map</button>
+				Map tags: <input type="text" name="map-tags">
+				Tileset:
+				<select onchange="changeTileset(this.value)">
+					<option value="dungeon parchment-01" selected>Dungeon</option>
+					<option value="forest parchment-02">Forest</option>
+				</select>
+
+				<label><input id="visible" type="checkbox" checked onchange="toggleVisibility();"> (V)isible</label>
+				<label><input id="color" type="checkbox" onchange="toggleColors();"> (C)olor/Fog</label>
+				<label><input id="grid" type="checkbox" value="1" checked onchange="toggleGrid(this.checked);"> (G)rid</label>
+
+			</p>
+
+			<div id="hiding" class="clear hide">
+				HIDING INACCASSIBLE ROOMS
+			</div>
+
+			<div class="explore-map column">
+				<div class="dungeon-map dungeon parchment-01">
+					<div id="map-grid" class="dungeon-map-inner"></div>
+					<div id="map" class="dungeon-map-inner">
+					</div>
+				</div>
+			</div>
+
+			<div id="tools" class="column">
+				Encounter Tags:<br>
+				<input type="text" name="encounter-tags"> <button onclick="addEncounterAtSelection()">Add Encounter</button>
+				<br>
+				<button onclick="removeEncountersAtSelection()" data-tt="Clear all encounters within the selected area">Remove Encounters</button>
+
+				<div id="help" class="clear">
+					<p>
+						You can click and drag to select tiles in the grid.<br>
+						Right-click on an encounter to add tags or set what it opens.
+						<h3>Keybinds:</h3>
+						<ul>
+							<li>r - Make room from selection</li>
+							<li>h - Make hall from selection</li>
+							<li>s - Set start/entrance</li>
+							<li>SHIFT + s - Set Exit</li>
+							<li>del - Erase selection</li>
+							<li>1-9 - Set room color (a - i)</li>
+							<li>0 - Remove room color</li>
+							<li>x - Add an encounter</li>
+							<li>SHIFT + x - Add End encounter</li>
+							<li>ALT + x - Delete selected encounters</li>
+							<li>t - Toggle encounter</li>
+							<li>ESC - Clear Selection</li>
+						</ul>
+
+					</p>
+
+				</div>
+			</div>
+
+			<div class="column">
+				<strong>Map List:</strong>
+				<button onclick="exportMapList()">Export</button>
+				<button onclick="importMapListPrompt()">Import</button>
+				<button onclick="saveMapListToLocalStorage()">Save</button>
+
+				<div id="maplist">
+				</div>
+			</div>
+
+
+			<div class="clear" id="encounters">
+			</div>
+
+<!-- 			<div id="font-test">
+				ABCDEFGHIJKLMNOPQRSTUVWXYZ<br>
+				abcdefghijklmnopqrstuvwxyz<br>
+				1234567890-=<br>
+				!@#$%^&*()_+<br>
+				,./;'[]\<br>
+				?:"{}|<br>
+			</div> -->
+		</div>
+
+		<!-- JQuery and bootstrapping ************************************** -->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<script>
+			// ----------------------------------------------------------------------------
+			// From cutils
+			// ----------------------------------------------------------------------------
+
+			var TYPE_OBJECT = '[object Object]';
+			var TYPE_ARRAY  = '[object Array]';
+
+			function deepExtend(dest /* , src1, ..., srcn */)
+			{
+				for(var i = 0; i < arguments.length; i++)
+				{
+					var src = arguments[i];
+
+					for(var name in src)
+					{
+						if(Object.hasOwnProperty.call(src, name))
+						{
+							var value = src[name];
+							var type = Object.prototype.toString.call(value);
+							if(type === TYPE_OBJECT)
+							{
+								if(dest[name] === undefined)
+									dest[name] = {};
+
+								dest[name] = deepExtend(dest[name], value);
+							}
+							else if(type === TYPE_ARRAY)
+							{
+								if(dest[name] === undefined)
+									dest[name] = [];
+
+								dest[name] = value.concat(dest[name]);
+							}
+							else
+							{
+								dest[name] = value;
+							}
+						}
+					}
+				}
+
+				return dest;
+			}
+		</script>
+		<script src="../server/Layout.jspp" language="JavaScript"></script>
+		<script src="./mapMaker.js" ></script>
+
+
+		<script>
+			$(document).ready(function() {
+				/*
+				var map = emptyMap(5, 7);
+				var map = emptyMap(10, 14);
+				*/
+				var map = new Layout(13, 19, true);
+				var mapgrid = new Layout(13, 19);
+
+				/*
+				var map = emptyMap(17, 24);
+				*/
+				setGrid(mapgrid);
+				setMap(map);
+			});
+		</script>
+
+	</body>
+</html>

@@ -1,0 +1,36 @@
+<button class="close-button" data-url="back"></button>
+
+<h3>Select the item you would like to put up for auction:</h3>
+<div class="modal-item-list modal-auction-select-item">
+
+	<div data-if="ent.main.inventory.tradebag.$length() ge 1" data-path='ent.main.inventory.tradebag'>
+		<span class="desktopOnly">
+
+
+			<a data-set-class="icon-block simple {.itemdef.quality}" data-url="back" data-set-onclick="client.auctionSellChooseItemToSell('{.uid}');">
+				<div class="icon-slot">
+					<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+					<span data-path='.count' class="quantity">x</span>
+				</div>
+				<div class="icon-info" data-path='.itemdef.displaynamemsg.str'>Item Name</div>
+			</a>
+
+
+		</span>
+		<span class="mobileOnly">
+			<a data-set-class="icon-block simple {.itemdef.quality}" data-set-onclick="client.auctionSellChooseItemToSell('{.uid}');" data-url-silent="/auctionhouse-sell/select-item/consignment-form">
+				<div class="icon-slot">
+					<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+					<span data-path='.count' class="quantity">x</span>
+				</div>
+				<div class="icon-info" data-path='.itemdef.displaynamemsg.str'>Item Name</div>
+			</a>
+		</span>
+	</div>
+
+
+	<div data-if="ent.main.inventory.tradebag.$length() lt 1">
+		<p>You have no items available for auction.</p>
+	</div>
+
+</div>

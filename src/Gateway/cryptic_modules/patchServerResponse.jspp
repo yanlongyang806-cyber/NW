@@ -1,0 +1,37 @@
+'use strict';
+
+//
+// Patch setHeader so it will concatenate setHeader('Vary') rather
+// than crushing the previously set one.
+//
+// This should work in conjunction with any other evil code which patches
+// setHeader (assuming that it doesn't also do things with the Vary header).
+// They will just chain.
+//
+var http = require('http');
+var responseProto = http.ServerResponse.prototype;
+
+if(!responseProto._crypticPatched)
+{
+	var setHeaderOrig = responseProto.setHeader;
+
+	responseProto.setHeader = function(field, val)
+	{
+		var key = field.toLowerCase();
+
+		if(key === 'vary')
+		{
+			var prev = this.getHeader(field);
+			if(prev)
+			{
+				val = prev + ',' + val;
+			}
+		}
+
+		return setHeaderOrig.call(this, field, val);
+	}
+
+	responseProto._crypticPatched = true;
+}
+
+// End of File

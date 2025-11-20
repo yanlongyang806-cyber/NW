@@ -1,0 +1,21 @@
+OperationDef
+	Name "ColorValue" // Name of the operation
+	Description "A value defined in a material"
+	Type SIMPLE
+
+	Input
+		Name Color
+		Description "Color value defined in a material (do not connect an input to this!)"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 4
+		FloatRange -1 10
+	EndInput
+
+	Output
+		Name Result
+		Description "The value specified on the input"
+		Float 4
+		AlphaFrom Color
+	EndOutput
+EndOperationDef

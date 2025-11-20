@@ -1,0 +1,5 @@
+{
+	%Result%.xy = (%Normal%).xy * 2.0f - 1.0f;
+	%Result%.z = sqrt(1.0 - dot((%Normal%).xy, (%Normal%).xy));
+	%Result%.w = (%Normal%).w;
+}

@@ -1,0 +1,106 @@
+
+<button class="close-button" data-url="back"></button>
+
+<div class="zenmarket-modal item-entry">
+
+	<h3 data-path=".hdef.displayname.str">Item Name</h3>
+
+	<div class="zenmarket-container">
+		<div data-if="{.itemdefnames.$length()} le 0" data-set-class="icon-block small {.quality}" data-set-data-tt-text="{.hdef.description.str}">
+			<div class="icon-slot">
+				<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+				<span class="quantity" data-if="{.count} gt 1">
+					x<span data-path=".count">10</span>
+				</span>
+				<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+					<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+				</span>
+			</div>
+			<div class="icon-info" data-path='.hdef.displayname.str'>Item Name</div>
+		</div>
+
+		<div data-if="{.itemdefnames.$length()} gt 0" data-set-class="icon-block small {.quality}" data-set-data-tt-item="{.itemdefnames[0]}">
+			<div class="icon-slot">
+				<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+				<span class="quantity" data-if="{.count} gt 1">
+					x<span data-path=".count">10</span>
+				</span>
+				<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+					<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+				</span>
+			</div>
+			<div class="icon-info" data-path='.hdef.displayname.str'>Item Name</div>
+		</div>
+
+		<p class="description" data-path=".hdef.description.str">Item Description</p>
+		<p class="usageinfo" data-path=".hdef.usageinfo.str">Usage Info</p>
+
+		<span class="thumbnail-wrapper" data-if=".hdef.previews.$length() le 0">
+			<img class="large-thumbnail" data-set-src="/tex/{.hdef.iconlarge}" alt="">
+			<img data-if=".new" class="zenmarket-flag" src="/tex/Banner_Cstore_New.png" alt="" />
+			<img data-if="{.price} lt {.fullprice}" class="zenmarket-flag" src="/tex/Banner_Cstore_Sale.png" alt="" />
+		</span>
+
+		<a class="thumbnail-wrapper thumbnail-link" data-if=".hdef.previews.$length() gt 0" data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}/screenshots">
+			<img class="large-thumbnail" data-set-src="/tex/{.hdef.iconlarge}" alt="">
+			<span data-if=".hdef.previews.$length() gt 0" class="thumbnail-overlay"></span>
+		</a>
+	</div>
+
+	<div class="zenmarket-modal-buttons">
+		<div class="input-field button">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-url="back">Cancel</button>
+		</div>
+
+
+
+		<div data-if="{.price} le {$root().loginInfo.loginentity.zen}" class="input-field button epic">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+
+			<span class="zenMarketOnly">
+				<button data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}/confirmpurchase">
+					<span class="desktopOnly">Purchase for</span>
+					<span class="mobileOnly">Buy for</span>
+					<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+					<span data-path=".price">200</span>
+				</button>
+			</span>
+			<span class="professionsPackOnly">
+				<button data-url-silent="/professions/buypack/confirmpurchase">
+					<span class="desktopOnly">Purchase for</span>
+					<span class="mobileOnly">Buy for</span>
+					<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+					<span data-path=".price">200</span>
+				</button>
+			</span>
+		</div>
+
+		<div data-if="{.price} gt {$root().loginInfo.loginentity.zen}" class="input-field button epic disabled">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button disabled>
+				<span class="desktopOnly">Purchase for</span>
+				<span class="mobileOnly">Buy for</span>
+				<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+				<span data-path=".price">200</span>
+			</button>
+		</div>
+
+
+	</div>
+
+	<div class="current-money">
+		<h4>Current Zen:</h4>
+		<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /><span data-update="loginInfo.loginentity.zen" data-path="$root().loginInfo.loginentity.zen.$commify()">99,999,999</span>
+	</div>
+
+
+</div>
+
+

@@ -1,0 +1,11 @@
+PARAM	ambientColor		= program.env[0];
+PARAM	lightdir_vs			= program.env[1];
+PARAM	lightpos_vs			= program.env[1];
+PARAM	light_diffuse		= program.env[2];
+PARAM	light_specular		= program.env[3];
+PARAM	color0				= program.env[4];
+PARAM	color1				= program.env[5];
+
+PARAM	inv_proj_mat[4]		= { state.matrix.texture[2] };
+
+

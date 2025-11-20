@@ -1,0 +1,11 @@
+// TerrainMaterial_Preview.phl
+{
+	float4 detail = sampleTex2D(TexSampler%DetailTexture%, v.texcoords.xy * float2(%Scale%.x,%Scale%.y)); // Detail 0
+	float4 normal_spec = sampleTex2D(TexSampler%DetailNormalTexture%, v.texcoords.xy * float2(%Scale%.x,%Scale%.y));
+
+	%ColorOut% = float4(detail.xyz + detail.a, 1);
+	%NormalOut%.xyz = rangeExpand(normal_spec.xyz);
+	%SpecValueOut% = %SpecularValue% * normal_spec.w;
+	%SpecExponentOut% = %SpecularExponent%;
+}
+

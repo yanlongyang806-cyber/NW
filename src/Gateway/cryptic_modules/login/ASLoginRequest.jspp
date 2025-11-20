@@ -1,0 +1,210 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ASLoginRequest
+//
+// This server provides a web-based interface to the AccountServer for login
+// purposes.
+//
+var crypto = require('crypto');
+var CrypticCrypto = require('cryptic/crypto/CrypticCrypto');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+
+var g_config = require('cryptic/configure')();
+
+var ASConnection = require('./ASConnection');
+
+
+var kAccountServerUnavailable = 102; // Unable to contact the AccountServer
+
+function ASLoginRequest(ipStr, body, idBrowser, callback)
+{
+	dbg.trace(ipStr, body, idBrowser);
+	this.ip = cutils.ipStringToInt(ipStr);
+
+	// Used by ASConnection
+	this.user = body.user;
+	this.pw = body.pw;
+
+	// Poked by ASConnection
+	this.idAccount = 0;
+	this.idTicket = 0;
+	this.idFailure = 0;
+	this.idConflict = 0;
+
+	this.salt = null;
+	this.saltValue = 0;
+	this.generateSalt();
+
+	this.idBrowser = idBrowser;
+
+	this.callback = callback;
+
+	this.cryptic_pw = CrypticCrypto.cryptic_pass_hash_v2(this.user, this.pw, this.saltValue);
+	this.pw_pw = CrypticCrypto.pwe_hash(this.user, this.pw, this.salt);
+
+	this.as = new ASConnection(this);
+
+	this.as.on('connecting',    function() { });
+	this.as.on('connected',     this.onASConnected.bind(this));
+	this.as.on('disconnecting', function() { });
+	this.as.on('disconnected',  this.onASDisconnected.bind(this));
+}
+
+//
+// generateSalt
+//
+ASLoginRequest.prototype.generateSalt = function(callback)
+{
+	dbg.trace();
+
+	this.salt = [];
+	this.saltValue = 0;
+
+	var shift = 24;
+
+	while(this.salt.length < 4)
+	{
+		var val = Math.random()*254 + 1;
+
+		val = (shift === 24) ? val & 0x7f : val;
+		this.salt.push(val);
+		this.saltValue = this.saltValue | val << shift;
+		shift -= 8;
+	}
+}
+
+//
+// start
+//
+// Start the whole thing up. This process will eventually lead to done()
+// getting called (and then the provided callback, if there was one).
+//
+ASLoginRequest.prototype.start = function()
+{
+	dbg.trace();
+
+	this.state = 'connecting';
+	this.attemptASConnection();
+}
+
+//
+// done
+//
+// Called to clean up after success or failure.
+//
+ASLoginRequest.prototype.done = function(error, result)
+{
+	dbg.trace();
+
+	if(this.as)
+	{
+		this.as.disconnect();
+	}
+
+	if(this.callback)
+	{
+		var cb = this.callback; // avoid reentrant calls
+		this.callback = null;
+		cb(error, this);
+	}
+}
+
+//
+// attemptASConnection
+//
+// Make the connection (finding the ip/port if necessary first)
+//
+ASLoginRequest.prototype.attemptASConnection = function attemptASConnection()
+{
+	dbg.trace();
+
+	if(g_config.ipAccountServer && g_config.portAccountServer)
+	{
+		dbg.trace('Connecting to account server '+g_config.ipAccountServer+':'+g_config.portAccountServer+' for player '+this.user);
+		this.as.connect(g_config.ipAccountServer, g_config.portAccountServer);
+	}
+	else
+	{
+		throw(new Error('No AccountServer configured. You need to set ipAccountServer and portAccountServer.'))
+	}
+}
+
+//
+// onASConnected
+//
+// Once connected, start the login process with the AS.
+//
+ASLoginRequest.prototype.onASConnected = function()
+{
+	dbg.trace();
+
+	this.state = 'logging_in';
+	this.as.startLogin();
+};
+
+//
+// onASDisconnected
+//
+// Can be an error or not, depending on whether or not we asked to be
+// disconnected. If premature, it's an error.
+//
+ASLoginRequest.prototype.onASDisconnected = function()
+{
+	dbg.trace();
+
+	this.as = null;
+
+	if(this.state !== 'logged_in' && this.state !== 'failed')
+	{
+		this.fail('Unable to connect AccountServer. Is it the wrong version?', kAccountServerUnavailable);
+	}
+	else
+	{
+		this.done(undefined, this);
+	}
+}
+
+//
+// success
+//
+// Called by ASConnection on success.
+//
+ASLoginRequest.prototype.success = function(idAccount, idTicket)
+{
+	dbg.trace();
+
+	this.idAccount = idAccount;
+	this.idTicket = idTicket;
+
+	this.state = 'logged_in';
+
+	this.done(undefined, this);
+}
+
+//
+// fail
+//
+// Called by ASConnection on failure.
+//
+ASLoginRequest.prototype.fail = function(reason, idFailure, idConflictTicket)
+{
+	dbg.trace();
+
+	this.reason = reason;
+	this.idFailure = idFailure;
+	this.idConflictTicket = idConflictTicket;
+
+	this.state = 'failed';
+
+	this.done(new Error(reason), undefined);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ASLoginRequest;
+
+// End of File

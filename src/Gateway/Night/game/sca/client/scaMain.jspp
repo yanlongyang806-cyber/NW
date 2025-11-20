@@ -1,0 +1,914 @@
+'use strict';
+
+var clientSCA = module.exports;
+
+var dbg = require('cryptic/dbg'+'');
+var format = require('cryptic/format'+'');
+
+var content = require('cryptic/client/contentHelpers'+'');
+var DiceBox = require('./DiceBox');
+
+var scaStencils = require('./sca-stencils.js');
+
+var db = new DiceBox();
+
+///////////////////////////////////////////////////////////////////////////
+
+clientSCA.scaInstall = function()
+{
+	for(var id in scaStencils)
+	{
+		if(id !== 'render')
+		{
+			content.stencils[id] = scaStencils[id];
+		}
+	}
+
+	/*global cachebuster*/
+	$('head').append('<link rel="stylesheet" type="text/css" href="./css/sca.css?cb=' + cachebuster + '">');
+
+
+	$(document).on('mouseenter', '[data-encounter-id]', function(event) {
+	});
+
+	$(document).on('mouseleave', '[data-encounter-id]', function(event) {
+	});
+
+	$(document).on('click', '[data-encounter-id]', function(event) {
+		client.scaSetEncounter($(this).attr('data-encounter-id'));
+	});
+}
+
+clientSCA.scaStartGame = function()
+{
+	dbg.trace();
+	client.emitToProxy('Client_ScaStartGame');
+}
+
+clientSCA.scaResetQuest = function()
+{
+	client.emitToProxy('Client_ScaResetQuest');
+}
+
+clientSCA.scaSetQuest = function(id)
+{
+	if(typeof id !== 'undefined')
+	{
+		client.emitToProxy('Client_ScaSetQuest', { id: id });
+	}
+	else
+	{
+		id = client.dataModel.model.gatewaygamedata.questslotid;
+	}
+
+	content.setFromStencil('.dungeon-info', 'content-sca-overworld-dungeon-info', 'gatewaygamedata.questslots[slot='+id+']');
+}
+/*
+client.scaOverviewRefreshed = function()
+{
+	console.log("REFRESH!", client.dataModel.model.gatewaygamedata.lastquest.id)
+	if(client.dataModel.model.gatewaygamedata.lastquest.id)
+	{
+		console.log("GO!");
+		overviewAnimateLastQuest(client.dataModel.model.gatewaygamedata.lastquest);
+	}
+
+	overviewAnimateNewQuests(client.dataModel.model.gatewaygamedata.newquests);
+}
+
+function overviewAnimateLastQuest(lastQuest)
+{
+	var html = '<div class="overworld-locations">';
+	html += '<button class="location tier-' + lastQuest.tier + ' hex-' + lastQuest.col + ' hex-' + lastQuest.row + '">';
+	html += '<span class="location-icon"></span></button></div>';
+
+	var jqElem = $(html);
+	$('.overworld-locations').append(jqElem);
+	console.log("Appended",jqElem);
+
+	effectOverviewDungeonComplete(jqElem);
+}
+
+function overviewAnimateNewQuests(newQuests)
+{
+	if(newQuests.length)
+	{
+		var q, qNow;
+		for(q = 0; q < newQuests.length; q++)
+		{
+			qNow = $('.hex-' + newQuests[q].row + '.hex-' + newQuests[q].col);
+			if(qNow.length)
+			{
+				qNow.hide();
+				effectOverviewDungeonAdded(qNow);
+			}
+		}
+	}
+}
+
+// not used, cant be used atm
+var s_overviewNewQuests = [];
+function newQuestsAreActuallyNew(newQuests)
+{
+	if(newQuests.length !== s_overviewNewQuests.length)
+	{
+		s_overviewNewQuests	= newQuests;
+		console.log("QUESTS ARE NEW!");
+		return true;
+	}
+
+	var q;
+	for(q = 0; q < newQuests.length; q++)
+	{
+		if((newQuests[q].id !== s_overviewNewQuests[q].id)
+			|| (newQuests[q].col !== s_overviewNewQuests[q].col)
+			|| (newQuests[q].row !== s_overviewNewQuests[q].row))
+		{
+			s_overviewNewQuests	= newQuests;
+			console.log("QUESTS ARE NEW!!!!!");
+			return true;
+		}
+	}
+	console.log("QUESTS ARE NOT NEW! :(");
+	return false;
+}
+
+*/
+
+clientSCA.scaConfirmQuest = function()
+{
+	client.emitToProxy('Client_ScaConfirmQuest');
+}
+
+clientSCA.scaAddPartyMember = function(id, elem)
+{
+	// Never allow more than 4 to be selected
+	// Also, dont let them try to add the same one more than once.
+	if(($('li.party-entry button.selected').length > 3)
+		|| ($(elem).hasClass('selected')))
+	{
+		return;
+	}
+
+	// Wish this wasnt so 'hard coded' in the HTML department.
+	// But trying to make a fake diff and feed it through a
+	// render update sounds like madness.
+	$(elem)
+		.addClass('selected')
+		.append('<span class="party-checkmark"></span>');
+
+	var companion = findCompanionById(id);
+
+	var html = '<button onclick="client.scaRemovePartyMember(\'' + id + '\')" >';
+	html += '<img class="party-head" src="/shot/costume/' + companion.data.costume + '.png" alt="" />';
+	html += '<h3 class="party-name">' + companion.data.name + '</h3>';
+	html += '</button>';
+	html += '<div class="party-dice">';
+	var d;
+	for(d = 0; d < companion.data.pile.dice.length; d++)
+	{
+		if(companion.data.pile.dice[d].color !== 'base')
+		{
+			html += '<span class="dice small d' + companion.data.pile.dice[d].count + ' '
+			html += companion.data.pile.dice[d].color + '" ';
+			html += 'data-tt-stencil="content-tt-sca-dice" ';
+			html += 'data-tt-path="gatewaygamedata.party.members[' + companion.index + '].pile.dice[' + d + ']">';
+			html += '</span> '; // trailing space needed
+		}
+	}
+	html += '</div>';
+
+	var foundIt = false;
+	$('#party-members .party-entry').each(function() {
+		// If there is already an entry here, continue.
+		if($(this).find('button').length || foundIt) {
+			return;
+		}
+
+		$(this)
+			.empty()
+			.append(html);
+
+		foundIt = true;
+	});
+
+	client.emitToProxy('Client_ScaAddPartyMember', { id: id });
+}
+
+function findCompanionById(id)
+{
+	var data = client.dataModel.model.gatewaygamedata.companions
+
+	var x;
+	for(x = 0;x < data.length; x++)
+	{
+		if(data[x].id == id)
+			return {
+				'index': x,
+				'data': data[x]
+			};
+	}
+
+	return false;
+}
+
+
+clientSCA.scaRemovePartyMember = function(id, elem)
+{
+	$(elem).closest('.party-entry')
+		.empty()
+		.append('<span class="party-empty">Empty</span>');
+
+	client.tooltipClear();
+	client.emitToProxy('Client_ScaRemovePartyMember', { id: id });
+}
+
+clientSCA.scaConfirmParty = function()
+{
+	client.emitToProxy('Client_ScaConfirmParty');
+}
+
+clientSCA.scaSetEncounter = function(id)
+{
+	client.emitToProxy('Client_ScaSetEncounter', { id : id });
+}
+
+clientSCA.scaConfirmEncounter = function(id)
+{
+	client.emitToProxy('Client_ScaConfirmEncounter', { id : id });
+}
+
+clientSCA.scaRollDice = function()
+{
+	if(s_scaPausedUpdates > 0)
+	{
+		dbg.log('Ignored scaRollDice because paused: ', s_scaPausedUpdates);
+		return;
+	}
+
+	client.emitToProxy('Client_ScaRollDice');
+}
+
+clientSCA.scaDoneRolling = function()
+{
+	client.emitToProxy('Client_ScaDoneRolling');
+}
+
+clientSCA.scaChooseDie = function(id, idWild)
+{
+	if(s_scaPausedUpdates > 0)
+	{
+		dbg.log('Ignored scaChooseDie because paused: ', s_scaPausedUpdates);
+		return;
+	}
+
+	var die = client.dataModel.model.gatewaygamedata.quest.roller.pile.dice[id];
+
+	// If you clicked one that is used already don't do anything.
+	if(die.used)
+	{
+		return;
+	}
+
+	// If you clicked one that isn't valid to choose at this time, don't do anything.
+	var state = client.dataModel.model.gatewaygamedata.state;
+	if((state == 'k_Discard' && die.valid)
+		|| ((state == 'k_CombatChoose' || state == 'k_Combat') && !die.valid))
+	{
+		return;
+	}
+
+	$('.dice-tray .dice-rolls').addClass('no-pulse');
+
+	if(die.roll.wild)
+	{
+		// Wild, show selection modal
+		client.shifter.shift(client.shifter.resolveHash('/adventures/combat/wild/' + id), false, true);
+	}
+	else
+	{
+		// Normal selection
+		//client.emitToProxy('Client_ScaChooseDie', { id : id, idWild: idWild });
+		chooseDieWithEffect(id, idWild)
+	}
+}
+
+clientSCA.scaChooseDieWild = function(id, idWild)
+{
+	// Normal selection
+	//client.emitToProxy('Client_ScaChooseDie', { id : id, idWild: idWild });
+	chooseDieWithEffect(id, idWild)
+}
+
+function chooseDieWithEffect(id, idWild)
+{
+	scaPauseUpdates();
+	client.emitToProxy('Client_ScaChooseDie', { id : id, idWild: idWild });
+
+	scaThrowDieAtTrial(id, idWild, function() {
+		$('.dice-tray .dice-rolls').removeClass('no-pulse');
+		scaResumeUpdates();
+	});
+}
+
+clientSCA.scaCombatDone = function(id)
+{
+	client.emitToProxy('Client_ScaCombatDone', { id : id });
+}
+
+clientSCA.scaQuestDone = function()
+{
+	client.emitToProxy('Client_ScaQuestDone');
+}
+
+clientSCA.scaDebug = function(msg)
+{
+	client.emitToProxy('Client_ScaDebug', { msg : msg });
+}
+
+function shift(location)
+{
+	client.shifter.shift(client.shifter.resolveHash('/adventures/'+location), false, true);
+}
+
+var s_scaPausedUpdates = 0;
+var s_scaPausedState = '';
+clientSCA.scaUpdateCallback = function(ggd)
+{
+	if(s_scaPausedUpdates)
+	{
+		console.log("Paused SCA Update: " + ggd.state);
+		s_scaPausedState = ggd.state;
+	}
+	else
+	{
+		this.scaProcessState(ggd.state);
+	}
+}
+
+clientSCA.scaProcessState = function(state)
+{
+	switch(state)
+	{
+		case 'k_ChooseQuest':
+			shift('overworld');
+			break;
+
+		case 'k_ChooseParty':
+			shift('chooseparty');
+			break;
+
+		case 'k_ConfirmParty':
+			shift('confirmparty');
+			break;
+
+		case 'k_ChooseEncounter':
+			shift('explore');
+			break;
+
+		case 'k_ConfirmEncounter':
+			shift('encounter');
+			break;
+
+		case 'k_Rolling':
+		case 'k_Combat':
+		case 'k_CombatChoose':
+		case 'k_Discard':
+			shift('combat');
+			break;
+
+		case 'k_ChallengeSuccess':
+			shift('combat/victory');
+			break;
+
+		case 'k_ChallengeFailure':
+			shift('combat/defeat');
+			break;
+
+		case 'k_QuestSuccess':
+			shift('leavevictory');
+			break;
+
+		case 'k_QuestFailure':
+			shift('leavedefeat');
+			break;
+	}
+}
+
+function scaPauseUpdates()
+{
+	s_scaPausedUpdates++;
+	console.log('scaPauseUpdates at ', s_scaPausedUpdates);
+	client.dataModel.pauseUpdates();
+}
+
+function scaResumeUpdates()
+{
+	s_scaPausedUpdates--;
+	console.log('scaResumeUpdates at ', s_scaPausedUpdates);
+	if(s_scaPausedUpdates <= 0)
+	{
+		console.log('Resuming');
+		client.dataModel.resumeUpdates();
+
+		s_scaPausedUpdates = 0;
+
+		if(s_scaPausedState !== '')
+		{
+			console.log('Moving to a new state ', s_scaPausedState);
+			client.scaProcessState(s_scaPausedState);
+			s_scaPausedState = '';
+		}
+	}
+}
+
+clientSCA.unpauseDammit = function()
+{
+	s_scaPausedUpdates = 1;
+	scaResumeUpdates();
+}
+
+// box is expected to be the jQuery element to roll the dice in.
+clientSCA.scaRollDiceInBox = function(box, callback)
+{
+	db.setBox(box);
+
+	scaPauseUpdates();
+
+	db.newBagFromPileDice(client.dataModel.model.gatewaygamedata.quest.roller.pile.dice);
+
+	db.throwDice(function() {
+		scaResumeUpdates();
+		callback()
+	});
+}
+
+// For debugging, ignore this
+clientSCA.animationTick = function()
+{
+	db.animationTick();
+}
+
+clientSCA.scaSendDiceToTray = function(selector, callback)
+{
+	var n;
+	var step = 40; // Time between dice popping in
+	for(n = 0; n < db.bag.length; n++)
+	{
+		(function(die) {
+			setTimeout(function() {
+				$(selector).append('<div class="dice settle slot-' + die.slot + ' large d' + die.sides + ' ' + die.color + ' ' + die.symbol
+					+ (die.valid ? '' : ' disabled')
+					+ (die.used ? ' used' : '')
+					+ '"><span class="rune"></span><span class="num">' + (die.count > 1?die.count:'') + '</span></div>');
+			}, step * n);
+		})(db.bag[n]);
+	}
+
+	setTimeout(function() {
+		callback();
+	}, step * n);
+}
+
+
+// -------------------------------------------------------- //
+
+clientSCA.scaEffectShake = function(jqElem, mag, cycles, callback)
+{
+	if(!cycles)
+	{
+		cycles = 7;
+	}
+
+	var p, sPos = jqElem.position()
+
+	var nTop, nLeft, posArr = [];
+	var c, i;
+	// cycles
+	for(c = 1;c < cycles; c++)
+	{
+		// movements within a cycle
+		for(i = 0; i < 4; i++)
+		{
+			nTop = (Math.random() > 0.5?1:-1) * (mag / c);
+			nLeft = (Math.random() > 0.5?1:-1) * (mag / c);
+
+			posArr.push({top:(nTop + sPos['top']), left:(nLeft + sPos['left'])});
+		}
+	}
+
+	moveIt(jqElem, posArr, function() {
+		if(callback)
+			callback();
+	});
+}
+
+function moveIt(jqElem, posArr, callback)
+{
+	var mod = posArr.shift();
+
+	// If it gets removed from the DOM, it will no longer be 'visible'
+	if(jqElem.is(':visible'))
+	{
+		jqElem.css({ top: mod['top'] + 'px', left: mod['left'] + 'px' });
+
+		if(!posArr.length)
+		{
+			jqElem.removeAttr("style");
+			if(callback)
+				callback();
+			return;
+		}
+
+		window.requestAnimationFrame(function() {
+			moveIt(jqElem, posArr, callback);
+		});
+	}
+}
+
+// ----------------------------------------------------------------------------
+
+var MAP_DIEFACES = {
+	'p':'perception',
+	'm':'magic',
+	't':'thievery',
+	'c':'combat',
+	'w':'wild',
+	'mp': 'magic-perception',
+	'mt': 'magic-thievery',
+	'mc': 'magic-combat',
+	'pt': 'perception-thievery',
+	'pc': 'perception-combat',
+	'tc': 'thievery-combat'
+}
+
+// Note: this is not intended to work with 'wild' faces
+var s_throwingDie = false; // to stop double clicks
+// Should probably check for double clicks higher up the chain
+function scaThrowDieAtTrial(id, idWild, callback)
+{
+	// The callback must be called (or queued to be called) ONCE AND ONLY ONCE
+	// for each call to this function. This is because the caller is responsible
+	// for pausing and unpausing updates.
+	var callbackHandled = false;
+
+	if(s_throwingDie)
+	{
+		if(callback)
+			callback();
+		return;
+	}
+
+	s_throwingDie = true;
+
+	var dieNow = client.dataModel.model.gatewaygamedata.quest.roller.pile.dice[id];
+	var trialNow = client.dataModel.model.gatewaygamedata.quest.encounter.challenge.currentTrial;
+
+	var die = $('.slot-' + id);
+
+	if(die.hasClass('discardable'))
+	{
+		// No effect for a discarded die at this time.
+		if(callback)
+			callback();
+		s_throwingDie = false;
+		client.tooltipClear();
+
+		if(callback)
+			callback();
+		return;
+	}
+
+	var tablet = $('.trial-' + trialNow);
+
+	var runeTarget = {};
+	if(dieNow.roll.symbol !== 'w')
+	{
+		if(dieNow.roll.symbol.length > 1)
+		{
+			var s, symbol;
+			for(s = 0; s < dieNow.roll.symbol.length; s++)
+			{
+				symbol = dieNow.roll.symbol.substr(s,1);
+				runeTarget[symbol] = tablet.find('.rune.' + MAP_DIEFACES[symbol]);
+			}
+		}
+		else
+		{
+			runeTarget[dieNow.roll.symbol] = tablet.find('.rune.' + MAP_DIEFACES[dieNow.roll.symbol]);
+		}
+	}
+	else
+	{
+		die
+			.removeClass('wild')
+			.addClass(MAP_DIEFACES[dieNow.roll.choices[idWild].symbol])
+
+		if(dieNow.roll.choices[idWild].count > 1)
+		{
+			die.append('<span class="num">' + dieNow.roll.choices[idWild].count + '</span>');
+		}
+
+		runeTarget[dieNow.roll.choices[idWild].symbol] = tablet.find('.rune.' + MAP_DIEFACES[dieNow.roll.choices[idWild].symbol]);
+	}
+
+	var shot;
+	for(shot in runeTarget)
+	{
+		if(!runeTarget[shot].length)
+		{
+			continue;
+		}
+
+		var throwDie = die.clone();
+		var runeGhost = runeTarget[shot].clone();
+
+		runeGhost.addClass('effect');
+
+		if(dieNow.roll.symbol.length > 1)
+		{
+			throwDie
+				.removeClass(MAP_DIEFACES[dieNow.roll.symbol])
+				.addClass(MAP_DIEFACES[shot]);
+		}
+
+		var setCSS = die.offset();
+		setCSS['background'] = 'transparent';
+
+		$('body').prepend(throwDie);
+		throwDie.css(setCSS);
+
+		// Reusing setCSS to be the target location
+		setCSS = runeTarget[shot].offset();
+
+		// And make sure its seen
+		setCSS['z-index'] = '99999';
+
+		// Need a rune Ghost at the target location
+		runeGhost.css(setCSS);
+
+		// Fire away!
+		(function(rGhost, callbackHandled) {
+			throwDie.animate(setCSS, 250).promise().done(function() {
+
+				$(this).remove(); // done with this guy.
+
+				// Fire up the ghost
+				$('body').append(rGhost);
+				ghostOut(rGhost);
+
+				// Shake the tablet.
+				client.scaEffectShake(tablet, 7, false, function() {
+					if(!callbackHandled && callback)
+						callback();
+
+					s_throwingDie = false;
+					client.tooltipClear();
+				});
+			});
+		}(runeGhost, callbackHandled));
+
+		callbackHandled = true;
+	}
+
+	die.removeClass('usable').addClass('used disabled');
+
+	if(!callbackHandled && callback)
+		callback();
+}
+
+// ----------------------------------------------------------------------------
+
+function ghostOut(jqElem, duration, scale, callback)
+{
+	if(!duration)
+		duration = 500;
+
+	if(!scale)
+		scale = 4;
+
+	var step = 0;
+	// 'step' is called every time a property changes.
+	// We only want the 'step' to be called when animating
+	// 'border-spacing', which is our counter for scale.
+	jqElem.animate({'border-spacing': scale, 'opacity': 0 }, {
+		step: function(now,fx) {
+			if(step++ % 2)
+			{
+				$(this).css('-webkit-transform','scale('+now+')');
+				$(this).css('-ms-transform','scale('+now+')');
+				$(this).css('transform','scale('+now+')');
+			}
+		},
+		duration: duration
+	}).promise().done(function() {
+		$(this).remove(); // clean up
+		if(callback)
+			callback();
+	});
+}
+
+function ghostOutWithSpin(jqElem, duration, scale, callback)
+{
+	if(!duration)
+		duration = 500;
+
+	if(!scale)
+		scale = 4;
+
+	// we want a full rotation when we are done
+	var angle = 360 / scale;
+
+	var step = 0;
+	// 'step' is called every time a property changes.
+	// We only want the 'step' to be called when animating
+	// 'border-spacing', which is our counter for scale.
+	jqElem.animate({'border-spacing': scale, 'opacity': 0 }, {
+		step: function(now,fx) {
+			if(step++ % 2)
+			{
+				$(this).css('-webkit-transform','scale('+now+') rotate('+(angle * now)+'deg)');
+				$(this).css('-ms-transform','scale('+now+') rotate('+(angle * now)+'deg)');
+				$(this).css('transform','scale('+now+') rotate('+(angle * now)+'deg)');
+			}
+		},
+		duration: duration
+	}).promise().done(function() {
+		$(this).remove(); // clean up
+		if(callback)
+			callback();
+	});
+}
+
+// ----------------------------------------------------------------------------
+
+/*
+function effectOverviewDungeonComplete(jqElem)
+{
+	var ghost = jqElem.find('.location-icon').clone();
+	jqElem.append(ghost);
+
+	ghostOut(ghost, 750, function() {
+		jqElem.addClass('completed disabled');
+	});
+
+	client.scaEffectShake(jqElem, 6, 8);
+}
+
+function effectOverviewDungeonAdded(jqElem, callback)
+{
+	var icon = jqElem.find('.location-icon');
+
+	icon.css({
+		'height':'0px',
+		'top':'30px'
+	});
+
+	jqElem.fadeIn().promise().done(function () {
+		effectShakeForDuration(jqElem, 2, 1750);
+		effectAddSmokePuffs(jqElem, 8);
+		icon
+			.animate({'height':'35px', 'top':'4px'}, 2000)
+			.promise().done(function() {
+				if(callback)
+					callback();
+			});
+	});
+}
+
+function effectAddSmokePuffs(jqElem, number)
+{
+	if(number > 0)
+	{
+		effectAddSmoke(jqElem, 600);
+		number--;
+		setTimeout(function() {
+			effectAddSmokePuffs(jqElem, number);
+		}, 250);
+	}
+}
+
+function effectAddSmoke(jqElem, duration)
+{
+	var pos = {
+		'position':'absolute',
+		'top':'20px',
+		'left': Math.floor(Math.random() * 30) + 1
+	}
+	var puff = $('<span class="dice d12 small onyx"></span>');
+	puff.css(pos);
+	jqElem.append(puff);
+	ghostOutWithSpin(puff, duration, 1.75);
+}
+
+function effectShakeForDuration(jqElem, mag, duration, callback)
+{
+	// duration in miliseconds, how many 'frames' do i want to make?
+	var frames = Math.ceil(duration / 20);
+
+	var mod = {};
+	var x, posArr = [], sPos = jqElem.position();
+	if(sPos)
+	{
+		for(x = 0; x < frames; x++)
+		{
+			mod['top'] = Math.random() * (Math.random() > 0.5?1:-1);
+			mod['left'] = Math.random() * (Math.random() > 0.5?1:-1);
+
+			posArr.push({
+				top:((mod['top'] * mag) + sPos['top']),
+				left:((mod['left'] * mag) + sPos['left'])
+			});
+		}
+
+		moveIt(jqElem, posArr, function() {
+			if(callback)
+				callback();
+		});
+	}
+}
+*/
+
+// ----------------------------------------------------------------------------
+
+
+clientSCA.scaKeepRolling = function()
+{
+	if(client.dataModel.model.gatewaygamedata.state == 'k_Rolling')
+	{
+		$('.dice-rolls').hide();
+		animateRollDiceBox();
+	}
+}
+
+// Roll'in' the screen
+function animateRollDiceBox(callback) {
+//	console.log('animateRollDiceBox');
+	$('.dice-rolls').fadeOut(150);
+	$('.combatDiceBox').fadeIn(300).promise().done(function() {
+		client.scaRollDiceInBox($('.combatDiceBox'), function() {
+			$('.combatDiceBox').fadeOut(150).promise().done(function() {
+				$('.dice-rolls-spin').show();
+				client.scaSendDiceToTray('.dice-rolls-spin', function() {
+					client.scaDoneRolling(function() {
+						if(callback)
+							callback();
+					});
+				});
+			});
+		});
+	});
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var s_spinners = {};
+
+clientSCA.startSpinup = function (id)
+{
+	if(!s_spinners[id])
+		spinup(id);
+}
+
+function spinup(id)
+{
+	var max = $('#'+id+'-max').attr('data-max');
+	var elem = $('#'+id);
+
+	if(!elem || typeof max === 'undefined')
+	{
+		delete s_spinners[id];
+		return;
+	}
+
+	var cur = elem.text();
+	cur = cur.replace(/,/g, '');
+	cur = parseInt(cur, 10);
+
+	// 750 miliseconds to spin
+	// 16 ms for each update
+	var add = Math.round(0.5 + (max - cur) / (750/16));
+
+	if(add < 1)
+		add = 1;
+
+	cur = add + cur;
+	if(cur > max)
+		cur = max;
+
+	elem.text(format.commify(cur));
+
+	if(cur < max)
+	{
+		s_spinners[id] = setTimeout(function() { spinup(id); }, 16);
+	}
+	else
+	{
+		delete s_spinners[id];
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

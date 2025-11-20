@@ -1,0 +1,102 @@
+'use strict';
+//
+// rewriteForLocale
+//
+
+var fs = require('fs');
+var path = require('path');
+
+var locale = require('cryptic/locale');
+var dbg = require('cryptic/dbg');
+
+var s_cacheExists = {};
+
+//
+// rewriteForLocale
+//
+// Rewrites the requested URL if it is overridden by a file in the locale
+// tree. If no file is found in the locale tree, then the original URL is
+// still used.
+//
+// Use this as middleware with connect, like this:
+//
+// var app = connect()
+//    .use(rewriteForLocale(locale, path.resolve(g_config.publicDir, 'locale'), '/locale'))
+//
+// locale is the locale object, normally returned by require('cryptic/locale').
+// The localeDir is the physical disk location of the locale override files.
+// localeBaseUrl is the URL which corresponds to the localeDir.
+//
+function rewriteForLocale(locale, localeDir, localeBaseUrl)
+{
+	return function rewriteForLocale(req, res, next) {
+		if(req.method != 'GET' && req.method != 'HEAD')
+			return next();
+
+		var reqPath = req._parsedUrl.pathname;
+
+		if(reqPath.indexOf('..') >= 0)
+			return next(); // malicious path
+
+		if(reqPath == '/')
+			reqPath = '/index.html';
+
+		var lang;
+		if(req.session && req.session.langIndex)
+		{
+			lang = locale.allLocales[req.session.langIndex];
+		}
+		else
+		{
+			lang = locale.chooseBestLanguage(req.headers['accept-language']);
+			if(req.session)
+			{
+				req.session.langIndex = lang.crypticLanguage;
+			}
+		}
+
+		function doRewrite()
+		{
+			res.setHeader('Vary', 'Accept-Language');
+			var newUrl = localeBaseUrl + '/' + lang.httpLanguage + reqPath;
+			if(req._parsedUrl.search)
+			{
+				newUrl += req._parsedUrl.search;
+			}
+			dbg.trace('Rewrote ' + req.url + ' to ' + newUrl);
+			req.url = newUrl;
+		}
+
+		var file = path.normalize(localeDir + '/' + lang.httpLanguage + path.normalize(reqPath));
+
+		if(s_cacheExists[file])
+		{
+			if(s_cacheExists[file].exists)
+			{
+				doRewrite();
+			}
+
+			return next();
+		}
+		else
+		{
+			fs.exists(file, function(exists) {
+				if(exists)
+				{
+					s_cacheExists[file] = { exists: true };
+					doRewrite();
+				}
+				else
+				{
+					s_cacheExists[file] = { exists: false };
+				}
+
+				return next();
+			});
+		}
+	}
+}
+
+module.exports = rewriteForLocale;
+
+// End of File

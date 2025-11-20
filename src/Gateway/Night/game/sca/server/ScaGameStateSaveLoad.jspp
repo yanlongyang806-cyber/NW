@@ -1,0 +1,751 @@
+'use strict';
+
+var crypto = require('crypto');
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+var cutils = require('cryptic/cutils');
+var bless = require('cryptic/bless');
+
+var arbitraryIntFromId = require('./arbitraryIntFromId');
+
+var scaGlobals = require('./scaGlobals');
+var ScaGameState = require('./ScaGameState');
+var Companion = require('./Companion');
+var QuestState = require('./QuestState');
+
+// For blessing
+var Encounter = require('./Encounter');
+var Challenge = require('./Challenge');
+var Trial = require('./Trial');
+
+// For jsDiff
+var javascriptDiff = require('cryptic/javascriptDiff');
+
+
+//
+// SCA version number.
+//   Incrementing this number will reset every players
+//   game state, only use when structural changes are happening
+//
+var s_saveVersion = 4;
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//
+// There is nothing in the this file that I am proud of.
+// It needs to be done in a different way.
+//
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+function questLocation (index, name)
+{
+	index = index || 0;
+
+	var areas = {
+		'0': {
+			top: 1,
+			left: 1,
+			bottom: 3,
+			right: 5,
+		},
+		'1': {
+			top: 4,
+			left: 2,
+			bottom: 6,
+			right: 5,
+		},
+		'2': {
+			top: 7,
+			left: 3,
+			bottom: 9,
+			right: 9,
+		},
+		'3': {
+			top: 10,
+			left: 5,
+			bottom: 12,
+			right: 9,
+		},
+		'4': {
+			top: 1,
+			left: 10,
+			bottom: 6,
+			right: 12,
+		},
+		'5': {
+			top: 1,
+			left: 6,
+			bottom: 3,
+			right: 9,
+		},
+		'6': {
+			top: 4,
+			left: 6,
+			bottom: 6,
+			right: 9,
+		},
+		'7': {
+			top: 7,
+			left: 10,
+			bottom: 12,
+			right: 12,
+		}
+	};
+
+	var lim = areas[index] || areas[''+(index % 8)] || areas['0'];
+
+	var col = arbitraryIntFromId(name, lim.left, lim.right);
+	var row = arbitraryIntFromId(name, lim.top, lim.bottom);
+
+	col = 'abcdefghijk'.charAt(col - 1);
+
+	return { col: col, row: row };
+}
+
+ScaGameState.prototype.toClientQuestDef = function (src, id)
+{
+	var o = {};
+
+	var qd = scaGlobals.questDefs.get(src.questId);
+
+	o.id = qd.id;
+	o.name = qd.name;
+	o.ranks = qd.ranks;
+	o.tier = qd.tier;
+	o.description = qd.description;
+	o.icon = qd.icon;
+
+	o.background = scaGlobals.tileSets.chooseBackground(qd.tileSet, qd.id);
+
+	var rc = questLocation(src.area, qd.id);
+	o.row = rc.row;
+	o.col = rc.col;
+
+	if(id)
+	{
+		o.slot = id;
+		o.selected = (this.questSlotId === id);
+		o.samplereward = src.samplereward;
+	}
+
+	return o;
+}
+
+
+ScaGameState.prototype.toClientQuestSlots = function ()
+{
+	var a = [];
+	var i = 0;
+
+	for(var id in this.questSlots)
+	{
+		a[i++] = this.toClientQuestDef(this.questSlots[id], id);
+	}
+
+	for(id in scaGlobals.sharedQuests)
+	{
+		a[i++] = this.toClientQuestDef(scaGlobals.sharedQuests[id], id);
+	}
+
+	return a;
+}
+
+ScaGameState.prototype.toClientNewQuestDefs = function ()
+{
+	var a = [];
+	if(this.newQuests)
+	{
+		for(var i = 0; i < this.newQuests.length; i++)
+		{
+			a[i] = this.toClientQuestDef(this.newQuests[i]);
+		}
+	}
+	return a;
+}
+
+ScaGameState.prototype.toClientCompanion = function (companion, doRoll)
+{
+	var o = cutils.extend({}, companion);
+
+	if(companion)
+	{
+		var j;
+
+		o.sleeping = o.sleeping; // o.ready > Date.now();
+		o.valid = !o.sleeping && !o.istraining;
+		o.selected = (this.party.members.indexOf(o.id) >= 0);
+		o.hitpoints = o.def.hitPoints;
+
+		if(o.xp > o.nextxp)
+			o.xppercent = 0;
+		else
+			o.xppercent	= +((100 * (o.xp - o.lastxp) / (o.nextxp - o.lastxp)).toFixed(2));
+
+		o.pile = { dice: [] };
+		o.pow = {};
+		for(var i = 0; i < companion.pile.dice.length; i++)
+		{
+			var d = companion.pile.dice[i];
+			var od = o.pile.dice[i] = {};
+
+			od.id = d.id;
+			od.name = d.die.name;
+			od.count = d.die.count;
+			od.color = d.die.color;
+			od.used = d.used;
+
+			od.sides = [];
+			for(j = 0; j < d.die.sides.length; j++)
+			{
+				var s = {
+					sym: d.die.sides[j].sym,
+					count: d.die.sides[j].count,
+					wild: d.die.sides[j].wild
+				};
+				od.sides.push(s);
+			}
+
+			for(j in d.die.probs)
+			{
+				if(!o.pow[j])
+					o.pow[j] = { sym: j, p: 0 };
+				o.pow[j].p += d.die.probs[j];
+			}
+		}
+
+		// The hardcoded values here are all sketchy and tuned by look and feel.
+		for(j in o.pow)
+		{
+			var max;
+			switch(j)
+			{
+				// These numbers are tweaked for aesthetics. Twiddle if you like.
+				case 'w':
+					max = 9; // 8 wilds max (and wilds are counted by side rather than probability), eave some space
+					break;
+				case 'c':
+					max = 13;
+					break;
+				default:
+					max = 5;
+					break;
+			}
+
+			o.pow[j].p = Math.round((o.pow[j].p / max) * 100);
+			if(o.pow[j].p > 100)
+				o.pow[j].p = 100;
+		}
+
+		delete o.def;
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.toClientCompanions = function ()
+{
+	var o = [];
+
+	for(var id in this.companions)
+	{
+		o.push(this.toClientCompanion(this.companions[id]));
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.toClientParty = function ()
+{
+	var o = { members: [] };
+
+	for(var i = 0; i < this.party.members.length; i++)
+	{
+		var c = this.companions[this.party.members[i]];
+		o.members.push(this.toClientCompanion(c));
+	}
+	while(i < 4)
+	{
+		o.members.push({ empty: true });
+		i++;
+	}
+
+	o.staminatotal = this.party.staminaTotal;
+	o.stamina = this.party.stamina;
+	o.staminapercent = (100 * o.stamina / o.staminatotal).toFixed(2);
+
+	return o;
+}
+
+ScaGameState.prototype.toClientEncounter = function (enc)
+{
+	var o = cutils.copyInto({}, enc, 'id complete background image');
+
+	var ec = enc.challenge;
+	if(ec)
+	{
+		o.challenge = {
+			isComplete: ec.isComplete,
+			currentTrial: ec.currentTrial,
+			trials: ec.trials,
+			def: {
+				id: ec.def.id,
+				image: ec.def.image,
+				name: ec.def.name,
+				description: ec.isComplete ? ec.def.defeatedDescription : ec.def.description
+			}
+		};
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.toClientQuest = function ()
+{
+	var o = {};
+
+	if(this.questState && this.questState.quest)
+	{
+		var q = this.questState;
+
+		o.id = q.quest.id;
+		o.name = q.quest.name;
+		o.description = q.quest.description;
+		o.icon = q.quest.icon;
+
+		o.tiles = scaGlobals.tileSets.getTiles(q.quest.tileSet) || ''
+		o.parchment = scaGlobals.tileSets.getParchment(q.quest.tileSet)  || '';
+
+		o.map = q.clientMap();
+
+		o.encs = q.availableEncounters();
+		for(var id in o.encs)
+		{
+			o.encs[id] = this.toClientEncounter(o.encs[id]);
+		}
+
+		o.encs['end'] = this.toClientEncounter(q.encounters[q.end]);
+
+		if(q.encounter)
+			o.encounter = this.toClientEncounter(q.encounter);
+
+		o.roller = this.toClientCompanion(this.companions[q.roller], true);
+		if(o.roller.pile)
+		{
+			o.roller.pile.haschoices = false;
+			for(var i = 0; i < this.companions[q.roller].pile.dice.length; i++)
+			{
+				var d = this.companions[q.roller].pile.dice[i];
+				var od = o.roller.pile.dice[i];
+
+				if(d.roll.side)
+				{
+					od.valid = q.isUsable(d);
+
+					if(od.valid)
+						o.roller.pile.haschoices = true;
+
+					od.roll = {
+						symbol: d.roll.side.sym,
+						count: d.roll.side.count,
+						wild:  d.roll.side.wild,
+					};
+
+					if(d.roll.side.wild)
+					{
+						od.roll.choices = [];
+						for(var j = 0; j < d.roll.side.sides.length; j++)
+						{
+							var s = d.roll.side.sides[j];
+							var choice = {
+								valid: q.isSideUsable(s),
+								symbol: s.sym,
+								count: s.count,
+								wild: false
+							};
+							od.roll.choices.push(choice);
+						}
+					}
+				}
+				else
+				{
+					od.roll = null;
+					od.valid = false;
+				}
+			}
+		}
+
+		if(q.encounters[q.end].challenge)
+		{
+			o.goal = q.encounters[q.end].challenge.def.goal;
+		}
+	}
+
+	return o;
+}
+
+
+ScaGameState.prototype.toClient = function ()
+{
+	var o = {};
+
+	o.state = this.state;
+	o.companions = this.toClientCompanions();
+	o.party = this.toClientParty();
+	o.queuedrewardbag = this.server.sca && this.server.sca.queuedrewardbag ? this.server.sca.queuedrewardbag : {};
+	o.lastrewardbag = this.server.sca && this.server.sca.lastrewardbag ? this.server.sca.lastrewardbag : {};
+	o.lastqueuedrewardbag = this.server.sca && this.server.sca.lastqueuedrewardbag ? this.server.sca.lastqueuedrewardbag : {};
+
+	o.questslots = this.toClientQuestSlots();
+	o.newquests = this.toClientNewQuestDefs();
+	o.lastquest = this.lastQuest ? this.toClientQuestDef(this.lastQuest) : undefined;
+	o.questslotid = this.questSlotId;
+	o.quest = this.toClientQuest();
+
+	return o;
+}
+
+ScaGameState.prototype.gameStateDiff = function (packet)
+{
+	var newClientState = this.toClient();
+	var gsSession = this.clientSession.gsSession;
+
+	if(gsSession.lastGameState === undefined || packet.fullUpdate === true)
+	{
+		packet.fullUpdate = true;
+
+		packet.data = JSON.stringify(newClientState);
+	}
+	else
+	{
+		packet.data = javascriptDiff(gsSession.lastGameState, newClientState);
+		packet.obj = JSON.stringify(newClientState);
+	}
+
+	//This is doing a deep copy
+	gsSession.lastGameState = JSON.parse(JSON.stringify(newClientState));
+
+	return packet;
+}
+
+
+ScaGameState.prototype.sendGameUpdate = function ()
+{
+	var packet = {id: this.containerid, status: 'online'}
+
+	packet = this.gameStateDiff(packet);
+
+	this.clientSession.sockClient.emit('Proxy_GatewayGameData', { id: packet.id, diff: packet.data, obj: packet.obj, status: 'online'});
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.toServerQuestSlots = function ()
+{
+	var o = {};
+
+	for(var id in this.questSlots)
+	{
+		o[id] = {
+			questId: this.questSlots[id].questId,
+			area: this.questSlots[id].area
+		};
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.toServerCompanions = function ()
+{
+	var o = {};
+
+	for(var id in this.companions)
+	{
+		var c = this.companions[id];
+
+		o[id] = {
+			ready: c.ready,
+			resting: c.resting,
+			sleeping: c.sleeping
+		};
+
+		if(this.questState && id === this.questState.roller)
+		{
+			o[id].dice = [];
+			if(c.pile)
+			{
+				for(var i = 0; i < c.pile.dice.length; i++)
+				{
+					var d = c.pile.dice[i];
+					o[id].dice.push({
+						id: d.die.id,
+						used: d.used,
+						roll: d.roll.index,
+						wild: d.side && d.side.idx ? d.side.idx : undefined
+					});
+				}
+			}
+		}
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.toServerQuestState = function ()
+{
+	var o = {};
+
+	if(this.questState && this.questState.quest)
+	{
+		var qs = this.questState;
+
+		o.quest = qs.quest.id;
+		o.layout = qs.layout.id;
+
+		o.encounters = {};
+		for(var id in qs.encounters)
+		{
+			o.encounters[id] = {
+				complete: qs.encounters[id].complete,
+				challengeId: qs.encounters[id].challenge ? qs.encounters[id].challenge.def.id : null,
+				background: qs.encounters[id].background,
+				image: qs.encounters[id].image,
+			};
+
+			if(qs.encounter && qs.encounter.id === id)
+			{
+				// This is the current encounter. Also save the challenge state
+				o.encounters[id].challenge = cutils.extend({}, qs.encounter.challenge); // extend is safe because we aren't tweaking any sub-objects
+				delete o.encounters[id].challenge.def;
+			}
+		}
+
+		o.usedChallenges = qs.usedChallenges;
+		o.usedLayouts = qs.usedLayouts;
+		o.roller = qs.roller;
+	}
+
+	return o;
+}
+
+
+ScaGameState.prototype.toServer = function ()
+{
+	var o = {};
+
+	o.version = s_saveVersion;
+
+	o.state = this.state;
+	o.usedQuestDefs = this.usedQuestDefs;
+	o.questSlots = this.toServerQuestSlots();
+	o.companions = this.toServerCompanions();
+	o.questTag = this.questTag;
+	o.questState = this.toServerQuestState();
+	o.party = this.party;
+
+	return o;
+}
+
+ScaGameState.prototype.saveGameToServer = function ()
+{
+	dbg.trace();
+
+	var save = this.toServer(this);
+	this.clientSession.gsSession.saveGatewayGameData(JSON.stringify(save));
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.fromServerQuestSlots = function (src)
+{
+	if(!src.questSlots)
+		return {};
+
+	var o = {};
+	var i = 0;
+
+	for(var name in src.questSlots)
+	{
+		o[name] = {
+			questId: src.questSlots[name].questId,
+			area: src.questSlots[name].area
+		};
+
+		if(this.questSlots && this.questSlots[name])
+			o[name].samplereward = this.questSlots[name].samplereward;
+	}
+
+	return o;
+}
+
+ScaGameState.prototype.fromServerQuestState = function (src)
+{
+	if(!src.questState || !src.questState.quest)
+		return null;
+
+	src = src.questState;
+	var o = new QuestState(scaGlobals.questDefs.get(src.quest), scaGlobals.layouts.get(src.layout));
+
+	for(var id in src.encounters)
+	{
+		if(!o.encounters[id])
+		{
+			log.error('Missing encounter!');
+		}
+		else
+		{
+			if(src.encounters[id].challengeId)
+			{
+				var def = scaGlobals.challengeDefs.get(src.encounters[id].challengeId);
+				if(!def)
+				{
+					log.error('Missing challenge def:', src.encounters[id].challengeId);
+				}
+				else
+				{
+					if(src.encounters[id].challenge)
+					{
+						// This ugly piece of work restores the state of the
+						// current encounter.
+						var c = o.encounters[id].challenge = cutils.deepExtend({}, src.encounters[id].challenge);
+						c.def = def;
+						bless(c, Challenge);
+						for(var i = 0; i < c.trials.length; i++)
+						{
+							bless(c.trials[i], Trial);
+						}
+
+						o.encounter = o.encounters[id];
+					}
+					else
+					{
+						o.encounters[id].setChallenge(def);
+						o.encounters[id].challenge.isComplete = src.encounters[id].complete;
+					}
+				}
+			}
+
+			o.encounters[id].background = src.encounters[id].background;
+			o.encounters[id].image = src.encounters[id].image;
+			o.encounters[id].complete = src.encounters[id].complete;
+		}
+	}
+
+	o.usedChallenges = src.usedChallenges;
+
+	o.usedLayouts = src.usedLayouts;
+
+	o.roller = src.roller;
+
+	return o;
+}
+
+function fromServerDice(dest, src)
+{
+	for(var i = 0; i < src.dice.length; i++)
+	{
+		var srcDie = src.dice[i];
+		var destDie = dest.pile.dice[i];
+
+		if(srcDie.id !== destDie.die.id)
+		{
+			log.error('Die mismatch!', srcDie.id, destDie.die.id);
+			continue;
+		}
+
+		destDie.used = srcDie.used;
+		destDie.roll.index = srcDie.roll;
+		destDie.roll.side = destDie.die.sides[srcDie.roll].getSide();
+		destDie.roll.side.idx = srcDie.wildIndex ? srcDie.wildIndex : 0;
+	}
+}
+
+ScaGameState.prototype.updateCompanions = function (src)
+{
+	this.companions = {};
+	for(var i = 0; i < this.server.sca.companions.length; i++)
+	{
+		var c = this.server.sca.companions[i];
+		var nc = new Companion(c);
+		if(nc.def)
+		{
+			var srcComp = src.companions[c.id];
+			if(srcComp)
+			{
+				nc.ready = srcComp.ready;
+				nc.resting = srcComp.resting;
+				nc.sleeping = srcComp.sleeping;
+
+				if(srcComp.dice)
+				{
+					fromServerDice(nc, srcComp);
+				}
+			}
+			else
+			{
+				//console.log('Missing companion:' + c.id);
+			}
+
+			this.companions[c.id] = nc;
+		}
+	}
+}
+
+ScaGameState.prototype.fromServer = function (src)
+{
+	if(src.version === s_saveVersion)
+	{
+		this.updateCompanions(src);
+
+		this.state = src.state;
+		this.usedQuestDefs = src.usedQuestDefs;
+		this.questSlots = this.fromServerQuestSlots(src);
+		this.questTag = src.questTag;
+		this.party = src.party;
+		this.questState = this.fromServerQuestState(src);
+	}
+	else
+	{
+		this.init();
+		this.start();
+	}
+}
+
+ScaGameState.prototype.dataUpdate = function (serverData)
+{
+	// We just got an update to the data.
+	dbg.trace(serverData);
+
+	this.server = serverData;
+
+	var savestr = serverData.sca.savestate;
+	if(savestr)
+	{
+		try
+		{
+			var save = JSON.parse(savestr);
+			this.fromServer(save);
+		}
+		catch(e)
+		{
+			log.error('Unable to parse SCA save data!', save, e, e.stack);
+		}
+	}
+
+	this.chooseNewQuests();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+
+// End of File

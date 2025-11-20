@@ -1,0 +1,41 @@
+<div class="single-row-button" data-set-onclick="client.auctionSearchItemSelected({.minimumbid},{.price},{.index},'/tex/{.slots[0].itemdef.icon}.png','{.slots[0].itemdef.displaynamemsg.str.$escapeForString()}',{.slots[0].count},'{.ownername.$escapeForString()}','search')" data-set-data-index="{.index}">
+
+	
+<span class="single-cell auction-browse-item">
+	<span data-path=".slots">
+		<div class="auction-img">
+			<div data-set-class="icon-slot simple tiny {.itemdef.quality}" data-set-data-tt-item=".itemdef.name">
+				<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+			</div>
+		</div>
+		<span data-set-class="auction-entry-name {.itemdef.quality}" data-path='.itemdef.displaynamemsg.str'>Item Name</span>
+	</span>
+
+</span>
+<span class="single-cell auction-browse-quantity">
+	<span data-if=".slots[0].count.$commify()" data-path='.slots[0].count'>999</span>
+</span>
+<span class="single-cell auction-browse-seller">
+	<span data-path=".ownername">Richy McPants</span>
+</span>
+<span class="single-cell auction-browse-expires">
+	<span data-set-data-timer=".expiretime" data-timer-length="2">2 Days Remaining</span>
+</span>
+<span class="single-cell auction-browse-bid">
+	<span data-if=".canbid">
+		<span class="currency-icon astral"></span>
+		<span data-path=".currentbid.$commify()">999</span>
+	</span>
+	<span data-if="!{.canbid}">N/A</span>
+	<span data-if=".winning">
+		<span class="auction-icon-winning" data-tt-text="You're winning!"></span>
+	</span>
+</span>
+<span class="single-cell auction-browse-buyout">
+	<span data-if=".price">
+		<span class="currency-icon astral"></span>
+		<span data-path='.price.$commify()'>999</span>
+	</span>
+	<span data-if="!{.price}">N/A</span>
+</span>
+</div>

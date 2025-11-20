@@ -1,0 +1,16 @@
+OperationDef
+	Name "NWMapSnap" // Name of the operation
+	Description "Does something wonderful."
+	Type CUSTOM
+
+	Input: A, "The operation does something wonderful to this input."
+
+	Output
+		Name Result
+		Description "So much wonderful "
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

@@ -1,0 +1,27 @@
+{
+
+WikiRegex
+{
+    Pattern "\[product:([a-zA-Z0-9._-]+)\]"
+    Replace <&<a href=\"ProductDetail?product=[replace]\">[replace]</a>&>
+}
+
+WikiRegex
+{
+    Pattern "\[keybatch:([a-zA-Z0-9._-]+)\]"
+    Replace <&<a href=\"batchView?name=[replace]\">[replace]</a>&>
+}
+
+WikiRegex
+{
+    Pattern "\[subscription:([a-zA-Z0-9._-]+)\]"
+    Replace <&<a href=\"subscriptionDetail?subscription=[replace]\">[replace]</a>&>
+}
+
+WikiRegex
+{
+    Pattern "\[account:(.+?)\]"
+    Replace <&<a href=\"detail?accountname=[replace]\">[replace]</a>&>
+}
+
+}

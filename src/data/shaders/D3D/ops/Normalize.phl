@@ -1,0 +1,4 @@
+{
+	%Result%.xyz = normalize((%Normal%).xyz);
+	%Result%.w = (%Normal%).w;
+}

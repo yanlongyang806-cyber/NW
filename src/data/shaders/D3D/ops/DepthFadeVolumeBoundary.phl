@@ -1,0 +1,22 @@
+{
+#define HAS_DEPTH_FADE
+
+#ifndef DEPTH_TEXTURE
+	%Result%.rgb = %BackgroundColor%;
+	%Result%.a  = 0.5;
+#else
+	float depthbuffer;
+	float weight;
+	float2 coord_orig;
+
+	float mydepth = -v.position_vs.z;
+
+	getVPosNormalized(coord_orig, v);
+	depthbuffer = sampleTexDepthVS(TexSampler%ScreenDepth%, coord_orig);
+
+	weight = 1.0 - exp((mydepth - depthbuffer) * %FadeRate%.x);
+
+	%Result%.rgb = %BackgroundColor%.rgb;
+	%Result%.a = weight; 
+#endif
+}

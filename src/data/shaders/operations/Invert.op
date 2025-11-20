@@ -1,0 +1,16 @@
+OperationDef
+	Name "Invert" // Name of the operation
+	Description "Invert"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+
+	Output
+		Name Result
+		Description "Output of 1 - A"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

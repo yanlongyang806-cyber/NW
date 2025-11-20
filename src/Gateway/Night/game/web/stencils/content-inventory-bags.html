@@ -1,0 +1,148 @@
+<div class="page-content">
+	<div class="page-inventory-bags">
+		<div class="page-body">
+
+			<h3 class="page-title">Bags &amp; Riches</h3>
+
+			<ul class="inventory-group left" data-update="ent.main.inventory.playerbags" data-path="ent.main.inventory.playerbags">
+
+				<li class="inventory-container">
+					<div class="bag-header">
+						<img data-set-src="/tex/{.icon}.png" alt="" />
+						<h4 data-path=".name">Bag Name</h4>
+						<div class="input-field button light">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button data-set-onclick="client.sendCommand('GatewayInventory_SortBag', '{.bagid}', 1)">
+								Sort
+							</button>
+						</div>
+					</div>
+
+					<ul data-path=".slots">
+						<li data-if="{.count}">
+							<div data-set-class="icon-slot small {.rarity} {.itemdef.type.$map(UnidentifiedWrapper:disabled)} {.hasclass.$map(0: red)} {.meetslevel.$map(0: disabled)} {.isnew.$map(1:new)}" data-set-data-tt-item="{.uid}" data-set-data-tt-menu="{$here()}">
+								<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+								<span class="icon-overlay"></span>
+								<span class="icon-extra unidentified" data-if="{.itemdef.type} eq 'UnidentifiedWrapper'"></span>
+								<span class="icon-extra lock" data-if="{.meetslevel} eq 0"></span>
+								<span class="icon-extra new" data-if="{.isnew} eq 1"></span>
+								<span class="quantity" data-if="{.count} gt 1" data-path=".count">9</span>
+								<span class="icon-hover"></span>
+								<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+									<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+								</span>
+							</div>
+						</li>
+						<li data-if="!{.count}">
+							<div class="icon-slot small Junk empty">
+							</div>
+						</li>
+					</ul>
+				</li>
+			</ul>
+
+			<div class="inventory-group right" data-path="ent.main" data-update="ent.main.currencies, ent.main.inventory, loginInfo.loginentity.zen" >
+				<div class="inventory-container numerics">
+					<div class="bag-header">
+						<img src="./tex/Currency_Icon_Gold.png" alt="" />
+						<h4 data-translation-id="Inventory_Currency_Name">Riches</h4>
+					</div>
+
+					<div class="bag-currency">
+						<h5 data-translation-id="Inventory_Resource_Name">Money:</h5>
+						<p>
+							<img src="./tex/Currency_Icon_Tiny_Gold.png" alt=""><span data-path=".currencies.gold.$commify()">1,000</span>
+							<img src="./tex/Currency_Icon_Tiny_Silver.png" alt=""><span data-path=".currencies.silver.$commify()">24</span>
+							<img src="./tex/Currency_Icon_Tiny_Copper.png" alt=""><span data-path=".currencies.copper.$commify()">2</span>
+						</p>
+					</div>
+					<div class="bag-currency">
+						<h5 data-translation-id="Inventory_MT_Name">ZEN:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Cryptic.png" alt=""><span data-path="loginInfo.loginentity.zen.$commify()">4,500</span></p>
+					</div>
+					<div class="bag-currency">
+						<h5>Glory:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Glory.png" alt=""><span data-path=".currencies.glory.$commify()">252</span></p>
+					</div>
+					<div class="bag-currency">
+						<h5 data-translation-id="Inventory_AD_Name">Astral Diamonds:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".currencies.diamonds.$commify()">45,000</span></p>
+					</div>
+
+					<div class="bag-currency" data-if=".currencies.foundrytips ge 1">
+						<h5>Foundry Tips:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".currencies.foundrytips.$commify()">45,000</span></p>
+						<span class="bag-currency-button">
+							<div class="input-field button light" data-tt-stencil="tooltip-inventory-foundrytips" data-set-data-tt-path="{.$here()}">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url-silent="/inventory/withdrawtips">
+									Claim
+								</button>
+							</div>
+						</span>
+					</div>
+
+					<div class="bag-currency">
+						<h5 data-translation-id="Inventory_ADRough_Name">Rough Astral Diamonds:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Rough_Astral.png" alt=""><span data-path=".currencies.roughdiamonds.$commify()">0</span></p>
+						<span class="bag-currency-button">
+							<div data-if=".currencies.roughdiamonds ge 1" class="input-field button light" data-tt-stencil="tooltip-inventory-convertdiamonds" data-set-data-tt-path="{.$here()}">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button onclick="client.sendCommand('Gateway_ConvertNumeric', 'Astral_Diamonds')">
+									Refine
+								</button>
+							</div>
+							<div data-if=".currencies.roughdiamonds eq 0" class="input-field button light disabled" data-tt-stencil="tooltip-inventory-convertdiamonds" data-set-data-tt-path="{.$here()}">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button disabled=1>
+									Refine
+								</button>
+							</div>
+						</span>
+					</div>
+
+
+
+
+
+					<div class="bag-currency">
+						<h5>Ardent Coin:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Invocation.png" alt=""><span data-path=".currencies.ardent.$commify()">21</span></p>
+					</div>
+					<div class="bag-currency">
+						<h5>Celestial Coin:</h5>
+						<p><img src="./tex/Currency_Icon_Tiny_Synergy.png" alt=""><span data-path=".currencies.celestial.$commify()">3</span></p>
+					</div>
+
+					<ul data-path=".inventory.bags[bagid=Currency].slots">
+						<li data-if="{.count} ne 0">
+							<div data-set-class="icon-slot small {.rarity}" data-set-data-tt-item="{.uid}">
+								<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+								<span class="icon-overlay"></span>
+								<span class="quantity" data-if="{.count} gt 1" data-path=".count">9</span>
+
+								<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+									<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+								</span>
+							</div>
+						</li>
+						<li data-if="{.count} eq 0">
+							<div class="icon-slot small Junk empty">
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+

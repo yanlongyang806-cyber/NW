@@ -1,0 +1,6 @@
+{
+	float mydepth = -v.position_vs.z;
+	float cameraFar = max(%CameraEnd%.x,(%CameraBegin%.x + 0.001));
+
+	%Result% = saturate((mydepth - %CameraBegin%.x) / (cameraFar - %CameraBegin%.x));
+}

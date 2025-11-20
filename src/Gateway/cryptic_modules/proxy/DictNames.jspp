@@ -1,0 +1,19 @@
+
+module.exports =
+{
+	'Allegiance': 1,
+	'CharacterClass': 1,
+	'ItemDef': 1,
+	'Message': 1,
+	'MissionDef': 1,
+	'PowerDef': 1,
+	'PTNodeDef': 1,
+	'SpeciesDef': 1,
+	'GroupProjectUnlockDef': 1,
+	'DonationTaskDef': 1,
+	'GroupProjectNumericDef': 1,
+	'ItemAssignmentDef' : 1,
+	'AuctionSettings' : 1,
+	'MicroTransactionDef' : 1
+};
+

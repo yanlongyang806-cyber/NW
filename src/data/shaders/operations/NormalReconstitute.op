@@ -1,0 +1,22 @@
+OperationDef
+	Name "NormalReconstitute" // Name of the operation
+	Description "Reconstitute normal from x,y channels"
+	Type CUSTOM
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+	EndInput
+
+	Output
+		Name Result
+		Description "Normalized result (alpha left untouched)"
+		Float 4
+		Type Normal
+		AlphaFrom Normal
+	EndOutput
+
+EndOperationDef
+

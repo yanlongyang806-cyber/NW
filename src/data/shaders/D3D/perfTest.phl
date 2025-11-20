@@ -1,0 +1,37 @@
+#include "ps_inc.hlsl"
+/// Performance test shader
+///
+/// Note: goal is to hit SM20 limit of 64 ALU instructions, and stay there, to keep
+/// perf test results consistent.
+/// Currently 63 ALU instructions in SM2, 61 in SM3, 58 in SM4.
+
+SAMPLER_DECL(texture_sampler, 0);
+SAMPLER_DECL(texture_sampler2, 1);
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	float4 texcolor2 = sampleTex2D(texture_sampler2, fragment.texcoord.xy);
+	float4 xn = texcolor;
+	float4 poly = 1.0;
+
+#ifndef _PS3
+#ifndef TRANSGAMING
+	[unroll]
+#endif
+#endif
+       
+	int ifactorial;
+	int i;
+	for (i = 0, ifactorial = 1; i<10; i++) {
+		// polynomial
+		poly += ifactorial * xn;
+		xn *= texcolor;
+		ifactorial *= i + 1;
+
+		// pseudo-recurrence relation
+		texcolor2 = 2 * texcolor2 - 1 + dot(texcolor, texcolor2);
+	}
+	poly += ifactorial * xn;
+	return poly + pow(abs(texcolor2), texcolor);
+}

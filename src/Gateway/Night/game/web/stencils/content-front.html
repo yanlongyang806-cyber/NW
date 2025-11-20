@@ -1,0 +1,76 @@
+
+<div data-path="ent">
+
+	<div class="page-front">
+
+
+
+
+		<div class="front-box-top">
+			<div class="front-box-left"></div>
+			<div class="front-box-right"></div>
+		</div>
+		<div class="front-box-mid">
+			<div class="front-box-content">
+				<div class="front-char-block">
+
+					<h2 data-path=".main.name" class="front-charname">Orianna Dretchsticke</h2>
+					<h3 class="front-chartitle" data-path=".main.title">Champion of Neverwinter</h3>
+
+					<img data-set-src="/tex/{.main.classicon}.png" alt="" />
+
+					<h3 class="front-level-class">Level <span  data-path=".main.levelui">20</span> <span data-path=".main.classname">Trickster Rogue</span></h3>
+					<h3 class="front-gender-race"><span data-path=".main.gendername">Female</span> <span data-path=".main.speciesname">Half-Elf</span></h3>
+				</div>
+
+
+
+				<!-- NEW ADDED -->
+				<hr />
+				<div class="front-news-block" data-update="news">
+					<span data-path="news">
+						<span data-if=".items">
+							<h4>Latest News</h4>
+							<table data-path=".items">
+								<tr>
+									<td class="news-headline">
+										<a target="_blank" data-path=".title" data-set-href="{.href}">Sample Headline Goes Here</a>
+									</td>
+									<td class="news-date" data-path=".post_date.$shortDateNoYear()">
+										1 Apr 2013
+									</td>
+								</tr>
+							</table>
+						</span>
+					</span>
+				</div>
+
+				<span data-update="ebs">
+					<span data-path="ebs">
+						<div class="front-ebs" data-if=".message" data-path=".message">
+							Sample emergency broadcast system messages goes here with some kind of emergency broadcast system message.
+						</div>
+					</span>
+				</span>
+
+
+			</div>
+			<div class="front-box-left"></div>
+			<div class="front-box-right"></div>
+		</div>
+		<div class="front-box-bot">
+			<div class="front-box-left"></div>
+			<div class="front-box-right"></div>
+		</div>
+
+
+
+
+
+	</div>
+</div>
+
+<script>
+	client.getNewsAndEBS();
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>

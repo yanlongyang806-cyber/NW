@@ -1,0 +1,61 @@
+<!-- if(dev) -->
+<div data-set-class="tooltip tt-dice {color}">
+	<h3><span data-path=".name"></span></h3>
+
+	<div data-path="sides[sym=m]" class="dice-group magic">
+		<div class="dice side magic">
+			<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=p]" class="dice-group perception">
+		<div class="dice side perception">
+			<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=t]" class="dice-group thievery">
+		<div class="dice side thievery">
+			<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=c]" class="dice-group combat">
+		<div class="dice side combat">
+			<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=mp]" class="dice-group magic-perception">
+		<div class="dice side magic-perception">
+		</div>
+	</div>
+	<div data-path="sides[sym=mt]" class="dice-group magic-thievery">
+		<div class="dice side magic-thievery">
+		</div>
+	</div>
+	<div data-path="sides[sym=mc]" class="dice-group magic-combat">
+		<div class="dice side magic-combat">
+			<span class="num">3</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=pt]" class="dice-group perception-thievery">
+		<div class="dice side perception-thievery">
+		</div>
+	</div>
+	<div data-path="sides[sym=pc]" class="dice-group perception-combat">
+		<div class="dice side perception-combat">
+			<span class="num">3</span>
+		</div>
+	</div>
+	<div data-path="sides[sym=tc]" class="dice-group thievery-combat">
+		<div class="dice side thievery-combat">
+			<span class="num">3</span>
+		</div>
+	</div>
+
+	<div data-path="sides[sym=w]" class="dice-group wild">
+		<div class="dice side wild">
+			<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+		</div>
+	</div>
+
+</div>
+
+<!-- endif(dev) -->

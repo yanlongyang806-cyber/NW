@@ -1,0 +1,348 @@
+<span data-path="ent" data-update="ent.main.itemassignments">
+	<div class="page-content">
+		<div class="page-professions-overview">
+			<h3>Available Profession Slots</h3>
+			<ul class="professions-slots" data-path=".main.itemassignments.assignments">
+				<li>
+
+					<!-- if this is a Locked Slot -->
+					<span data-if=".islockedslot">
+						<div class="panel-inner task-slot-locked disabled">
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-content">
+								<div class="icon-lock"></div>
+								<p class="locked-desc" data-path=".displayname">This slot has not been unlocked</p>
+							</div>
+						</div>
+					</span>
+
+					<!-- if this is an Open Slot -->
+					<span data-if="!{.islockedslot} && !{.hdef.name}">
+						<div class="panel-inner task-slot-open">
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-content">
+
+								<div class="icon-slot readonly empty selectProfessionsTab"></div>
+								<div class="input-field button epic">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<div class="button-glow buttonPulse">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+									</div>
+									<button onclick="client.professionGoToTaskList()">Choose Task</button>
+								</div>
+							</div>
+						</div>
+					</span>
+
+					<!-- if this is a completed slot -->
+					<span data-if="{.hdef.name} && {.hascompletedetails}">
+						<div class="panel-inner task-slot-finished">
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-content">
+
+								<div data-set-class="professions-slot-icon {.category}">
+									<img data-set-src="./tex/{.categoryicon}.png" alt="" />
+									<span class="icon-overlay"></span>
+								</div>
+								<div class="icon-slot readonly">
+									<img data-set-src="/tex/{.icon}.png" alt="" />
+								</div>
+								<h4 data-path=".displayname">Task Name Goes In Here</h4>
+								<h6>Task Complete!</h6>
+								<div class="input-field button epic">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-set-data-url-silent="/professions/collect-reward/{.slotindex}">Collect Result</button>
+								</div>
+							</div>
+						</div>
+					</span>
+
+					<!-- If this is slot is a running assignment -->
+					<span data-if="{.hdef.name} && !{.hascompletedetails}">
+						<div class="panel-inner task-slot-progress">
+							<div class="panel-top">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-mid">
+								<div class="panel-left"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-bot">
+								<div class="panel-left"></div>
+								<div class="panel-center"></div>
+								<div class="panel-right"></div>
+							</div>
+							<div class="panel-content">
+
+								<div data-set-class="professions-slot-icon {.category}">
+									<img data-set-src="./tex/{.categoryicon}.png" alt="" />
+									<span class="icon-overlay"></span>
+								</div>
+								<div class="icon-slot readonly">
+									<img data-set-src="/tex/{.icon}.png" alt="" />
+								</div>
+								<h4 data-path=".displayname">Task Name Goes In Here</h4>
+								<div class="bar-container">
+									<span class="bar-bg-left"></span>
+									<span class="bar-bg-mid"></span>
+									<span class="bar-bg-right"></span>
+									<div class="bar-filled" style="width: 0%;" data-set-data-timer-start=".utimestarted" data-set-data-timer-end=".ufinishdate">
+										<div class="bar-container">
+											<span class="bar-bg-left"></span>
+											<span class="bar-bg-mid"></span>
+											<span class="bar-bg-right"></span>
+										</div>
+									</div>
+									<div class="bar-text" data-path=".ufinishdate.$timerAgoShort(2)"  data-set-data-timer=".ufinishdate" data-timer-length="2">6h 10m</div>
+								</div>
+								<button data-if=".isabortable eq 1" class="cancel-button" data-set-data-url-silent="/professions/cancel-task/{.slotindex}"></button>
+
+								<div class="input-field button epic">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-set-data-url-silent="/professions/finish-now/{.slotindex}"><span class="currency-icon astral"></span> Finish Now</button>
+								</div>
+
+								<!-- enabled or disabled based upon astral diamond count
+
+								<div class="input-field button epic" data-if="{ent.main.currencies.diamonds} ge {.sfinishearlycost}">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button data-set-data-url-silent="/professions/finish-now/{.slotindex}"><span class="currency-icon astral"></span> Finish Now</button>
+								</div>
+
+								<div class="input-field button epic disabled" data-if="{ent.main.currencies.diamonds} lt {.sfinishearlycost}">
+									<div class="input-bg-left"></div>
+									<div class="input-bg-mid"></div>
+									<div class="input-bg-right"></div>
+									<button disabled><span class="currency-icon astral"></span> Finish Now</button>
+								</div>
+								-->
+							</div>
+						</div>
+					</span>
+				</li>
+			</ul>
+			<script>
+				client.startCountdowns();
+			</script>
+
+
+			<div class="professions-assets">
+				<h3>Profession Assets</h3>
+
+				<div class="available">
+					<h4>Available Assets:</h4>
+					<ul data-path=".main.inventory.notassignedslots">
+						<li>
+							<div data-set-class="icon-slot simple {.rarity}" data-set-data-tt-item=".itemdef.name">
+								<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+								<span data-if=".count ge 2" data-path=".count" class="quantity">9</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+				<div class="in-use">
+					<h4>Assets Currently in Use:</h4>
+					<ul data-path=".main.inventory.assignedslots">
+						<li>
+							<div class="icon-slot simple disabled">
+								<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+								<span class="icon-overlay"></span>
+								<span class="icon-extra inuse"></span>
+								<span data-if=".count ge 2" class="quantity" data-path=".count">9</span>
+							</div>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- if(dev) -->
+			<!-- EPIPHANY BLOCK FOR IF THIS FEATURE EVER HAPPENS
+			<div class="epiphany-block">
+				<div class="panel-inner silver">
+					<div class="panel-top">
+						<div class="panel-left"></div>
+						<div class="panel-center"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-mid">
+						<div class="panel-left"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-bot">
+						<div class="panel-left"></div>
+						<div class="panel-center"></div>
+						<div class="panel-right"></div>
+					</div>
+					<div class="panel-content">
+						<div class="icon-slot readonly purple">
+							<img src="../img_nw/sample_item_01.png" alt="" />
+						</div>
+						<h3>Epiphany Available! <span>(Time Remaining: 3h 25m)</h3>
+						<h4>The Task Name</h4>
+						<p>This is the description for the lorem ipsum dolor sit amet, vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum.</p>
+						<div class="input-field button light with-arrow">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button data-url="/professions/[category]/[taskid]">Continue</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			-->
+			<!-- endif(dev) -->
+		</div>
+
+
+		<span class="mobile-professions-zenmarket-buttons mobileOnly">
+			<hr />
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button data-url-silent="/professions/buypack">
+					<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+					Buy Booster Pack
+				</button>
+			</div>
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button data-url="/professions/vendor">
+					<img src="/tex/Currency_Icon_Tiny_Copper.png" alt="" />
+					Buy Supplies
+				</button>
+			</div>
+		</span>
+
+
+	</div>
+
+	<script>
+		client.buttonPulse('.buttonPulse');
+	</script>
+</span>
+
+
+<div class="box-footer-block footer-professions-overview">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<div class="current-money">
+							<span class="currency-icon astral"></span> <span data-path="ent.main.currencies.diamonds.$commify()">99,999</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+
+						<div class="footer-controls-left">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url-silent="/professions/buypack">
+									<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+									Buy Booster Pack
+								</button>
+							</div>
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url="/professions/vendor">
+									<img src="/tex/Currency_Icon_Tiny_Copper.png" alt="" />
+									Buy Supplies
+								</button>
+							</div>
+						</div>
+						<div class="footer-controls-right">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url="/zenmarket/Crafting">
+									Browse Zen Market
+								</button>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+
+
+
+
+
+<script data-if="!{.cstore.categories}">
+	client.dataModel.fetchCStore();
+</script>
+

@@ -1,0 +1,95 @@
+<button class="close-button" data-url="back"></button>
+
+<div data-path="tradeSelected">
+	<div class="auction-details">
+		<div class="auction-details-img">
+			<div class="icon-slot readonly">
+				<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+			</div>
+		</div>
+		<div class="auction-details-info">
+			<h3 data-path=".itemdef.displaynamemsg.str">Item Name Goes Here</h3>
+		</div>
+	</div>
+	<div class="consignment-form-modal">
+
+		<span data-if=".count gt 1">
+			<span class="auction-quantity-block">
+				<h3>Quantity:</h3>
+				<div class="input-field text quantity">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<!-- THIS IS A NEW FIELD THAT NEEDS TO BE HOOKED UP -->
+					<input type="text" name="sellQty" data-set-value="{.count}" data-set-data-max-value="{.count}" maxlength="4">
+				</div>
+				<span class="quantity-note">(<span data-path=".count">count</span> available)</span>
+			</span>
+		</span>
+
+		<h3>Starting Bid:</h3>
+		<div class="input-field text currency">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<span class="currency-icon astral"></span>
+			<input type="text" maxlength="9" placeholder="0" name='startingBid' onchange="client.auctionSellUpdatePostingFee(true)">
+		</div>
+
+		<h3>Buyout Price:</h3>
+		<div class="input-field text currency">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<span class="currency-icon astral"></span>
+			<input type="text" maxlength="9" placeholder="0" name='buyout' onchange="client.auctionSellUpdatePostingFee(true)"><br>
+		</div>
+
+		<h3>Duration:</h3>
+		<div class="input-field dropdown">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<select name='duration' onchange="client.auctionSellUpdatePostingFee(true)">
+				<option value="86400">Short (1 Day)</option>
+				<option value="259200">Medium (3 Days)</option>
+				<option value="432000">Long (5 Days)</option>
+			</select>
+		</div>
+
+
+		<div class="posting-fee">
+			<h3>Posting Fee:</h3>
+			<div class="info-entry">
+				<span class="currency-icon astral"></span> <span id="postingFee">0</span>
+			</div>
+		</div>
+		<div class="trade-house-cut">
+			<h3>Trade House Cut:</h3>
+			<div class="info-entry">
+				10% (~ <span class="currency-icon astral"></span> <span id="saleFee">0</span>)<br>
+			</div>
+		</div>
+
+		<div class="consignment-form-buttons">
+			<div class="input-field button auction-clear">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button onclick="client.auctionSellClearForm()">Clear</button>
+			</div>
+
+			<div class="input-field button auction-post">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button onclick="client.auctionSellPostNewAuction(true)" data-url-silent="/auctionhouse-sell">Post</button>
+			</div>
+		</div>
+
+		<h5>Current Balance</h5>
+		<div class="current-money">
+			<span class="currency-icon astral"></span> <span data-path="$root().ent.main.currencies.diamonds.$commify()">diamonds</span>
+		</div>
+	</div>
+</div>

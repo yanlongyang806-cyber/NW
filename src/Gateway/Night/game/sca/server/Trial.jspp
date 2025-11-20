@@ -1,0 +1,106 @@
+'use strict';
+
+///////////////////////////////////////////////////////////////////////////
+
+var reSplit = /[,\s]/g;
+var reTrim = /^\s+|\s+$/g;
+var reParse = /(\d*)(\w+)/;
+
+function Trial(def)
+{
+	this.def = def.replace(reTrim, '').split(reSplit);
+	this.complete = false;
+	this.active = false;
+	this.needs = {};
+
+	var self = this;
+	this.def.forEach(function(need) {
+		var res = reParse.exec(need);
+		if(!res || !res[2])
+		{
+			console.error('Unknown Trial def:' + def);
+			return;
+		}
+
+		var c = +res[1] || 1;
+
+		if(self.needs[res[2]])
+		{
+			self.needs[res[2]].count += c;
+		}
+		else
+		{
+			self.needs[res[2]] = { symbol: res[2], count: c, requires: c, assigned: 0 };
+		}
+	});
+}
+
+Trial.prototype.reset = function()
+{
+	for(var sym in this.needs)
+	{
+		var c = this.needs[sym].count;
+		this.needs[sym] = { symbol: sym, count: c, requires: c, assigned: 0 };
+	}
+
+	this.complete = false;
+	this.active = false;
+}
+
+Trial.prototype.assign = function(die)
+{
+	var side = die.roll.side;
+	if(side.wild)
+		side = side.getWildSide();
+
+	for(var i = 0; i < side.vals.length; i++)
+	{
+		var need = this.needs[side.vals[i].sym];
+		if(need && need.requires > 0)
+		{
+			need.requires -= side.vals[i].count;
+			if(need.requires < 0)
+				need.requires = 0;
+
+			need.assigned += side.vals[i].count;
+			die.use();
+		}
+	}
+
+	this.complete = this.isComplete();
+}
+
+Trial.prototype.isSideUsable = function(side)
+{
+	for(var i = 0; i < side.vals.length; i++)
+	{
+		var need = this.needs[side.vals[i].sym];
+		if(need && need.requires > 0)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+Trial.prototype.isComplete = function()
+{
+	for(var sym in this.needs)
+	{
+		if(this.needs[sym].requires > 0)
+			return false;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Trial;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

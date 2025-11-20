@@ -1,0 +1,167 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// LauncherConnection
+//
+//
+var g_config = require('cryptic/configure')();
+var util = require('cryptic/cutils');  // for util.inherits
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+var locale = require('cryptic/locale');
+
+var CrypticProtocolConnection = require('cryptic/CrypticProtocolConnection');
+var Packet = require('cryptic/packet');
+
+var CMD_UNUSED = 1;
+var CMD_LOG = 2;
+var CMD_PERF = 3;
+var CMD_LOCK = 4;
+var CMD_REQUEST_TRANSLATIONS = 5;
+var CMD_SHUTDOWN_MESSAGE = 6;
+
+///////////////////////////////////////////////////////////////////////////
+
+var LauncherConnection = function LauncherConnection()
+{
+	dbg.trace();
+
+	CrypticProtocolConnection.call(this);
+}
+
+util.inherits(LauncherConnection, CrypticProtocolConnection);
+
+///////////////////////////////////////////////////////////////////////////
+
+LauncherConnection.prototype.onConnected = function onConnected()
+{
+	dbg.trace();
+};
+
+LauncherConnection.prototype.onDisconnected = function onDisconnected()
+{
+	dbg.trace();
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+LauncherConnection.prototype.onPacket = function onPacket(pkt)
+{
+	dbg.trace();
+
+	var cmd = pkt.readUInt8();
+	switch(cmd) // JSHINT_IGNOREME (should be an if instead of a switch)
+	{
+		case CMD_LOCK:
+			g_config.locked = pkt.readUInt32();
+			log.log("Gateway Login has been " + (g_config.locked ? "locked." : "unlocked."));
+			break;
+
+		case CMD_REQUEST_TRANSLATIONS:
+			this.onTranslations(pkt);
+			break;
+
+		default:
+			pkt.rewind();
+			dbg.trace('emit packet');
+			this.emit('packet', pkt);
+			break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LauncherConnection.prototype.sendLog = function sendLog(logname, message)
+{
+
+	message = message || '';
+
+	var pkt = this.startPacket(CMD_LOG);
+	pkt.sendString(logname);
+	pkt.sendString(message);
+	pkt.endPacket();
+}
+
+LauncherConnection.prototype.sendPerf = function sendPerf()
+{
+
+	var pkt = this.startPacket(CMD_PERF);
+	pkt.sendString(perf.reportTextParser().join('\n'));
+	pkt.endPacket();
+}
+
+LauncherConnection.prototype.sendShutdownWithMessage = function sendShutdownWithMessage(msg)
+{
+
+	var pkt = this.startPacket(CMD_SHUTDOWN_MESSAGE);
+	pkt.sendString(msg);
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LauncherConnection.prototype.requestTranslations = function requestTranslations(lang, keys)
+{
+	dbg.trace();
+
+	var pkt = this.startPacket(CMD_REQUEST_TRANSLATIONS);
+	pkt.sendUInt32(lang);
+	pkt.sendUInt32(keys.length);
+	for(var i = 0; i < keys.length; i++)
+	{
+		pkt.sendString(keys[i]);
+	}
+	pkt.endPacket();
+}
+
+LauncherConnection.prototype.onTranslations = function onTranslations(pkt)
+{
+	dbg.trace();
+
+	var lang = pkt.readUInt32();
+	var count = pkt.readUInt32();
+	var translations = {};
+	for(var i = 0; i < count; i++)
+	{
+		var key = pkt.readString();
+		translations[key] = pkt.readString();
+	}
+
+	locale.setTranslations(lang, translations);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LauncherConnection.prototype.makeLogger = function makeLogger(logname)
+{
+	var self = this;
+
+	var logger = {
+		write: function(message) {
+			if(self.state === 'connected')
+			{
+				if(message.substring(0, 8) === 'SHUTDOWN')
+				{
+					message = "\n" + message;
+					self.sendShutdownWithMessage(message);
+				}
+				else
+				{
+					message = message.replace(/\r*\n+/g, ' ');
+					self.sendLog(logname, message);
+				}
+			}
+		}
+	};
+
+	return logger;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = new LauncherConnection();
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

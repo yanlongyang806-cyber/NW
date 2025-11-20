@@ -1,0 +1,138 @@
+OperationDef
+	Name "TextureNormalDXT5nm_6" // Name of the operation
+	ParentName "TextureNormalDXT5nm_2+"
+	OptionName "6 texture coords"
+	Description "Texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord2
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord3
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord4
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord5
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord6
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+		
+	Input
+		Name NormalMap // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type TextureNormal
+		Default
+			Strings "default_dxt5nm_N"
+		EndDefault
+		Texture 1
+	EndInput
+
+	Input
+		Name AlphaIfDXT5nm
+		Description "Alpha to use if this is a DXT5nm texture"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 1
+		FloatRange 0 1
+		Default
+			Floats 1
+		EndDefault
+	EndInput
+
+	Input
+		Name IsDXT5nm
+		Description "Set to 1 if this is a DXT5nm texture"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Hidden 1
+		Type TextureNormal_IsDXT5nm
+		Float 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result2
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result3
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result4
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result5
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result6
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+
+EndOperationDef

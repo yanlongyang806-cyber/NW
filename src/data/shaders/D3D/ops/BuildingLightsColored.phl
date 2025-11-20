@@ -1,0 +1,9 @@
+{
+	float4 pattern;
+	float2 coords = %TexCoord%.xy;
+	coords *= 0.015625;
+	pattern = sampleTex2D(TexSampler%PatternTexture%, coords);
+	%Result%.xyz = ((%FadeValue%).x > pattern.w) * pattern.xyz;
+	%Result%.w = 1;
+	%Color% = pattern;
+}

@@ -1,0 +1,45 @@
+// Terrain_2Detail.phl (used with terrain_heightmap.vhl)
+{
+#ifndef DEPTH_ONLY
+	// Tint from map
+		float2 uv = float2(0.33,0.23);
+	float4 color = sampleTex2D(TexSampler%ColorTexture%,uv);
+	
+#ifdef NO_TERRAIN_COLOR
+	color = float4(0.5,0.5,0.5,1);
+#endif
+
+	// Detail textures
+	float4 detail_1 = sampleTex2D(TexSampler%DetailTexture1%, v.texcoords.zw * %UVScale1%.xy); // Detail 0
+	float4 detail_2 = sampleTex2D(TexSampler%DetailTexture2%, v.texcoords.zw * %UVScale1%.zw); // Detail 1
+	float4 normal_spec1 = sampleTex2D(TexSampler%DetailNormalTexture1%, v.texcoords.zw * %UVScale1%.xy);
+	float4 normal_spec2 = sampleTex2D(TexSampler%DetailNormalTexture2%, v.texcoords.zw * %UVScale1%.zw);
+
+	float2 detail_vec = float2(dot(v.color0, %DetailSwitchSelect1%), dot(v.color0, %DetailSwitchSelect2%));
+	detail_vec.x += 1 - saturate(detail_vec.x + detail_vec.y);
+	float4 detail =	detail_vec.x * detail_1 + 
+					detail_vec.y * detail_2;
+	float4 normal_spec = detail_vec.x * normal_spec1 +
+						 detail_vec.y * normal_spec2;
+#ifdef NO_TERRAIN_DETAIL
+	detail = float4(0,0,0,0.5);
+#endif
+	color.rgb = detail.rgb + (2 * detail.a) * color.rgb;
+
+	%SpecularValueOut% = dot((%SpecularValueIn%).xy, detail_vec) * normal_spec.w;
+	%SpecularExponentOut% = dot((%SpecularExponentIn%).xy, detail_vec);
+	%NormalOut%.xyz = rangeExpand(normal_spec.xyz);
+#ifdef NO_TERRAIN_NORMAL
+	%NormalOut%.xyz = float3(0,0,1);
+#endif
+	%ColorOut% = color;
+
+#else
+
+	%ColorOut% = 1;
+
+#endif
+
+	v.color0 = 1;
+}
+

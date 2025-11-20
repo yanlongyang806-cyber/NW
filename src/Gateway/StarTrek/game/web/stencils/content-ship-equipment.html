@@ -1,0 +1,248 @@
+<div data-path="ent" data-update="ent">
+	<h2>Ship Equipment</h2>
+	<div class="ship-banner">
+		<div class="ship-headshot">
+			<img data-set-src="/shot/ship/{.$root().ent.idShip}.png" alt="" />
+		</div>
+		<div class="ship-basicinfo">
+			<h3 data-path=".ship.name"></h3>
+			<h4 data-path=".ship.subname"></h4>
+			<ul>
+				<li>Fore Weapon Slots: <span data-path=".ship.shipdata.forwardweapons"></span></li>
+				<li>Aft Weapon Slots: <span data-path=".ship.shipdata.aftweapons"></span></li>
+			</ul>
+			<ul>
+				<li>Base Hull: <span data-path=".ship.maxhealth"></span></li>
+			</ul>
+			<ul>
+				<li>Base Crew: <span data-path=".ship.shipdata.crew"></span></li>
+				<li>Base Turn: <span data-path=".ship.shipdata.flightturnrate"></span></li>
+				<li>Device Slots: <span data-path=""></span></li>
+			</ul>
+		</div>
+	</div>
+
+	<div class="ship-equipment-wrapper" data-path=".ship.inventory">
+		<div class="ship-equipment">
+
+			<div class="ship-equipment-weapons">
+				<div class="ship-slot-group ship-weapons-fore">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Fore Weapons</h3>
+						<ul data-path=".bags[bagid=Ship_ForeWeapons].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Fore Weapon Slot</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-weapons-aft">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Aft Weapons</h3>
+						<ul data-path=".bags[bagid=Ship_AftWeapons].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Aft Weapon Slot</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="ship-equipment-consoles">
+
+				<div class="ship-slot-group ship-consoles-tactical">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Tactical<br />
+						Consoles</h3>
+						<ul data-path=".bags[bagid=Ship_Tactical].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Tactical Console</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-consoles-science">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Science<br />
+						Consoles</h3>
+						<ul data-path=".bags[bagid=Ship_Science].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Science Console</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-consoles-engineering">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Engineering<br />
+						Consoles</h3>
+						<ul data-path=".bags[bagid=Ship_Engineering].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Engineering Console</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="ship-equipment-defenses">
+
+				<div class="ship-slot-group ship-deflector">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Deflector</h3>
+						<ul data-path=".bags[bagid=Ship_Deflector].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Deflector Slot</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-impulse">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Impulse</h3>
+						<ul data-path=".bags[bagid=Ship_Impulse_Engines].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Impulse Slot</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-warp">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Core</h3>
+						<span data-if=".bags[bagid=Ship_Warp_Engines].slots">
+							<ul data-path=".bags[bagid=Ship_Warp_Engines].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Warp Core Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</span>
+						<span data-if=".bags[bagid=Ship_Singularity_Engines].slots">
+							<ul data-path=".bags[bagid=Ship_Singularity_Engines].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Singularity Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</span>
+
+					</div>
+				</div>
+
+				<div class="ship-slot-group ship-shields">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Shields</h3>
+						<ul data-path=".bags[bagid=Ship_Shields].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Shields Slot</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+
+
+				<div class="ship-slot-group ship-devices">
+					
+					<div class="equipment-container mobileList">
+						<h3 class="mobileListHeader">Devices</h3>
+						<ul data-path=".bags[bagid=Ship_Devices].slots">
+							<li>
+								<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+									<div data-set-class="item-icon medium {.rarity}">
+										<span class="item-rarity-border"></span>
+										<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+									</div>
+									<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+									<h6 class="mobileListSubfooter mobileOnly">Device</h6>
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+</div>

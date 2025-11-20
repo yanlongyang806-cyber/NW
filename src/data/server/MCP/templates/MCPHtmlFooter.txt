@@ -1,0 +1,25 @@
+</span>
+</div>
+<div class="header_weld_bar">
+<ul class="header_weld_list">
+	<li>
+		<div id="navigation_bar"></div>
+	</li>
+	<li>
+		Auto-Refresh: <input type="checkbox" value="1" id="autorefresh" onClick="remember(this)" /><br />
+		<div id="refreshtime">&nbsp;</div>
+	</li>
+	<li>
+		<button type="button" id="xmlbutton" name="XML" value="XML">XML</button>
+		<button type="button" id="refreshbutton" name="refresh" value="Refresh">Refresh</button>
+	</li>
+</ul>
+</div>
+<script language="javascript" type="text/javascript">
+<!--
+load('auto-update','auto-update-swap');
+guify_tags(document.getElementById('auto-update'));
+guify_document(document.getElementById('auto-update'));
+//--></script>
+</body>
+</html>

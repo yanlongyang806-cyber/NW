@@ -1,0 +1,39 @@
+OperationDef
+	Name "Assembler" // Name of the operation
+	Description "Assemble a color out of 4 individual components"
+	Type SIMPLE
+
+	Input
+		Name R
+		Description "Red (X) channel"
+		Float 1
+		FloatRange -1.0 1.0
+	EndInput
+	Input
+		Name G
+		Description "Green (Y) channel"
+		Float 1
+		FloatRange -1.0 1.0
+	EndInput
+	Input
+		Name B
+		Description "Blue (Z) channel"
+		Float 1
+		FloatRange -1.0 1.0
+	EndInput
+	Input
+		Name A
+		Description "Alpha (W) channel"
+		Float 1
+		FloatRange -1.0 1.0
+	EndInput
+
+	Output
+		Name Result
+		Description "Value is assembled from the 4 inputs"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

@@ -1,0 +1,35 @@
+OperationDef
+	Name "FresnelTerm_Advanced" // Name of the operation
+	Description "Fresnel Term Advanced"
+	Type ADVANCED
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name Tightness
+		Description "Tightness value (default = 2.0)"
+		Float 1
+		FloatRange 0 10
+		NoAutoConnect 1
+		Default
+			Floats 2
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Description "Output of (1 - N * E) ^ Tightness plus some fudging"
+		Float 1
+	EndOutput
+
+EndOperationDef

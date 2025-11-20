@@ -1,0 +1,115 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+//
+// FunctionQueuer
+//
+// FunctionQueuer allows the creation of chained functions where are executed
+// at a later time. The actual execution is done with an executor object that
+// defines all the functions. The same function queue can be executed by
+// different executors to do different things.
+//
+// For example, one might define a FuctionQueuer like this:
+//
+//    var int = FunctionQueuer('int', 'min', 'max');
+//
+//    var test = int().min(-10).max(20);
+//
+// The definition of test doesn't actually do anything but set up the function
+// queue. To run the queue:
+//
+//    test.exec(executor, val);
+//
+// This will run the int, min, and max functions defined in executor on the
+// value val.
+//
+// For the example above, one can imagine an executor which asserts that the
+// restrictions are met and a different executor which coerces the value such
+// that it meets the restrictions.
+//
+// The first parameter to all executor calls is the value given in exec().
+// The remaining parameters are the ones given when definind the FQ. Any number
+// of arguments can be given. They are all curried into the call to the executor.
+//
+//     var foo = int().isOneOf(2, 3, 5, 7, 11, 13, 17);
+//
+//     executor.int = function(v) { ... }
+//     executor.isOneOf = function(valToMatch /*, val, val, val, val */)
+//     {
+//         for(int i = 1; i < arguments.length; i++)
+//         {
+//              if(valToMatch === arguments[i])
+//              {
+//                  return valToMatch;
+//              }
+//              throw new Error('Not in given list.')
+//         }
+//     }
+//
+//     foo.exec(executor, 5); // --> returns 5
+//     foo.exec(executor, 6); // --> throws 'Not in given list.'
+//
+
+
+//
+// new FunctionQueuer
+//
+// The first parameter (root) is the root function. It will always be called
+// in the executor first. Additional function names are declared afterward.
+//
+function FunctionQueuer(root /*, name, name, name, ... */)
+{
+	var fq = function()
+	{
+		var params = Array.prototype.slice.call(arguments);
+		var f = function (executor, value) {
+			params.unshift(value);
+			value = executor[root].apply(this, params);
+			params.shift();
+			return value;
+		};
+		cutils.extend(f, fq);
+		return f;
+	}
+
+	fq.exec = function(executor, value)
+	{
+		value = this(executor, value);
+		return value;
+	}
+
+	for(var i = 0; i < arguments.length; i++)
+	{
+		addQueuedFunction(fq, arguments[i]);
+	}
+
+	return fq;
+}
+
+function addQueuedFunction(fq, funcname)
+{
+	fq[funcname] = function(/* param, param, ... */)
+	{
+		var self = this;
+		var params = Array.prototype.slice.call(arguments);
+
+		var f = function(executor, value) {
+			value = self(executor, value);
+			params.unshift(value);
+			value = executor[funcname].apply(this, params);
+			params.shift();
+			return value;
+		}
+
+		cutils.extend(f, fq);
+
+		return f;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = FunctionQueuer;
+
+// End of File

@@ -1,0 +1,79 @@
+OperationDef
+    Name "TexCellScroll"
+    Description "Display a celled image from the specified texture"
+    Type TEXTURE
+
+    Input
+        Name TexCoord
+        Description "Source texcoord"
+        Type TexCoord
+		Float 2
+
+        Default
+            Type TexCoord0
+        EndDefault
+    EndInput
+
+	Input
+		Name ScrollRate
+		Description "Rate of scrolling, in frames per tick"
+		Float 1
+		FloatRange 0 10
+		Type Single_Scroll
+		NoManualConnect 0
+		Default
+			Floats 0.1
+		EndDefault
+	EndInput
+
+	Input
+		Name FrameBlend
+		Description "Blending of frames, in percentage"
+		Float 1
+		FloatRange 0 1
+		NoManualConnect 1
+		Type Default
+		Default
+			Floats 0.0
+		EndDefault
+	EndInput
+
+    Input
+        Name HorizFrames
+        Description "Frames along the horizontal axis"
+        Float 1
+        FloatRange 1 100
+		NoManualConnect 1
+		Type Texture_Stretch
+        Default
+            Floats 1
+        EndDefault
+    EndInput
+
+    Input
+        Name VertFrames
+        Description "Frames along the vertical axis"
+        Float 1
+        FloatRange 1 100
+		NoManualConnect 1
+		Type Texture_Stretch
+        Default
+            Floats 1
+        EndDefault
+    EndInput
+    
+	Input
+		Name Texture // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type Texture
+		NoManualConnect 1
+		Texture 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Color and alpha from the texture"
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+EndOperationDef

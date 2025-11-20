@@ -1,0 +1,20 @@
+OperationDef
+	Name "LightBleedTransform" // Name of the operation
+	Description "Transform a dynamic value into a LightBleed value"
+	Type ADVANCED
+
+	Input
+		Name LightBleed
+		Description "Light bleed in the range -1 to 1"
+		NoAutoConnect 1
+		Float 1
+		FloatRange -1 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Values for the Output shader: LightBleed / (1 + LightBleed), 1 / (1 + LightBleed)"
+		Float 2
+		AlphaFrom LightBleed
+	EndOutput
+EndOperationDef

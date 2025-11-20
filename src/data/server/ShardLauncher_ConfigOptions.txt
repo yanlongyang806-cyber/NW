@@ -1,0 +1,954 @@
+{
+
+#if servers are requested, they will be launched in this order (all others will be launched in an indeterminate order after these)
+LaunchOrderList LOGSERVER
+LaunchOrderList ACCOUNTSERVER
+LaunchOrderList TRANSACTIONSERVER
+LaunchOrderList CLONEOFCLONE
+LaunchOrderList CLONEOBJECTDB
+LaunchOrderList OBJECTDB
+LaunchOrderList MAPMANAGER
+LaunchOrderList ACCOUNTPROXYSERVER
+LaunchOrderList LOGINSERVER
+
+#these types will have their own screens with custom options for setting command lines, hiding windows, etc.
+ServerSpecificScreenTypes CONTROLLER
+ServerSpecificScreenTypes LAUNCHER
+ServerSpecificScreenTypes LOGSERVER
+ServerSpecificScreenTypes TRANSACTIONSERVER
+ServerSpecificScreenTypes OBJECTDB
+ServerSpecificScreenTypes CLONEOBJECTDB
+ServerSpecificScreenTypes MAPMANAGER
+ServerSpecificScreenTypes LOGINSERVER
+ServerSpecificScreenTypes GAMESERVER
+ServerSpecificScreenTypes MULTIPLEXER
+ServerSpecificScreenTypes LOGPARSER
+ServerSpecificScreenTypes ACCOUNTSERVER
+ServerSpecificScreenTypes ACCOUNTPROXYSERVER
+ServerSpecificScreenTypes TEAMSERVER
+ServerSpecificScreenTypes AUCTIONSERVER
+ServerSpecificScreenTypes GUILDSERVER
+ServerSpecificScreenTypes CHATSERVER
+ServerSpecificScreenTypes CHATRELAY
+ServerSpecificScreenTypes QUEUESERVER
+ServerSpecificScreenTypes CLIENTCONTROLLER
+ServerSpecificScreenTypes TESTSERVER
+ServerSpecificScreenTypes MASTERCONTROLPROGRAM
+ServerSpecificScreenTypes HEADSHOTSERVER
+ServerSpecificScreenTypes WEBREQUESTSERVER
+ServerSpecificScreenTypes OBJECTDB_MERGER
+ServerSpecificScreenTypes OBJECTDB_MERGER
+ServerSpecificScreenTypes TESTCLIENT
+ServerSpecificScreenTypes CLIENTBINNER
+ServerSpecificScreenTypes SERVERBINNER
+ServerSpecificScreenTypes JOBMANAGER
+ServerSpecificScreenTypes BCNMASTERSERVER
+ServerSpecificScreenTypes BCNCLIENTSENTRY
+ServerSpecificScreenTypes UGCDATAMANAGER
+ServerSpecificScreenTypes UGCSEARCHMANAGER
+ServerSpecificScreenTypes RESOURCEDB
+ServerSpecificScreenTypes CLONEOFCLONE
+ServerSpecificScreenTypes GROUPPROJECTSERVER
+ServerSpecificScreenTypes GATEWAYSERVER
+ServerSpecificScreenTypes GATEWAYLOGINLAUNCHER
+ServerSpecificScreenTypes TEXTURESERVER
+ServerSpecificScreenTypes CURRENCYEXCHANGESERVER
+
+List SHARD_ID
+{
+	Option SHARD_NAME "The name of this shard (shows up in controller tracker)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ShardName $$"
+		AlphaNumOnly 1
+	}
+
+	Option SHARD_CATEGORY "What category of shard this is (affects who can log in)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ShardCategory $$"
+		Choice Live
+		Choice Playtest
+		Choice Avatar
+		Choice Beta
+		Choice Dev
+		Choice Personal
+		Choice QA
+		Choice QABoston
+		Choice QALocal
+		Choice QALocal2
+		Choice Test
+		Choice Tip
+		Choice Xbox
+		Choice WebDev
+		Choice EECALive
+		Choice EECABeta
+		Choice EECAPlaytest
+
+
+		DefaultChoice Test
+
+		ChoiceWhichRequiresWarning Live "Choosing shard category LIVE will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+		ChoiceWhichRequiresWarning Playtest "Choosing shard category PLAYTEST will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+		ChoiceWhichRequiresWarning Beta "Choosing shard category BETA will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+		ChoiceWhichRequiresWarning EECALive "Choosing shard category EECALive will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+		ChoiceWhichRequiresWarning EECABeta "Choosing shard category EECABeta will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+		ChoiceWhichRequiresWarning EECAPlaytest "Choosing shard category EECAPlaytest will create a shard which end users will be able to see on production launchers. Are you sure you wish to proceed?"
+	}
+
+	Option MICROTRANS_CATEGORY "What microtransaction category this shard is (affects what virtual currency and products are used)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-MTCategory $$"
+		Choice Off
+		Choice Beta
+		Choice PTS
+		Choice Live
+
+		DefaultChoice Off
+	}
+
+	Option CRITICALSYSTEM_PAGE "Report status to this controller tracker for critical systems purposes (uses shard name)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-BeginStatusReporting $SHARD_NAME_WITH_CLUSTER$ $$ 80"
+	}
+}
+
+List WHAT_TO_LAUNCH
+{
+	Option LAUNCH_NORMAL_SERVERS "Launch all normal servers"
+	{
+		IfSet LAUNCHSERVER LogServer
+		IfSet LAUNCHSERVER TransactionServer
+		IfSet LAUNCHSERVER ObjectDB
+		IfSet LAUNCHSERVER MapManager
+		IfSet LAUNCHSERVER LoginServer
+		IfSet LAUNCHSERVER TeamServer
+		IfSet LAUNCHSERVER GuildServer
+		IfSet LAUNCHSERVER ChatServer
+		IfSet LAUNCHSERVER AuctionServer
+		IfSet LAUNCHSERVER QueueServer
+		IfSet LAUNCHSERVER GroupProjectServer
+		IfSet LAUNCHSERVER CurrencyExchangeServer
+	}
+
+	Option LAUNCH_CLONEOBJECTDB "Launch a Clone Object DB"
+	{
+		IfSet LAUNCHSERVER CloneObjectDB
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-DBMaster -CloneHostName {{Command GetMachineForType CloneObjectDB}}"
+		IfSet FIRSTSERVEROFTYPECOMMANDLINE CloneObjectDB "-CloneConnectToMaster"
+		IfSet SERVERTYPECOMMANDLINE HeadShotServer "-GetCostumesFromClone"
+	}
+
+	Option LAUNCH_CLONEOFCLONE "Launch a CloneOfClone DB"
+	{
+		IfSet LAUNCHSERVER CloneOfClone
+		IfSet SERVERTYPECOMMANDLINE CloneObjectDB "-CloneHostName {{Command GetMachineForType CloneOfClone}}"
+		IfSet FIRSTSERVEROFTYPECOMMANDLINE CloneOfClone "-CloneConnectToMaster"
+	}
+
+	Option LAUNCH_HEADSHOTSERVER "Launch a HeadShotServer"
+	{
+
+		IfSet LAUNCHSERVER HeadShotServer
+	}
+
+	Option LAUNCH_WEBREQUESTSERVER "Launch a WebRequestServer"
+	{
+
+		IfSet LAUNCHSERVER WebRequestServer
+	}
+
+	Option LAUNCH_TESTSERVER "Launch a TestServer"
+	{
+
+		IfSet LAUNCHSERVER TestServer
+	}
+
+	Option LAUNCH_MONITORING_MCP "Launch an MCP which starts out doing server monitoring"
+	{
+
+		IfSet SERVERTYPECOMMANDLINE Controller "-LaunchMonitoringMCP 1"
+	}
+
+	Option LAUNCH_ACCOUNTSERVER "Launch a local account server"
+	{
+
+		IfSet LAUNCHSERVER AccountServer
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetAccountServer {{Command GetMachineForType AccountServer}}"
+	}
+
+	Option LAUNCH_ACCOUNTPROXY "Launch an account proxy server"
+	{
+		IfSet LAUNCHSERVER AccountProxyServer
+	}
+
+	Option LAUNCH_RESOURCEDB "Launch a resource DB"
+	{
+		IfSet LAUNCHSERVER ResourceDB
+		IfSet SHAREDCOMMANDLINE None "-?UseResourceDB"
+	}
+
+	Option LAUNCH_64BIT "Launch 64 bit versions of apps where appropriate"
+	{
+
+		IfSet SERVERTYPECOMMANDLINE Controller "-Launch64BitWhenPossible"
+	}
+
+	Option LAUNCH_GATEWAY "Launch Gateway"
+	{
+		IfSet LAUNCHSERVER GatewayServer
+		IfSet LAUNCHSERVER GatewayLoginLauncher
+		IfSet LAUNCHSERVER TextureServer
+
+		IfSet SERVERTYPECOMMANDLINE LoginServer "-ListenForGatewayProxies"
+	}
+}
+
+List LAUNCH_OPTIONS
+{
+	Option FREEMEGSLAUNCHWEIGHT "(DEPRECATED) Multiplier to convert free megs of RAM to free CPU for load balancing"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-NewFreeMegsLaunchWeight $$"
+	}
+
+	Option LAUNCHWEIGHT_CPU "(DEPRECATED) Weight of each percent point of CPU use"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-CPULaunchWeight $$"
+	}
+
+	Option LAUNCHWEIGHT_FREERAM "(DEPRECATED) Negative weight of each meg of free RAM"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-NegativeFreeMegsPhysRamLaunchWeight $$"
+	}
+
+	Option LAUNCHWEIGHT_FREEVRAM "(DEPRECATED) Negative weight of each meg of free VRAM"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-NegativeFreeMegsVirtRamLaunchWeight $$"
+	}
+
+	Option SHARD_VERSION_MISMATCH "Allows the executable version stamps not to match. Use if you have hand-replaced EXEs"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-AllowShardVersionMismatch $$"
+	}
+
+	Option NO_CONSOLE_CLOSE_BUTTON "Disables the X button to close console windows (to avoid accidents)"
+	{
+		IfSet SHAREDCOMMANDLINE None "-removeConsoleCloseButton"
+	}
+
+	Option SEND_PATCHCLIENT "Send patchclient to machines you are grabbing/patching"
+	{
+		IfSet SHAREDCOMMANDLINE Controller "-SendPatchClientThroughSentryServer"
+	}
+
+	Option SHUTDOWN_WATCHER "Use ShutdownWatcher.exe to monitor shard shutdown"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ShutdownWatcher"
+	}
+
+	Option LAUNCH_NORMALLY_TIME "Time delay for each LAUNCH_NORMALLY step (seconds)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-LaunchNormallyTime $$"
+	}
+
+	Option LAUNCH_LOCKED "Start the shard locked"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-LockTheShard"
+	}
+
+	Option SHARED_CMDLINE "Extra stuff to for the global shared command line"
+	{
+		IfSet SHAREDCOMMANDLINE None "$$"
+	}
+
+	Option AUTO_SETTING_PAUSE "Pause early in launch sequence to check for AUTO_SETTING errors"
+	{
+		IfSet DONOTHING None ""
+	}
+}
+
+
+#all stuff put on the client command line gets superescaped and put into AutoPatchedClientCommandLine
+List CLIENT_STUFF
+{
+	Option NOCLIENTTIMEOUT "Turns on NoTimeOut for all clients"
+	{
+		IfSet SERVERTYPECOMMANDLINE Client "-NoTimeout"
+	}
+
+	OPTION CLIENTVERSIONMISMATCH "Allow mismatching client versions"
+	{
+		IfSet SERVERTYPECOMMANDLINE LoginServer "-AllowVersionMismatch"
+	}
+
+	Option CLIENT_CMDLINE "Extra command line for connecting Clients"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SuperEsc AutoPatchedClientCommandLine $$SUPERESC$$"
+	}
+}
+
+List MULTIMACHINE_STUFF
+{
+	Option DATADIRCLONING "Duplicate the contents of this machine's /data directory to other shard machines"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-DoDataDirectoryCloning 1"
+	}
+
+	Option MIRROR_EXES "Mirror local shard .exes to all machines in shard"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-MirrorLocalExecutables $$"
+	}
+
+	Option MIRRORING_DELETION "While doing data mirroring, delete unrecognized files"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-DataMirroringDeletion 1"
+	}
+}
+
+List SHARD_PUBLISHING
+{
+	Option CONTROLLERTRACKER "List this shard on the controller tracker, so other humans can easily log in"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ConnectToControllerTracker 1"
+	}
+
+	Option WHICH_CONTROLLERTRACKER "Talk to which ControllerTracker"
+	{
+		Choice unspecified
+		Choice controllertracker.crypticstudios.com
+		Choice qact
+		DefaultChoice controllertracker.crypticstudios.com
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetControllerTracker $$"
+	}
+
+	Option CUSTOM_CONTROLLERTRACKER "Custom controllertracker"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetControllerTracker $$"
+	}
+
+	Option ACCOUNTSERVER "Talk to which account server? (don't set this if you are launching one locally)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetAccountServer $$"
+	}
+
+	Option TICKETTRACKER "Talk to which ticket tracker?"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetTicketTracker $$"
+	}
+
+
+	Option SENTRY_SERVER "Talk to which Sentry Server (empty = SentryServer)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SentryServer $$"
+	}
+
+	Option NOTES_SERVER "Talk to which Notes Server (empty = NotesServer)"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-NotesServerName $$"
+	}
+
+
+}
+
+
+List CONTROLLER_MISC_STUFF
+{
+	Option TIMESTAMP_PRINTFS "Adds a timestamp to all controller console printfs"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-TimeStampAllPrintfs"
+	}
+
+	Option LAUNCHER_KEEPALIVE "Seconds to wait before killing an inactive launcher"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-LauncherKeepAliveTime $$"
+	}
+
+	Option CONTROLLER_MIRRORING "Sends server/machines to webrequestserver for servermonitoring"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-DoControllerMirroring"
+	}
+
+	Option MCP_HIDES_THINGS "Start up respecting the hide/unhide values in the local monitoring MCP"
+	{
+		IfSet SERVERTYPECOMMANDLINE MasterControlProgram "-SendHideWindowsChoicesOnStartup"
+	}
+
+	Option FRANKENBUILD_DIR "Directory to search for frankenbuilt files... turns on console interface"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-AddFrankenBuildDir $$"
+	}
+
+	Option CAPTURE_CONSOLE "Dump controller console output to a log file"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ForkPrintfsToFile ./logs/ControllerConsole_$STARTTIME$.txt"
+		IfSet SERVERTYPECOMMANDLINE Controller "-TimeStampAllPrintfs"
+	}
+
+	Option BEACON_MASTER_MACHINE "The machine this shard uses as the Beacon Master Server"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetShardBeaconMasterServer $$"
+	}
+}
+
+List GAMESERVER_STUFF
+{
+	Option DELAYBEFOREKILLINGSTALLED "Sets the delay (in seconds) before killing a stalled gameserver"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-DelayBeforeKillingStalledGameserver $$"
+	}
+
+	Option GETSTALLDUMPS "Whenever a gameserver stalls, get a dump and send it to errortracker"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-GetDumpsFromStalledGameServers"
+	}
+
+	Option GS_TIMEOUT "Minutes a gameserver must be inactive before closing itself. 0 = never"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-InactivityTimeoutMinutes $$"
+	}
+
+	Option NO_RAGDOLL "Disable ragdoll"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-danimEnableRagdoll 0"
+	}
+}
+
+List MAP_STUFF
+{
+	Option ACCOUNTPERMISSIONS "Account tokens will be used to allow/disallow entry into various maps"
+	{
+
+		IfSet SHAREDCOMMANDLINE None "-UseAccountPermissionsForMapTransfer"
+	}
+
+	Option DO_LAUNCH_CUTOFFS "Launch a new map when all instances of a map reach a certain cutoff"
+	{
+
+		IfSet SERVERTYPECOMMANDLINE MapManager "-DoLaunchCutoffs"
+	}
+
+	Option CUTOFFS_IGNORE_ABSENT "If no maps of a type exist, don't use launch cutoffs to create the first one"
+	{
+		IfSet SERVERTYPECOMMANDLINE MapManager "-LaunchCutoffsIgnoreNonexistant"
+	}
+
+	Option DO_STARTING_MAPS "When the first mapmanager starts up, launch starting maps specified in mapManagerConfig"
+	{
+		IfSet FIRSTSERVEROFTYPECOMMANDLINE MapManager "-DoStartingMaps"
+	}
+}
+
+
+
+List BETA_STUFF
+{
+	Option SHOW_SURVEY "Ask users to fill out a survey about each mission"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-ShowSurvey"
+	}
+
+	Option SURVEY_MIN "Minimum character level for survey"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-survey_MissionLevelMin $$"
+	}
+
+	Option SURVEY_MAX "Maximum character level for survey"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-survey_MissionLevelMax $$"
+	}
+
+	Option SURVEY_NEED_RETURN "Only get surveys for missions involving return to contact"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-survey_MissionNeedsReturn"
+	}
+
+	Option SURVEY_REWARD_SCALE "Only get surveys with reward scale > this value"
+	{
+		IfSet SERVERTYPECOMMANDLINE GameServer "-survey_MissionRewardScaleMin $$"
+	}
+}
+
+List DEBUG_STUFF
+{
+	Option LOG_MANAGED_RETURN_VALS "Special internal logging turned on for tracking errors with managed return vals"
+	{
+
+		IfSet SERVERTYPECOMMANDLINE GameServer "-LogManagedReturnVals"
+	}
+
+	Option DBG_XFR_NOTIFICATIONS "For QA shards. Pops up a little window telling the tester where they're about to transfer"
+	{
+		IfSet SERVERTYPECOMMANDLINE MapManager "-DebugTransferNotificaitons"
+	}
+
+	Option LEAVE_CRASHES_UP "When things crash, don't do any auto-closing of anything"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-LeaveCrashesUpForever"
+	}
+
+	Option CLIENT_CMDLINE "Extra stuff to put in the command line of attached clients"
+	{
+		IfSet SERVERTYPECOMMANDLINE Client "$$"
+	}
+
+	Option NO_SHARED_MEMORY "Disables shared memory for all apps"
+	{
+
+		IfSet SHAREDCOMMANDLINE None "-NoSharedMemory"
+	}
+
+	Option SPECIAL_LAUNCHER_MIRRORING "Copies the local launcher over to other machines in a special patching pass"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SpecialLauncherMirroring -?FakeOptionIgnoreMe "
+	}
+
+}
+
+List LOGGING_STUFF
+{
+	Option SET_LOG_DIR "Set what directory to log to"
+	{
+		IfSet SERVERTYPECOMMANDLINE LogServer "-logSetDir $$"
+	}
+
+	Option ALLOW_STANDALONE "Set how many standalone logparser can exist"
+	{
+		IfSet SERVERTYPECOMMANDLINE LogParser "-EnableLaunching $$ $SET_LOG_DIR$"
+	}
+
+	Option PARSER_DATA_DIR "What directory logparser stores local data in"
+	{
+		IfSet SERVERTYPECOMMANDLINE LogParser "-DataDir $$"
+	}
+
+	Option STARTUP_LAUNCH_STANDALONE "Launch a standalone LP with this port at startup"
+	{
+		IfSet SERVERTYPECOMMANDLINE LogParser "-LaunchNoTimeoutStandAloneSpecifyPort $$"
+	}
+
+	Option LPCO_WRITING_DIR "What directory the logparser should write LPCO data files into"
+	{
+		IfSet SERVERTYPECOMMANDLINE LogParser "-DirForLPCOs $$"
+	}
+}
+
+List CHATSERVER_STUFF
+{
+	Option GLOBAL_CHAT_SERVER "IP of global chat server to talk to"
+	{
+		IfSet SERVERTYPECOMMANDLINE ChatServer "-LocalOnlyMode 0 -SetGlobalChatServer $$"
+	}
+
+	Option CHAT_VERBOSE "Do lots of console logging for chat server"
+	{
+		IfSet SERVERTYPECOMMANDLINE ChatServer "-ChatVerbose 1"
+	}
+}
+
+List OBJECTDB_STUFF
+{
+	Option SHOW_SNAPSHOTS "Print out snapshots in the DB console window"
+	{
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-ShowSnapshots"
+	}
+
+	Option CLONE_SHOW_SNAPSHOTS "Print out snapshots in the Clone DB console window"
+	{
+		IfSet SERVERTYPECOMMANDLINE CloneObjectDB "-ShowSnapshots"
+	}
+
+	Option MULTITHREADEDLOADING "Load containers faster on multicore boxes"
+	{
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-MultiThreadedLoading"
+	}
+
+	Option CLONE_MULTITHREADEDLOADING "Load container faster on multicore boxes for the clone objectDB"
+	{
+		IfSet SERVERTYPECOMMANDLINE CloneObjectDB "-MultiThreadedLoading"
+	}
+
+	Option SNAPSHOT_INTERVAL "Interval between snapshots (minutes)"
+	{
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-SnapshotInterval $$"
+		IfSet SERVERTYPECOMMANDLINE CloneObjectDB "-SnapshotInterval $$"
+	}
+	Option FLUSH_PERIOD "Interval between writing to disk (seconds)"
+	{
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-SaveContainerFlushPeriod $$"
+		IfSet SERVERTYPECOMMANDLINE CloneObjectDB "-SaveContainerFlushPeriod $$"
+	}
+
+	Option EMERGENCY_RESTART "Pass EmergencyRestart flag to ObjectDB"
+	{
+		IfSet SERVERTYPECOMMANDLINE ObjectDB "-EmergencyRestart"
+
+		ChoiceWhichRequiresWarning 1 "Are you sure you want to pass the EmergencyRestart flag to the ObjectDB?"
+	}
+}
+
+
+List TRANSACTION_SERVER_STUFF
+{
+	Option BIGMODE "Run a BIG transaction server for a full sized manly shard"
+	{
+		IfSet SERVERTYPECOMMANDLINE TransactionServer "-SetBigMode $$"
+	}
+
+	Option LOG_ALL_TRANSACTIONS "Log a bunch of information about all transactions"
+	{
+		IfSet SERVERTYPECOMMANDLINE TransactionServer "-LogAllTransactions"
+	}
+
+	Option VERBOSE_LOG_EVERYTHING "Log super-verbose very slow information about all transactions"
+	{
+		IfSet SERVERTYPECOMMANDLINE TransactionServer "-VerboseLogEverything"
+		IfSet SHAREDCOMMANDLINE None "-?LTMVerboseLogEverything"
+	}
+
+	Option MULTIPLE_SEND_THREADS "Use all CPUs for sending (assumes TS is only server on machine)"
+	{
+		IfSet SERVERTYPECOMMANDLINE TransactionServer "-MultipleSendThreads"
+	}
+
+}
+
+List HTTP_SERVING_STUFF
+{
+	Option HSS_DIRECT_HTTP_SERVE "The headshot server directly serves http on this port"
+	{
+		IfSet SERVERTYPECOMMANDLINE HeadShotServer "-DoGenericHttpServing $$"
+	}
+
+	Option WRS_DIRECT_HTTP_SERVE "The web request server directly serves http on this port"
+	{
+		IfSet SERVERTYPECOMMANDLINE WebRequestServer "-DoGenericHttpServing $$"
+	}
+
+	Option MULTIPLE_MCP_PORTS <&The MCP monitors this range of ports, inclusive (ie "80 84")&>
+	{
+		IfSet SERVERTYPECOMMANDLINE MasterControlProgram "-SetMultipleMonitoringPorts $$"
+	}
+
+}
+
+List PATCHING_STUFF
+{
+	Option PCL_DIR "Directory for patchclient.exe (default cryptic/tools/bin)"
+	{
+		IfSet DONOTHING None "$$"
+	}
+
+	Option PCL_64_BIT "Use 64 bit patchclient"
+
+	Option PCL_NOUPDATE "Prevent local PCL from autoupdating"
+
+	Option PCL_1ST_CMDLINE "Extra command line for initial invocation of PCL"
+	{
+		IfSet DONOTHING None "$$"
+	}
+	Option PCL_SPAWN_CMDLINE "Extra command line for spawned invocations of PCL"
+	{
+		IfSet DONOTHING None "$$"
+	}
+
+	Option IGNORE_PCL_FAIL "If Patchclients fail, still go ahead and launch launchers"
+	{
+		IfSet DONOTHING NONE ""
+	}
+
+
+}
+
+List UGC_STUFF
+{
+	Option ENABLE_UGC "Generally turn on UGC"
+	{
+		IfSet SERVERTYPECOMMANDLINE LoginServer "-UGCEnabled"
+		IfSet LAUNCHSERVER JobManager
+		IfSet LAUNCHSERVER BcnMasterServer
+		IfSet LAUNCHSERVER BcnClientSentry
+		IfSet LAUNCHSERVER UGCDataManager
+		IfSet LAUNCHSERVER UGCSearchManager
+		IfSet LAUNCHSERVER ResourceDB
+		IfSet SHAREDCOMMANDLINE None "-?UseResourceDB"
+		IfSet SHAREDCOMMANDLINE None "-?UGCGenerallyEnabled"
+	}
+
+	Option SEND_UGC_PROJECTS "Allow UGC projects to be sent to the specified shard"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller <&-ListenForInterShardCommands $$ "AddUGCProjectFromOtherShard_Result"&>
+		IfSet SERVERTYPECOMMANDLINE UGCDataManager "-SendUGCProjectsToShard $$"
+	}
+
+	Option RCV_UGC_PROJECTS "Allow UGC projects to be received from the specified shard"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller <&-ListenForInterShardCommands $$ "AddUGCProjectFromOtherShard"&>
+	}
+
+	Option SHARDNAME_IN_PATCHPROJECT "This shard has its own set of patch projects on the ugc server"
+	{
+		IfSet SERVERTYPECOMMANDLINE UGCDataManager "-UseShardNameInPatchProjectNames 1"
+		IfSet SERVERTYPECOMMANDLINE MapManager "-UseShardNameInPatchProjectNames 1"
+		IfSet SERVERTYPECOMMANDLINE ResourceDB "-UseShardNameInPatchProjectNames 1"
+		IfSet SERVERTYPECOMMANDLINE JobManager "-UseShardNameInPatchProjectNames 1"
+	}
+
+	Option UGC_PATCHSERVER "Name of UGC patch server"
+	{
+		IfSet SERVERTYPECOMMANDLINE UGCDataManager "-UGCPatchserver $$"
+		IfSet SERVERTYPECOMMANDLINE MapManager "-UGCPatchserver $$"
+		IfSet SERVERTYPECOMMANDLINE ResourceDB "-UGCPatchserver $$"
+		IfSet SERVERTYPECOMMANDLINE JobManager "-UGCPatchserver $$"
+	}
+
+	Option UGC_PLAYING_PATCHSERVER "Name of UGC patch server to use for playing only"
+	{
+		IfSet SERVERTYPECOMMANDLINE UGCDataManager "-UGCPatchserver_ForGetting $$"
+		IfSet SERVERTYPECOMMANDLINE MapManager "-UGCPatchserver_ForGetting $$"
+		IfSet SERVERTYPECOMMANDLINE ResourceDB "-UGCPatchserver_ForGetting $$"
+		IfSet SERVERTYPECOMMANDLINE JobManager "-UGCPatchserver_ForGetting $$"
+	}
+
+}
+
+List SHAREDGSMACHINES
+{
+	Option ENABLE_SHARED_MACHINES "Enables the shared GS machine system"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-ControllerMachineGroups_ActivateSystem -OnlyKillExesInMyDirectory"
+	}
+
+	Option SHARED_MACHINE_INDEX "Unique index for this shard not shared by other shards"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-SetSharedMachineIndex $$"
+	}
+
+	Option SHARED_GROUP_DEF_FILE "File (on shared drive) which defines shared named groups"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "-PredefinedGroupsFileName $$"
+	}
+}
+
+
+List GATEWAY_OPTIONS
+{
+	Option GATEWAYDEBUG "Run the debug version of the Gateway servers."
+	{
+		IfSet SERVERTYPECOMMANDLINE GatewayServer "-GatewayDebug"
+		IfSet SERVERTYPECOMMANDLINE GatewayLoginLauncher "-GatewayDebug"
+	}
+
+	Option GATEWAY_AUTO_KILL "If the slave app dies, have the server/launcher kill themselves."
+	{
+		IfNotSet SERVERTYPECOMMANDLINE GatewayServer "-GatewayRestartSlaveIfDead"
+		IfNotSet SERVERTYPECOMMANDLINE GatewayLoginLauncher "-GatewayRestartSlaveIfDead"
+	}
+
+	Option GATEWAY_SERVER_CMDLINE "Extra command line for GatewayProxy (nodejs app)"
+	{
+		IfSet SERVERTYPECOMMANDLINE GatewayServer "-SuperEsc GatewayOptions $$SUPERESC$$"
+	}
+
+	Option GATEWAY_LOGIN_CMDLINE "Extra command line for GatewayLogin (nodejs app)"
+	{
+		IfSet SERVERTYPECOMMANDLINE GatewayServer "-SuperEsc GatewayOptions $$SUPERESC$$"
+	}
+}
+
+List LANGUAGES
+{
+	Option ENABLE_ENGLISH "Force English to be enabled (it usually is)"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented English 1"
+	}
+		Option DISABLE_ENGLISH "Force English to be disabled (unusual and dangerous)"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented English 0"
+	}
+
+	Option ENABLE_CHINESE_TRADITIONAL "Force ChineseTraditional to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented ChineseTraditional 1"
+	}
+	Option DISABLE_CHINESE_TRADITIONAL "Force ChineseTraditional to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented ChineseTraditional 0"
+	}
+
+	Option ENABLE_KOREAN "Force Korean to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Korean 1"
+	}
+	Option DISABLE_KOREAN "Force Korean to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Korean 0"
+	}
+
+	Option ENABLE_JAPANESE "Force Japanese to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Japanese 1"
+	}
+	Option DISABLE_JAPANESE "Force Japanese to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Japanese 0"
+	}
+
+	Option ENABLE_GERMAN "Force German to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented German 1"
+	}
+	Option DISABLE_GERMAN "Force German to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented German 0"
+	}
+
+	Option ENABLE_FRENCH "Force French to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented French 1"
+	}
+	Option DISABLE_FRENCH "Force French to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented French 0"
+	}
+
+	Option ENABLE_SPANISH "Force Spanish to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Spanish 1"
+	}
+	Option DISABLE_SPANISH "Force Spanish to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Spanish 0"
+	}
+
+	Option ENABLE_ITALIAN "Force Italian to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Italian 1"
+	}
+	Option DISABLE_ITALIAN "Force Italian to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Italian 0"
+	}
+
+	Option ENABLE_RUSSIAN "Force Russian to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Russian 1"
+	}
+	Option DISABLE_RUSSIAN "Force Russian to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Russian 0"
+	}
+
+	Option ENABLE_POLISH "Force Polish to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Polish 1"
+	}
+	Option DISABLE_POLISH "Force Polish to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Polish 0"
+	}
+
+	Option ENABLE_CHINESE_SIMPLIFIED "Force ChineseSimplified to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented ChineseSimplified 1"
+	}
+	Option DISABLE_CHINESE_SIMPLIFIED "Force ChineseSimplified to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented ChineseSimplified 0"
+	}
+
+	Option ENABLE_TURKISH "Force Turkish to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Turkish 1"
+	}
+	Option DISABLE_TURKISH "Force Turkish to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Turkish 0"
+	}
+
+	Option ENABLE_PORTUGUESE "Force Portuguese to be enabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Portuguese 1"
+	}
+	Option DISABLE_PORTUGUESE "Force Portuguese to be disabled"
+	{
+		IfSet SHAREDCOMMANDLINE None "-SetLocaleIsImplemented Portuguese 0"
+	}
+
+}
+
+List AUTO_SETTINGS
+{
+	Option ALLOW_LOCAL_LOGINS "Always allow local users to log in, even with no account"
+	{
+		IfSet INIT_AUTOSETTING, None "SkipPermissionsForTrustedClient 1"
+	}
+}
+
+# Alex says COMMANDLINES_1 and COMMANDLINES_2 are obsolete, but are left here so that people who have existing
+#  configs don't break.  You should not need to add new stuff to these.
+List COMMANDLINES_1
+{
+	Option CONTROLLER_CMDLINE "Extra stuff to put in the controller command line"
+	{
+		IfSet SERVERTYPECOMMANDLINE Controller "$$"
+	}
+
+	TypeForCommandLines LogServer
+	TypeForCommandLines TransactionServer
+	TypeForCommandLines ObjectDB
+	TypeForCommandLines CloneObjectDB
+	TypeForCommandLines LoginServer
+	TypeForCommandLines GameServer
+	TypeForCommandLines MapManager
+	TypeForCommandLines UGCDataManager
+}
+
+List COMMANDLINES_2
+{
+	TypeForCommandLines ChatServer
+	TypeForCommandLines GuildServer
+	TypeForCommandLines TeamServer
+	TypeForCommandLines QueueServer
+	TypeForCommandLines AccountProxyServer
+	TypeForCommandLines WebRequestServer
+	TypeForCommandLines HeadShotServer
+	TypeForCommandLines AccountServer
+	TypeForCommandLines MasterControlProgram
+	TypeForCommandLines LogParser
+}
+
+ServerTypeSpecificList
+{
+	Option NO_NORMAL_LAUNCH "Don't launch $SERVERTYPE$ at startup even if you normally would"
+	{
+		IfSet DONOTHING None ""
+	}
+
+	Option LAUNCH "Launch $SERVERTYPE$ at startup even if you normally wouldn't"
+	{
+		IfSet DONOTHING None ""
+	}
+
+	Option LAUNCH_COUNT "Launch this many of $SERVERTYPE$ at startup"
+	{
+		IfSet DONOTHING None "$$"
+	}
+
+	Option HIDE_CONSOLES "Hide all $SERVERTYPE$ console windows"
+	{
+		IfSet DONOTHING None ""
+	}
+
+	Option SHOW_CONSOLES "Show all $SERVERTYPE$ console windows"
+	{
+		IfSet DONOTHING None ""
+	}
+
+	Option ALL_CMDLINES "Extra command line stuff for all launchings of $SERVERTYPE$"
+	{
+		IfSet SERVERTYPECOMMANDLINE None "$$"
+	}
+
+	Option 1ST_CMDLINE "Extra command line stuff for the first launching of $SERVERTYPE$"
+	{
+		IfSet FIRSTSERVEROFTYPECOMMANDLINE None "$$"
+	}
+}

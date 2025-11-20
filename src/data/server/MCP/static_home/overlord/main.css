@@ -1,0 +1,150 @@
+/* Basic styles. */
+* {
+	padding: 0;
+	margin: 0;
+	font-weight: bold;
+	font-family: Helvetica;
+}
+body {
+	text-align: center;
+	overflow: hidden;
+	min-width: 800px;
+	color: black;
+}
+a {
+	color: #733;
+	text-decoration: none;
+}
+a:hover {
+	text-decoration: underline;
+}
+option {
+	padding: 0 5px;
+}
+
+/* Page header. */
+header {
+	background-color: #DDD;
+	width: 100%;
+	font-size: 12px;
+}
+header:nth-child(3) {
+	border-bottom: 1px solid black;
+}
+header select, header span, header a {
+	font-size: 20px;
+}
+header fieldset {
+	display: inline-block;
+	padding: 5px 10px 10px;
+	vertical-align: top;
+	border: 0;
+}
+header label {
+	display: block;
+	background-color: #CCC;
+	padding-top: 2px;
+}
+#cluster {
+	width: 210px;
+}
+#shard {
+	width: 135px;
+}
+header select, header span {
+	border: 2px solid #CCCCCC;
+}
+header span {
+	background-color: white;
+	display: inline-block;
+	text-align: center;
+}
+#status {
+	width: 175px;
+}
+#patched, #primed {
+	width: 269px;
+}
+.language {
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+#language {
+	width: 110px;
+}
+
+/* Command tabs. */
+header a {
+	background-color: #AAA;
+	color: black;
+	border: 1px solid black;
+	border-bottom: 0;
+	border-radius: 15px 15px 0 0;
+	display: inline-block;
+	margin: 0 10px;
+	padding: 5px 0px;
+	width: 125px;
+}
+header a[data-ready="true"] {
+	background-color: #AAF;
+}
+header a.selected {
+	border-bottom: 1px solid white;
+	margin-bottom: -1px;
+	background-color: white;
+}
+
+/* Command body. */
+section {
+	padding: 10px;
+	width: 800px;
+	margin: auto;
+	text-align: left;
+}
+section label {
+	padding: 5px;
+	width: 300px;
+	text-align: right;
+	display: inline-block;
+	vertical-align: top;
+}
+section, section input, section select, section textarea {
+	font-size: 16px;
+}
+section input[type="button"] {
+	padding: 0 5px;
+	margin: 1px;
+}
+section input[type="text"], section select, section textarea {
+	padding: 2px;
+	margin: 2px;
+	min-width: 130px;
+}
+section select[name="units"] {
+	width: 159px;
+}
+section p {
+	text-align: center;
+	padding: 5px;
+}
+
+/* Page footer. */
+footer {
+	text-align: center;
+	color: white;
+	background-color: #036;
+	white-space: nowrap;
+	padding: 5px;
+	margin-bottom: 10px;
+	position: absolute;
+	bottom: 0;
+	left: 0;
+	width: 100%;
+}
+footer span {
+	max-width: 640px;
+}
+footer a {
+	color: white;
+}

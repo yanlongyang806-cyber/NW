@@ -1,0 +1,84 @@
+<!-- Mobile Only Back button -->
+<div class="mobileOnly sticky-mobile-back-button">
+	<div class="main-buttons">
+		<a class="nav-button mobile-back-button" onclick="client.tooltipClear(this);">
+			<span class="cap-left"></span>
+			<span class="cap-right"></span>
+			<span class="nav-icon"></span>
+		</a>
+	</div>
+	<hr />
+</div>
+
+<div class="mobile-tooltip">
+
+	<div class="tooltip">
+		<!-- The tooltip information div -->
+		<div id="tooltip-content" class="item"><div class="loading-image"></div></div>
+
+		<!-- Context menu buttons -->
+		<div class="desktopOnly" data-if="{$isDesktop} && {$here()}">
+			<div class="tooltip-menu">
+				<h3>Select Action:</h3>
+				<div data-set-class="input-field button menu {.sellable.$choose( ,disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.sellable.$choose( ,disabled)}" data-set-data-url-silent="/inventory/item-sell?item={$here()}">Sell to Vendor</button>
+				</div>
+				<div data-set-class="input-field button menu {.discardable.$choose( ,disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.discardable.$choose( ,disabled)}" data-set-data-url-silent="/inventory/item-discard?item={$here()}">Discard</button>
+				</div>
+
+				<div data-set-class="input-field button menu {.itemdef.type.$map(RewardPack:&nbsp, *: disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.itemdef.type.$map(RewardPack:&nbsp, *: disabled)}" data-set-data-url-silent="/inventory/item-open?item={$here()}">Open</button>
+				</div>
+			</div>
+		</div>
+
+		<!-- Context menu buttons -->
+		<span class="mobileOnly">
+
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button onclick="client.tooltipClear(this);">Back</button>
+			</div>
+
+			<div id="tooltip-menu" class="mobileOnly" data-if="!{$isDesktop} && {$here()}">
+				<hr />
+				<h4>Select an Action:</h4>
+
+				<div data-set-class="input-field button light {.sellable.$choose( ,disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.sellable.$choose( ,disabled)}" data-set-data-url-silent="/inventory/item-sell?item={$here()}">Sell to Vendor</button>
+				</div>
+				<div data-set-class="input-field button light {.discardable.$choose( ,disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.discardable.$choose( ,disabled)}" data-set-data-url-silent="/inventory/item-discard?item={$here()}">Discard</button>
+				</div>
+
+				<div data-set-class="input-field button light {.itemdef.type.$map(RewardPack:&nbsp, *: disabled)}">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-class="{.itemdef.type.$map(RewardPack:&nbsp, *: disabled)}" data-set-data-url-silent="/inventory/item-open?item={$here()}">Open</button>
+				</div>
+
+			</div>
+		</span>
+
+	</div>
+</div>
+

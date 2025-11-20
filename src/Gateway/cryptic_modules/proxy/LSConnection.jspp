@@ -1,0 +1,280 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// LSConnection
+//
+//
+var fs = require('fs');
+var crypto = require('crypto');
+
+var g_config = require('cryptic/configure')();
+
+var cutils = require('cryptic/cutils');  // for cutil.inherits
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+
+var CrypticProtocolConnection = require('cryptic/CrypticProtocolConnection');
+var Packet = require('cryptic/packet');
+var EBuffer = require('cryptic/EBuffer');
+
+var TOLOGIN_SET_PLAYER_TYPE = 2;
+var TOLOGIN_GET_POSSIBLE_CHARACTERS = 3;
+var TOLOGIN_ONETIMECODE = 65;
+var TOLOGIN_GET_POSSIBLE_CHARACTERS_JSON = 67;
+var TOLOGIN_CHOOSE_CHARACTER_BY_CONTAINER_ID = 68;
+var TOLOGIN_SET_REQUEST_IP = 70;
+var TOLOGIN_LOGIN2_BEGIN_LOGIN = 71;
+var TOLOGIN_LOGIN2_ONETIMECODE = 74;
+
+var LOGINSERVER_TO_CLIENT_LOGIN_FAILED = 15;
+var LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS = 17;
+var LOGINSERVER_TO_CLIENT_SELECT_PLAYERTYPE = 31;
+var LOGINSERVER_TO_CLIENT_REQUIRE_ONETIMECODE = 64;
+var LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS_JSON = 66;
+var LOGIN2_TO_CLIENT_CHARACTER_SELECTION_DATA = 70;
+var LOGIN2_TO_CLIENT_LOGIN_FAILED = 71;
+
+///////////////////////////////////////////////////////////////////////////
+
+var LSConnection = function LSConnection()
+{
+	dbg.trace();
+
+	CrypticProtocolConnection.call(this);
+
+	this.sentOneTimeCode = false;
+}
+
+cutils.inherits(LSConnection, CrypticProtocolConnection);
+
+///////////////////////////////////////////////////////////////////////////
+
+LSConnection.prototype.onConnected = function onConnected()
+{
+	dbg.trace();
+}
+
+LSConnection.prototype.onDisconnected = function onDisconnected()
+{
+	dbg.trace();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LSConnection.prototype.onPacket = function onPacket(pkt)
+{
+	dbg.trace();
+
+	var cmd = pkt.readUInt8();
+	var msg;
+	var fn;
+	switch(cmd)
+	{
+		case LOGINSERVER_TO_CLIENT_SELECT_PLAYERTYPE:
+			dbg.trace('LOGINSERVER_TO_CLIENT_SELECT_PLAYERTYPE');
+			this.onSelectPlayerType(pkt);
+			break;
+
+		case LOGINSERVER_TO_CLIENT_LOGIN_FAILED:
+		case LOGIN2_TO_CLIENT_LOGIN_FAILED:
+			dbg.trace('LOGINSERVER_TO_CLIENT_LOGIN_FAILED');
+			this.onLoginFailed(pkt);
+			break;
+
+		case LOGINSERVER_TO_CLIENT_REQUIRE_ONETIMECODE:
+			dbg.trace('LOGINSERVER_TO_CLIENT_REQUIRE_ONETIMECODE');
+			this.emit('LoginServer_RequestOneTimeCode');
+			break;
+
+		case LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS:
+			dbg.trace('LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS');
+
+			pkt = this.startPacket(TOLOGIN_GET_POSSIBLE_CHARACTERS_JSON);
+			pkt.endPacket();
+
+			break;
+
+		case LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS_JSON:
+			dbg.trace('LOGINSERVER_TO_CLIENT_POSSIBLE_CHARACTERS_JSON');
+			this.onPossibleCharactersJSON(pkt);
+			break;
+
+		case LOGIN2_TO_CLIENT_CHARACTER_SELECTION_DATA:
+			dbg.trace('LOGIN2_TO_CLIENT_CHARACTER_SELECTION_DATA');
+			this.onLogin2CharacterSelectionData(pkt);
+			break;
+
+		///////
+
+		default:
+			pkt.rewind();
+			dbg.trace('emit packet   command = ', cmd);
+			this.emit('packet', pkt);
+			break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LSConnection.prototype.sendLogin2BeginLogin = function(idAccount, idToken, idMachine)
+{
+	var pkt = this.startPacket(TOLOGIN_LOGIN2_BEGIN_LOGIN);
+	pkt.sendBits(1, 1);  //notimeout
+	pkt.sendUInt32(0);   // lang id
+	pkt.sendString('{ticketID}');
+	pkt.sendUInt32(+idAccount);
+	pkt.sendUInt32(+idToken);
+	pkt.sendString(idMachine);
+	pkt.sendUInt32(1, 0); // crc
+	pkt.sendString(''); // affiliate string
+
+	pkt.endPacket();
+}
+
+LSConnection.prototype.sendSetRequestIP = function(ipStr)
+{
+	dbg.trace();
+
+	var pkt = this.startPacket(TOLOGIN_SET_REQUEST_IP);
+	pkt.sendUInt32(cutils.ipStringToInt(ipStr));
+	pkt.endPacket();
+}
+
+LSConnection.prototype.sendOneTimeCode = function(code, name)
+{
+	dbg.trace();
+
+	var pkt = this.startPacket(g_config.useLogin2 ? TOLOGIN_LOGIN2_ONETIMECODE : TOLOGIN_ONETIMECODE);
+	pkt.sendString(code);
+	pkt.sendString(name);
+	pkt.endPacket();
+
+	this.sentOneTimeCode = true;
+
+}
+
+LSConnection.prototype.requestGetPossibleCharacters = function(idAccount, idTicket, idMachine)
+{
+	dbg.trace();
+
+	var pkt = this.startPacket(TOLOGIN_GET_POSSIBLE_CHARACTERS);
+	pkt.sendBits(1, 1);  //notimeout
+	pkt.sendUInt32(0); // langid  0=default or english?
+	pkt.sendString('{ticketID}');
+	pkt.sendUInt32(+idAccount);
+	pkt.sendUInt32(+idTicket);
+	pkt.sendString(idMachine);
+	pkt.sendBits(1, 0); // isbuildname
+	pkt.sendString('OVERRIDE'); // version name.
+		// We always OVERRIDE since we're trusted, and
+		// frankenbuilds change the version to not match.
+	pkt.sendString(''); // affiliate string
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+LSConnection.prototype.onLoginFailed = function(pkt)
+{
+
+	var reason = pkt.readString();
+	dbg.trace(reason);
+	this.emit('LoginServer_LoginFailed', { reason: reason });
+}
+
+LSConnection.prototype.onSelectPlayerType = function()
+{
+	dbg.trace();
+
+	// Only GMs and devs get this. We'll auto-reply for now.
+	var pkt = this.startPacket(TOLOGIN_SET_PLAYER_TYPE);
+	pkt.sendUInt32(2); // Premium account
+	pkt.endPacket();
+}
+
+LSConnection.prototype.onPossibleCharactersJSON = function(pkt)
+{
+	dbg.trace();
+
+	var obj;
+	var json = pkt.readString();
+	var terms = pkt.readUInt32();
+	var shardInfo = pkt.readString();
+	var accessLevel = pkt.readUInt32();
+	var publicaccountname = pkt.readString();
+
+	try // to protect us from bad JSON
+	{
+		obj = JSON.parse(json);
+	}
+	catch (e)
+	{
+		log.error('Invalid JSON from server', json);
+		fs.writeFile('lsbad.json', json);
+	}
+
+	obj.publicaccountname = publicaccountname;
+	this.emit('LoginServer_PossibleCharacters', obj);
+}
+
+LSConnection.prototype.onLogin2CharacterSelectionData = function(pkt)
+{
+	dbg.trace();
+
+	var obj;
+	var json = pkt.readString();
+
+	try // to protect us from bad JSON
+	{
+		obj = JSON.parse(json);
+	}
+	catch (e)
+	{
+		log.error('Invalid JSON from server', json);
+		fs.writeFile('lsbad.json', json);
+	}
+
+	//
+	// BEGIN HACKING
+	//
+
+	// Not needed/private
+	delete(obj.privateaccountname);
+	delete(obj.hgameaccountdata);
+
+	// This is just an irritating indirection, so I'm hoisting it.
+	if(obj.characterchoices && obj.characterchoices.characterchoices)
+	{
+		obj.choices = obj.characterchoices.characterchoices;
+
+		// Dont need this
+		delete(obj.characterchoices);
+
+		// Normalize what the field is for character name (Login2 and old-style differ)
+		var i;
+		for(i = 0; i < obj.choices.length; i++)
+		{
+			// Clean out private things
+			delete(obj.choices[i].accountid);
+			delete(obj.choices[i].privaccountname);
+
+			obj.choices[i].id = obj.choices[i].containerid;
+			obj.choices[i].name = obj.choices[i].savedname;
+		}
+	}
+
+	//
+	// END HACKING
+	//
+
+	this.emit('LoginServer_PossibleCharacters', obj);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = LSConnection;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

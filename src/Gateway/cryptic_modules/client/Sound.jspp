@@ -1,0 +1,169 @@
+'use strict';
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Sound
+//
+// This module assumes you have files that exist with the names given
+// to the init function.  They are also expected to exist for each
+// supported format in the listed 'SOUND_FORMATS' below.
+//
+// Example:
+//   If you are calling Sound.init({'hover', 4});
+//   It is expected that you have the following files:
+//     - hover.mp3
+//     - hover.ogg
+//     - hover.wav
+//   Inside the web accessable directory named in 'SOUND_DIRECTORY'
+//   Ex: /sounds/hover.mp3  <-- Needs to be a Valid URL
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// Local Constants
+var SOUND_DIRECTORY = '/sounds/'; // Web folder
+var SOUND_FORMATS = {
+	'.mp3':'audio/mpeg',
+	'.ogg':'audio/ogg',
+	'.wav':'audio/wav'
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+function Sound(basedir, formats)
+{
+	this.basedir = basedir || SOUND_DIRECTORY;
+	this.formats = formats || SOUND_FORMATS;
+
+	this.clips = {};
+	this.ext = false;
+	this.recycle = false;
+
+	// Only load the supported file format
+	// If it supports 'Audio' at all..
+	// This doesn't exist in desktop Safari if Quicktime isn't installed.
+	// And mobile Safari doesn't cache any audio, so there's a giant delay
+	//   before playing. Thus they are unsupported.
+	if(!window.Audio || navigator.userAgent.match(/(iphone|ipod|ipad)/i))
+	{
+		this.ext = false; // no sound support
+	}
+	else
+	{
+		var test = new Audio('');
+
+		// Only init if we have a supported audio format
+		for (var ext in this.formats)
+		{
+			if(test.canPlayType(this.formats[ext]))
+			{
+				this.ext = ext; // Found supported audio format!
+				break;
+			}
+		}
+	}
+
+	return this;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Initialize the sound player, and preload sounds.
+//
+// Note: You incur one request per stack entry per sound.
+//       This is done in the init step to pre-load sounds
+//       for play.
+//
+// - soundList:  Object
+//   { 'soundFileName': stackSize }
+//
+// - recyceSounds: Boolean
+//   Whether or not to inturrupt sounds that may
+//   already be in progress in the stack and replay them.
+//
+Sound.prototype.init = function(soundList, recycleSounds)
+{
+	if(this.ext)
+	{
+		for(var soundName in soundList)
+		{
+			if(!this.clips[soundName])
+			{
+				this.clips[soundName] = [];
+			}
+
+			for(var i = 0; i <= soundList[soundName]; i++)
+			{
+				this.clips[soundName][i] = new Audio(this.basedir + soundName + this.ext);
+			}
+		}
+	}
+
+	if(recycleSounds)
+	{
+		this.recycle = true;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+Sound.prototype.play = function(soundName)
+{
+	// If supported audio format not found, bail.
+	if(!this.ext)
+	{
+		return;
+	}
+
+	var oldest = null
+	var audio, i;
+
+	for (i = this.clips[soundName].length-1; i >= 0; i--)
+	{
+		audio = this.clips[soundName][i];
+		if((!audio.paused || !audio.ended) && audio.currentTime === 100)
+		{
+			// Already have one that we just started; why bother
+			return;
+		}
+	}
+
+	for (i = this.clips[soundName].length-1; i >= 0; i--)
+	{
+		audio = this.clips[soundName][i];
+
+		if(audio.paused || audio.ended)
+		{
+			try {
+				audio.currentTime = 0;
+			}
+			catch(e) {
+				// iOS fails because it hasn't loaded anything yet and catastrophically
+				//   fails when you ask for the time in that case.
+				// I hate you, iOS! You just have to be different.
+			}
+
+			audio.play();
+			return;
+		}
+		else
+		{
+			if(!oldest || oldest.currentTime < audio.currentTime)
+			{
+				oldest = audio;
+			}
+		}
+	}
+
+	if(this.recycle)
+	{
+		oldest.pause();
+		oldest.currentTime = 0;
+		oldest.play();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+module.exports = Sound;
+
+// End of File

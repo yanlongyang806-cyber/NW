@@ -1,0 +1,1 @@
+ADD %Result%, %A%, %B%;

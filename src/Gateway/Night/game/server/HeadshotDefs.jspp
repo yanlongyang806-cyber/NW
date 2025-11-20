@@ -1,0 +1,97 @@
+'use strict';
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+
+var defs = {
+	'body' : {
+		containerTypeName: 'ENTITYPLAYER',
+
+		defaultImageRedirect: '/img/shot/default_body.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Gateway_Body',
+			jpgSizeX: '512',
+			jpgSizeY: '512',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+			gmObj.crop(512, 512, 0, 0);
+		}
+	},
+
+	/////////////////////////////////////////////////////////////////////
+
+	'body_fashion' : {
+		defaultImageRedirect: '/img/shot/default_body.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Gateway_Body',
+			jpgSizeX: '512',
+			jpgSizeY: '512',
+			transparent: '1'
+		},
+
+		costumeIndex: 1,
+
+		finalizeImage: function(gmObj) {
+			gmObj.crop(512, 512, 0, 0);
+		}
+	},
+
+	/////////////////////////////////////////////////////////////////////
+
+	'head' : {
+		containerTypeName: 'ENTITYPLAYER',
+
+		defaultImageRedirect: '/img/shot/default_head.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Gateway_Head',
+			jpgSizeX: '128',
+			jpgSizeY: '128',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+		}
+	},
+
+	'costume' : {
+		containerTypeName: 'ENTITYCRITTER',
+
+		defaultImageRedirect: '/img/shot/default_head.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Gateway_Head',
+			jpgSizeX: '128',
+			jpgSizeY: '128',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+		}
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+
+var hs = require('cryptic/proxy/Headshots');
+hs.setDefinitions(defs);
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

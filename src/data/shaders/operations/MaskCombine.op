@@ -1,0 +1,17 @@
+OperationDef
+	Name "MaskCombine" // Name of the operation
+	Description "Combines a TintColorMap with a RGBA value to get a final weight (Where the A in the color affects the Black in the TintColorMap)"
+	Type ADVANCED
+
+	Input: TintColorMap, "Black: Color0, R: Color1, G: Color2, B: Color3, A: ignored"
+	Input: Weight, "R: Color1, G: Color2, B: Color3, Alpha: Color0"
+
+	Output
+		Name Result
+		Description "Weighted result of combining all channels of the TintColorMap with their weights"
+		Float 4
+		AlphaFrom Weight
+	EndOutput
+
+EndOperationDef
+

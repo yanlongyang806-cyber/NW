@@ -1,0 +1,816 @@
+'use strict';
+
+var clientAuction = module.exports;
+
+var dbg = require('cryptic/dbg');
+var Synchro = require('cryptic/synchro');
+var content = require('cryptic/client/contentHelpers');
+var buildCommand = require('cryptic/commands/buildCommand');
+
+var stencils = require(''+'/game/client/Stencils.js');
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+
+
+
+// Search params will be stored here for retrieval when returning to the page
+// These will be used as default values when the page loads
+var s_auctionSearch = {
+	'MinLevel': 0,
+	'MaxLevel': 99,
+	'Quality': -1,
+	'Search': '',
+	'Category': '',
+	'Class': '',
+	'GemType': '',
+	'NumberOfSlots': 0,
+	'Stats': ''
+};
+
+var s_searchTable = false;
+
+// Get the bundle of all the category names
+clientAuction.auctionInit = function(ent)
+{
+	if(client.dataModel.model.ent.main._gotAuctionBundle)
+	{
+		return;
+	}
+	else
+	{
+		client.dataModel.fetchAuctionSettingsBundle()
+	}
+}
+
+// bind elememts etc when the stencil updates.
+clientAuction.auctionBrowsePageInit = function()
+{
+	$(document).ready(function() {
+		setAuctionSearchDefaults();
+
+		// selecting categories in mobile
+		$("div.mobileOnly select[name='Categories']").on('change', function() {
+			s_categorySelected = $(this).val();
+			auctionHouseAdvancedSearchUpdate(s_categorySelected);
+		})
+
+		// Selecting categories in desktop
+		$(".tabValue").on('click', function() {
+			s_categorySelected = $(this).attr('data-tab-value');
+			auctionHouseAdvancedSearchUpdate(s_categorySelected);
+		});
+	});
+
+	this.handleCheckBox = function(cbox) {
+		// The only check box in AH is the 'Usable by me' checkbox.
+		// If we ever add a checkbox, this will be a problem.
+		if(cbox.is(':checked'))
+		{
+			$('select[name="class"]').prop('disabled', 'disabled').val(client.dataModel.model.ent.main.classtype);
+			$('input[name="maxlevel"]').prop('disabled', 'disabled').val(client.dataModel.model.ent.main.levelui);
+		}
+		else
+		{
+			$('select[name="class"]').prop('disabled', false).val('');
+			$('input[name="maxlevel"]').prop('disabled', false).val('');
+		}
+	};
+}
+
+// At the moment this is only ever called from the auction search page
+// Stencil: content-auctionhouse-browse.html
+clientAuction.requestAuctionSearch = function()
+{
+	// Names have to match ParamsAuctionSearch in the C code
+	s_auctionSearch = {
+		'MinLevel': (parseInt($("input[name='minlevel']:visible").val(),10)) || 0,
+		'MaxLevel':(parseInt($("input[name='maxlevel']:visible").val(),10)) || 0,
+		'Quality': (parseInt($("select[name='quality']:visible").val(),10)) || -1,
+		'Search': ($("input[name='search']:visible").val()) || '',
+		'Class': ($("select[name='class']:visible").val()) || '',
+		'GemType': ($("select[name='EnchantmentType']:visible").val()) || '',
+		'NumberOfSlots': (parseInt($("select[name='EnchantmentSlots']:visible").val(),10)) || 0
+	}
+
+	s_auctionSearch['Stats'] = (($("select[name='stat1']:visible").val()) || '') + "%" + (($("select[name='stat2']:visible").val()) || '') + "%" + (($("select[name='stat3']:visible").val()) || '');
+
+	if(client.isDesktop())
+	{
+		s_auctionSearch['Category'] = s_categorySelected;
+	}
+	else
+	{
+		s_auctionSearch['Category'] = $("select[name='Categories'] option:selected").val();
+	}
+
+	// Clamp to valid/safe values.
+	coerceAuctionSearchParams();
+
+	client.dataModel.cmgr.invalidateContainer('AuctionSearch', 'search');
+	client.dataModel.cmgr.requestAuctionSearch('search', s_auctionSearch, function() {});
+
+	client.analyticTick('User:AuctionSearch');
+
+	return false;
+}
+
+// Coerce auction search params into valid/safe ranges
+function coerceAuctionSearchParams()
+{
+	// Minimum Level
+	if(s_auctionSearch['MinLevel'] < 0)
+	{
+		s_auctionSearch['MinLevel']	= 0;
+	}
+
+	// Maximum Level
+	if(s_auctionSearch['MaxLevel'] > 99)
+	{
+		s_auctionSearch['MaxLevel']	= 99;
+	}
+
+	// Make sure min level is never greater than max level
+	if(s_auctionSearch['MinLevel'] > s_auctionSearch['MaxLevel'])
+	{
+		s_auctionSearch['MinLevel'] = 0;
+	}
+
+	// Item Quality
+	if(s_auctionSearch['Quality'] < -1)
+	{
+		s_auctionSearch['Quality']	= -1;
+	}
+	if(s_auctionSearch['Quality'] > 20)
+	{
+		s_auctionSearch['Quality'] = 20;
+	}
+
+	// Search
+	s_auctionSearch['Search'] = s_auctionSearch['Search'].slice(0, 50);
+
+	// Class
+	s_auctionSearch['Class'] = s_auctionSearch['Class'].slice(0, 50);
+
+	// GemType
+	s_auctionSearch['GemType'] = s_auctionSearch['GemType'].slice(0, 50);
+
+	// Number of Slots
+	if(s_auctionSearch['NumberOfSlots'] < -1)
+	{
+		s_auctionSearch['NumberOfSlots'] = -1;
+	}
+	if(s_auctionSearch['NumberOfSlots'] > 32)
+	{
+		s_auctionSearch['NumberOfSlots'] = 32;
+	}
+
+	// Stats
+	s_auctionSearch['Stats'] = s_auctionSearch['Stats'].slice(0, 127);
+
+	// Category
+	s_auctionSearch['Category'] = s_auctionSearch['Category'].slice(0, 127);
+}
+
+clientAuction.requestAuctionOwnedLots = function()
+{
+	s_auctionSearch = {
+		'MinLevel': 0,
+		'MaxLevel': 99,
+		'Quality': -1,
+		'Search': '',
+		'Category': 'All',
+		'OwnedLotsOnly': 1,
+		'BidLotsOnly': 0
+	}
+
+	client.dataModel.cmgr.invalidateContainer('AuctionSearch', 'ownedLots');
+	client.dataModel.cmgr.requestAuctionSearch('ownedLots', s_auctionSearch, function() {});
+
+	return false;
+}
+
+clientAuction.requestAuctionBidLots = function()
+{
+	s_auctionSearch = {
+		'MinLevel': 0,
+		'MaxLevel': 99,
+		'Quality': -1,
+		'Search': '',
+		'Category': 'All',
+		'OwnedLotsOnly': 0,
+		'BidLotsOnly': 1
+	}
+
+	client.dataModel.cmgr.invalidateContainer('AuctionSearch', 'bidLots');
+	client.dataModel.cmgr.requestAuctionSearch('bidLots', s_auctionSearch, function() {});
+
+	return false;
+}
+
+function setAuctionItem(itemId)
+{
+	var tradebag = client.dataModel.model.ent.main.inventory.tradebag;
+
+	if((tradebag.length > 0) && (itemId))
+	{
+		var i;
+
+		for(i=0;i<tradebag.length;i++)
+		{
+			if(tradebag[i].uid == itemId)
+			{
+				client.dataModel.model.tradeSelected = tradebag[i];
+
+				content.setFromStencil('#consignmentItem', 'content-auctionItem');
+				return;
+			}
+		}
+	}
+
+	client.dataModel.model.tradeSelected = null;
+	content.setFromStencil('#consignmentItem', 'content-auctionItem');
+}
+
+// Setup the auction search from defaults.
+var s_categorySelected = '';
+function setAuctionSearchDefaults()
+{
+	$("select[name='quality']").val(s_auctionSearch['Quality']);
+	$("input[name='search']").val(s_auctionSearch['Search']);
+	s_categorySelected = 'Equipment';
+}
+
+function auctionHouseAdvancedSearchUpdate(tab)
+{
+	tab = tab.substring(0,9);
+	if(tab === "Equipment")
+	{
+		$('.auction-search-row-3').show();
+		$('.auction-search-row-4').show();
+		$('.auction-search-row-5').hide();
+	}
+	else if(tab === "Companion")
+	{
+		$('.auction-search-row-3').hide();
+		$('.auction-search-row-4').hide();
+		$('.auction-search-row-5').show();
+	}
+	else
+	{
+		$('.auction-search-row-3').hide();
+		$('.auction-search-row-4').hide();
+		$('.auction-search-row-5').hide();
+	}
+}
+
+// ---------------------------------------------------------------------------
+
+// Setup the auction search data table. (browse tab)
+clientAuction.auctionSearchDataTable = function()
+{
+	// AUCTION BROWSE TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableAuctionBrowse').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 20,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
+			],
+			'aaSorting': [[0, 'asc']]
+		});
+	});
+}
+
+
+clientAuction.auctionSearchDataTable = function()
+{
+	$(document).ready(function _professions_ready() {
+		var dataModel = client.dataModel;
+
+		if(!dataModel.model.auctionList || !dataModel.model.auctionList.search)
+			return;
+
+		var entries = dataModel.model.auctionList.search.list.auctionlots;
+		
+		if(!entries)
+			return;
+
+		var sync = new Synchro();
+		var aaData = [];
+		for(var i = 0; i < entries.length; i++)
+		{
+			if(typeof entries[i] === 'undefined')
+				continue;
+
+			var lot = [
+				'', // 0 - name - delayed lookup
+				entries[i].slots[0].count,
+				entries[i].ownername,
+				entries[i].expiretime,
+				entries[i].currentbid,
+				entries[i].price,
+				'<div data-set-class="single-row-button"></div>', // 6 - HTML for desktop cell - delayed lookup
+				'<div data-set-class="single-row-button"></div>' // 7 - HTML for mobile cell - delayed lookup
+			];
+
+			/*jshint loopfunc:true */
+			(function(lot, entry, idx) {
+				sync.add(function(done) {
+					dataModel.resolvePath('.slots[0].itemdef.displaynamemsg.str', entry, function(e, r) {
+						lot[0] = r;
+						done();
+					});
+				});
+				sync.add(function(done) {
+					dataModel.render(stencils['content-auctionhouse-browse-lot-desktop'],
+						'content-auctionhouse-browse-lot-desktop',
+						'.auctionList.search.list.auctionlots['+idx+']',
+						function(e, r) {
+							lot[6] = r.join('');
+//							console.log("Done Desktop! "+idx+"!");
+							done();
+						});
+				});
+				sync.add(function(done) {
+					dataModel.render(stencils['content-auctionhouse-browse-lot-mobile'],
+						'content-auctionhouse-browse-lot-mobile',
+						'.auctionList.search.list.auctionlots['+idx+']',
+						function(e, r) {
+							lot[7] = r.join('');
+//							console.log("Done Mobile! "+idx+"!");
+							done();
+						});
+				});
+			})(lot, entries[i], i);
+			/*jshint loopfunc:false */
+
+			aaData.push(lot);
+		}
+
+		sync.waitForAll(function() {
+			s_searchTable = undefined;
+			try
+			{
+				$('table#gatewayTableAuctionBrowse').dataTable({
+					'bLengthChange': false, // User cannot select the length of the table
+					'iDisplayLength': 20,
+					'oLanguage': client.dataTableLanguage,
+					// The data for the table, filled in above
+					'aaData': aaData,
+					'aoColumns': [
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'string' },
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'string' },
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },
+						{ 'bVisible': false,  'bSearchable': false, 'sType': 'numeric' },
+						{ 'bVisible': true,   'bSearchable': false, 'sType': 'html', 'sClass': 'desktopOnly single-row-cell' },
+						{ 'bVisible': true,   'bSearchable': false, 'sType': 'html', 'sClass': 'mobileOnly single-row-cell' }
+					],
+
+					// Default sort
+					'aaSorting': [[0, 'asc']],
+
+					'fnInitComplete': function _professions_fnInitComplete(oSettings) {
+//						console.log('Complete!');
+						s_searchTable = this;
+					}
+				});
+
+//				console.log("Push data to table!");
+			}
+			catch (e)
+			{
+				if(e.message !== "Cannot read property 'parentNode' of null")
+				{
+					dbg.error(e.message, e);
+				}
+			}
+
+			client.onAfterSetStencil();
+			client.startCountdowns();
+		});
+	});
+}
+
+// ---------------------------------------------------------------------------
+
+clientAuction.auctionBidsDataTable = function()
+{
+	// AUCTION BIDS TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableAuctionBids').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 20,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
+			],
+			'aaSorting': [[0, 'asc']]
+		});
+	});
+}
+
+// ---------------------------------------------------------------------------
+
+clientAuction.auctionSellDataTable = function()
+{
+	// AUCTION CONSIGNMENTS TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableAuctionOwned').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 20,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				null,
+				null,
+				null,
+				null
+			],
+			'aaSorting': [[0, 'asc']]
+		});
+	});
+}
+
+// ---------------------------------------------------------------------------
+
+var s_auctionSelectedItem, s_auctionSelectedLot;
+
+// When an auction search item is clicked.
+clientAuction.auctionSearchItemSelected = function(bid, buyout, itemIndex, icon, itemName, qty, sellerName, lotName)
+{
+	s_auctionSelectedItem = itemIndex;
+	s_auctionSelectedLot = lotName;
+
+	if(buyout)
+	{
+		$(".auctionBuyoutButton").removeClass('disabled');
+	}
+	else
+	{
+		$(".auctionBuyoutButton").addClass('disabled');
+	}
+
+	if(bid > 0)
+	{
+		$(".auctionBidButton").removeClass('disabled');
+		$(".auctionBidInput").removeClass('disabled').find('input:first').removeAttr('disabled');
+	}
+	else
+	{
+		$(".auctionBidButton").addClass('disabled');
+		$(".auctionBidInput").addClass('disabled').find('input:first').attr('disabled','disabled');
+	}
+
+	$('.single-row-button')
+		.removeClass('selected')
+		.filter("[data-index='" + itemIndex + "']")
+		.addClass('selected');
+
+	// Set the internal details page for display in case we need it.
+	$('#auctionDetailsIcon').attr('src', icon);
+	$('#auctionDetailsItemName').text(itemName);
+	$('#auctionDetailsQuantity').text(qty);
+	$('#auctionDetailsSellerName').text(sellerName);
+	$('#auctionDetailsBid').text(bid);
+	$('#auctionDetailsBuyout').text(buyout);
+
+	// prefill both inputs with the minimum bid.
+	if(bid>0)
+	{
+		$("input[name='bidAmount']").val(bid);
+	}
+	else
+	{
+		$("input[name='bidAmount']").val('');
+	}
+
+	$("input[name='detailsBidAmount']").val(bid);
+
+	if(!client.isDesktop())
+	{
+		$('.auctionResults, .mobileBackButton').addClass('mobileHide');
+		$('.auctionDetails').addClass('mobileShow');
+		$('.auctionDetailsBackButton').on('click',
+			function() {
+				$('.auctionResults, .mobileBackButton').removeClass('mobileHide');
+				$('.auctionDetails').removeClass('mobileShow');
+			}
+		);
+	}
+}
+
+// ---------------------------------------------------------------------------
+
+clientAuction.clearAuctionSelection = function()
+{
+	s_auctionSelectedItem = false;
+	s_auctionSelectedLot = false;
+
+	$(".auctionBuyoutButton").addClass('disabled');
+	$(".auctionBidButton").addClass('disabled');
+	$(".auctionRemoveButton").addClass('disabled');
+	$(".auctionBidInput").addClass('disabled').find('input:first').attr('disabled','disabled');
+
+	$('.single-row-button').removeClass('selected');
+
+	// Set the internal details page for display in case we need it.
+	$('#auctionDetailsIcon').attr('src', '');
+	$('#auctionDetailsItemName').text('');
+	$('#auctionDetailsQuantity').text(0);
+	$('#auctionDetailsSellerName').text('');
+	$('#auctionDetailsBid').text(0);
+	$('#auctionDetailsBuyout').text(0);
+
+	// prefill both inputs with the minimum bid.
+	$('input[name="bidAmount"]').val(0);
+	$('input[name="detailsBidAmount"]').val(0);
+
+}
+
+// ---------------------------------------------------------------------------
+
+// Buyout button on the auction search page
+clientAuction.auctionSearchBuyout = function()
+{
+	if($(".auctionBuyoutButton").hasClass("disabled"))
+	{
+		return; // Disabled.
+	}
+
+	client.shifter.shift(
+		client.shifter.resolveHash('buyout?idx=' + s_auctionSelectedItem + "&list=" + s_auctionSelectedLot),
+		false, true);
+}
+
+// Place a bid button on the auction search page
+clientAuction.auctionSearchPlaceBid = function()
+{
+	if($(".auctionBidButton").hasClass("disabled"))
+	{
+		return; // Disabled.
+	}
+
+	var bid = validPositiveIntVal($("input[name='bidAmount']").val());
+	$("input[name='bidAmount']").val(bid);
+
+	if(bid)
+	{
+		client.shifter.shift(
+			client.shifter.resolveHash('placebid?idx=' + s_auctionSelectedItem + "&list=" + s_auctionSelectedLot + "&bid=" + bid),
+			false, true);
+	}
+}
+
+// ---------------------------------------------------------------------------
+
+// Buyout button on the item details page/modal
+clientAuction.auctionDetailsBuyout = function()
+{
+	if($(".auctionBuyoutButton").hasClass("disabled"))
+	{
+		return; // Disabled.
+	}
+
+	client.shifter.shift(
+		client.shifter.resolveHash('buyout?idx=' + s_auctionSelectedItem + "&list=" + s_auctionSelectedLot),
+		false, true);
+}
+
+// Place a bid button on the item dteails page/modal
+clientAuction.auctionDetailsPlaceBid = function()
+{
+	if($(".auctionBidButton").hasClass("disabled"))
+	{
+		return; // Disabled.
+	}
+
+	var bid = validPositiveIntVal($("input[name='detailsBidAmount']").val());
+	$("input[name='detailsBidAmount']").val(bid);
+
+	if(bid)
+	{
+		client.shifter.shift(
+			client.shifter.resolveHash('placebid?idx=' + s_auctionSelectedItem + "&list=" + s_auctionSelectedLot + "&bid=" + bid),
+			false, true);
+	}
+}
+
+// ---------------------------------------------------------------------------
+
+// Sell item selected
+clientAuction.auctionSellItemSelected = function(numBids, itemIndex, lotName)
+{
+	s_auctionSelectedItem = itemIndex;
+	s_auctionSelectedLot = lotName;
+
+	if(numBids > 0)
+	{
+		$(".auctionRemoveButton").addClass('disabled');
+	}
+	else
+	{
+		$(".auctionRemoveButton").removeClass('disabled');
+	}
+
+	$('.single-row-button')
+		.removeClass('selected')
+		.filter('[data-index="' + itemIndex + '"]')
+		.addClass('selected');
+}
+
+clientAuction.auctionSellRemoveItem = function()
+{
+
+	if($(".auctionRemoveButton").hasClass("disabled"))
+	{
+		return; // Disabled.
+	}
+
+	client.shifter.shift(client.shifter.resolveHash('removeitem?list=' + s_auctionSelectedLot + '&idx=' + s_auctionSelectedItem), false, true);
+}
+
+// ---------------------------------------------------------------------------
+// Send commands to game
+// ---------------------------------------------------------------------------
+
+// Confirm a bid for an auction item
+clientAuction.auctionSendBid = function(auctionListName, id, bid)
+{
+	var cmd = buildCommand('GatewayAuction_RequestBid', { list: auctionListName, id: id, bid: bid });
+	if(cmd)
+	{
+		client.analyticTick('User:AuctionBid');
+		client.sendCommand(cmd);
+	}
+}
+
+// Confirm buyout for auction item.
+clientAuction.auctionSendBuyout = function(auctionListName, id)
+{
+	var cmd = buildCommand('GatewayAuction_RequestPurchase', { list: auctionListName, id: id });
+	if(cmd)
+	{
+		client.analyticTick('User:AuctionBuyout');
+		client.sendCommand(cmd);
+	}
+}
+
+clientAuction.auctionSendRemoveItem = function(auctionListName, id)
+{
+	var cmd = buildCommand('GatewayAuction_RequestCancel', { list: auctionListName, id: id });
+	if(cmd)
+	{
+		client.analyticTick('User:AuctionCancel');
+		client.sendCommand(cmd);
+	}
+}
+
+
+// ---------------------------------------------------------------------------
+// Used in stencil: content-auctionhouse-sell.html
+// ---------------------------------------------------------------------------
+
+clientAuction.auctionSellChooseItemToSell = function(itemId)
+{
+	setAuctionItem(itemId);
+}
+
+clientAuction.auctionSellUpdatePostingFee = function(isModal)
+{
+	// prefix because mobile and desktop forms exist in the DOM
+	// at the same time.
+	var prefix = isModal ? '.consignment-form-modal ' : '.desktopOnly ';
+
+	var cmd = buildCommand('GatewayAuction_GetPostingFee', {
+		buyout: $(prefix + 'input[name="buyout"]').val(),
+		bid: $(prefix + 'input[name="startingBid"]').val(),
+		duration: $(prefix + 'select[name="duration"]').val()
+	});
+
+	$('input[name="sellQty"]').val(
+		validPositiveIntVal(
+			$('input[name="sellQty"]').val(),
+			$('input[name="sellQty"]').attr('data-max-value')
+		)
+	);
+
+	if(cmd)
+	{
+		$(prefix + 'input[name="startingBid"]').val(cmd.params.bid);
+		$(prefix + 'input[name="buyout"]').val(cmd.params.buyout);
+
+		client.sendCommand(cmd);
+	}
+}
+
+clientAuction.auctionSellPostNewAuction = function(isModal)
+{
+	if(!client.dataModel.model.tradeSelected || !client.dataModel.model.tradeSelected.uid)
+		return;
+
+	// prefix because mobile and desktop forms exist in the DOM
+	// at the same time.
+	var prefix = isModal ? '.consignment-form-modal ' : '.desktopOnly ';
+
+	if(!client.sendCommand('GatewayAuction_CreateAuction',
+		client.dataModel.model.tradeSelected.uid,
+		$(prefix + 'input[name="sellQty"]').val(),
+		$(prefix + 'input[name="buyout"]').val(),
+		$(prefix + 'input[name="startingBid"]').val(),
+		$(prefix + 'select[name="duration"]').val()))
+	{
+		this.addNotificationMessageKey('Auction.AuctionPostedFail', 'error');
+		return;
+	}
+
+	this.auctionSellClearForm();
+	this.auctionUpdatePostingFeeDisplay(0);
+	this.auctionUpdateSalesFeeDisplay(0);
+
+	client.analyticTick('User:AuctionCreate');
+
+}
+
+clientAuction.auctionSellClearForm = function()
+{
+	setAuctionItem(0);
+
+	$('input[name="sellQty"]').val(1);
+	$('input[name="startingBid"]').val(0);
+	$('input[name="buyout"]').val(0);
+}
+
+// ---------------------------------------------------------------------------
+
+clientAuction.auctionUpdatePostingFeeDisplay = function(fee)
+{
+	$('span#postingFee').text(fee);
+}
+
+clientAuction.auctionUpdateSalesFeeDisplay = function(fee)
+{
+	$('span#saleFee').text(fee);
+}
+
+// ---------------------------------------------------------------------------
+
+var s_MAXINT = 2147483647; // Defining this here, max signed 32 bit int.
+
+// Meant to validate form input.
+// Will strip out any non digits and return a positive integer
+// between 0 and 2147483647
+function validPositiveIntVal(val, max)
+{
+	if(!max)
+	{
+		max = s_MAXINT;
+	}
+
+	val = parseInt(String(val).replace(/\D/g,''), 10);
+	if (val > max)
+	{
+		val = max;
+	}
+	else if(isNaN(val))
+	{
+		val = 0;
+	}
+
+	return val;
+}
+
+// ---------------------------------------------------------------------------
+
+// End of File

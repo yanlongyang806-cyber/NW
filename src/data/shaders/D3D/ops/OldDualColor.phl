@@ -1,0 +1,10 @@
+// OldDualColor.phl
+{
+	float4 A_temp, B_temp;
+	B_temp = %B%;
+	%Result%.w = B_temp.w;
+	A_temp = %A%; // Do swizzling
+	%Result%.xyz = lerp(%Color1%, %Color0%, %B%);
+	%Result%.xyz = lerp(%Result%, 1, A_temp.w);
+	%Result%.xyz = A_temp * %Result%;
+}

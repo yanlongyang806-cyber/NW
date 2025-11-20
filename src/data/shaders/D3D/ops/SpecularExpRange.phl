@@ -1,0 +1,3 @@
+{
+	%Result% = %SpecExpIn% * (%SpecExpRange%).y + (%SpecExpRange%).x;
+}

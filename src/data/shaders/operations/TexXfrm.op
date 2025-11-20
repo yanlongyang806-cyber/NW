@@ -1,0 +1,34 @@
+OperationDef
+	Name "TexXfrm" // Name of the operation
+	Category "Combiner"
+	Description "Supports a scale and "
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name Transform
+		Description "Scale factor and translation defined by the Fx system (do not connect an input to this!)"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 4
+		FloatRange -1.0e10 1.0e10
+	EndInput
+
+	Output
+		Name Result
+		Description "Output of A * B + C"
+		Float 4
+		AlphaFrom TexCoord
+	EndOutput
+
+EndOperationDef
+

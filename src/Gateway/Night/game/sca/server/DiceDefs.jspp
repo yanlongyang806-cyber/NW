@@ -1,0 +1,60 @@
+'use strict';
+
+var DiceDef = require('./DieDef');
+var TaggedCollection = require('./TaggedCollection');
+
+//////////////////////////////////////////////////////////////////////////
+
+
+function DiceDefs()
+{
+	this.defs = new TaggedCollection(DiceDef);
+	this.slots = {};
+}
+
+
+
+DiceDefs.prototype.addDieDef = function (def)
+{
+	this.defs.add(def);
+}
+
+DiceDefs.prototype.getDieDef = function (id)
+{
+	return this.defs.get(id);
+}
+
+
+DiceDefs.prototype.addSlotSchedule = function (slotName, sched)
+{
+	this.slots[slotName] = sched;
+}
+
+DiceDefs.prototype.getDieDefForSlot = function (slotName, rank)
+{
+	var dieDef;
+
+	if(slotName in this.slots)
+	{
+		var slot = this.slots[slotName];
+
+		// the rank passed in is 1-based, but the schedule is 0-based
+		rank--;
+
+		rank = rank >= slot.length ? slot.length - 1 : rank;
+		dieDef = this.getDieDef(slot[rank]);
+	}
+
+	return dieDef;
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = DiceDefs;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

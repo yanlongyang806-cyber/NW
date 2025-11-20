@@ -1,0 +1,183 @@
+<div class="page-content" data-update="craftinglist">
+	<!-- MAIN SECTION 2 -->
+	<div class="page-professions-tasklist">
+		<span data-if="!{$root().craftinglist} || !{$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()] || !{$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()]._gotBundle">
+
+			<div class="loading-block">
+				<h2>Loading...</h2>
+				<div class="loading-image"></div>
+			</div>
+			<script data-if="!{$root().craftinglist} || !{$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()] || !{$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()]._askedBundle">
+				client.professionFetchTaskList('craft_'+client.getQueryParam('categoryName'));
+			</script>
+		</span>
+		<span data-if="{$root().craftinglist} && {$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()] && {$root().craftinglist}['craft_'+{$root().queryParams.categoryName}.toLowerCase()]._gotBundle">
+			<div class="search-header">
+
+
+				<div class="input-field dropdown professions-sort-level">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+
+					<select name="sort_level">
+						<option value="desc" data-translation-id="CraftingUI.SortHighestFirst">Sort by Highest First</option>
+						<option value="asc" data-translation-id="CraftingUI.SortLowestFirst">Sort by Lowest First</option>
+					</select>
+				</div>
+
+				<!--
+				<div class="input-field fake-dropdown" tabindex="-1">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<span class="fake-select">Sort
+						<div class="fake-options">
+							<label class="radio" name="sort_level">
+								<span class="input-img"></span>
+								<input name="sort_level" type="radio" value="desc">Sort by Highest First
+							</label>
+							<label class="radio" name="sort_level">
+								<span class="input-img"></span>
+								<input name="sort_level" type="radio" value="asc">Sort by Lowest First
+							</label>
+						</div>
+					</span>
+				</div>
+				-->
+				<a class="input-field fake-dropdown">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<span class="fake-select"><span data-translation-id="CraftingUI.Filter">Filters</span>
+						<div class="fake-options">
+							<label class="checkbox">
+								<span class="input-img"></span>
+								<input name="hide_unmetreqs" type="checkbox"><span data-translation-id="CraftingUI.FilterUnmetRequirements">Hide Tasks with Unmet Requirements</span>
+							</label>
+							<label class="checkbox">
+								<span class="input-img"></span>
+								<input name="hide_abovelevel" type="checkbox"><span  data-translation-id="CraftingUI.FilterTasksAboveLevel">Hide Higher Level Tasks</span>
+							</label>
+						</div>
+					</span>
+				</a>
+			</div>
+
+			<div class="task-list-page">
+				<div class="task-list-block">
+					<h2><span data-path=".displayname.str">Category Name</span></h2>
+					<h6 class="task-list-event-timer" data-if=".availabilityevent">This event profession is available for <span data-set-data-timer=".availabilitytime" data-timer-length="3">1d 12h 6m</span></h6>
+					<table id="tasklist">
+						<tr>
+							<td>
+								<div class="loading-block">
+									<div class="loading-image"></div>
+								</div>
+							</td>
+						</tr>
+
+					</table>
+					<div class="mobileOnly">
+						<div class="pagination-loader loading-image"></div><!-- ATTACH PAGINATION TRIGGERS HERE -->
+					</div>
+
+				</div>
+			</div>
+
+			<!--
+			<div class="pagination">
+				<span class="pagination-info">Showing page 1 of 9</span>
+				<a class="paginate_disabled_previous">Previous</a>
+				<a class="paginate_enabled_next">Next</a>
+			</div>
+			-->
+			<script>
+				client.professionsDataTable();
+				client.startCountdowns();
+			</script>
+		</span>
+
+		<!-- EPIPHANY BLOCK -->
+		<!--
+		<div class="epiphany-block">
+			<div class="panel-inner silver">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-content">
+					<div class="icon-slot readonly purple">
+						<img src="../img_nw/sample_item_01.png" alt="" />
+					</div>
+					<h3>Epiphany Available! <span>(Time Remaining: 3h 25m)</h3>
+					<h4>The Task Name</h4>
+					<p>This is the description for the lorem ipsum dolor sit amet, vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum.</p>
+					<div class="input-field button light with-arrow">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button data-url="/professions/[category]/[taskid]">Continue</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		-->
+		<!-- EPIPHANY BLOCK -->
+	</div>
+
+
+</div>
+<div class="box-footer-block footer-professions-overview">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<div class="current-money">
+							<span class="currency-icon astral"></span> <span data-path="$root().ent.main.currencies.diamonds.$commify()">99,999</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+
+						<div class="footer-controls-left">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url="/professions/vendor">
+									<img src="/tex/Currency_Icon_Tiny_Copper.png" alt="" />
+									Buy Supplies
+								</button>
+							</div>
+						</div>
+
+
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>

@@ -1,0 +1,326 @@
+'use strict';
+
+var DAYS = 24 * 60 * 60;
+var YEARS = 365 * DAYS;
+var s_cid = 1837;
+var cutils = require('cryptic/cutils');
+
+var online = [ true, false, false, false ];
+var rankname = [ 'Ensign', 'Lieutenant', 'Lt. Commander', 'Commander', 'Captain', 'Lower Rear Admiral', 'Upper Rear Admiral', 'Vice Admiral' ];
+var classtype = [ 'Starfleet_Tactical', 'Starfleet_Engineering', 'Bridge_Officer_Tactical', 'Bridge_Officer_Engineering', 'Bridge_Officer_Science' ];
+var locations = [ 'Castle Walls', 'Polonius\' House', 'Denmark', 'Churchyard', 'Castle Hall', 'Queen\'s Closet' ];
+var officerRanks = [ 'captain', 'subcaptain', 'dude', 'peon' ];
+var lfgs = [ 'prompt', 'open', 'requestonly', 'closed', 'count' ];
+
+var firstName = new Array("Runny", "Buttercup", "Dinky", "Stinky", "Crusty",
+	"Greasy", "Gidget", "Cheesypoof", "Lumpy", "Wacky","Tiny", "Flunky",
+	"Fluffy", "Zippy", "Doofus", "Gobsmacked", "Slimy", "Grimy", "Salamander",
+	"Oily", "Burrito", "Bumpy", "Loopy", "Snotty", "Irving", "Egbert",
+	"Shaahaaak", "Herp", "Derp", "Hoppy", "Sniffington", "Colonel" );
+var lastName1 = new Array("Snicker", "Buffalo", "Gross", "Bubble", "Sheep",
+	"Corset", "Toilet", "Lizard", "Waffle", "Kumquat", "Burger", "Chimp",
+	"Liver", "Gorilla", "Rhino", "Emu", "Pizza", "Toad", "Gerbil",
+	"Pickle", "Tofu", "Chicken", "Potato", "Hamster", "Lemur", "Vermin",
+	"Mc", "Bartle", "Zombie", "Derpy", "Herpy", "Total", "Major");
+var lastName2 = new Array("face", "dip", "nose", "brain", "head",
+	"breath", "pants", "shorts", "lips", "mouth", "muffin", "butt",
+	"bottom", "elbow", "honker", "toes", "buns", "spew", "kisser",
+	"fanny", "squirt", "chunks", "brains", "wit", "juice", "shower",
+	"stink", "stuffins", "bubble", "house", "town", "bus" );
+
+var uridigits = new Array( '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'k', 'l', 'm', 'n', 'p', 'y', 'z' );
+
+var guildcounts = [ 10, 20, 20, 30, 50, 50, 100, 150, 200, 200 ];
+var eventcounts = [ 0, 3, 3, 5, 5, 10, 10, 10, 10, 10, 20 ];
+
+var sentences = [
+	"To be, or not to be: that is the question.",
+	"Neither a borrower nor a lender be; For loan oft loses both itself and friend, and borrowing dulls the edge of husbandry.",
+	"This above all: to thine own self be true.",
+	"Though this be madness, yet there is method in 't..",
+	"There is nothing either good or bad, but thinking makes it so.",
+	"What a piece of work is man! how noble in reason! how infinite in faculty! in form and moving how express and admirable! in action how like an angel! in apprehension how like a god! the beauty of the world, the paragon of animals!",
+	"The lady doth protest too much, methinks.",
+	"A little more than kin, and less than kind.",
+	"The play's the thing wherein I'll catch the conscience of the king.",
+	"And it must follow, as the night the day, thou canst not then be false to any man.",
+	"Doubt that the sun doth move, doubt truth to be a liar, but never doubt I love.",
+	"Rich gifts wax poor when givers prove unkind.",
+	"Do you think I am easier to be played on than a pipe?",
+	"I will speak daggers to her, but use none.",
+	"When sorrows come, they come not single spies, but in battalions.",
+	"All the world's a stage, and all the men and women merely players. They have their exits and their entrances; And one man in his time plays many parts",
+	"Can one desire too much of a good thing?.",
+	"I like this place and willingly could waste my time in it",
+	"How bitter a thing it is to look into happiness through another man's eyes!",
+	"Blow, blow, thou winter wind! Thou art not so unkind as man's ingratitude.",
+	"The fool doth think he is wise, but the wise man knows himself to be a fool.",
+	"Now is the winter of our discontent.",
+	"A horse! a horse! my kingdom for a horse!.",
+	"Conscience is but a word that cowards use, devised at first to keep the strong in awe.",
+	"So wise so young, they say, do never live long.",
+	"An honest tale speeds best, being plainly told.",
+	"The king's name is a tower of strength.",
+	"The world is grown so bad, that wrens make prey where eagles dare not perch.",
+	"O Romeo, Romeo! wherefore art thou Romeo?.",
+	"It is the east, and Juliet is the sun.",
+	"Good Night, Good night! Parting is such sweet sorrow, that I shall say good night till it be morrow.",
+	"What's in a name? That which we call a rose by any other name would smell as sweet.",
+	"Wisely and slow; they stumble that run fast.",
+	"True is it that we have seen better days.",
+	"For you and I are past our dancing days.",
+	"O! she doth teach the torches to burn bright.",
+	"It seems she hangs upon the cheek of night like a rich jewel in an Ethiope's ear.",
+	"See, how she leans her cheek upon her hand! O that I were a glove upon that hand, that I might touch that cheek!.",
+	"Not stepping o'er the bounds of modesty.",
+	"But love is blind, and lovers cannot see.",
+	"If you prick us, do we not bleed? if you tickle us, do we not laugh? if you poison us, do we not die? and if you wrong us, shall we not revenge?.",
+	"The devil can cite Scripture for his purpose.",
+	"I like not fair terms and a villain's mind.",
+	"Why, then the world's mine oyster",
+	"This is the short and the long of it.",
+	"I cannot tell what the dickens his name is.",
+	"Our doubts are traitors, and make us lose the good we oft might win, by fearing to attempt.",
+	"Some rise by sin, and some by virtue fall.",
+	"The miserable have no other medicine but only hope.",
+	"He will give the devil his due.",
+	"The better part of valour is discretion.",
+	"He hath eaten me out of house and home.",
+	"Uneasy lies the head that wears a crown.",
+	"I do now remember the poor creature, small beer.",
+	"We have heard the chimes at midnight.",
+	"The smallest worm will turn, being trodden on.",
+	"Suspicion always haunts the guilty mind; The thief doth fear each bush an officer.",
+	"Delays have dangerous ends.",
+	"Of all base passions, fear is the most accursed.",
+	"The first thing we do, let's kill all the lawyers.",
+	"Friends, Romans, countrymen, lend me your ears; I come to bury Caesar, not to praise him.",
+	"But, for my own part, it was Greek to me.",
+	"Men at some time are masters of their fates: The fault, dear Brutus, is not in our stars, but in ourselves, that we are underlings.",
+	"Not that I loved Caesar less, but that I loved Rome more.",
+	"When that the poor have cried, Caesar hath wept: Ambition should be made of sterner stuff.",
+	"Yond Cassius has a lean and hungry look; He thinks too much: such men are dangerous.",
+	"For Brutus is an honourable man; So are they all, all honourable men.",
+	"As he was valiant, I honor him; but, as he was ambitious, I slew him.",
+	"Cowards die many times before their deaths; The valiant never taste of death but once.",
+	"I dare do all that may become a man; Who dares do more is none.",
+	"Yet do I fear thy nature; It is too full o' the milk of human kindness.",
+	"Will all great Neptune's ocean wash this blood clean from my hand? No, this my hand will rather the multitudinous seas incarnadine, making the green one red",
+	"Double, double toil and trouble; Fire burn, and cauldron bubble.",
+	"All the perfumes of Arabia will not sweeten this little hand.",
+	"When shall we three meet again in thunder, lightning, or in rain? When the hurlyburly's done.",
+	"If chance will have me king, why, chance may crown me.",
+	"Nothing in his life became him like the leaving it; he died as one that had been studied in his death to throw away the dearest thing he owed, as 't were a careless trifle.",
+	"Look like the innocent flower, but be the serpent under 't.",
+	"I have no spur to prick the sides of my intent, but only vaulting ambition, which o'erleaps itself, and falls on the other.",
+	"Is this a dagger which I see before me, The handle toward my hand?",
+	"Out, out, brief candle! Life's but a walking shadow, a poor player that struts and frets his hour upon the stage and then is heard no more: it is a tale told by an idiot, full of sound and fury, signifying nothing.",
+	"How sharper than a serpent's tooth it is to have a thankless child!",
+	"Have more than thou showest, speak less than thou knowest, lend less than thou owest.",
+	"The worst is not, So long as we can say, 'This is the worst.' .",
+	"I will wear my heart upon my sleeve for daws to peck at.",
+	"To mourn a mischief that is past and gone is the next way to draw new mischief on.",
+	"The robbed that smiles steals something from the thief.",
+	"Be not afraid of greatness: some are born great, some achieve greatness and some have greatness thrust upon them.",
+	"Love sought is good, but giv'n unsought is better.",
+	"We are such stuff as dreams are made on, rounded with a little sleep.",
+	"The course of true love never did run smooth.",
+	"Love looks not with the eyes, but with the mind, and therefore is winged Cupid painted blind.",
+	"Everyone can master a grief but he that has it.",
+	"These words are razors to my wounded heart.",
+	"What's gone and what's past help should be past grief.",
+	"You pay a great deal too dear for what's given freely.",
+	"My salad days, when I was green in judgment.",
+	"Thus the whirligig of time brings in his revenges.",
+	"For the rain it raineth every day.",
+	"The common curse of mankind, - folly and ignorance."
+];
+
+var titles = [
+	"In my mind's eye.",
+	"Brevity is the soul of wit.",
+	"For ever and a day.",
+	"Off with his head!",
+	"I am a man more sinned against than sinning.",
+	"My love's more richer than my tongue.",
+	"Beware the ides of March.",
+	"Fair is foul, and foul is fair.",
+	"There's daggers in men's smiles.",
+	"A dish fit for the gods.",
+	"Cry 'Havoc,' and let slip the dogs of war.",
+	"Small things make base men proud.",
+	"True nobility is exempt from fear.",
+	"Having nothing, nothing can he lose.",
+	"That it should come to this!.",
+	"Tempt not a desperate man.",
+	"As good luck would have it.",
+	"A man can die but once.",
+	"I'll not budge an inch.",
+	"We have seen better days.",
+	"Et tu, Brute!",
+	"what's done is done.",
+	"I bear a charmed life.",
+	"Out, damned spot! out, I say!",
+	"This was the noblest Roman of them all.",
+	"Nothing will come of nothing.",
+	"‘T’is neither here nor there.",
+	"The game is up.",
+	"I have not slept one wink..",
+	"Men of few words are the best men.",
+	"Out of the jaws of death.",
+	"Nature teaches beasts to know their friends."
+];
+
+function randomDate(start, end)
+{
+	if(end > start)
+	{
+		var t = start;
+		start = end;
+		end = t;
+	}
+
+	var d = random(end, start);
+	d = (new Date()) / 1000 + d;
+	var date = new Date(d * 1000);
+	return date.toGMTString();
+}
+
+function random(min, max)
+{
+	if(!max)
+	{
+		max = min
+		min = 0;
+	}
+	return 0 | (Math.random()*max + min);
+}
+
+function randomItem(arr)
+{
+	return arr[random(arr.length)];
+}
+
+function randomName()
+{
+	var name = randomItem(firstName);
+	name += ' '+randomItem(lastName1);
+	name += randomItem(lastName2);
+
+	return name;
+}
+
+function randomAccountName()
+{
+	var name = randomItem(lastName2);
+	name += randomItem(lastName2);
+
+	return name;
+}
+
+function randomUrl()
+{
+	var url = 'http://tinyurl.com/';
+	for(var cnt = 0; cnt < 5; cnt++)
+	{
+		url += randomItem(uridigits);
+	}
+	return url;
+}
+
+function Guild(memberCount, eventCount)
+{
+	memberCount = memberCount || randomItem(guildcounts);
+	if(typeof eventCount === 'undefined')
+	{
+		eventCount = randomItem(eventcounts);
+	}
+
+	return	({
+		id: s_cid++,
+		name: randomItem(firstName) + ' Fleet of '+ randomItem(lastName1)+randomItem(lastName2),
+		createdon: randomDate(-1 * YEARS, -0.2 * YEARS),
+		motd: randomItem(sentences),
+		description: randomItem(sentences) + ' ' + randomItem(sentences) + ' ' + randomItem(sentences),
+		website: randomUrl(),
+		emblem: 'white',
+		ranks: officerRanks,
+		members: generateMembers(memberCount),
+		events: generateEvents(eventCount)
+		// invites:
+		// activities:
+	})
+}
+
+function generateMembers(count)
+{
+	var members = [];
+	while(count > 0)
+	{
+		members.push(new Member());
+		count--;
+	}
+	return members;
+}
+
+function Member()
+{
+	var r = random(0, 8);
+	return ({
+		id: s_cid++,
+		name: randomName(),
+		publicaccountname: randomAccountName(),
+		joined: randomDate(-3 * YEARS, -0.5 * YEARS),
+		level: random(1, 50),
+		comment: randomItem(sentences),
+		classtype: randomItem(classtype),
+		rank: r,
+		rankname: rankname[r],
+		officerrank: randomItem(officerRanks),
+		guildcontribution1: random(0,2000000),
+		guildcontribution2: random(0,2000000),
+		location: randomItem(locations),
+		online: randomItem(online),
+		logout: randomDate(-100 * DAYS, 0),
+		lfg: randomItem(lfgs)
+	})
+}
+
+var recur = [ 0, 1, 2, 3, 4, 7, 14, 21, 28 ];
+var recurcount = [ 0, 0, 0, 1, 2, 3, 4, 5, 6, -1, -1 ]; // -1 means forever
+
+function generateEvents(count)
+{
+	var events = [];
+	while(count > 0)
+	{
+		events.push(new Event());
+		count--;
+	}
+	return events;
+}
+
+function Event()
+{
+	var r = randomItem(recur);
+	return ({
+		id: s_cid++,
+		title: randomItem(titles),
+		description: randomItem(sentences) + ' ' + randomItem(sentences) + ' ' + randomItem(sentences),
+		starttime: randomDate(0, 30 * DAYS),
+		duration: 60 * 5 * Math.floor(random(0, 24 * 60 / 5)), // 5-minute increments, up to 24 hours, in seconds.
+		recurdays: r,
+		recurcount: r ? randomItem(recurcount) : 0,
+		minguildrank: random(0, 4),
+		minlevel: random(0, 20),
+		maxlevel: random(21, 40),
+		minaccepts: random(5, 10),
+		maxaccepts: random(11, 200),
+		replies: []
+	})
+}
+
+module.exports = Guild;
+
+// End of File
+

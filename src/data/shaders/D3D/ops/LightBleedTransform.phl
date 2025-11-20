@@ -1,0 +1,6 @@
+{
+	float2 r;
+	r.y = 1.f / (1.f + %LightBleed%.x);
+	r.x = r.y * %LightBleed%.x;
+	%Result% = r.xyyy;
+}

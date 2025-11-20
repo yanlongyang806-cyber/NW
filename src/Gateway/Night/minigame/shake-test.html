@@ -1,0 +1,404 @@
+<html><head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+
+	<style type="text/css">
+
+		.outer {
+			position: relative;
+			background-color: #036;
+			width: 700px;
+			height: 400px;
+		}
+
+		.inner {
+			position: absolute;
+			width: 600px;
+			height: 300px;
+			top: 50px;
+			left: 50px;
+			background-color: #39a;
+		}
+
+		#shake {
+			position: absolute;
+			top: 25px;
+			left: 25px;
+			width: 200px;
+			height: 100px;
+			background-color: #999;
+			text-align: center;
+		}
+
+		.num-input {
+			width: 50px;
+		}
+
+	</style>
+
+</head>
+<body>
+	<script>
+    var CYCLES = 1;
+    var s_cycleNow = 0;
+    var s_posNow = 0;
+
+    var magnitude = 4;
+
+    var TYPES = {
+    	'Circle': [
+			{
+				'left': 1,
+				'top': 0
+			},
+			{
+				'left': 1,
+				'top': 1
+			},
+			{
+				'left': 0,
+				'top': 1
+			},
+			{
+				'left': -1,
+				'top': 1
+			},
+			{
+				'left': -1,
+				'top': 0
+			},
+			{
+				'left': -1,
+				'top': -1
+			},
+			{
+				'left': 0,
+				'top': -1
+			},
+			{
+				'left': 1,
+				'top': -1
+			}
+		],
+		'Diamond': [
+			{
+				'left': 1,
+				'top': 0
+			},
+			{
+				'left': 0,
+				'top': 1
+			},
+			{
+				'left': -1,
+				'top': 0
+			},
+			{
+				'left': 0,
+				'top': -1
+			},
+		],
+		'Horizontal': [
+			{
+				'left': 1,
+				'top': 0
+			},
+			{
+				'left': -1,
+				'top': 0
+			},
+		],
+		'Vertical': [
+			{
+				'left': 0,
+				'top': 1
+			},
+			{
+				'left': 0,
+				'top': -1
+			},
+		],
+		'Random': [] // placeholder
+	}
+
+
+	$(document).ready(function() {
+
+	});
+
+	var s_everyOther = 0;
+	function shakeIt(posArr)
+	{
+		if(s_everyOther % 2)
+		{
+			var target = $('#shake');
+			if(s_cycleNow > CYCLES)
+			{
+				console.log("Done shaking.");
+				s_cycleNow = 0;
+				s_posNow = 0;
+				target.css({top: '0px', left: '0px'});
+				return;
+			}
+			var mod = posArr[s_posNow++];
+
+			console.log("Move It!: ", mod);
+
+			target.css({ top: (mod['top'] * magnitude) + 'px', left: (mod['left'] * magnitude) + 'px' });
+
+			if(s_posNow >= posArr.length)
+			{
+				s_cycleNow++;
+				s_posNow = 0;
+			}
+		}
+
+		s_everyOther++;
+
+		window.requestAnimationFrame(function() {
+			shakeIt(posArr);
+		});
+	}
+
+
+	function customIt()
+	{
+		var typ;
+
+		typ = $('select').val();
+		CYCLES = $('input[name="cycles"]').val();
+		magnitude = $('input[name="magnitude"]').val();
+
+		if(typ === 'Random' || typ === 'RandomOf')
+		{
+			randomIt(typ);
+		}
+		else if(typ === "Random2")
+		{
+			tweenItRandom();
+		}
+		else
+		{
+			shakeIt(TYPES[typ]);
+		}
+	}
+
+	function randomIt(type)
+	{
+		var target = $('#shake');
+		if(s_cycleNow > CYCLES)
+		{
+			console.log("Done shaking.");
+			s_cycleNow = 0;
+			s_posNow = 0;
+			target.css({top: '0px', left: '0px'});
+			return;
+		}
+
+		var mod = {};
+		if(type === "RandomOf")
+		{
+			mod['top'] = (Math.random() > 0.5?1:-1);
+			mod['left'] = (Math.random() > 0.5?1:-1);
+		}
+		else
+		{
+			mod['top'] = Math.random() * (Math.random() > 0.5?1:-1);
+			mod['left'] = Math.random() * (Math.random() > 0.5?1:-1);
+		}
+
+		target.css({
+			top: (mod['top'] * magnitude) + 'px',
+			left: (mod['left'] * magnitude) + 'px'
+		});
+
+		s_posNow++;
+		if(s_posNow >= 4) // randoming through per cycle
+		{
+			s_cycleNow++;
+			s_posNow = 0;
+		}
+
+		window.requestAnimationFrame(function() {
+			randomIt(type);
+		});
+	}
+
+	function tweenItRandom()
+	{
+
+		var target = $('#shake');
+
+		var posArr = [];
+
+		var tNow = 0, lNow = 0, tNext, lNext;
+		var c;
+		for(c = 0; c < 4; c++)
+		{
+
+			do
+			{
+				tNext = Math.floor(Math.random() * magnitude) * (Math.random() > 0.5?1:-1);
+				lNext = Math.floor(Math.random() * magnitude) * (Math.random() > 0.5?1:-1);
+			} while(!tNext && !lNext) // Go until we have non-zero values for both
+
+console.log("Next: ",tNext, lNext);
+			var tStep = distance([tNow, lNow],[tNext, lNext]) / 2; // break into steps
+console.log("Step: ",tStep, [tNow, lNow],[tNext, lNext]);
+			var vec = vectorUnit([tNext - tNow, lNext - lNow]);
+
+			var i;
+			for(i = 1; i < 3; i++) // push the steps
+			{
+				posArr.push({ top: (tStep * i * vec[0]), left: (tStep * i * vec[1]) });
+			}
+
+			tNow = tNext;
+			lNow = lNext;
+		}
+
+		s_cycleNow = 0;
+		s_posNow = 0;
+		magnitude = 1;
+		CYCLES = 1;
+
+		shakeItNoMag(posArr);
+	}
+
+	function shakeItNoMag(posArr)
+	{
+		var target = $('#shake');
+		if(s_cycleNow > CYCLES)
+		{
+			console.log("Done shaking.");
+			s_cycleNow = 0;
+			s_posNow = 0;
+			target.css({top: '0px', left: '0px'});
+			return;
+		}
+		var mod = posArr[s_posNow++];
+
+		console.log("Move It!: ", mod);
+
+		target.css({ top: mod['top'] + 'px', left: mod['left'] + 'px' });
+
+		if(s_posNow >= posArr.length)
+		{
+			s_cycleNow++;
+			s_posNow = 0;
+		}
+
+		window.requestAnimationFrame(function() {
+			shakeItNoMag(posArr);
+		});
+	}
+
+	function distance(pointA, pointB)
+	{
+		return Math.sqrt(Math.pow(pointA[0] - pointB[0], 2) + Math.pow(pointA[1] - pointB[1], 2));
+	}
+
+	function vectorUnit(a)
+	{
+		var mag = Math.sqrt((a[0] * a[0]) + (a[1] * a[1]));
+
+		return [ a[0] / mag, a[1] / mag ];
+	}
+
+
+
+
+	function boomer()
+	{
+		var target = $('#shake');
+		var p, sPos = target.position()
+
+console.log(sPos);
+		var mag = $('input[name="magnitude"]').val();
+		var nTop, nLeft, posArr = [];
+		var c, i;
+		// cycles
+		for(c = 1;c < 7; c++)
+		{
+			// movements within a cycle
+			for(i = 0; i < 4; i++)
+			{
+				nTop = (Math.random() > 0.5?1:-1) * (mag / c);
+				nLeft = (Math.random() > 0.5?1:-1) * (mag / c);
+
+				posArr.push({top:(nTop + sPos['top']), left:(nLeft + sPos['left'])});
+			}
+		}
+
+		moveIt(posArr);
+	}
+
+	function moveIt(posArr)
+	{
+		var target = $('#shake');
+//console.log(posArr);
+		var mod = posArr[s_posNow++];
+
+//console.log("Move It!: ", mod);
+
+		target.css({ top: mod['top'] + 'px', left: mod['left'] + 'px' });
+
+		if(s_posNow >= posArr.length)
+		{
+			console.log("Done shaking.");
+			s_posNow = 0;
+			target.removeAttr("style");
+			return;
+		}
+
+		window.requestAnimationFrame(function() {
+			moveIt(posArr);
+		});
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	</script>
+
+	<div class="outer">
+		<div class="inner">
+			<div id="shake">
+				<h3>OMG IM SHAKING</h3>
+			</div>
+		</div>
+	</div>
+
+<br><br>
+Type: <select>
+	<option>Circle</option>
+	<option>Diamond</option>
+	<option>Horizontal</option>
+	<option>Vertical</option>
+	<option value="Random">Random within magnitude</option>
+	<option value="RandomOf">Random of magnitude</option>
+	<option value="Random2">Random with tween frames</option>
+</select>
+
+Cycles: <input type="number" name="cycles" min="0" value="2" class="num-input">
+
+Magnitude: <input type="number" name="magnitude" min="1" value="4" class="num-input">
+
+<button onclick="customIt()">Shake it!</button>
+<br><br>
+<button onclick="boomer()">BOOOM!</button>
+
+
+</body></html>

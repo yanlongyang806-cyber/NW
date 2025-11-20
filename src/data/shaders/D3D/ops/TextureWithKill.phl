@@ -1,0 +1,5 @@
+// TextureWithKill.phl
+{
+	%Result% = sampleTex2D(TexSampler%Texture%, %TexCoord%.xy);
+	clip(%Result%.a - 0.25);
+}

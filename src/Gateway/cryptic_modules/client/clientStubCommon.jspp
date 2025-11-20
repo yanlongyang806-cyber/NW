@@ -1,0 +1,55 @@
+'use strict';
+
+var content = require('cryptic/client/contentHelpers');
+var Shifter = require('cryptic/client/Shifter');
+var dataModel = require('cryptic/client/DataModel');
+
+var msgs = require(''+'./en.js');
+
+///////////////////////////////////////////////////////////////////////////
+
+var shifterTypes;
+
+function init(shifterInfo)
+{
+	shifterTypes = shifterInfo;
+	shifterTypes.current = shifterTypes['default'];
+}
+
+function useAlternate(str)
+{
+	if(shifterTypes[str])
+	{
+		shifterTypes.current = shifterTypes[str];
+	}
+}
+
+var shifter;
+function onReady()
+{
+	// content.useStubs(true);
+	// This was removed because it was too difficult to keep up.
+
+	// Start up shifter.
+	$(document).ready(function() {
+		shifter = new Shifter(shifterTypes.current, function() {});
+		shifter.init();
+	});
+
+	dataModel.addDefaultResources('Message', msgs);
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+var client = {};
+
+client.onReady = onReady;
+client.useAlternate = useAlternate;
+client.content = content;
+
+module.exports = client;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

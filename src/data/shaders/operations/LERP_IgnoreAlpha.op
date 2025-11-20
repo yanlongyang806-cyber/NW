@@ -1,0 +1,27 @@
+OperationDef
+	Name "LERP_IgnoreAlpha"
+	ParentName "LERP"
+	OptionName "Ignore Alpha"
+	Description "Linear Interpolation (Blend)"
+	Type SIMPLE
+
+	Input: A, "First value - gets used if Weight = 1.0"
+	Input: B, "Second value - gets used if Weight = 0.0"
+	Input
+		Name Weight
+		Description "Weighting between A (1.0) and B (0.0)"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.5 0.5 0.5 0.5
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Blended result of A and B (weight * A + (1.0 - weight) * B)"
+		Float 4
+	EndOutput
+
+EndOperationDef

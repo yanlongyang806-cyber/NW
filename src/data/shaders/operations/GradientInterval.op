@@ -1,0 +1,34 @@
+OperationDef
+	Name "GradientInterval" // Name of the operation
+	Description "Returns white if the gradient falls within one of the intervals."
+	Type CUSTOM
+
+	Input
+		Name FirstB
+		Description "First Intervals Beginning"
+		Float 1
+		NoAutoConnect 1
+	EndInput
+	Input
+		Name FirstE
+		Description "First Intervals Ending"
+		Float 1
+		NoAutoConnect 1
+	EndInput
+
+	Input
+		Name Gradient
+		Description "Gradient"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "For each channel, returns the smaller of the two inputs"
+		Float 4
+		AlphaFrom Gradient
+	EndOutput
+
+EndOperationDef
+

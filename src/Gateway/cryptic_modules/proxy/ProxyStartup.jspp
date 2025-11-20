@@ -1,0 +1,453 @@
+'use strict';
+
+var globals = module.exports; // Needs to be before the requires below for circular dependency reasons.
+
+//////////////////////////////////////////////////////////////////////////
+
+var g_config = require('cryptic/configure')();
+
+//////////////////////////////////////////////////////////////////////////
+
+var path = require('path');
+var http = require('http');
+var connect = require('connect');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+var locale = require('cryptic/locale');
+var staticStencil = require('cryptic/staticStencil');
+
+var translationTable = require(path.resolve(g_config.scriptDir, 'en.js'));
+
+var httpHandlers = require('./httpHandlers');
+var GeneratedItemCache = require('./GeneratedItemCache');
+var FileCache = require('cryptic/FileCache');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// The ClientSessionManager tracks all the clients connected to this
+// proxy.
+//
+var ClientSessionManager = require('./ClientSessionManager');
+var g_clientSessionManager = new ClientSessionManager();
+
+//////////////////////////////////////////////////////////////////////////
+//
+// GSMaster communicates with the GatewayServer(s)
+//
+var GSMaster = require('./GSMaster');
+var g_gsmaster = new GSMaster();
+
+log.addLogger(g_gsmaster.makeLogger('gateway_proxy'));
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ProxyResourceManager provides resources, asking the GSMaster for them as
+//   necessary and caching the data.
+//
+var ProxyResourceManager = require('./ProxyResourceManager');
+var g_rmgr = new ProxyResourceManager(g_gsmaster);
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Set up HTTP, Socket.io, file serving, and resource manager
+//
+
+require('cryptic/patchServerResponse');
+	// Patch server response to handlers setHeader better.
+require('cryptic/patchOutgoingMessage');
+	// Patch a sorta-known issue with Node.
+
+// Define the access.log formats
+
+connect.logger.token('userid', function(req, res) {
+	return req.signedCookies && req.signedCookies['gw_st'] ? req.signedCookies['gw_st'] : '-';
+});
+connect.logger.token('realaddr', function(req, res) {
+	return req.signedCookies && req.realAddress || '-';
+});
+connect.logger.format('cryptic', ':realaddr - :userid [:date] ":method :url HTTP/:http-version" :status :res[content-length] ":referrer" ":user-agent" :response-time');
+
+// Set up middleware
+
+var cookieParser = connect.cookieParser('InXanaduDidKublaKhan/AStatelyPleasureDomeDecree:');
+	// This is set up here so it can be reused at socket connection time to
+	//   read cookies. (The given string is the encryption key for the contents
+	//   of the cookie.)
+
+var sessionStore = new connect.session.MemoryStore();
+	// Store all session information in a memory store. This means all sessions
+	//   go away on restart.
+
+var rewriteForLocale = require('cryptic/rewriteForLocale');
+	// Middleware for file overrides based on locale.
+
+var textureCache = new GeneratedItemCache(httpHandlers.generateTexture, { name: 'tex', cacheDir: 'tex', maxBytes: 100*1024*1024 });
+	// Set up the texture cache.
+
+var headshotCache = new GeneratedItemCache(httpHandlers.generateHeadshot, { name: 'shot', cacheDir: 'shot', maxBytes: 20*1024*1024 });
+	// Set up a cache for headshots. Eventually, these should be probably be
+	//   cached with or on the session because the session defines their lifetimes
+	//   fairly well.
+
+var compressor = connect.compress({ filter : function (req, res) { return (/json|text|javascript|svg|xml/).test(res.getHeader('Content-Type')); } });
+	// Set up the compressor for static files.
+
+var publicCache = new FileCache(g_config.publicDir, {
+	maxBytes: 20*1024*1024,
+	cacheMaxAge: g_config.cacheMaxAge,
+	etag: g_config.etag,
+	maxAge: 24*60*60*1000 /* one day in ms */
+});
+	// Middleware to handle file cacheing.
+
+// Set up Connect
+
+var connectApp = connect()
+	.use(connect.favicon())
+		// Caching and early-out for the favicon
+	.use(httpHandlers.getRealAddress)
+		// Store the client's real address, taking into account the load balancer.
+	.use(connect.logger({ format: 'cryptic', stream: g_gsmaster.makeLogger('gateway_access') }))
+		// logging output
+	.use(connect.limit('50kb'))
+		// Reject requests larger than this
+		// I'm not entirely sure this works correctly, BTW.
+	.use(httpHandlers.handleLock)
+		// If the shard is locked or offline, redirect to the static page index_login_locked.html
+	.use(cookieParser)
+		// Cookie for session management
+	.use(connect.session({ key: 'gw_st', store: sessionStore, cookie: { maxAge: 30*60*1000 } }))
+		// Session management
+	.use(httpHandlers.checkLogin)
+		// Gates login. Redirects users to get a token, and uses token to intialize session.
+	.use(connect.favicon(path.resolve(g_config.publicDir, '/img/favicon.ico')))
+		// Yay favicon
+	.use('/tex', textureCache.serveItem)
+		// proxy textures
+	.use('/shot', headshotCache.serveItem)
+		// send headshot
+	.use('/logout', httpHandlers.doLogoutAndRedirect)
+		// handle logout
+	.use(compressor)
+		// zip up responses
+	.use(rewriteForLocale(locale, path.resolve(g_config.publicDir, 'locale'), '/locale'))
+		// rewrite URLS for overridden files.
+	.use('/nocharacters.html', httpHandlers.doLogoutAndContinue)
+		// handle no characters page forced logout.
+	.use('/res', httpHandlers.serveResource(g_rmgr))
+		// send resource
+	.use('/ent', httpHandlers.serveEntityResourceBundle(g_rmgr))
+		// send entity
+	.use('/ebs', httpHandlers.serveEmergencyBroadcast)
+		// send EBS as a string
+	.use('/news', httpHandlers.servePerfectWorldNews)
+		// send Perfect World (Wordpress) news as a JSON object
+	.use('/time', httpHandlers.serverTime)
+		// What is the server time?
+	.use(connect.bodyParser())
+		// If there's a POST body, parse it and...
+	.use('/bundle', httpHandlers.serveResourceBundle(g_rmgr))
+		// handle resource bundle requests.
+	.use(httpHandlers.handleHooks)
+		// Let other modules hook in
+	.use(publicCache.serveFile)
+		// And serve static files as well.
+
+
+var g_httpServer = http.createServer(connectApp);
+
+
+//
+// socket.io provides a persistent socket-like connection to clients. Also
+//   hooks in through httpServer.
+//
+var socketio = require('socket.io');
+var g_io = socketio.listen(g_httpServer);
+g_io.enable('browser client minification', true);
+g_io.enable('browser client cache', true);
+g_io.enable('browser client etag', true);
+g_io.enable('browser client gzip', true);
+g_io.set('destroy buffer size', 50*1024); // max size of request size, basically a sanity check against evil people.
+g_io.set('log level', 1);
+g_io.set('reconnect', false);
+g_io.set('transports', [ 'xhr-polling', 'jsonp-polling' ]);
+	// websocket doesn't work through the load balancer
+	// htmlfile doesn't work through the load balancer
+	// No, I am not shitting you.
+
+//
+// patch socketio to track performance stats.
+//
+var socketio_dispatch = socketio.Socket.prototype.dispatch;
+socketio.Socket.prototype.dispatch = function(packet, volatile)
+{
+	perf.count('socket:bytes_sent', packet.length);
+	perf.count('socket:packets_sent');
+	socketio_dispatch.call(this, packet, volatile);
+}
+
+var socketio_onClientMessage = socketio.Manager.prototype.onClientMessage;
+socketio.Manager.prototype.onClientMessage = function(id, packet)
+{
+	perf.count('socket:bytes_recv', packet.length);
+	perf.count('socket:packets_recv');
+	socketio_onClientMessage.call(this, id, packet);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//
+//           FINALLY! Everything is set up and ready to go.
+//
+//                   This starts everything up.
+//
+           g_gsmaster.attemptConnection(connectedToMaster);
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+function connectedToMaster()
+{
+	// Fetch all the translations for the messages we need.
+	locale.makeTranslationFiles(g_gsmaster,
+		translationTable,
+		path.resolve(g_config.publicDir, 'locale'),
+		function() {
+
+			// Generate translated static stencils files for the server.
+			staticStencil()
+				.cacheBuster(g_config.etag)
+				.locale(locale)
+				.outDir(path.resolve(g_config.publicDir, 'locale'))
+				.makeHTMLForFile(path.resolve(g_config.scriptDir, 'static-stencils.js'))
+				.outDir(g_config.publicDir)
+				.makeHTMLForFile(path.resolve(g_config.scriptDir, 'static-stencils.js'), locale.defaultLocale);
+
+			// Start listening for clients!
+			startListening();
+		}
+	);
+}
+
+
+function startListening()
+{
+	g_httpServer.on('listening', function(error) {
+		log.log('Serving files from:', g_config.publicDir);
+		log.log('Doing URL rewrites for locale from:', path.resolve(g_config.publicDir, 'locale', 'en|de|fr'));
+		log.log('Listening for clients on port ' + g_config.portClient + '.');
+	});
+
+	g_httpServer.on('error', function(error) {
+		if(error.code === 'EADDRINUSE')
+		{
+			if(g_config.portClient < g_config.portClientEnd)
+			{
+				g_config.portClient++;
+				setTimeout(function () {
+					log.log('Attempting to listen on port ' + g_config.portClient + '.');
+					g_httpServer.listen(g_config.portClient);
+				}, 250);
+			}
+			else
+			{
+				throw(new Error('Unable to find an open port for clients. Tried ' + g_config.portClientStart + ' to ' + g_config.portClientEnd + '.'));
+			}
+		}
+		else
+		{
+			throw(error);
+		}
+	});
+
+	g_config.portClient = g_config.portClientStart;
+	log.log('Attempting to listen on port ' + g_config.portClient + '.');
+	g_httpServer.listen(g_config.portClient);
+
+	// At this point, clients can connect and everything is GO
+
+	// Clients connect in ProxyRequesthandlers.jspp:onClientConnection().
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var LAG_INTERVAL = 500;
+var LAG_DEVIATION_MS = 50;
+var LAG_LIMIT = 10;
+
+var s_timeLast = 0;
+var s_slowCount = 0;
+function lagDetector()
+{
+	if(s_timeLast)
+	{
+		var elapsed = Date.now() - s_timeLast;
+		if(elapsed > LAG_INTERVAL+LAG_DEVIATION_MS)
+		{
+			s_slowCount++;
+
+			if(s_slowCount > LAG_LIMIT*5)
+			{
+				log.warn('Gateway STILL overloaded, locked. Session count: ' + count + ', Response time ' + elapsed + 'ms (instead of ' + LAG_INTERVAL + 'ms.)');
+				s_slowCount = LAG_LIMIT;
+			}
+		}
+		else
+		{
+			s_slowCount--;
+			if(s_slowCount < 0)
+				s_slowCount = 0;
+		}
+
+		var count = g_clientSessionManager.getSessionCount();
+		if(s_slowCount >= LAG_LIMIT)
+		{
+			if(!globals.overloaded)
+				log.warn('Gateway overloaded, temporarily locking. Session count: ' + count + ', Response time ' + elapsed + 'ms (instead of ' + LAG_INTERVAL + 'ms.)');
+
+			globals.overloaded = true;
+		}
+		else if(globals.overloaded)
+		{
+			log.warn('Gateway no longer overloaded, unlocking. Session count: ' + count);
+			globals.overloaded = false;
+		}
+	}
+
+	s_timeLast = Date.now();
+
+	if(g_config.autodetectLag)
+	{
+		setTimeout(lagDetector, LAG_INTERVAL);
+	}
+}
+
+lagDetector();
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var repl = require('repl');
+
+function listenForCommands()
+{
+	var bREPL = false;
+	process.stdin.resume();
+	process.stdin.setRawMode(true);
+
+	process.stdin.on('data', function(chunk) {
+		if(!bREPL)
+		{
+			if(Buffer.isBuffer(chunk))
+				chunk = chunk.toString();
+
+			console.log('>' + chunk);
+			if(chunk === 'd')
+			{
+				console.log('Debug level: DEBUG');
+				dbg.setLevel(dbg.DEBUG);
+			}
+			else if(chunk === 'D')
+			{
+				console.log('Debug level: DEBUG MOST THE THINGS');
+
+				dbg.setLevel(dbg.DEBUG);
+				dbg.disableFile('packet');
+				dbg.disableFile('CrypticProtocolConnection');
+				dbg.disableFile('GSConnection');
+				dbg.enableFile('ProxyResourceManager');
+				dbg.enableFile('ResourceManager');
+				dbg.disableFile('GeneratedItemCache');
+				dbg.enableFile('LSConnection');
+				dbg.enableFile('LoginRequest');
+				dbg.disableFile('RequestQueue');
+			}
+			else if(chunk === 'Z')
+			{
+				console.log('Debug level: DEBUG ALL THE THINGS');
+
+				dbg.setLevel(dbg.DEBUG);
+				dbg.enableFile('packet');
+				dbg.enableFile('CrypticProtocolConnection');
+				dbg.enableFile('ResourceDictionary');
+				dbg.enableFile('GSConnection');
+				dbg.enableFile('ProxyResourceManager');
+				dbg.enableFile('ResourceManager');
+				dbg.enableFile('GeneratedItemCache');
+				dbg.enableFile('LSConnection');
+				dbg.enableFile('LoginRequest');
+				dbg.enableFile('RequestQueue');
+			}
+			else if(chunk === 'l')
+			{
+				console.log('Debug level: LOG');
+				dbg.setLevel(dbg.LOG);
+				dbg.disableFile('packet');
+				dbg.disableFile('CrypticProtocolConnection');
+				dbg.disableFile('ResourceDictionary');
+				dbg.disableFile('GSConnection');
+				dbg.disableFile('ProxyResourceManager');
+				dbg.disableFile('ResourceManager');
+				dbg.disableFile('GeneratedItemCache');
+				dbg.disableFile('LSConnection');
+				dbg.disableFile('LoginRequest');
+				dbg.disableFile('RequestQueue');
+			}
+			else if(chunk === 'p')
+			{
+				console.log(perf.reportTextParser().join('\n'));
+			}
+			else if(chunk === 'r')
+			{
+				bREPL = true;
+				console.log('REPL started.');
+				console.log('.help   for help');
+				console.log('_       for last result');
+
+				var replServer = repl.start('>');
+				replServer.context.proxy = globals;
+				replServer.on('exit', function() {
+					console.log('REPL closed.')
+					bREPL = false;
+
+					process.stdin.resume();
+					process.stdin.setRawMode(true);
+				});
+			}
+			else
+			{
+				console.log('Commands:');
+				console.log('d - debug level DEBUG');
+				console.log('D - debug level DEBUG MOST THE THINGS');
+				console.log('l - debug level LOG');
+				console.log('p - perf info');
+				console.log('r - REPL ("proxy" is root variable in context)');
+				console.log('Z - debug level DEBUG ALL THE THINGS');
+			}
+		}
+	});
+}
+
+listenForCommands();
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+globals.config = g_config;
+globals.gsMaster = g_gsmaster;
+globals.clientSessionManager = g_clientSessionManager;
+globals.cookieParser = cookieParser;
+globals.resourceManager = g_rmgr;
+globals.socketIO = g_io;
+globals.dbg = dbg;
+globals.sessionStore = sessionStore;
+globals._module = module;
+
+// End of File

@@ -1,0 +1,84 @@
+<div class="page-content">
+	<div class="page-content">
+		<div class="page-mail-compose">
+			<h3 class="page-title">Compose Message</h3>
+
+			<div class="mail-to">
+				<label>To:</label>
+				<div class="input-field text">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<input id="address" type="text" data-set-value="queryParams.to" placeholder="character@handle" />
+				</div>
+			</div>
+			<div class="mail-subject">
+				<label>Subject:</label>
+				<div class="input-field text">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<input id="subject" type="text" data-set-value="queryParams.subject" />
+				</div>
+			</div>
+			<div class="input-field textarea">
+				<div class="input-box-top">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+				</div>
+				<div class="input-box-mid">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+				</div>
+				<div class="input-box-bot">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+				</div>
+				<textarea id="body" data-no-translation class="event-desc"></textarea>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="box-footer-block">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-body">
+						<div class="footer-controls-left">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button onclick="client.mailClearComposeForm()">Clear</button>
+							</div>
+						</div>
+						<div class="footer-controls-right">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button data-url="/mail" onclick="client.mailSendMessage()">Send</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>

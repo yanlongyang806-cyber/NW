@@ -1,0 +1,42 @@
+<div data-path="ent">
+	<h1 data-if="loginInfo.publicaccountname eq .main.publicaccountname" class="desktopOnly">Welcome Back</h1>
+	<h1 data-if="loginInfo.publicaccountname ne .main.publicaccountname" class="desktopOnly">Personnel Report for</h1>
+
+	<h1 class="mobileOnly" data-path=".ship.name"><!-- Ship Name --></h1>
+
+	<h2><span data-path=".main.rankname"><!-- Rank --></span> <span data-path=".main.formalname"><!-- Name --></span></h2>
+	<div class="front-emblem"></div>
+
+	<div class="front-classified" data-if=".main.hidden"><h1>CLASSIFIED</h1></div>
+
+	<div class="front-news-block desktopOnly" data-update="news">
+		<span data-path="news">
+			<span data-if=".items">
+				<h4>Latest News</h4>
+				<table data-path=".items">
+					<tr>
+						<td class="news-headline">
+							<a target="_blank" data-path=".title" data-set-href="{.href}">Sample Headline Goes Here</a>
+						</td>
+						<td class="news-date" data-path=".post_date.$shortDateNoYear()">
+							1 Apr 2013
+						</td>
+					</tr>
+				</table>
+			</span>
+		</span>
+	</div>
+
+	<span data-update="ebs">
+		<span data-path="ebs">
+			<div class="front-ebs" data-if=".message" data-path=".message">
+				Sample emergency broadcast system messages goes here with some kind of emergency broadcast system message.
+			</div>
+		</span>
+	</span>
+
+</div>
+
+<script>
+	client.getNewsAndEBS();
+</script>

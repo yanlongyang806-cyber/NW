@@ -1,0 +1,12 @@
+{
+#ifdef SM30 
+	float3 v2 = mul( float4( v.position_vs.xyz, 1 ), invview_mat );
+#else
+	// Not world texture coords, but we don't have constants to get invview_mat down here, so this gives a
+	//  different effect that is hopefully good enough.
+	float3 v2 = mul( float4( v.position_vs.xyz, 1 ), float4(1,1,1,1) );
+#endif
+
+	v2.xy = float2(dot(v2, float3(0.70710677, 0, 0.70710677)), dot(v2, float3(0, -1, 0)));
+	%TexCoord% = float4(v2.xy, 1, 1);
+}

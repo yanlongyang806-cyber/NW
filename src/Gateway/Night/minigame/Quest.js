@@ -1,0 +1,32 @@
+'use strict';
+
+var utils = require('./utils');
+
+function Quest(def)
+{
+	utils.extend(this, def);
+
+	// Expected fields (* are required):
+	//		id*
+	//		name*
+	//		description*
+	//		tags
+	//
+	//		mapTags
+	//		tileSet
+	//
+	//		encounterTags
+	//		encounterEndTags
+	//		encounters
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+if(module && module.exports)
+	module.exports = Quest;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

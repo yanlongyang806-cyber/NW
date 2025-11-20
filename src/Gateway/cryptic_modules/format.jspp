@@ -1,0 +1,379 @@
+'use strict';
+//
+// format
+//
+// String formatting functions
+//
+
+var format = {};
+
+//
+// coerceToDate
+//
+
+function coerceToDate(val)
+{
+	if(!(val instanceof Date))
+	{
+		// 949392000000 is Jan 1, 2000. If it's less than this, assume that
+		// the value we got was in seconds instead of milliseconds.
+		if(typeof val === 'number' && val < 949392000000)
+		{
+			val *= 1000;
+		}
+
+		// OK, let's hope that it converts.
+		val = new Date(val);
+	}
+
+	return val;
+}
+
+
+//
+// commify
+//
+// Takes an integer numeric [val] and inserts a comma (or whatever is specified
+// by [sep]) every three digits.
+//
+// Example: 1234567 => 1,234,567
+//
+format.commify = function(val, sep)
+{
+	val = val+'';
+	var out = val;
+	sep = sep || ',';
+
+	if(val.length > 3)
+	{
+		var vl = val.length - 1;
+		var ol = vl + (vl/3)|0;
+
+		out = new Array(ol);
+		for(var i = 0; i <= vl; i++)
+		{
+			if(i && i % 3 === 0)
+				out[ol--] = sep;
+
+			out[ol--] = val[vl - i];
+		}
+
+		out = out.join('');
+	}
+
+	return out
+}
+
+//
+// humanize
+//
+// Simplifies number by using K, M, G postfixes.
+//
+format.humanize = function(val)
+{
+	var suf = 'BKMGT';
+	if (val < 1024)
+		return val;
+
+	for (var j = 0; val >= 1024; j++, val >>= 10)
+		{ /* do nothing */}
+
+	return val + ' ' + suf[j] + 'iB';
+}
+
+//
+// prec
+//
+// Reduces the number to having a certain number of digits of precision.
+//
+format.precision = function(val, prec)
+{
+	var mul = Math.pow(10, prec);
+	val = Math.round(val * mul);
+	val /= mul;
+	return val;
+}
+
+//
+// dottedDate
+//
+// Given a date, returns YYYY.MM.DD
+//
+format.dottedDate = function(date)
+{
+	date = coerceToDate(date);
+
+	return date.getFullYear() + '.' + zpad(date.getMonth()+1) + '.' + zpad(date.getDate());
+}
+
+function zpad(a) { return a < 10 ? '0'+a : a; }
+
+//
+// stardate('Thu Nov 15 2012 14:16:57 GMT-0800')
+//
+// Turns a date into a stardate
+//
+// This is the same algorithm the game uses, which is loosely adapted from
+// the algorithm described here:
+//     http://trekguide.com/Stardates.htm#TNGcalculator
+//
+var stardateIn2409 = 86605.48; // Stardate on Jan 1, 2409 at midnight
+var secondsPerDay = 60*60*24;
+
+format.stardate = function(val)
+{
+	var date = coerceToDate(val);
+	var isLeapYear = (new Date(date.getUTCFullYear(), 1, 29).getUTCMonth() === 1);
+
+	var secondsPerYear = (isLeapYear ? 366 : 365) * secondsPerDay;
+	var daysBeforeMonth = isLeapYear
+		? [0, 31 , 60 , 91 , 121, 152, 182, 213, 244, 274, 305, 335]
+		: [0, 31 , 59 , 90 , 120, 151, 181, 212, 243, 273, 304, 334];
+
+	var yearsFrom2009 = date.getUTCFullYear() - 2009;
+	var secs =
+		(daysBeforeMonth[date.getUTCMonth()] * secondsPerDay)
+		+ ((date.getUTCDate()-1)  * secondsPerDay)
+		+ (date.getUTCHours() * 60 * 60)
+		+ (date.getUTCMinutes() * 60)
+		+ date.getUTCSeconds();
+	var offset = secs / secondsPerYear;
+	var stardate = stardateIn2409 + ((yearsFrom2009 + offset) * 1000);
+
+	return stardate.toFixed(2);
+}
+
+//
+// time
+//
+// Given a date, returns something like: 7:00 PM
+//
+format.time = function(date)
+{
+	date = coerceToDate(date);
+
+	var h = date.getHours() % 12;
+	if (h === 0)
+		h = 12;
+	return h + ':' + zpad(date.getMinutes()) + (date.getHours() < 12 ? ' AM' : ' PM');
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Localized stuff
+//
+
+var s_months = {
+	'en': ['January', 'February', 'March', 'April', 'May', 'June', 'July',    'August', 'September', 'October', 'November', 'December'],
+	'fr': ['janvier', 'février',  'mars',  'avril', 'mai', 'juin', 'juillet', 'août',   'septembre', 'octobre', 'novembre', 'décembre'],
+	'de': ['Januar',  'Februar',  'März',  'April', 'Mai', 'Juni', 'Juli',    'August', 'September', 'Oktober', 'November', 'Dezember']
+};
+
+var s_shortMonths = {
+	'en': [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ],
+	'fr': [ "janv.", "févr.", "mars", "avr.", "mai", "juin", "juil.", "août", "sept.", "oct.","nov.", "déc."],
+	'de': [ "Jan", "Feb", "Mrz", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"]
+};
+
+var s_timeUnits = {
+	'en': [ 'hour',   'hours',   'minute', 'minutes' ],
+	'fr': [ 'heure',  'heures',  'minute', 'minutes' ],
+	'de': [ 'Stunde', 'Stunden', 'Minute', 'Minuten' ]
+};
+
+//
+// fullDateTime
+//
+// Given a date, returns something like: November 14, 2012 @ 7:00 PM
+//
+format.fullDateTime = function(date)
+{
+	date = coerceToDate(date);
+	var month = s_months[crypticMessages['httpLanguage']][date.getMonth()];
+	return month + ' ' + date.getDate() + ', ' + date.getFullYear() + ' @ ' + format.time(date);
+}
+
+//
+// shortDate
+//
+// Given a date, returns something like: 14 Nov 2013
+//
+format.shortDate = function(date)
+{
+	date = coerceToDate(date);
+	var month = s_shortMonths[crypticMessages['httpLanguage']][date.getMonth()];
+	return date.getDate() + ' ' + month + ' ' + date.getFullYear();
+}
+
+//
+// shortDateNoYear
+//
+// Given a date, returns something like: 14 Nov
+//
+format.shortDateNoYear = function(date)
+{
+	date = coerceToDate(date);
+	var month = s_shortMonths[crypticMessages['httpLanguage']][date.getMonth()];
+	return date.getDate() + ' ' + month;
+}
+
+//
+// shortDateTime
+//
+// Given a date, returns something like: 14 Nov 2013 23:01
+//
+format.shortDateTime = function(date)
+{
+	date = coerceToDate(date);
+	return format.shortDate(date) + ' ' + zpad(date.getHours()) + ':' + zpad(date.getMinutes());
+}
+
+//
+// duration
+//
+// Given a duration in minutes, returns something like: 4 hours, 20 minutes
+//
+format.duration = function(duration)
+{
+	var h = Math.floor(duration / 60);
+	var m = (duration % 60);
+
+	var times = s_timeUnits[crypticMessages['httpLanguage']];
+
+	var hStr = (h ? (h + (h > 1 ? ' ' + times[1] : ' ' + times[0])) : '');
+	var mStr = (m ? (m + (m > 1 ? ' ' + times[3] : ' ' + times[2])) : '');
+
+	return hStr + (hStr && mStr ? ', ' : '') + mStr;
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+var reAmp = /&/g;
+var reLT = /</g;
+var reGT = />/g;
+var reBS = /\\/g;
+var reNL = /\n/g;
+var reCR = /\r/g;
+var reSQ = /'/g;
+var reDQ = /"/g;
+var reTab = /\t/g;
+
+//
+// escapeForHTML
+//
+// Given a string, change HTML-reserved characters to the HTML entities.
+//
+format.escapeForHTML = function(str)
+{
+	return str
+		.replace(reAmp, '&amp;')
+		.replace(reDQ, '&quot;')
+		.replace(reSQ, '&#39;')
+		.replace(reLT, '&lt;')
+		.replace(reGT, '&gt;')
+		.replace(reNL, '<br>');
+}
+
+//
+// escapeForString
+//
+// Given a string, make it safe for embedding in a Javascript string
+//
+format.escapeForString = function(str)
+{
+	return str
+		.replace(reBS, '\\\\')
+		.replace(reSQ, "\\'")
+		.replace(reDQ, '\\"')
+		.replace(reNL, '\\n')
+		.replace(reCR, '\\r')
+		.replace(reTab, '\\t');
+}
+
+
+format.cleanUpSMF = function(str)
+{
+	// <img src=foobar
+	//    to
+	// <img src="/tex/foobar"
+	var reImg = /(<img[^>]+)src=([^ >]+)/gi;
+	str = str.replace(reImg, '$1src="/tex/$2"');
+
+	// <font style=foobar>
+	//    to
+	// <span class="foobar">
+	var reFontStyle = /<font style=([^ >]+)/gi;
+	str = str.replace(reFontStyle, '<span class="$1"');
+	// <font.*>
+	//    to
+	// <span.*>
+	var reFont = /<font/gi;
+	str = str.replace(reFont, '<span');
+	// </font>
+	//    to
+	// </span>
+	var reFontClose = /<\/font/gi;
+	str = str.replace(reFontClose, '</span');
+
+	// align=right
+	//    to
+	// class="align-right"
+	var reAlign = /align=(right|left)/gi;
+	str = str.replace(reAlign, 'class="align-$1"');
+
+	// <span color=blarg>
+	//    to
+	// <span class=blarg>
+	var reColor = /(<span[^>]+)color=/gi;
+	str = str.replace(reColor, '$1class=');
+
+	return str;
+}
+
+//
+// displayAsCoins
+//
+// Displays a number as coins Gold, Silver, Copper.
+// Unless 'all' is set, will only display the non-zero denominations.
+format.displayAsCoins = function(number, all)
+{
+	var num = parseInt(number, 10);
+
+	var c = 0, s = 0, g = 0;
+
+	c = num % 100;
+	num = Math.floor(num / 100);
+	if(num)
+	{
+		s = num % 100;
+		num = Math.floor(num / 100);
+
+		if(num)
+		{
+			g = num;
+		}
+	}
+
+	var ret = '';
+	if(g || all)
+	{
+		ret += ' <img src="./tex/Currency_Icon_Tiny_Gold.png" alt=""> <span>'+ this.commify(g, ',') + '</span>';
+	}
+
+	if(s || all)
+	{
+		ret += ' <img src="./tex/Currency_Icon_Tiny_Silver.png" alt=""> <span>' + s + '</span>';
+	}
+
+	if(c || all)
+	{
+		ret += ' <img src="./tex/Currency_Icon_Tiny_Copper.png" alt=""> <span>' + c + '</span>';
+	}
+
+	return ret;
+}
+
+module.exports = format;
+
+// End of File

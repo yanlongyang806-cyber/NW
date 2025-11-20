@@ -1,0 +1,359 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// EBuffer tests
+//
+//
+var vows = require('vows');
+var assert = require('assert');
+
+var EBuffer = require('../lib/EBuffer');
+
+var suite = vows.describe('EBuffer tests')
+
+suite.addBatch({
+	'Basic append and resize': {
+		topic: function () {
+			var ebuf = new EBuffer(1);
+			ebuf.appendStringRaw('ABCDE');
+			ebuf.appendStringRaw('FGHIJKLMNO');
+			ebuf.appendStringRaw('PQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+			return ebuf;
+		},
+		'length is correct': function(ebuf) {
+			assert.equal(ebuf.length(), 52);
+		},
+		'capacity is sufficient': function(ebuf) {
+			assert.isTrue(ebuf.capacity() >= ebuf.length());
+		},
+		'appended/resized correctly': function(ebuf) {
+			var buf = new Buffer('ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ', 'utf8');
+			assert.isTrue(bufferCompare(buf, ebuf.getBuffer())===0);
+		}
+	},
+	'appendUInt8': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt8(18);
+			return ebuf;
+		},
+		'= 18': function(ebuf) {
+			assert.equal(ebuf.buffer[0], 18);
+		},
+		'length is 1': function(ebuf) {
+			assert.equal(ebuf.length(), 1);
+		}
+	},
+	'appendUInt32': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			return ebuf;
+		},
+		'= 0xdeadbeef': function(ebuf) {
+			assert.equal(ebuf.buffer[0], 0xef);
+			assert.equal(ebuf.buffer[1], 0xbe);
+			assert.equal(ebuf.buffer[2], 0xad);
+			assert.equal(ebuf.buffer[3], 0xde);
+		},
+		'length is 4': function(ebuf) {
+			assert.equal(ebuf.length(), 4);
+		}
+	},
+	'appendString': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendString('string appended!');
+			return ebuf;
+		},
+		'= "string appended!"': function(ebuf) {
+			assert.equal(ebuf.getBuffer().toString('utf8'), 'string appended!\0');
+		},
+		'length is correct': function(ebuf) {
+			assert.equal(ebuf.length(), 'string appended!\0'.length);
+		},
+		'null terminated': function(ebuf) {
+			assert.equal(ebuf.buffer['string appended!'.length], 0);
+		}
+	},
+	'appendStringRaw': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('string appended!');
+			return ebuf;
+		},
+		'= "string appended!"': function(ebuf) {
+			assert.equal(ebuf.getBuffer().toString('utf8'), 'string appended!');
+		},
+		'length is correct': function(ebuf) {
+			assert.equal(ebuf.length(), 'string appended!'.length);
+		}
+	},
+	'appendBuffer': {
+		topic: function () {
+			var buf = new Buffer(26);
+			buf.write('abcdefghijklmnopqrstuvwxyz', 0);
+
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+
+			ebuf.appendBuffer(buf);
+
+			return ebuf;
+		},
+		'appended correctly': function(ebuf) {
+			var buf = new Buffer('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+			assert.isTrue(bufferCompare(buf, ebuf.getBuffer(), ebuf.length())===0);
+		}
+	},
+	'multiple appends': {
+		topic: function () {
+			var ebuf = new EBuffer();
+
+			var buf = new Buffer(4);
+			buf.write('beef');
+
+			ebuf.appendUInt8(18);
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('dead');
+			ebuf.appendBuffer(buf);
+
+			return ebuf;
+		},
+		'appended correctly': function(ebuf) {
+			var buf = new Buffer([
+				0x12,
+				0xef, 0xbe, 0xad, 0xde,
+				0x64, 0x65, 0x61, 0x64, 0,
+				0x62, 0x65, 0x65, 0x66
+			]);
+			assert.isTrue(bufferCompare(buf, ebuf.getBuffer(), ebuf.length())===0);
+		},
+		'length is 14': function(ebuf) {
+			assert.equal(ebuf.length(), 14);
+		}
+	},
+	'slice': {
+		topic: function () {
+			var ebuf = new EBuffer(10);
+			ebuf.appendString('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz');
+			ebuf.slice(26, 30);
+			return ebuf;
+		},
+		'= "abcd"': function(ebuf) {
+			var buf = new Buffer("abcd");
+			assert.isTrue(bufferCompare(buf, ebuf.getBuffer(), ebuf.length())===0);
+		}
+	},
+	'reserve': {
+		topic: function () {
+			var ebuf = new EBuffer(10);
+			ebuf.reserve(200);
+			return ebuf;
+		},
+		'is correct': function(ebuf) {
+			assert.equal(ebuf.length(), 200);
+			assert.isTrue(ebuf.capacity() >= 200);
+		}
+	},
+	'reset': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+			ebuf.reset();
+			return ebuf;
+		},
+		'is empty again': function(ebuf) {
+			assert.equal(ebuf.length(), 0);
+		},
+		'buffer returns empty': function(ebuf) {
+			assert.equal(ebuf.getBuffer().length, 0);
+		}
+	},
+	'indexOf middle': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('ABCDEFGHIJKLMNOPQRSTUVWXYZ -ABCZ- ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+			return ebuf;
+		},
+		'finds the right thing': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ');
+			assert.equal(idx, 28);
+		}
+	},
+	'indexOf at end': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('ABCDEFGHIJKLMNOPQRSTUVWXYZ -ABCZ');
+			return ebuf;
+		},
+		'finds the right thing': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ');
+			assert.equal(idx, 28);
+		}
+	},
+	'indexOf at front': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('ABCZ- ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+			return ebuf;
+		},
+		'finds the right thing': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ');
+			assert.equal(idx, 0);
+		}
+	},
+	'indexOf with restrictions': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendStringRaw('ABCZ');
+			return ebuf;
+		},
+		'finds the right thing': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ', 0, 4);
+			assert.equal(idx, 0);
+		},
+		'doesn\'t find': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ', 0, 3);
+			assert.equal(idx, -1);
+		},
+		'also doesn\'t find': function(ebuf) {
+			var idx = ebuf.indexOf('ABCZ', 1, 4);
+			assert.equal(idx, -1);
+		}
+	},
+	'readUInt32': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			return ebuf;
+		},
+		'= 0xdeadbeef': function(ebuf) {
+			assert.equal(ebuf.readUInt32(), 0xdeadbeef);
+			assert.equal(ebuf.cur, 4);
+		}
+	},
+	'readUInt8 (and seek)': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			ebuf.seek(12);
+
+			return ebuf;
+		},
+		'= 18': function(ebuf) {
+			assert.equal(ebuf.readUInt8(), 18);
+			assert.equal(ebuf.cur, 13);
+		}
+	},
+	'readString (and skip)': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			ebuf.skip(4);
+
+			return ebuf;
+		},
+		'= "ABCEFDH"': function(ebuf) {
+			assert.equal(ebuf.readString(), 'ABCEFDH');
+			assert.equal(ebuf.cur, 12);
+		}
+	},
+	'readUInt32 @ 0': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+			ebuf.appendUInt32(0xdeadbeef);
+
+			return ebuf;
+		},
+		'= 0xdeadbeef': function(ebuf) {
+			assert.equal(ebuf.readUInt32(13), 0xdeadbeef);
+			assert.equal(ebuf.cur, 17);
+		}
+	},
+	'readUInt8 @ location': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			return ebuf;
+		},
+		'= 18': function(ebuf) {
+			assert.equal(ebuf.readUInt8(12), 18);
+			assert.equal(ebuf.cur, 13);
+		}
+	},
+	'readString @ location': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			return ebuf;
+		},
+		'= "ABCEFDH"': function(ebuf) {
+			assert.equal(ebuf.readString(4), 'ABCEFDH');
+			assert.equal(ebuf.cur, 12);
+		}
+	},
+	'read consecutive': {
+		topic: function () {
+			var ebuf = new EBuffer();
+			ebuf.appendUInt32(0xdeadbeef);
+			ebuf.appendString('ABCEFDH');
+			ebuf.appendUInt8(18);
+
+			return ebuf;
+		},
+		'is correct': function(ebuf) {
+			assert.equal(ebuf.readUInt32(), 0xdeadbeef);
+			assert.equal(ebuf.readString(), 'ABCEFDH');
+			assert.equal(ebuf.readUInt8(), 18);
+			assert.equal(ebuf.cur, 13);
+		}
+	}
+});
+
+suite.export(module); // JSHINT_IGNOREME
+
+///////////////////////////////////////////////////////////////////////////
+
+function bufferCompare(buf1, buf2, len)
+{
+	len = len || buf1.length;
+
+	if(len > buf2.length)
+	{
+		return len-buf2.length;
+	}
+
+	for(var i = 0; i < len; i++)
+	{
+		if(buf1[i] != buf2[i])
+		{
+			return(buf1[i]-buf2[i]);
+		}
+	}
+
+	return 0;
+}
+
+// End of File

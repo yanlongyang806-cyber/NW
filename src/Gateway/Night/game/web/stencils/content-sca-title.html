@@ -1,0 +1,117 @@
+<!-- if(dev) -->
+
+<div class="page-dungeons">
+	<div class="page-content">
+
+		<div class="dungeon-title-bg">
+			<div class="dungeon-title-logo"></div>
+			<div class="dungeon-title-buttons">
+				<div class="input-field button epic xlarge">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/overworld">Start Adventure</button>
+				</div>
+			</div>
+
+
+			<!-- DEV MENU -->
+			<style>
+			.dungeons-dev-menu {
+				background-color: rgba(0,0,0,.7);
+				width: 150px;
+				height: auto;
+				position: absolute;
+				bottom: 25px;
+				left: 25px;
+				padding: 10px;
+			}
+			.dungeons-dev-menu h3 {
+				font-size: 14px;
+			}
+			</style>
+			<div class="dungeons-dev-menu">
+				<h3 class="page-title">Dev Menu</h3>
+
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/overworld">Overworld Map</button>
+				</div>
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/chooseparty">Choose Party</button>
+				</div>
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/explore">Dungeon Map</button>
+				</div>
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/combat">Dice Combat</button>
+				</div>
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/status">Status Screen</button>
+				</div>
+				<br />
+				<div class="input-field button light disabled">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures">Vendor</button>
+				</div>
+				<br />
+				<div class="input-field button light disabled">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures">Help</button>
+				</div>
+				<br />
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/dicetest1">Dice Test 1</button>
+				</div>
+				<br />
+				<div class="input-field button light">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/dicetest2">Dice Test 2</button>
+				</div>
+				<br />
+			</div>
+			<!-- DEV MENU-->
+
+
+		</div>
+
+	</div>
+</div>
+
+
+<script>
+	if(!require.modules['sca.js'])
+		$('head').append('<script src="./js/sca.js?cb=' + cachebuster + '"></'+'script>');
+
+	client.scaStartGame();
+</script>
+
+<!-- endif(dev) -->

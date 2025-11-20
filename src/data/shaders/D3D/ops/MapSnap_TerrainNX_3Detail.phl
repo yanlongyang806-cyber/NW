@@ -1,0 +1,49 @@
+// MapSnap_Terrain_3Detail.phl (used with terrain_heightmap.vhl)
+{
+#ifndef DEPTH_ONLY
+	// Tint from map
+	float4 noisecolor = sampleTex2D(TexSampler%ColorTexture%, v.texcoords.xy*2);
+
+	// Detail textures
+	float4 detail_spec1 = nw_mapsnap_sampleTexcolor(TexSampler%DetailTexture1%);// Detail 0 
+	float4 detail_spec2 = nw_mapsnap_sampleTexcolor(TexSampler%DetailTexture2%); // Detail 1
+	float4 detail_spec3 = nw_mapsnap_sampleTexcolor(TexSampler%DetailTexture3%); // Detail 2
+	//float4 normal_dxt5nm1 = sampleTex2D(TexSampler%DetailNormalTexture1%, v.texcoords.zw * %UVScale1%.xy);
+	//float4 normal_dxt5nm2 = sampleTex2D(TexSampler%DetailNormalTexture2%, v.texcoords.zw * %UVScale1%.zw);
+	//float4 normal_dxt5nm3 = sampleTex2D(TexSampler%DetailNormalTexture3%, v.texcoords.zw * %UVScale2%.xy);
+
+	float3 detail_vec = float3(dot(v.color0, %DetailSwitchSelect1%), dot(v.color0, %DetailSwitchSelect2%), dot(v.color0, %DetailSwitchSelect3%));
+	detail_vec.x += 1 - saturate(detail_vec.x + detail_vec.y + detail_vec.z);
+	float4 detail_spec =	detail_vec.x * detail_spec1 + 
+					detail_vec.y * detail_spec2 +
+					detail_vec.z * detail_spec3;
+	//float4 normal_dxt5nm = detail_vec.x * normal_dxt5nm1 +
+	//					 detail_vec.y * normal_dxt5nm2 +
+	//					 detail_vec.z * normal_dxt5nm3;
+#ifdef NO_TERRAIN_DETAIL
+	detail_spec = float4(0,0,0,0.5);
+#endif
+float4 color;
+	color.rgb = detail_spec.rgb;
+
+	color.rgb = nw_mapsnap_colorize(color.rgb);
+	color.rgb *= 0.75+noisecolor.r*0.25;
+
+	%SpecularValueOut% = dot((%SpecularValueIn%).xyz, detail_vec) * detail_spec.w;
+	%SpecularExponentOut% = dot((%SpecularExponentIn%).xyz, detail_vec);
+	//%NormalOut%.xyz = dxt5nmExpand(normal_dxt5nm);
+	%NormalOut%.xyz = float3(0,0,1);
+#ifdef NO_TERRAIN_NORMAL
+	%NormalOut%.xyz = float3(0,0,1);
+#endif
+	%ColorOut% = color;
+
+#else
+
+	%ColorOut% = 1;
+
+#endif
+
+	v.color0 = 1;
+}
+

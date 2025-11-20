@@ -1,0 +1,106 @@
+OperationDef
+	Name "DepthColorSelect" // Name of the operation
+	Category "Combiner"
+	Description "Selects between colors based on a depth value.  Intended use is in combination with RefractAndFade for Creatures water effects."
+	Type ADVANCED
+
+	Input
+		Name Color0
+		Description "Color for shallowest depth"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Floats 1, 1, 2, 1
+		EndDefault		
+	EndInput
+	Input
+		Name Color1
+		Description "Color for intermediate depth"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Floats 1, 1, 1, 1
+		EndDefault		
+	EndInput
+	Input
+		Name Color2
+		Description "Color for intermediate depth"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Floats 0.5, 0.5, 1, 1
+		EndDefault		
+	EndInput
+	Input
+		Name Color3
+		Description "Color for deepest depth"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Floats 0, 0, 0, 1
+		EndDefault		
+	EndInput
+
+	Input
+		Name ScreenColor
+		Description "Original screen color"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+	Input
+		Name DepthFade
+		Description "Depth fade value"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+
+	Input
+		Name Depths
+		Description "Depths to test against, each of RGB is a different depth, and each should be larger than the next.  Default: 0, 0.25, 0.5"
+		NoManualConnect 1
+		Float 3
+		FloatRange -0.5 1
+		NoAutoConnect 1
+		Default
+			Floats 0, 0.25, 0.5
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenColorScale
+		Description "Amount to scale the ScreenColor when considering depth selection"
+		NoManualConnect 1
+		NoAutoConnect 1
+		Float 1
+		FloatRange 0 1
+		Default
+			Floats 0.25
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenColorBlend
+		Description "Amount to scale the depth when considering blending against the screen color"
+		NoManualConnect 1
+		Float 1
+		NoAutoConnect 1
+		FloatRange 0 20
+		Default
+			Floats 4
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Description "Output of color selection"
+		Float 4
+		AlphaFrom Color0
+		AlphaFrom Color1
+		AlphaFrom Color2
+		AlphaFrom Color3
+	EndOutput
+
+EndOperationDef
+

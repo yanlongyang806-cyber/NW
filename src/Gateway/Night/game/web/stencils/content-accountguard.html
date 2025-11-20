@@ -1,0 +1,53 @@
+<div class="page-accountguard">
+	<h1>Account Verification</h1>
+
+	<p>An email containing an authorization code has been delivered to the email address associated with your account.</p>
+	<p>Select "Save Browser" to bypass this prompt the next time you log in from this web browser.</p>
+	<form method="post" action="" id="login-form" class="login-form" name="onetimecodeform">
+
+		<div class="accountguard-code">
+			<label>One-Time Code</label>
+			<!--
+			<div class="input-field text">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				-->
+				<input id="onetimecode-code" name="one_time_code" maxlength="5" type="text" />
+				<!--
+			</div>
+			-->
+		</div>
+		<div class="accountguard-browser">
+
+
+			<label>Browser Name</label>
+			<!--
+			<div class="input-field text">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				-->
+				<input id="onetimecode-name" name="name" value="My Browser" maxlength="32" type="text" />
+				<!--
+			</div>
+			-->
+		</div>
+		<div class="accountguard-save">
+			<label class="save_browser">
+				<input checked="checked" name="save" id="onetimecode-save" type="checkbox" onclick="document.onetimecodeform.name.disabled = !document.onetimecodeform.name.disabled" />
+				Save Browser
+			</label>
+			<span class="accountguard_note">Unselect this if you are using a public computer.</span>
+		</div>
+
+		<div class="input-field button epic">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button type="button" class="modal-button onetimecode-submit">Submit</button>
+		</div>
+
+	</form>
+
+</div>

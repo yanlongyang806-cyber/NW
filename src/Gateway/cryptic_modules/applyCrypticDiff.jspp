@@ -1,0 +1,80 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var unescapeCrypticString = require('cryptic/unescapeCrypticString');
+var escapeForJavascript = require('cryptic/escapeForJavascript');
+
+var reNumberify = /"(-?[0-9.]{1,9})"/g;
+var rePrefix = /(set|destroy|create) \./g;
+
+function applyCrypticDiff(obj, diff)
+{
+	dbg.trace(obj, diff);
+	var deleted = {};
+
+	if(diff == 'destroy *')
+	{
+		for(var name in obj)
+			delete obj.name;
+
+		return true;
+	}
+
+	diff = diff.replace(reNumberify, '$1')
+		.replace(rePrefix, '$1 obj.')
+		.replace(/^set /mg, '')
+		.replace(/^destroy (.*)\[([0-9]+)\]$/mg, function(match, p1, p2) {
+			var id = p1.toLowerCase();
+			if(deleted[id])
+				deleted[id] = +p2 < deleted[id] ? +p2 : deleted[id];
+			else
+				deleted[id] = +p2;
+
+			return 'delete '+id+'['+p2+']';
+		})
+		.replace(/^destroy (.*)$/mg, function(match, p1) {
+			return 'delete ' + p1.toLowerCase();
+		})
+		.replace(/^create (.*)$/mg, function(match, p1) {
+			var str = '';
+			var n = p1.toLowerCase();
+			if(n[n.length-1] ===']')
+			{
+				var root = n.substring(0, n.lastIndexOf('['));
+				str = 'if(!'+root+') { '+root+' = [] }\n';
+			}
+
+			return str + n + ' = {};';
+		})
+		.replace(/^[^ ]+ =/mg, function(match) { return match.toLowerCase(); })
+		.replace(/( =\s*)"([^"]*)"/mg, function(match, p1, p2) {
+			return p1 + "'" + escapeForJavascript(unescapeCrypticString(p2)) + "'";
+		});
+
+
+	for(var id in deleted)
+	{
+		diff = diff + '\n' + id + ' = ' + id + '.slice(0, ' + deleted[id] + ');'
+	}
+
+	try
+	{
+		eval(diff);
+	}
+	catch(e)
+	{
+		dbg.error('Failed to apply diff', e, e.stack, obj, diff);
+		return false;
+	}
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = applyCrypticDiff;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

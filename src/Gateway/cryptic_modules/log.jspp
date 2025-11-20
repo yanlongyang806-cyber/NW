@@ -1,0 +1,128 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// Log
+//
+// Works in conjunction with a macro than embeds trace lines into the code.
+// Has an overall logging level setting.
+// Supports showing and hiding message from certain files.
+//
+var util = require('util');
+
+var Log = { };
+Log.loggers = [];
+
+var now = new Date();
+
+///////////////////////////////////////////////////////////////////////////
+
+Log.defaultLogger = {
+	write: function(msg) { console.log(msg); },
+	color: true,
+	date: true,
+	depth: 2
+}
+
+Log.loggers.push(Log.defaultLogger);
+
+///////////////////////////////////////////////////////////////////////////
+
+
+///////////////////////////////////////////////////////////////////////////
+
+Log.setLogger = function(logger)
+{
+	// The logger function must have a .write function on it.
+	// A Writeable Stream works, for example.
+	// A trailing \n is NOT provided, so add one in your logger if you want
+	//   one.
+
+	Log.loggers.length = 0;
+	Log.loggers.push(logger);
+}
+
+Log.addLogger = function(logger)
+{
+	Log.loggers.push(logger);
+}
+
+Log.removeLogger = function(logger)
+{
+	var i = Log.loggers.indexOf(logger);
+	if(i >= 0)
+	{
+		Log.loggers.splice(i, 1);
+	}
+}
+
+function mkLogFunc(tag, colorizer)
+{
+	return function() {
+		if(arguments.length > 0)
+		{
+			now.setTime(Date.now());
+			var time = now.toUTCString() + ' - ';
+
+			var args = Array.prototype.slice.call(arguments);
+
+			var start = tag + ': '
+			if(typeof args[0] === 'string')
+			{
+				start += args.shift();
+			}
+
+			Log.loggers.forEach(function(logger) {
+				var msg = logger.date ? time + start : start;
+
+				if(logger.color && colorizer)
+				{
+					msg = colorizer(msg);
+				}
+
+				if(args.length)
+				{
+					msg += util.inspect(args, false,
+						logger.depth ? logger.depth : 2,
+						logger.color ? logger.color : false);
+				}
+
+				if(!logger.inLog)
+				{
+					logger.inLog = true;
+					logger.write(msg);
+					logger.inLog = false;
+				}
+				else
+				{
+					console.error('Recursive log! ' + msg);
+				}
+			});
+		}
+	}
+}
+
+if(process && process.title !== 'browser')
+{
+	var colors = require('colors');
+	Log.shutdown = mkLogFunc('SHUTDOWN', colors.magenta);
+	Log.error = mkLogFunc('ERROR', colors.red);
+	Log.warn = mkLogFunc('WARN', colors.yellow);
+	Log.log = mkLogFunc('LOG', colors.grey);
+	Log.info = mkLogFunc('INFO', colors.green);
+}
+else
+{
+	Log.shutdown = mkLogFunc('SHUTDOWN');
+	Log.error = mkLogFunc('ERROR');
+	Log.warn = mkLogFunc('WARN');
+	Log.log = mkLogFunc('LOG');
+	Log.info = mkLogFunc('INFO');
+
+	Log.defaultLogger.color = false;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Log;
+
+// End of File

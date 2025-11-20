@@ -1,0 +1,33 @@
+<div data-path="guild">
+
+	<h2>Fleet Logs</h2>
+
+	<table id="logs_table">
+		<thead>
+			<tr>
+				<th class="logs-stardate">Stardate</th>
+				<th class="logs-type">Type</th>
+				<th class="logs-entry">Log Entry</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody data-if="{.activityentries}" data-path=".activityentries">
+			<tr>
+				<td class="logs-stardate" data-path=".time.$stardate()">99999.99</td>
+				<td class="logs-type" data-path=".type">Activity</td>
+				<td class="logs-entry" data-path=".string">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc.</td>
+				<td></td>
+			</tr>
+		</tbody>
+
+		<tbody data-if="!{.activityentries}">
+			<tr><td colspan="4">This is no activity for this fleet</td></tr>
+		</tbody>
+		
+	</table>
+
+</div>
+
+<script>
+	client.fleetLogsTableInit();
+</script>

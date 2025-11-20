@@ -1,0 +1,13 @@
+</span>
+</div>
+<div class="refresh_checkbox">
+	Auto-Refresh: <input type="checkbox" value="1" id="autorefresh" onClick="remember(this)" />
+	<div id="refreshtime">&nbsp;</div>
+</div>
+<script language="javascript" type="text/javascript">
+<!--
+load('auto-update','auto-update-swap');
+guify_tags(document.getElementById('auto-update'));
+//--></script>
+</body>
+</html>

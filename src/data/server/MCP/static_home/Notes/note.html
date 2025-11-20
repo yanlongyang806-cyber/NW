@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Edit Note</title>
+		<link rel="stylesheet" type="text/css" href= "static/notes/note.css" />
+		<script type="text/javascript" src="static/js/jquery.js"></script>
+		<script type="text/javascript" src="static/notes/note.js"></script>
+	</head>
+	<body>
+		<header>
+			<h1>Loading...</h1>
+		</header>
+		<section data-scope="global">
+			<h2>Global Comments</h2>
+			<fieldset>
+				<legend>Normal</legend>
+				<textarea data-type="normal"></textarea>
+				<input type="button" value="Save" id="button_1" />
+				<span></span>
+			</fieldset>
+			<fieldset>
+				<legend>Critical</legend>
+				<textarea data-type="critical"></textarea>
+				<input type="button" value="Save" id="button_2" />
+				<span></span>
+			</fieldset>
+		</section>
+		<section data-scope="product">
+			<h2 class="product">Product-Specific Comments</h2>
+			<fieldset>
+				<legend>Normal</legend>
+				<textarea data-type="normal"></textarea>
+				<input type="button" value="Save" id="button_3" />
+				<span></span>
+			</fieldset>
+			<fieldset>
+				<legend>Critical</legend>
+				<textarea data-type="critical"></textarea>
+				<input type="button" value="Save" id="button_4" />
+				<span></span>
+			</fieldset>
+		</section>
+		<section data-scope="system">
+			<h2 class="system">System-Specific Comments</h2>
+			<fieldset>
+				<legend>Normal</legend>
+				<textarea data-type="normal"></textarea>
+				<input type="button" value="Save" id="button_5" />
+				<span></span>
+			</fieldset>
+			<fieldset>
+				<legend>Critical</legend>
+				<textarea data-type="critical"></textarea>
+				<input type="button" value="Save" id="button_6" />
+				<span></span>
+			</fieldset>
+		</section>
+	</body>
+</html>

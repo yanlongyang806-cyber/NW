@@ -1,0 +1,44 @@
+<!--
+<div class="overworld-instructions">
+	<h2>Select a Location to Explore</h2>
+</div>
+ -->
+<div class="overworld-location-info">
+
+	<div class="location-image" data-set-style="background-image: url(/img_sca/{.background});"></div>
+	<h3 class="location-name" data-path=".name">Cave of Trouble</h3>
+	<h5 class="location-tier">Tier <span data-path=".tier">10</span><span class="mobileOnly">,</span></h5>
+	<h5 class="location-rank">Rank <span data-path=".ranks">0-10</span></h5>
+
+	<div class="location-rewards" data-if=".samplereward.item">
+		<h4>Rewards:</h4>
+		<ul data-path=".samplereward.item">
+			<li>
+				<div class="icon-slot simple smaller rare">
+					<img data-set-src="tex/{.itemdef.icon}" data-set-data-tt-item="{.itemdef.name}" alt="" />
+					<span class="icon-overlay"></span>
+				</div>
+			</li>
+		</ul>
+	</div>
+	<p class="location-flavor attention" data-path=".description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</p>
+
+	<div class="input-field button epic">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+
+		<div class="button-glow buttonPulse">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+		</div>
+		<button onclick="client.scaConfirmQuest()" data-url-silent="/adventures/chooseparty">
+			<span class="desktopOnly">Choose Your Party</span>
+			<span class="mobileOnly">Choose Party</span>
+		</button>
+	</div>
+	<script>
+		client.buttonPulse('.buttonPulse');
+	</script>
+</div>

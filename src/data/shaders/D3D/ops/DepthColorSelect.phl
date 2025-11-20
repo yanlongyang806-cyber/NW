@@ -1,0 +1,14 @@
+{
+	float4 sample_orig = %ScreenColor%;
+	float s0 = %DepthFade% + %ScreenColorScale%*saturate(1 - getIntensity(sample_orig));
+	float3 depths = float3(0, 0.25, 0.5); // %Depths%;
+	float3 vv = (1 - saturate(20*(1 - (s0.x + depths))));
+	float4 c0 = %Color0%;
+	float4 c1 = %Color1% - c0;
+	float4 c2 = %Color2% - (c0+c1);
+	float4 c3 = %Color3% - (c0+c1+c2);
+	float4 sample = (vv.x*c3 + vv.y*c2 + vv.z*c1 + c0)*0.25;
+	sample = lerp(sample_orig, sample, saturate(%DepthFade%*%ScreenColorBlend%));
+
+	%Result% = sample;
+}

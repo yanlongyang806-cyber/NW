@@ -1,0 +1,36 @@
+<div data-path="ent">
+	<div class="page-mail">
+		<div class="box-tabs-block">
+			<div class="tabs-horizontal">
+				<div class="tabs-container">
+					<ul>
+						<li>
+							<a data-url="/mail" class="tab subNav mail-inbox">
+								<span class="tab-name">Inbox</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/mail-compose" class="tab subNav mail-compose">
+								<span class="tab-name">Compose</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="box-top">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="content_mail" class="innerContent">
+		</div>
+	</div>
+</div>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>

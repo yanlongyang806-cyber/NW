@@ -1,0 +1,4 @@
+// LERP4.phl
+{
+	%Result% = (%WEIGHT%).x * %A% + (%WEIGHT%).y * %B% + (%WEIGHT%).z * %C% + (%WEIGHT%).w * %D%;
+}

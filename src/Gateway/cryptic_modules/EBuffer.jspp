@@ -1,0 +1,462 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// EBuffer
+//
+// Extends the nodejs buffer (which is fixed-size) to expand as needed.
+//
+//
+
+var EBuffer = function EBuffer(minsize_or_buf)
+{
+	this.end = 0;
+		// The current max location written to in the buffer.
+
+	this.cur = 0;
+		// The next location to read from. (Not used when writing.)
+
+	if(typeof minsize_or_buf === 'number' || typeof minsize_or_buf === 'undefined')
+	{
+		var size = 128;
+		this.buffer = new Buffer(size);
+			// The buffer. This class wraps rather than extends a buffer in
+			//   order to track the this.end, and also to allow reallocation of
+			//   the buffer itself.
+	}
+	else
+	{
+		this.buffer = minsize_or_buf;
+		this.end = this.buffer.length;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// capacity
+//
+// Reports the total size allocated to the buffer.
+//
+EBuffer.prototype.capacity = function capacity()
+{
+	return this.buffer.length;
+}
+
+//
+// length
+//
+// Reports the current length of the USED portion of the EBuffer.
+//
+EBuffer.prototype.length = function length()
+{
+	return this.end;
+}
+
+//
+// reset
+//
+// Sets the end marker to the beginning of the buffer.
+//
+EBuffer.prototype.reset = function reset()
+{
+	this.end = 0;
+	this.cur = 0;
+}
+
+//
+// rewind
+//
+// Sets the current location to the beginning of the buffer.
+//
+EBuffer.prototype.rewind = function rewind()
+{
+	this.cur = 0;
+}
+
+//
+// seek
+//
+// Moves the current location to the given offset
+//
+EBuffer.prototype.seek = function seek(offset)
+{
+	this.cur = offset;
+}
+
+//
+// skip
+//
+// Moves the current location by the given number of bytes
+//
+EBuffer.prototype.skip = function skip(cnt)
+{
+	this.cur += cnt;
+
+	this.cur = (this.cur < 0 ? 0 : this.cur);
+	this.cur = (this.cur > this.end ? this.end : this.cur);
+}
+
+//
+// reserve
+//
+// Sets aside the given number of bytes in the buffer at the end.
+//
+EBuffer.prototype.reserve = function reserve(len)
+{
+	this.checkBuffer(this.end+len);
+	this.end += len;
+}
+
+//
+// getBuffer
+//
+// Returns a Buffer trimmed to the max location written to. The returned
+//   buffer references the same data, so changes to the returned buffer will
+//   modify the original.
+//
+EBuffer.prototype.getBuffer = function getBuffer()
+{
+	return this.buffer.slice(0, this.end);
+}
+
+//
+// getBufferSlice
+//
+// Returns a Buffer trimmed to the given range.
+//
+EBuffer.prototype.getBufferSlice = function getBufferSlice(start, end)
+{
+	start = start || 0;
+	end = end || this.end;
+
+	// assert(start <= this.end && end <= this.end && start <= end);
+
+	return this.buffer.slice(start, end);
+}
+
+//
+// slice
+//
+// Moves the given data range to the front of the buffer.
+//
+EBuffer.prototype.slice = function slice(start, end)
+{
+	start = start || 0;
+	end = end || this.end;
+
+	this.buffer.copy(this.buffer, 0, start, end);
+
+	this.end = end - start;
+	this.end = (this.end < 0 ? 0 : this.end);
+
+	this.cur = this.cur - start;
+	this.cur = (this.cur < 0 ? 0 : this.cur);
+}
+
+//
+// indexOf
+//
+// Returns the index of the given string in the buffer. If start or end
+// are given, restrict the search to the given span.
+//
+// (Brute-force implementation.)
+//
+EBuffer.prototype.indexOf = function indexOf(str, start, end)
+{
+	start = start || 0;
+	end = end || this.end;
+
+	var m = start;
+	var i = 0;
+	var backtrack = 0;
+
+	while(m < end)
+	{
+		if(this.buffer[m] == str.charCodeAt(i))
+		{
+			if(i===0)
+			{
+				backtrack = m; // if this check fails we'll restart here.
+			}
+
+			m++;
+			i++;
+
+			if(i === str.length)
+			{
+				// Found a match
+				return m-i;
+			}
+		}
+		else
+		{
+			if(i>0)
+			{
+				m = backtrack; // Partial match, restart here (+1 below)
+			}
+
+			i = 0;
+			m++;
+		}
+	}
+
+	return -1;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// appendStringRaw
+//
+// Appends the given string to the end of the buffer.
+// Does NOT append a terminating zero.
+//
+EBuffer.prototype.appendStringRaw = function appendStringRaw(str)
+{
+	this.checkBuffer(this.end + str.length);
+
+	this.buffer.write(str, this.end);
+	this.end += str.length;
+};
+
+//
+// appendString
+//
+// Appends the given string to the end of the buffer.
+// DOES append a terminating zero.
+//
+EBuffer.prototype.appendString = function appendString(str)
+{
+	// Append the string
+	this.appendStringRaw(str);
+
+	// And then the trailing \0
+	this.checkBuffer(this.end + 1);
+	this.buffer.writeUInt8(0, this.end++);
+};
+
+//
+// readString
+//
+// Reads the string starting at the given location in the buffer. If no
+// location is given, reads the string at the current location. In both
+// cases, advance the current location to after the string. Reads until it
+// finds a \0, and trims it from the resulting string.
+//
+EBuffer.prototype.readString = function readString(offset)
+{
+	offset = offset || this.cur;
+
+	var eos = offset;
+	while(eos <= this.end && this.buffer[eos] !== 0)
+	{
+		eos++;
+	}
+
+	this.cur = eos+1;
+
+	if(this.buffer[eos]!==0)
+	{
+		eos--;
+	}
+
+	return this.buffer.toString('utf8', offset, eos);
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// writeUInt8
+//
+// Writes the value to the given location in the buffer.
+//
+EBuffer.prototype.writeUInt8 = function writeUInt8(val, offset)
+{
+	this.checkBuffer(offset + 1 /* for the UInt8 */);
+
+	this.buffer.writeUInt8(val, offset);
+	if(this.end < offset+1)
+	{
+		this.end = offset+1;
+	}
+};
+
+//
+// appendUInt8
+//
+// Appends the value to the end of the buffer.
+//
+EBuffer.prototype.appendUInt8 = function appendUInt8(val)
+{
+	this.writeUInt8(val, this.end);
+};
+
+//
+// readUInt8
+//
+// Reads the value at the given location in the buffer. If no location is
+// given, reads the value at the current location. In both cases, advance the
+// current location to after the value.
+//
+EBuffer.prototype.readUInt8 = function readUInt8(offset)
+{
+	offset = offset || this.cur;
+
+	if(offset > this.end)
+	{
+		return undefined;
+	}
+
+	this.cur = offset+1;
+	return this.buffer.readUInt8(offset);
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// writeUInt32
+//
+// Writes the value to the given location in the buffer.
+//
+EBuffer.prototype.writeUInt32 = function writeUInt32(val, offset)
+{
+	this.checkBuffer(offset + 4 /* for the UInt32 */);
+
+	this.buffer.writeUInt32LE(val, offset);
+	if(this.end < offset+4)
+	{
+		this.end = offset+4;
+	}
+};
+
+//
+// appendUInt32
+//
+// Appends the value to the end of the buffer.
+//
+EBuffer.prototype.appendUInt32 = function appendUInt32(val)
+{
+	this.writeUInt32(val, this.end);
+};
+
+//
+// readUInt32
+//
+// Reads the value at the given location in the buffer. If no location is
+// given, reads the value at the current location. In both cases, advance the
+// current location to after the value.
+//
+EBuffer.prototype.readUInt32 = function readUInt32(offset)
+{
+	offset = offset || this.cur;
+
+	if(offset+3 > this.end)
+	{
+		return undefined;
+	}
+
+	this.cur = offset+4;
+	return this.buffer.readUInt32LE(offset);
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+
+//
+// appendBytes
+//
+// Appends the given bytes to the end of the buffer.
+// Does NOT append a terminating zero.
+//
+EBuffer.prototype.appendBytes = function appendBytes(buf)
+{
+	this.checkBuffer(this.end + buf.length);
+
+	buf.copy(this.buffer, this.end);
+	this.end += buf.length;
+};
+
+//
+// readBytes
+//
+// Reads count bytes at the given location in the buffer. If no location is
+// given, reads the value at the current location. In both cases, advance the
+// current location to after the bytes.
+//
+EBuffer.prototype.readBytes = function readBytes(count, offset)
+{
+	offset = offset || this.cur;
+
+	if(offset > this.end)
+	{
+		return undefined;
+	}
+
+	this.cur = offset+count;
+	return this.buffer.slice(offset, this.cur);
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// writeBuffer
+//
+// Writes the contents of the buffer to the given location in the buffer.
+//
+EBuffer.prototype.writeBuffer = function writeBuffer(src, dstStart, srcStart, srcEnd)
+{
+	dstStart = dstStart || 0;
+	srcStart = srcStart || 0;
+	srcEnd = srcEnd || src.length;
+
+	var size = dstStart + (srcEnd-srcStart);
+	this.checkBuffer(size);
+
+	src.copy(this.buffer, dstStart, srcStart, srcEnd);
+
+	if(this.end < size)
+	{
+		this.end = size;
+	}
+};
+
+//
+// appendBuffer
+//
+// Appends the value to the end of the buffer.
+//
+EBuffer.prototype.appendBuffer = function appendBuffer(src)
+{
+	this.writeBuffer(src, this.end, 0, src.length);
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// checkBuffer
+//
+// Guarantees the buffer is at least as large as the given size
+//
+EBuffer.prototype.checkBuffer = function checkBuffer(size)
+{
+//	console.log('checkBuffer: ',this.buffer.length, size);
+	if(this.buffer.length < size)
+	{
+		var newsize = this.buffer.length*2;
+		if(newsize < size)
+		{
+			newsize = size;
+		}
+
+//		console.log('checkBuffer:newsize: ',newsize);
+		var newbuf = new Buffer(newsize);
+		this.buffer.copy(newbuf, 0, 0, this.end);
+		this.buffer = newbuf;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = EBuffer;
+
+// End of File

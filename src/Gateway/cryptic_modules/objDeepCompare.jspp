@@ -1,0 +1,81 @@
+'use strict';
+
+function countProps(obj)
+{
+	var count = 0;
+	for(var k in obj)
+	{
+		if(obj.hasOwnProperty(k))
+		{
+			count++;
+		}
+	}
+	return count;
+}
+
+function objDeepCompare(v1, v2)
+{
+	var v1str = Object.prototype.toString.call(v1);
+
+	if(v1str !== Object.prototype.toString.call(v2))
+	{
+		console.log('Compare failed! Mismatching types', v1, v2);
+		return false;
+	}
+
+	if(v1str === '[object Function]')
+	{
+		return v1.toString() === v2.toString();
+	}
+	else if(v1str === '[object Array]')
+	{
+		if(v1.length !== v2.length)
+		{
+			console.log('Compare failed! Array count differs:', v1, v2);
+			return false;
+		}
+
+		for(var i = 0; i < v1.length; i++)
+		{
+			if(!objDeepCompare(v1[i], v2[i]))
+			{
+				console.log('Compare failed at index '+i, v1[i], v2[i]);
+				return false;
+			}
+		}
+
+		return true;
+	}
+	else if(v1str === '[object Object]')
+	{
+		if(countProps(v1) !== countProps(v2))
+		{
+			console.log('Compare failed! Prop count differs:', v1, v2);
+			return false;
+		}
+
+		for(var k in v1)
+		{
+			if(!objDeepCompare(v1[k], v2[k]))
+			{
+				console.log('Compare failed at key '+k, v1[k], v2[k]);
+				return false;
+			}
+		}
+
+		return true;
+	}
+	else
+	{
+		return v1 === v2;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+module.exports = objDeepCompare;
+
+////////////////////////////////////////////////////////////////////////////
+
+// End of File

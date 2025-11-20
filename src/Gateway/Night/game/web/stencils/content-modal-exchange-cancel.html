@@ -1,0 +1,20 @@
+<!-- if(dev) -->
+<button class="close-button" data-url-silent="closemodal"></button>
+<div class="modal-confirm">
+	<h3>Remove Listing</h3>
+	<p>Are you sure you want to remove this listing?</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal" data-set-onclick="client.withdrawOrder({.orderid})">OK</button>
+	</div>
+</div>
+<!-- endif(dev) -->

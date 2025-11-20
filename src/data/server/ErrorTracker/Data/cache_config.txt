@@ -1,0 +1,9 @@
+
+{
+	UseLRUCache 0
+	LRULogMissDetails 0
+	LRUMissLog <&lrucache_miss.log&>
+
+	LRUCacheSize 50000
+	StashInitialSize 100000
+}

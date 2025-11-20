@@ -1,0 +1,277 @@
+({
+	id: 'science',
+	name: 'Science',
+	actions: [
+
+		{
+			id: 'chargedParticleBurst',
+			name: 'Charged Particle Burst',
+			description: "Target: All enemies. Attack shields only with 150% of weapons.",
+			notes: 'attack all enemies at 1.5 attack value to shields only',
+			icon: 'Space_Boff_Science_Chargedparticleburst',
+
+			cooldown: 3,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& attack({ shield: 1.0, attackScale: 1.5 }) &>
+		},
+
+		{
+			id: 'energySiphon',
+			name: 'Energy Siphon',
+			description: "Target: Enemy. Attack with 0% of weapons. If hit, enemy's weapons drain to 75% this turn and next turn boost attacking ship's weapons to 120%.",
+			notes: "1 target; on hit, reduce target's attack value by 25% and add a counter to attacking ship; on upkeep remove the token and boost own attack value by 20%",
+			icon: 'Space_Boff_Science_Energysiphon',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onEachTargetEarlyResolve: <&
+				onHit( [ onSource(addCounter(1)), attribModify({ attackBonusPercent: -0.25 }) ]) &>,
+			onEachTargetLateUpkeep: <&
+				onSource( useCounter(1, attribModify({ attackBonusPercent: 0.2 })) ) &>
+		},
+
+		{
+			id: 'feedbackPulse',
+			name: 'Feedback Pulse',
+			description: "Target: Self. This turn, 75% of all damage done to this ship will also be done back to the attacker. Next turn, this ship's defense will boost to 120%.",
+			notes: "Increase own reflection to 75% and add a counter that will increase own defense next turn by 20%",
+			icon: 'Space_Boff_Science_Feedbackpulse',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& eachTarget([ addCounter(1), attribSet({ attackReflection: .75}) ]) &>,
+			onEachTargetLateUpkeep: <&
+				useCounter(1, attribMultiply({ evasionRating: 1.2 })) &>
+		},
+
+		{
+			id: 'gravityWell',
+			name: 'Gravity Well',
+			description: "Target: All enemies. Attack each enemy with 0% of weapons. If hit, that ship's engines are set to 0 on its next turn.",
+			notes: "On hit add 1 counter to each enemy; on upkeep, remove the counter and reduce that ship's speed to 0 for the next battle phase",
+			icon: 'Space_Boff_Science_Gravitywell',
+
+			cooldown: 5,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& onHit( addCounter(1) ) &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribSet({ speed: 0 }) ) &>
+		},
+
+		{
+			id: 'hazardEmitters',
+			name: 'Hazard Emitters',
+			description: "Target: Other Ally. For the next 2 turns, repair 25% of target's hull.",
+			notes: "1 target; add 2 counters to target; on upkeep remove a counter and heal a 25% of base hull",
+			icon: 'Space_Boff_Science_Hazardemitters',
+
+			cooldown: 6,
+
+			onChoose: <& chooseSingleAllyExceptSource() &>,
+			onResolve: <& addCounter(2) &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribModifyMultiplyBase({ hitpoints: 0.25 })) &>
+		},
+
+		{
+			id: 'jamSensors',
+			name: 'Jam Sensors',
+			description: "Target: Enemy. Attack with 150% auxiliary and 0% of weapons. If hit, target's auxiliary is reduced to 20% for this turn.",
+			notes: "1 target; roll auxiliary at 1.5 value; on hit, do no damage but reduce target's auxiliary by 80% for this battle phase",
+			icon: 'Space_Boff_Science_Jamsensors',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.5 }) ),
+				onHit( attribMultiply({ accuracyRating: 0.2 }) )
+			] &>
+		},
+
+		{
+			id: 'maskEnergySignature',
+			name: 'Mask Energy Signature',
+			description: "Target: Ally. This ship cannot be targeted by enemies this turn.",
+			notes: "1 target; target cannot be targeted during the battle phase; if enemy had targeted this ship, its orders simply fail",
+			icon: 'Space_Boff_Science_Maskenergysignature',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onOrders: <& eachTarget( setState('opponentUntargetable') ) &>
+		},
+
+		{
+			id: 'photonicOfficer',
+			name: 'Photonic Officer',
+			description: "Target: Self. For the next 2 turns, repair 25% of this ship's shields.",
+			notes: "Add 2 counters to self; during next 2 upkeeps, repair 25% shields",
+			icon: 'Space_Boff_Science_Photonicscienceofficer',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& eachTarget( addCounter(2) ) &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribModifyMultiplyBase({ shield: 0.25 }) ) &>
+		},
+
+		{
+			id: 'photonicShockwave',
+			name: 'Photonic Shockwave',
+			description: "Target: All enemies. Attack with 60% auxiliary and 40% of weapons. If hit, target's speed is cut in half next turn.",
+			notes: "Attack each enemy at .4 attack value and .6 auxiliary and on hit add a counter to the target; next upkeep remove the counter and reduce speed by 50%",
+			icon: 'Space_Boff_Science_Photonicshockwave',
+
+			cooldown: 2,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: .6 }) ),
+				attack(0.4),
+				onHit(addCounter(1))
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribMultiply({ speed: .5 }) ) &>
+		},
+
+		{
+			id: 'polarizeHull',
+			name: 'Polarize Hull',
+			description: "Target: Ally. Double ship's defense and repair 10% of its shields.",
+			notes: "1 target; double target's current defense and repair 10% of shields",
+			icon: 'Space_Boff_Science_Polarizehull',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onOrders: <& eachTarget([
+				attribMultiply({ evasionRating: 2 }),
+				attribModifyMultiplyBase({ shield: 0.10 })
+			]) &>
+		},
+
+		{
+			id: 'scienceTeam',
+			name: 'Science Team',
+			description: "Target: Ally. Repair 50% of ship's shields.",
+			notes: "1 target; repair 50% of base shields",
+			icon: 'Space_Boff_Science_Medicalteam',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onResolve: <& attribModifyMultiplyBase({ shield: 0.50 }) &>
+		},
+
+		{
+			id: 'scrambleSensors',
+			name: 'Scramble Sensors',
+			description: "Target: Enemy. Attack with 0% of weapons. If hit, target is 'Confused' next turn.",
+			notes: "1 target; on hit, add 1 counter to target; next upkeep remove the counter and confuse the target",
+			icon: 'Space_Boff_Science_Scramblesensors',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& onHit( addCounter(1) ) &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, setState('confused')) &>
+		},
+
+		{
+			id: 'tachyonBeam',
+			name: 'Tachyon Beam',
+			description: "Target: Enemy. Attack with 60% auxiliary. If hit, target's auxiliary and weapons are reduced to 80% for this turn.",
+			notes: "1 target; on hit, do attack at .6 value and reduce target's auxiliary and attack by 20% for this battle phase",
+			icon: 'Space_Boff_Science_Tachyonbeam',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(0.6),
+				onHit( attribMultiply({ accuracyRating: 0.8 }) )
+			] &>
+		},
+
+		{
+			id: 'tractorBeam',
+			name: 'Tractor Beam',
+			description: "Target: Enemy. Attack with 0% of weapons. If hit, that ship's engines are set to 0 on its next turn.",
+			notes: "1 target; on hit add 1 counter to target; on upkeep, remove the counter and reduce that ship's speed to 0 for the next battle phase",
+			icon: 'Space_Boff_Science_Tractor_Beam',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& onHit( addCounter(1) ) &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribMultiply({ speed: 0 })) &>
+		},
+
+		{
+			id: 'tractorBeamRepulsors',
+			name: 'Tractor Beam Repulsors',
+			description: "Target: Self. This ship's defense increases to 120% this turn, and next turn its engines get a massive boost.",
+			notes: "Increase own defense by 20%; add 1 counter to self; next upkeep remove the counter and put this ship at the top of the order list, if other ships are also placed at the top of the list, standard tie resolution happens",
+			icon: 'Space_Boff_Science_Tractorbeamrepulsors',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& eachTarget([
+				addCounter(1),
+				attribMultiply({ evasionRating: 1.2 })
+			]) &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribSet({ speed: 10000 })) &>
+		},
+
+		{
+			id: 'transferShieldStrength',
+			name: 'Transfer Shield Strength',
+			description: "Target: Other Ally. Repair 75% of target's shields at the cost of this ship's shields. Action will fail if this ship has no shields to share.",
+			notes: "1 target; 75% shield repair at the cost of some of own shields",
+			icon: 'Space_Boff_Science_Transfershieldstrength',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleAllyExceptSource() &>,
+			onResolve: <& [
+				attribModifyMultiplyBase({ shield: 0.75 }),
+				onSource( attribModifyMultiplyBase({ shield: -0.25 }) ),
+			] &>
+		},
+
+		{
+			id: 'tykensRift',
+			name: "Tyken's Rift",
+			description: "Target: All enemies. Attack with 0% of weapons. If hit, attacked ship's weapons drop to 80% on its next turn.",
+			notes: "On hit add 1 counter to each enemy; on upkeep, remove the counter and reduce that ship's attack value by 20%",
+			icon: 'Space_Boff_Science_Tykensrift',
+
+			cooldown: 5,
+
+			onChoose: <& [ chooseAllOpponents() ] &>,
+			onResolve: <& onHit( addCounter(1) ) &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribModify({ attackScale: 0.8 })) &>
+		},
+
+		{
+			id: 'viralMatrix',
+			name: 'Viral Matrix',
+			description: "Target: Enemy. Attack with 80% auxiliary and 0% of weapons. If hit, targeted ship loses 50% of its current shields for the next 2 turns.",
+			notes: "1 target; attack at .8 auxiliary; on hit, add 2 counters to target; next 2 upkeeps remove a counter and reduce shields by 50%",
+			icon: 'Space_Boff_Science_Viralmatrix',
+
+			cooldown: 5,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.8 }) ),
+				onHit( addCounter(2) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribModifyMultiply({ shield: -0.5 }) ) &>
+		},
+
+	]
+})

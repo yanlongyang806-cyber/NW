@@ -1,0 +1,68 @@
+OperationDef
+	Name "TextureNormal_3" // Name of the operation
+	ParentName "TextureNormal_2+"
+	OptionName "3 texture coords"
+	Description "Texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord2
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord3
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	
+	Input
+		Name NormalMap // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type TextureNormal
+		Default
+			Strings "default_bump"
+		EndDefault
+		Texture 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result2
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result3
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+
+EndOperationDef

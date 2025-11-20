@@ -1,0 +1,233 @@
+//
+// Example Smeltfile
+//
+// The default name for a smeltfile is makefile.smelt. If you specify it on
+// the command line, it can be anything. By default, it looks for
+// makefile.smelt in the current directory. If not found, it looks in the
+// parent, etc.
+//
+// This file should evaluate to an array.
+//
+[
+	//
+	// A sample task
+	//
+	{
+		/////////////////
+		//
+		// Standard options that all tasks can take.
+		//
+		name: 'jspp debug',
+			// (Required)
+			// A name for this task, often prepended to log lines.
+
+		task: taskName,
+			// (Required)
+			// The smelter task module to be used to do this task.
+
+		watch: [ './src', './foo' ],
+			// (Usually required)
+			// The directory or directories (as an array) to watch (recursively)
+
+		extmatch: '.jspp',
+			// (Optional)
+			// An extention (or array of extensions) that must match the filename.
+			// Can be a regex.
+
+		extignore: '.[0-9]+',
+			// (Optional)
+			// Extension (or array of them) that will be ignored.
+
+		match: '.*/client/.*',
+			// (Optional)
+			// A general regex (or array of them) that can be used to match
+			//   files. This would let you select a particular subdirectory,
+			//   for example.
+
+		ignore: '.*/public/.*',
+			// (Optional)
+			// A general regex (or array of them) that can be used to ignore
+			//   files. This would let you ignore a particular subdirectory,
+			//   for example.
+
+		dirignore: [ 'test', 'example' ],
+			// (Optional)
+			// Directories which should not be traversed into, no matter
+			//   where they are. Easier to use than ignore.
+
+		out: [ './client/debug', './server' ],
+			// (Usually required)
+			// The destination (or array of them) for the output. Some tasks
+			//   expect this to be a directory name. Others might expect a
+			//   a file name.
+
+		remap: [ [ 'cryptic_modules', 'node_modules/cryptic' ] ],
+			// (Optional)
+			// If the task uses directories for its out parameter, then this
+			//   will allow you to find and replace directory names in the
+			//   output path.
+
+	},
+
+	{
+		/////////////////
+		//
+		// global options
+		//
+		// You can put any options you want into the global task and they
+		// will be copied into all the other tasks.
+		//
+		// NOTE: If an option can be an array for a task, then it MUST be
+		//       an array in global.
+		//
+		task: 'global',
+
+		extignore: [ '.000' ],
+			// (example)
+
+		dirignore: [ '.git', './smelter', './build', './3rdparty', './bin' ]
+			// (example)
+	},
+
+	{
+		/////////////////
+		//
+		// jsppFile options
+		//
+		task: jspp,
+
+		//
+		// Options from above would go here.
+		//
+
+		include:  './src/debug.def',
+			// (Optional)
+			// A file (or array of files) that provide a set of defines to be
+			//   used for every file that is processed.
+
+		extout:   '.js',
+			// The output file will have the same basename as the original,
+			//   with this extension. Must include the ".".
+
+		jshint:   true,
+			// (Optional)
+			// If true, runs the JSHint linter on the code (before preprocessing).
+
+		jshopt:   { ... }
+			// (Optional)
+			// If given, provides the options given to JSHint.
+			// See the JSHint docs for the options supported.
+
+		out: [ './client/debug', './server' ],
+			// (Required)
+			// out is a destination directory (or an array of them)
+	},
+	{
+		/////////////////
+		//
+		// copyFile options
+		//
+		task:  copy,
+
+		//
+		// Options from above would go here.
+		//
+
+		summary: true,
+			// (Optional)
+			// if true, then occasionally summarize with how many files were
+			//   copied. If only a few are copied in a certain time, then
+			//   their names will be printed out.
+
+		out: './server/public',
+			// (Required)
+			// out is a destination directory (or an array of them)
+	},
+	{
+		/////////////////
+		//
+		// bundleFile options
+		//
+		task: bundle,
+
+		//
+		// Options from above would go here.
+		//
+
+		bundle: './client/debug/client.js',
+			// (Required)
+			// The name of the base file to use for dependency generation.
+
+		bundleopts: { exports : [ 'require' ], debug: true },
+			// (Optional)
+			// If given, provides the options for browserify.
+			// If not given, { exports : [ 'require' ] } is used.
+			// See the Browserify docs for options.
+
+		uglify: false
+			// (Optional)
+			// If true, runs the bundle through Uglify to minify and optimize.
+
+		out: './server/public/bundle-debug.js',
+			// (Required)
+			// out is a destination file (or an array of them)
+
+	},
+	{
+		/////////////////
+		//
+		// stencilFile options
+		//
+		task: stencil,
+
+		//
+		// Options from above would go here.
+		//
+		out: [ './client/debug/stencils.js', './client/prod/stencils.js'],
+			// (Required)
+			// out is a destination directory (or an array of them)
+
+		options:
+		{
+			// Options for the stencil code generation
+
+			optimize: false
+				// Setting optimize to true will strip out data-path
+				//   attributes from the final generated HTML. This makes the
+				//   stencil much smaller. (default is false)
+		}
+
+	},
+	{
+		/////////////////
+		//
+		// lessFile options
+		//
+		task: less,
+
+		//
+		// Options from above would go here.
+		//
+
+		root: 'style.less'
+			// (Required - expected to be found in the watch directory)
+			// the starting point for the less parser
+			// The root file of the CSS tree
+
+		out: './server/public/css/style.css',
+			// (Required)
+			// out is a destination file name for the single css file
+
+		options:
+		{
+			// Options for the less parser
+
+			compress: false
+				// Setting compress to true will minify and stip all comments
+				//   out of the css produced.
+		}
+
+	},
+]
+
+// End of File

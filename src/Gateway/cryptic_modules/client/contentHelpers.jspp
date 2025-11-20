@@ -1,0 +1,186 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var Synchro = require('cryptic/synchro');
+
+var dataModel = require('./DataModel');
+
+var stencils = require(''+'/game/client/Stencils.js');
+
+//
+// setFromStencil
+//
+// Renders the named stencil into the given DOM selector.
+// Rootpath can be a string path (which will reference off off metaEnt) or
+//   an object.
+//
+// After rendering into the selector, the given callback is called.
+//
+function setFromStencil(selector, nameStencil, rootpath, callback)
+{
+	dbg.trace(selector, nameStencil, rootpath);
+	if(stencils[nameStencil] && typeof stencils[nameStencil] === 'function')
+	{
+		dataModel.render(stencils[nameStencil], nameStencil, rootpath, function(e, r) {
+			dbg.trace('dataModel.render(): callback: ', e, r);
+			$(selector).html(r.join(''));
+			if(callback)
+			{
+				callback(e, r);
+			}
+		});
+	}
+	else
+	{
+		dbg.error('Invalid stencil name: ' + nameStencil);
+	}
+}
+
+//
+// setContent
+//
+// Given a list of selector and stencil pairs, renders each stencil into
+//   its corresponding selector.
+//
+// This function is how transitions.jspp actually gets content into the page
+//   during transitions.
+//
+function setContent(contentArray, params, onContentComplete, ready)
+{
+	dbg.trace(contentArray, params);
+
+	// Add these to the model so they can be referenced inside a stencil.
+	dataModel.model.queryParams = params;
+
+	var q = new Synchro();
+
+	for(var i = 0; i < contentArray.length; i++)
+	{
+		(function(ele) {
+
+			if(ele.rootpath)
+			{
+				q.add(function(callback) {
+					var rootpath = '', p = ele.rootpath.split(',');
+					if(p.length > 1)
+					{
+						// need to concat a few params here
+						for(var x = 0;x<p.length;x++)
+						{
+							rootpath += params[p[x]];
+						}
+					}
+					else
+					{
+						rootpath = params[p[0]];
+					}
+					content.setFromStencil(ele.selector, ele.stencil, unescape(rootpath), callback);
+				})
+			}
+			else
+			{
+				q.add(function(callback) {
+					content.setFromStencil(ele.selector, ele.stencil, undefined, callback);
+				})
+			}
+		})(contentArray[i]);
+	}
+
+	if(onContentComplete)
+	{
+		q.add(onContentComplete);
+	}
+
+	if(client.onAfterSetStencil)
+	{
+		q.add(client.onAfterSetStencil);
+	}
+
+	q.waitForAllSeries(ready || function() {});
+
+}
+
+
+//
+// setBroadcastMessage
+//
+function setBroadcastMessage(message)
+{
+	$('#broadcastMessageText').text(message);
+	if(message)
+	{
+		$('#broadcastMessage').show();
+	}
+	else
+	{
+		$('#broadcastMessage').hide();
+	}
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+//
+// arrowList
+//
+// Applies arrow list behavior to any .list-arrows in the DOM.
+//
+function arrowList()
+{
+	$(document).on('click', '.list-arrow', function() {
+		if ($(this).hasClass('up'))
+		{
+			$(this).removeClass('up').addClass('down');
+		}
+		else
+		{
+			$(this).removeClass('down').addClass('up');
+		}
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+
+function populateCharacterChoices(id, stencil)
+{
+	dbg.trace(id,stencil);
+	// should only exist AFTER we've logged in etc.
+	if(dataModel.model.loginInfo)
+	{
+		content.setFromStencil(id, stencil, undefined, undefined);
+	}
+	else
+	{
+		// Not logged in, have no choices to select from?
+		// Kick to home page to reset the flow of things.
+		window.location.hash = '#/';
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+var content =
+{
+	// Stencil helpers
+	stencils: stencils,
+	setFromStencil: setFromStencil,
+	setContent: setContent,
+	populateCharacterChoices: populateCharacterChoices,
+
+	// JQuery helpers
+	arrowList: arrowList,
+
+	// Other
+	setBroadcastMessage: setBroadcastMessage,
+
+	disconnectMessage: ''
+};
+
+module.exports = content;
+
+
+// End of File

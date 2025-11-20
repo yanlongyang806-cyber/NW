@@ -1,0 +1,20 @@
+OperationDef
+	Name "MultiplyAdd" // Name of the operation
+	Category "Combiner"
+	Description "Multiply two inputs and add a third"
+	Type SIMPLE
+
+	Input: Input, "Input value"
+	Input: Scale, "Scale factor"
+	Input: Offset, "Added value"
+
+	Output
+		Name Result
+		Description "Output of A * B + C"
+		Float 4
+		AlphaFrom Input
+		AlphaFrom Scale
+	EndOutput
+
+EndOperationDef
+

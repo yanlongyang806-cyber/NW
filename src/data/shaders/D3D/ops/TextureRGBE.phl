@@ -1,0 +1,6 @@
+// TextureRGBE.phl
+{
+	float4 rgbe = sampleTex2D(TexSampler%Texture%, %TexCoord%);
+	%Result% = float4(rgbe.rgb + rgbe.rgb * rgbe.a * %Brightness%, 1);
+}
+

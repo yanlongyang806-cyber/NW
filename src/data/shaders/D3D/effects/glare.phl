@@ -1,0 +1,31 @@
+#include "ps_inc.hlsl"
+
+SAMPLER_DECL(color_texture, 0);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 sample_transform[4] : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float3 sample_weight[8] : PS_CONSTANT_MATERIAL_PARAM4() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+float3 sample_tex(float2 texcoord, int widx, float2 transform)
+{
+	return sample_weight[widx] * sampleTex2D(color_texture, texcoord + transform).rgb;
+}
+
+// -----------------------------------------------------------------------
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float3 out_color;
+
+	out_color  = sample_tex(fragment.texcoord.xy, 0, sample_transform[0].xy);
+	out_color += sample_tex(fragment.texcoord.xy, 1, sample_transform[0].zw);
+	out_color += sample_tex(fragment.texcoord.xy, 2, sample_transform[1].xy);
+	out_color += sample_tex(fragment.texcoord.xy, 3, sample_transform[1].zw);
+	out_color += sample_tex(fragment.texcoord.xy, 4, sample_transform[2].xy);
+	out_color += sample_tex(fragment.texcoord.xy, 5, sample_transform[2].zw);
+	out_color += sample_tex(fragment.texcoord.xy, 6, sample_transform[3].xy);
+	out_color += sample_tex(fragment.texcoord.xy, 7, sample_transform[3].zw);
+
+	return float4(out_color, 1);
+}

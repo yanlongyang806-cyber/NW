@@ -1,0 +1,274 @@
+<div data-update="ent.officers">
+	<h2>Officer Profile</h2>
+	<div class="profile">
+		<div class="profile-overview boff">
+			<div class="profile-basics boff">
+				<div class="profile-card">
+					<div class="profile-portrait">
+						<img data-set-src="/shot/head/{.id}.png"/>
+					</div>
+					<div class="profile-ranks">
+						<span data-set-class="icon-class-officer-mini {.classtype.$map(classTypeIcons)}"></span>
+						<span data-set-class="icon-rank-small {.rank.$map(rankIcons)}"></span>
+					</div>
+				</div>
+				<h3 data-path=".formalname">Lorem</h3>
+				<ul>
+					<li data-path=".formalname">Lorem Ipsum Dolor</li>
+					<li data-path=".classname">Starfleet Science Officer</li>
+					<li data-path=".rankname">Commander</li>
+					<li><span data-path=".speciesname">Vulcan</span> <span data-path=".gendername">Female</span></li>
+				</ul>
+			</div>
+
+			<div class="profile-equipment boff">
+				<div class="profile-body" >
+					<img data-set-src="/shot/body/{.id}.png"/>
+				</div>
+				<div class="profile-items mobileList" data-path=".inventory">
+					<h3 class="mobileOnly mobileListHeader">Equipment</h3>
+					<div class="profile-equipment-weapons">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Weapon</h3>
+							<ul data-path=".bags[bagid=ActiveWeapon].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Weapon Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-shields">
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Shields</h3>
+							<ul data-path=".bags[bagid=Shield].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Shield Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="profile-equipment-body">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Body</h3>
+							<ul data-path=".bags[bagid=Body].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Body Slot</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+					<div class="profile-equipment-devices">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h3 class="desktopOnly">Devices</h3>
+							<ul data-path=".bags[bagid=Devices].slots">
+								<li>
+									<a class="mobileListEntry image-link item" data-set-data-url-silent="item?item={$here()}">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+										<h4 data-set-class="mobileListSubheader mobileOnly {.rarity}" data-path=".itemdef.displaynamemsg.str"></h4>
+										<h6 class="mobileListSubfooter mobileOnly">Device</h6>
+									</a>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="profile-details boff">
+
+			<div class="profile-details-col-1">
+				<div class="desktopOnly">
+					<h3 class="stats-title">Personal Info</h3>
+
+					<table class="stats-table">
+						<tbody>
+							<tr>
+								<td>Full Name:</td>
+								<td data-path=".formalname">Lorem Ipsum Dolor</td>
+							<tr>
+							</tr>
+								<td>Species:</td>
+								<td data-path=".speciesname">Vulcan</td>
+							<tr>
+							</tr>
+								<td>Gender:</td>
+								<td data-path=".gendername">Female</td>
+							<tr>
+							</tr>
+								<td>Career:</td>
+								<td data-path=".classname">Starfleet Science Officer</td>
+							<tr>
+							</tr>
+								<td>Rank:</td>
+								<td data-path=".rankname">Commander</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+
+				<div data-if=".description" class="mobileList">
+					<h3 class="stats-title mobileListHeader">Biography</h3>
+					<span class="mobileListEntry">
+						<div class="profile-bio" data-path=".description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio.
+
+						Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc. Maecenas dapibus nisi non sapien lacinia gravida non eget odio. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer eget tempus neque. Fusce eleifend vehicula odio id mattis. Donec rhoncus justo nec libero accumsan dapibus. Pellentesque vel turpis sem.
+
+						Ut pulvinar velit vel dui imperdiet nec suscipit leo pulvinar. Nam ac dolor quis sapien volutpat vehicula. Morbi sit amet odio et metus aliquam semper luctus sed eros.</div>
+					</span>
+				</div>
+
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Officer Points</h3>
+					<span class="mobileListEntry">
+						<table class="stats-table">
+							<tbody>
+								<tr>
+									<td>Expertise Spent:</td>
+									<td data-path=".expertise.spent.$commify"></td>
+								<tr>
+								</tr>
+									<td>Expertise Needed for Next Rank:</td>
+									<td data-path=".expertise.nextrank.$commify"></td>
+								</tr>
+							</tbody>
+						</table>
+					</span>
+				</div>
+
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Traits</h3>
+					<span class="mobileListEntry">
+						<table class="stats-table">
+							<tr>
+								<td>General Traits:</td>
+								<td>
+									<ul data-path=".powers.generictraitpowers" >
+										<li data-path="powerdef.displayname.str"></li>
+									</ul>
+								</td>
+							</tr>
+							<tr>
+								<td>Racial Specific Traits:</td>
+								<td>
+									<ul data-path=".powers.racetraitpowers" >
+										<li data-path="powerdef.displayname.str"></li>
+									</ul>
+								</td>
+							</tr>
+							<tr>
+								<td>Unique Traits:</td>
+								<td>
+									<ul data-path=".powers.uniquetraitpowers" >
+										<li data-path="powerdef.displayname.str"></li>
+									</ul>
+								</td>
+							</tr>
+						</table>
+					</span>
+				</div>
+			</div>
+			<div class="profile-details-col-2">
+
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Space Skills</h3>
+
+					<div class="profile-skills">
+						<ul class="skill-list" data-path=".powers.spacenodes[haspower=1]">
+							<li>
+								<a class="mobileListEntry" data-set-data-url-silent="power?power={$here()}.nodepowerdef">
+									<span class="skill-image">
+										<span class="skill-icon"><img alt="" data-set-src="/tex/{.nodepowerdef.icon}.png"></span>
+									</span>
+									<span class="mobileListSubheader">
+										<span class="skill-name" data-path=".nodepowerdef.displayname.str">Power Name</span>
+										<span class="skill-level">
+											<span class="mobileOnly"><br />Rank:</span> <span data-path=".numberpowers">0</span>
+										</span>
+									</span>
+								</a>
+							</li>
+						</ul>
+						<ul class="skill-list locked" data-path=".powers.spacenodes[haspower=0]">
+							<li class="mobileListEntry">
+								<span class="skill-image">
+									<span class="skill-icon"><img alt="" data-set-src="/tex/{.nodepowerdef.icon}.png"></span>
+								</span>
+								<span class="mobileListSubheader">
+									<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+									<span class="skill-level">
+										<span class="mobileOnly"><br />Rank:</span> <span data-path=".numberpowers">0</span>
+									</span>
+								</span>
+							</li>
+						</ul>
+					</div>
+
+				</div>
+				<div class="mobileList">
+					<h3 class="stats-title mobileListHeader">Ground Skills</h3>
+
+					<div class="profile-skills">
+						<ul class="skill-list" data-path=".powers.groundnodes[haspower=1]">
+							<li>
+								<a class="mobileListEntry" data-set-data-url-silent="power?power={$here()}.nodepowerdef">
+									<span class="skill-image">
+										<span class="skill-icon"><img alt="" data-set-src="/tex/{.iconname}.png"></span>
+									</span>
+									<span class="mobileListSubheader">
+										<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+										<span class="skill-level">
+											<span class="mobileOnly"><br />Rank:</span> <span data-path=".numberpowers">0</span>
+										</span>
+									</span>
+								</a>
+							</li>
+						</ul>
+						<ul class="skill-list locked" data-path=".powers.groundnodes[haspower=0]">
+							<li class="mobileListEntry">
+								<span class="skill-image">
+									<span class="skill-icon"><img alt="" data-set-src="/tex/{.iconname}.png"></span>
+								</span>
+								<span class="mobileListSubheader">
+									<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+									<span class="skill-level">
+										<span class="mobileOnly"><br />Rank:</span> <span data-path=".numberpowers">0</span>
+									</span>
+								</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="clear"></div>
+	</div>
+</div>

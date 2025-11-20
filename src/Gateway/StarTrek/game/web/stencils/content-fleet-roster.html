@@ -1,0 +1,60 @@
+<div data-path="guild">
+
+	<h2>Roster</h2>
+
+	<table id="roster_table">
+		<thead>
+			<tr>
+				<th class="roster-admin">Admin</th>
+				<th class="roster-name">Name</th>
+				<th class="roster-fleetrank">Fleet Rank</th>
+				<th class="roster-class">Class</th>
+				<th>Class Sortable</th>
+				<th class="roster-rank">Rank</th>
+				<th>Rank Sortable</th>
+				<th class="roster-location">Location</th>
+				<th class="roster-lft">LFT</th>
+				<th>LFT Sortable</th>
+				<th class="roster-lastonline">Last Online</th>
+				<th>last Online Sortable</th>
+				<th class="roster-comments">Member Comments</th>
+			</tr>
+		</thead>
+
+		<tbody data-if="{.members.length}" data-path=".members">
+			<tr>
+				<td class="roster-admin"><a href="#/whatisthisidonteven">Edit</a></td>
+				<td class="roster-name link">
+					<!--
+					<a data-set-data-url="#char({.name}{.publicaccountname})/">
+					-->
+						<span data-path=".name">Name</span><span data-path=".publicaccountname">Display</span>
+					<!--
+					</a>
+					-->
+				</td>
+				<td class="roster-fleetrank" data-path=".officerrank">Officer</td>
+				<td class="roster-class"><span data-set-class="icon-class-player-small {.classtype.$map(classTypeIcons)}"></span></td>
+				<td data-path=".classtype.$map(classTypeIcons)">eng</td>
+				<td class="roster-rank"><span data-set-class="icon-rank-large {.rank.$map(rankIcons)}"></span></td>
+				<td data-path=".rank">2</td>
+				<td class="roster-location" data-path=".location">Offline</td>
+				<td class="roster-lft"><span data-set-class="icon-lft {.lfg}"></span></td>
+				<td data-path=".lfg">X</td>
+				<td class="roster-lastonline" data-path=".logouttime.$ago()">2 days ago</td>
+				<td data-path=".logouttime.$dateParse()">1234567890</td>
+				<td class="roster-comments" data-path=".comment">Oh Hai</td>
+			</tr>
+		</tbody>
+
+		<tbody data-if="!{.members.length}">
+			<tr><td colspan="13"><h3>There are no members of this fleet</h3></td></tr>
+		</tbody>
+
+	</table>
+
+	<script data-if="{.members.length}">
+		client.fleetRosterInit();
+	</script>
+
+</div>

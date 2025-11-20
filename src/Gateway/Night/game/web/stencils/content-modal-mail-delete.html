@@ -1,0 +1,18 @@
+<button class="close-button" data-url="back"></button>
+<div class="modal-confirm">
+	<h3>Delete Message</h3>
+	<p>Are you sure you want to delete this message?</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back">Cancel</button>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button onclick="client.mailDeleteMessage()" data-url-silent="/mail">OK</button>
+	</div>
+</div>

@@ -1,0 +1,215 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////////
+// Load and Save Client Preferences to the web browser's local storage.
+//
+// Even if for some reason we do not have access to the localStorage object
+// This will function correctly throughout the client session. The only side
+// effect being that no settings will persist past this browser session.
+//
+
+var clientPrefs = {};
+
+var dbg = require('cryptic/dbg');
+
+var s_prefs = {};
+var s_char = '';
+
+// ----------------------------------------------------------------------------
+// Prefs should persist even after the browser is closed.
+// These prefs may disapear if the user clears their local data store.
+//
+// Note: on iOS devices. Browsing in 'private mode' disables this functionality
+// ----------------------------------------------------------------------------
+
+// Get a pref object.
+// Returns:
+// Object if found, undefined if there was no key match.
+clientPrefs.getPref = function(prefKey)
+{
+	if(prefKey in s_prefs)
+	{
+		return s_prefs[prefKey];
+	}
+	else
+	{
+		// Verifying localStorage support.
+		if(typeof(Storage) !== "undefined")
+		{
+			// Returns null on non-existant key
+			s_prefs[prefKey] = window.localStorage.getItem(prefKey);
+			if(s_prefs[prefKey])
+			{
+				s_prefs[prefKey] = JSON.parse(s_prefs[prefKey]);
+				return s_prefs[prefKey];
+			}
+			else
+			{
+				// Clean up, nothing was returned.
+				delete(s_prefs[prefKey]);
+			}
+		}
+	}
+
+	return undefined;
+}
+
+// Set a pref object, and save it to localStorage
+// Returns:
+// - true : value saved successfully to localStorage
+// - false: value NOT saved to localStorage
+clientPrefs.setPref = function(prefKey, value)
+{
+
+	if(typeof value !== 'undefined')
+	{
+		s_prefs[prefKey] = value;
+
+		return this.save(prefKey);
+	}
+
+	return false;
+}
+
+// Delete a pref object from the client.
+clientPrefs.deletePref = function(prefKey)
+{
+	delete(s_prefs[prefKey]);
+
+	// Verifying localstorage support.
+	if(typeof(Storage) !== "undefined")
+	{
+		window.localStorage.removeItem(prefKey);
+	}
+}
+
+// ----------------------------------------------------------------------------
+
+// Set the character prefix for all get/set char calls.
+clientPrefs.setChar = function(char)
+{
+	if(char)
+	{
+		s_char = char;
+	}
+	else
+	{
+		s_char = '';
+	}
+}
+
+// Get pref using the char prefix
+clientPrefs.getCharPref = function(prefKey, value)
+{
+	return this.getPref(s_char + ':' + prefKey, value);
+}
+
+// Set a pref using the char prefix
+clientPrefs.setCharPref = function(prefKey, value)
+{
+	return this.setPref(s_char + ':' + prefKey, value);
+}
+
+// delete a pref using a prefix
+clientPrefs.deleteCharPref = function(prefKey)
+{
+	return this.deletePref(s_char + ':' + prefKey);
+}
+
+// ----------------------------------------------------------------------------
+
+// If a prefKey is provided, just save that prefKey to localStorage
+// Otherwise, iterate through all our prefs and save all the things _o/
+// Returns:
+// - true  : Saving successful.
+// - false : Save failed.
+clientPrefs.save = function(prefKey)
+{
+	// Verifying localStorage support.
+	if(typeof(Storage) !== "undefined")
+	{
+		// Save just this one thing
+		if(prefKey)
+		{
+			if(prefKey in s_prefs)
+			{
+				// We could actually be out of space, so catch that.
+				try
+				{
+					window.localStorage.setItem(prefKey, JSON.stringify(s_prefs[prefKey]));
+				}
+				catch (e)
+				{
+					// TODO: Care about running out of space.
+					dbg.error("client.setPref(): Error." + e.toString(), e);
+					return false;
+				}
+
+				return true;
+			}
+		}
+		else
+		{
+			// Save ALL the things _o/
+			for(var key in s_prefs)
+			{
+				// We could actually be out of space, so catch that.
+				try
+				{
+					window.localStorage.setItem(key, JSON.stringify(s_prefs[key]));
+				}
+				catch (e)
+				{
+					// TODO: Care about running out of space.
+					dbg.error("client.setPref(): Error." + e.toString(), e);
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	return false;
+}
+
+
+clientPrefs.saveChar = function(prefKey)
+{
+	// Save just this one thing
+	if(prefKey)
+	{
+		return this.save(s_char + ':' + prefKey);
+	}
+	else
+	{
+		// Verifying localStorage support.
+		if(typeof(Storage) !== "undefined")
+		{
+			// Save ALL the things _o/
+			for(var key in s_prefs)
+			{
+				if(key.indexOf(s_char) > -1)
+				{
+					// We could actually be out of space, so catch that.
+					try
+					{
+						window.localStorage.setItem(key, JSON.stringify(s_prefs[key]));
+					}
+					catch (e)
+					{
+						// TODO: Care about running out of space.
+						dbg.error("client.setPref(): Error." + e.toString(), e);
+						return false;
+					}
+				}
+			}
+
+			return true;
+
+		}
+	}
+}
+
+// ----------------------------------------------------------------------------
+
+module.exports = clientPrefs;

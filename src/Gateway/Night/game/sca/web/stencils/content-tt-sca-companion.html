@@ -1,0 +1,113 @@
+<!-- if(dev) -->
+<div class="tooltip tt-companion">
+
+	<!--
+	<h3 class="party-name" data-path=".name">Companion Name</h3>
+	<p>Rank <span data-path=".level"></span></p>
+
+
+	<div class="party-dice" data-path=".pile.dice">
+		<span data-set-class="dice small d{.count} {.color}" data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-if="{.color} ne 'base'"></span>
+	</div>
+	-->
+
+	<h4>Skill Levels:</h4>
+
+	<div class="companion-skill-bar" data-path="pow.$asArray().[sym=m]">
+		<div class="dice side magic"></div>
+		<div class="bar-container">
+			<span class="bar-bg-left"></span>
+			<span class="bar-bg-mid"></span>
+			<span class="bar-bg-right"></span>
+
+			<div class="bar-filled" data-set-style="width: {.p}%;">
+				<div class="bar-container">
+					<span class="bar-bg-left"></span>
+					<span class="bar-bg-mid"></span>
+					<span class="bar-bg-right"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="companion-skill-bar" data-path="pow.$asArray().[sym=p]">
+		<div class="dice side perception"></div>
+		<div class="bar-container">
+			<span class="bar-bg-left"></span>
+			<span class="bar-bg-mid"></span>
+			<span class="bar-bg-right"></span>
+			<div class="bar-filled" data-set-style="width: {.p}%;">
+				<div class="bar-container">
+					<span class="bar-bg-left"></span>
+					<span class="bar-bg-mid"></span>
+					<span class="bar-bg-right"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="companion-skill-bar" data-path="pow.$asArray().[sym=t]">
+		<div class="dice side thievery"></div>
+		<div class="bar-container">
+			<span class="bar-bg-left"></span>
+			<span class="bar-bg-mid"></span>
+			<span class="bar-bg-right"></span>
+			<div class="bar-filled" data-set-style="width: {.p}%;">
+				<div class="bar-container">
+					<span class="bar-bg-left"></span>
+					<span class="bar-bg-mid"></span>
+					<span class="bar-bg-right"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="companion-skill-bar" data-path="pow.$asArray().[sym=c]">
+		<div class="dice side combat"></div>
+		<div class="bar-container">
+			<span class="bar-bg-left"></span>
+			<span class="bar-bg-mid"></span>
+			<span class="bar-bg-right"></span>
+			<div class="bar-filled" data-set-style="width: {.p}%;">
+				<div class="bar-container">
+					<span class="bar-bg-left"></span>
+					<span class="bar-bg-mid"></span>
+					<span class="bar-bg-right"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!--
+	<div class="companion-wilds" data-path="pow.$asArray().[sym=w]">
+		<div id="tt-sca-wilds" data-set-data-count="{.p}"></div>
+		<script>
+			(function () {
+				var e = $('#tt-sca-wilds');
+				var c = +e.attr('data-count');
+
+				var s = [];
+				for(var i = 0; i < c; i++)
+					s.push('<div class="dice side wild"></div>');
+
+				e.html(s.join(''));
+			})();
+		</script>
+	</div>
+	-->
+
+	<div class="companion-skill-bar" data-if="pow.$asArray().[sym=w].p" data-path="pow.$asArray().[sym=w]">
+		<div class="dice side wild"></div>
+		<div class="bar-container">
+			<span class="bar-bg-left"></span>
+			<span class="bar-bg-mid"></span>
+			<span class="bar-bg-right"></span>
+			<div class="bar-filled bar-purple" data-set-style="width: {.p}%;">
+				<div class="bar-container">
+					<span class="bar-bg-left"></span>
+					<span class="bar-bg-mid"></span>
+					<span class="bar-bg-right"></span>
+				</div>
+			</div>
+		</div>
+	</div>
+
+</div>
+<!-- endif(dev) -->

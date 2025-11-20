@@ -1,0 +1,247 @@
+ 'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ClientResourceManager
+//
+// Extends ResourceManager with the networking needed to fetch and cache
+// resources from the proxy.
+//
+
+var cutils = require('cryptic/cutils');
+var dbg = require('cryptic/dbg');
+
+var ResourceManager = require('cryptic/ResourceManager');
+var Resource = require('cryptic/Resource');
+
+//
+// new ResourceManager
+//
+// See ResourceManager.js for documentation
+//
+var ClientResourceManager = function ClientResourceManager(connProxy)
+{
+	dbg.trace();
+	ResourceManager.call(this);
+
+	this.connProxy = null;
+
+	if(connProxy)
+	{
+		this.connect(connProxy);
+	}
+}
+cutils.inherits(ClientResourceManager, ResourceManager);
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// connect
+//
+// Attaches the ClientResourceManager to the given connection.
+//
+ClientResourceManager.prototype.connect = function connect(connProxy)
+{
+	dbg.trace();
+
+	this.connProxy = connProxy;
+
+	this.connProxy.removeAllListeners('Proxy_Resource');
+	this.connProxy.on('Proxy_Resource', cutils.bind(this, this.onProxy_Resource));
+
+	this.connProxy.removeAllListeners('Proxy_DefaultResource');
+	this.connProxy.on('Proxy_DefaultResource', cutils.bind(this, this.onProxy_DefaultResource));
+
+	this.connProxy.removeAllListeners('Proxy_DictionaryKeys');
+	this.connProxy.on('Proxy_DictionaryKeys', cutils.bind(this, this.onProxy_DictionaryKeys));
+}
+
+//
+// disconnect
+//
+ClientResourceManager.prototype.disconnect = function disconnect()
+{
+	dbg.trace();
+	this.connProxy = null;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Server requests
+
+//
+// requestResource
+//
+// Requests a resource from the server.
+//
+ClientResourceManager.prototype.requestResource = function requestResource(dictname, id)
+{
+	dbg.trace(dictname, id);
+
+	if(this.connProxy)
+	{
+		this.connProxy.emit('Client_RequestResource', { 'dictname': dictname, 'id': id });
+	}
+	else
+	{
+		dbg.error("Can't request resource when disconnected.");
+	}
+}
+
+//
+// requestDefaultResource
+//
+// Requests a default, fully-populated resource for a particular dictionary
+// from the server.
+//
+ClientResourceManager.prototype.requestDefaultResource = function requestDefaultResource(dictname)
+{
+	dbg.trace(dictname);
+
+	if(this.connProxy)
+	{
+		this.connProxy.emit('Client_RequestDefaultResource', { 'dictname': dictname })
+	}
+	else
+	{
+		dbg.error("Can't request default resource when disconnected.");
+	}
+}
+
+//
+// requestDictionaryKeys
+//
+// Requests the entire list of reference ids in a dictionary.
+//
+ClientResourceManager.prototype.requestDictionaryKeys = function requestDictionaryKeys(dictname)
+{
+	dbg.trace(dictname);
+
+	if(this.connProxy)
+	{
+		this.connProxy.emit('Client_RequestDictionaryKeys', { 'dictname': dictname })
+	}
+	else
+	{
+		dbg.error("Can't request populate dictionary when disconnected.");
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Message Handlers
+
+//
+// onProxy_Resource
+//
+// Handler for Resource message
+//
+ClientResourceManager.prototype.onProxy_Resource = function onProxy_Resource(data)
+{
+	dbg.trace(data);
+
+	var dict = this.findDictionary(data.dictname);
+	if(!dict && data.value)
+	{
+		dict = this.findOrCreateDictionary(data.dictname);
+	}
+
+	if(dict)
+	{
+		dict.setResource(data.id, data.value);
+	}
+}
+
+//
+// onProxy_DefaultResource
+//
+// Handler for DefaultResource message
+//
+ClientResourceManager.prototype.onProxy_DefaultResource = function onProxy_DefaultResource(data)
+{
+	dbg.trace(data);
+
+	var dict = this.findDictionary(data.dictname);
+	if(!dict && data.value)
+	{
+		dict = this.findOrCreateDictionary(data.dictname);
+	}
+
+	if(dict)
+	{
+		dict.setDefaultResource(data.value);
+
+		if(dict.state === 'invalid')
+		{
+			this.destroyDictionary(data.dictname);
+		}
+	}
+}
+
+//
+// onProxy_DictionaryKeys
+//
+// Handler for DictionaryKeys message
+//
+ClientResourceManager.prototype.onProxy_DictionaryKeys = function onProxy_DictionaryKeys(data)
+{
+	dbg.trace(data);
+
+	var dict = this.findDictionary(data.dictname);
+	if(!dict && data.value)
+	{
+		dict = this.findOrCreateDictionary(data.dictname);
+	}
+
+	if(dict)
+	{
+		dict.setKeys(data.value);
+
+		if(dict.state === 'invalid')
+		{
+			this.destroyDictionary(data.dictname);
+		}
+	}
+}
+
+//
+// onProxy_ResourceBundle
+//
+// Handler for ResourceBundle message
+//
+ClientResourceManager.prototype.onAjax_ResourceBundle = function onAjax_ResourceBundle(data)
+{
+	dbg.trace(data);
+
+	for(var dictname in data)
+	{
+		var dict = this.findOrCreateDictionary(dictname);
+		if(dict)
+		{
+			if(typeof data[dictname] === 'object')
+			{
+				if(data[dictname]['_defaults'])
+				{
+					dict.setDefaultResource(data[dictname]['_defaults']);
+				}
+				else
+				{
+					dict.fetchDefaultResource();
+				}
+
+				for(var id in data[dictname])
+				{
+					if(id !== '_defaults')
+					{
+						dict.setResource(id, data[dictname][id], true);
+					}
+				}
+			}
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ClientResourceManager;
+
+// End of File

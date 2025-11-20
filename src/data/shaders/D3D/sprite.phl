@@ -1,0 +1,39 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+SAMPLER_DECL(texture_sampler, 0);
+
+// -----------------------------------------------------------------------
+
+// Main function prototype
+struct PS_OUTPUT
+{
+	#ifdef MRT4
+		float4 color[4] : SEM_COLOR(0);
+	#elseifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+};
+
+// -----------------------------------------------------------------------
+
+PS_OUTPUT default_sprite_pixelshader(PS_INPUT_SPRITE fragment)
+{
+	PS_OUTPUT output;
+	float4 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy);
+	float4 outcolor = fragment.color * texcolor;
+
+	output.color[0] = outcolor;
+	
+	#ifdef MRT4
+		output.color[3] = 0;
+		output.color[2] = 0;
+	#endif
+	#ifdef MRT2
+		output.color[1] = 0;
+	#endif
+	
+	return output;
+}

@@ -1,0 +1,39 @@
+OperationDef
+	Name "Terrain_0Detail" // Name of the operation
+	Description "Special-case terrain operation (0 detail texture)"
+	Type CUSTOM
+
+	Input
+		Name ColorTexture // String input in editor, integer texture unit number output to shader
+		Description "Color texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	
+	Output
+		Name ColorOut
+		Description "Color and alpha"
+		Float 4
+		AlphaFrom ColorTexture
+	EndOutput
+
+	Output
+		Name NormalOut
+		Description "Normal"
+		Float 4
+		Type Normal
+	EndOutput
+
+	Output
+		Name SpecularValueOut
+		Description "Specular Value"
+		Float 1
+	EndOutput
+	
+	Output
+		Name SpecularExponentOut
+		Description "Specular Exponent"
+		Float 1
+	EndOutput
+	
+EndOperationDef

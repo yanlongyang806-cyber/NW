@@ -1,0 +1,304 @@
+[
+	/////////////////////
+	//
+	// This file is for all the stuff that only needs to be done once.
+	// These files are shared by all projects.
+	//
+	/////////////////////
+
+	{
+		name: 'global settings for all tasks',
+		task: 'global',
+
+		extignore: [ '.000' ],
+		dirignore: [ '.git', './smelter', './delog', './build', './3rdparty', './phantom', './bin', './tools', '.svn', 'UnusedStencils' ],
+
+		prefix: '$prefix$',
+
+		includefiles: [
+			{
+				file: 'eachProject.smelt',
+				vary: { 'game': 'Night/game', 'login': 'Night/login', 'prefix': 'NW'  },
+				features: { 'sca': true }
+			},
+			{
+				file: 'eachProject.smelt',
+				vary: { 'game': 'StarTrek/game', 'login': 'StarTrek/login', 'prefix': 'ST'  },
+				features: { 'sca': false }
+			},
+		]
+	},
+
+	/////////////////////
+	//
+	// Javascript
+	//
+	/////////////////////
+	{
+		//
+		// Copy all of the already-pre-processed javascript files into the
+		// new source tree.
+		//
+		name:      'copy js files',
+		task:      copy,
+
+		dirignore: [ './node_modules', 'test' ],
+
+		watch:     '../',
+		extmatch:  [ '.js', '.cfg' ],
+		out:       [ './tmp/debug', './tmp/prod' ]
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For debug.
+		//
+
+		name:     'jspp debug',
+		task:     jspp,
+
+		watch:    [ '../' ],
+		extmatch: '.jspp',
+		dirignore: [ 'server', 'node_modules', 'img', 'css', 'less', 'stencils', 'fonts', 'locale' ],
+
+		include:  './debug.def',
+		out:      [ './tmp/debug' ],
+		extout:   '.js',
+
+		remap: [ [ 'cryptic_modules', 'node_modules/cryptic' ] ],
+
+		jshint:   true,
+		jshopt:   {
+			predef: [
+				"io",
+				"Buffer",
+				"ActiveXObject",
+				"__LINE__",
+				"__FUNCTION__",
+				"__FILE__",
+				"escape",
+				"unescape",
+				"client",
+				"crypticMessages",
+				"matchMedia",
+				"IS_DEBUG",
+				"IS_PROD"
+			],
+
+			// Environments
+			node: true,
+			browser: true,
+			jquery: true,
+			es5: true,
+
+			globalstrict: true,  // Don't complain about global strict
+			strict      : false, // require the "use strict"; pragma
+			asi         : true,  // Don't complain about missing semicolons
+			sub         : true,  // Don't complain about using [] instead of .
+			laxbreak    : true,  // Don't complain about things like || at beginning of line
+			evil        : true,  // if eval should be allowed
+			loopfunc    : true,  // if functions should be allowed to be defined within
+			                     // loops
+		}
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For debug.
+		//
+
+		name:     'jspp debug serveronly',
+		task:     jspp,
+
+		watch:    [ '../' ],
+		extmatch: '.jspp',
+		dirkeep: [ 'server' ],
+		dirignore: [ 'node_modules', 'img', 'css', 'less', 'stencils', 'fonts', 'locale' ],
+
+		include:  './debug.def',
+		out:      [ './tmp/debug' ],
+		extout:   '.js',
+
+		remap: [ [ 'cryptic_modules', 'node_modules/cryptic' ] ],
+
+		jshint:   true,
+		jshopt:   {
+			predef: [
+				"io",
+				"Buffer",
+				"ActiveXObject",
+				"__LINE__",
+				"__FUNCTION__",
+				"__FILE__",
+				"escape",
+				"unescape",
+				"client",
+				"crypticMessages",
+				"matchMedia",
+				"IS_DEBUG",
+				"IS_PROD"
+			],
+
+			// Environments
+			node: true,
+			browser: true,
+			jquery: true,
+			es5: true,
+
+			globalstrict: true,  // Don't complain about global strict
+			strict      : false, // require the "use strict"; pragma
+			asi         : true,  // Don't complain about missing semicolons
+			sub         : true,  // Don't complain about using [] instead of .
+			laxbreak    : true,  // Don't complain about things like || at beginning of line
+			evil        : true,  // if eval should be allowed
+			loopfunc    : true,  // if functions should be allowed to be defined within
+			                     // loops
+		}
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For production.
+		//
+
+		name:     'jspp prod',
+		task:     jspp,
+
+		watch:    [ '../' ],
+		extmatch: '.jspp',
+		dirignore:[ 'server', 'node_modules', 'img', 'css', 'less', 'stencils', 'fonts', 'locale', 'cryptic_modules/proxy', 'cryptic_modules/login' ],
+
+		include:  './prod.def',
+		out:      [ './tmp/prod' ],
+		extout:   '.js',
+
+		remap: [ [ 'cryptic_modules', 'node_modules/cryptic' ] ],
+
+		jshint:   false
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For production.
+		//
+
+		name:     'jspp prod serveronly',
+		task:     jspp,
+
+		watch:    [ '../' ],
+		extmatch: '.jspp',
+		dirkeep:  [ 'server' ],
+		dirignore: [ 'node_modules', 'img', 'css', 'less', 'stencils', 'fonts', 'locale', 'cryptic_modules/proxy', 'cryptic_modules/login' ],
+
+		include:  './prod.def',
+		out:      [ './tmp/prod' ],
+		extout:   '.js',
+
+		remap: [ [ 'cryptic_modules', 'node_modules/cryptic' ] ],
+
+		jshint:   false
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For production.
+		//
+
+		name:     'jspp prod proxy',
+		task:     jspp,
+
+		watch:    [ '../cryptic_modules/proxy' ],
+		extmatch: '.jspp',
+
+		include:  './debug.def', // Proxy is always debug
+		out:      [ './tmp/prod/node_modules/cryptic/proxy' ],
+		extout:   '.js',
+
+		jshint:   false
+	},
+	{
+		//
+		// Preprocess all jspp files into the new source tree.
+		// For production.
+		//
+
+		name:     'jspp prod login',
+		task:     jspp,
+
+		watch:    [ '../cryptic_modules/login' ],
+		extmatch: '.jspp',
+
+		include:  './debug.def', // Proxy is always debug
+		out:      [ './tmp/prod/node_modules/cryptic/login' ],
+		extout:   '.js',
+
+		jshint:   false
+	},
+
+	/////////////////////
+	//
+	// node_modules
+	//
+	/////////////////////
+	{
+		name:     'copy node_modules',
+		task:     copy,
+
+		dirignore: [ '.bin', 'test', 'coverage', 'examples', 'example', 'benchmark', 'lib-cov', 'vows', 'web-socket-js' ],
+
+		watch:    '../node_modules',
+		extmatch: [ '.js', 'json', '.node', '.types' ],
+
+		out:      [ './tmp/debug/node_modules', './tmp/prod/node_modules' ],
+	},
+//	{
+//		name:     'copy connect defaults',
+//		task:     copy,
+//
+//		watch:    '../node_modules/connect/lib/public',
+//
+//		out:      [ './deploy/debug/node_modules/connect/lib/public', './deploy/prod/node_modules/connect/lib/public' ],
+//	},
+
+	/////////////////////
+	//
+	// Server javascript and config
+	//
+	/////////////////////
+	{
+		name:     'deploy server javascript debug',
+		task:     copy,
+
+		dirignore: [ '\\client', 'public', 'web', 'test', 'lib-cov', 'vows' ],
+
+		watch:    './tmp/debug',
+		extmatch: [ '.js', 'json', '.node', '.types', '.cfg' ],
+
+		out:      [ './deploy/debug' ]
+	},
+	{
+		name:     'deploy server javascript prod',
+		task:     copy,
+
+		dirignore: [ '\\client', 'public', 'web', 'test', 'lib-cov', 'vows'  ],
+
+		watch:    './tmp/prod',
+		extmatch: [ '.js', 'json', '.node', '.types', '.cfg' ],
+
+		out:      [ './deploy/prod' ]
+	},
+
+	/////////////////////
+	//
+	// Bin
+	//
+	/////////////////////
+	{
+		name:     'deploy bin',
+		task:     copy,
+
+		watch:    '../bin',
+		out:      [ './deploy/debug/bin', './deploy/prod/bin' ],
+	},
+
+]

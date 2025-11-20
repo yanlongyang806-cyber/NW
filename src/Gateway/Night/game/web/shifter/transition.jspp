@@ -1,0 +1,584 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+
+var content = require('cryptic/client/contentHelpers');
+
+var transitions = {};
+
+/*******************************************************************************\
+ * For transitions.activate(opt)
+ *  opt - object with all the options.
+ *    from:
+ *       all the information about the page you are coming from.
+ *
+ *    to:
+ *       all the information about the page you are going to.
+ *
+ *    setContent:
+ *       The minimum content that should be set for this page load. (optimized)
+ *
+ *    finished:
+ *       callback function.  Call this when you have finished all of the transitions
+ *       and have arrived on the 'to' page.
+ */
+var s_opt = {};
+transitions.activate = function(opt)
+{
+	var self = this;
+	s_opt = opt;
+
+	// ------------------------ FIRST SET THE STRUCTURE ------------------------
+	dbg('ACTIVATE: from ' + opt.from.loc + ', to ' + opt.to.loc);
+
+	// If we're going somewhere, always be sure the tooltips are cleared at the start
+	client.tooltipClear();
+
+	// Adding things to the callback, because reasons.
+	function finishedCallback()
+	{
+		// Also, incase they hovered over something while we were busy, clear it now.
+		client.tooltipClear();
+		s_opt.finished();
+	}
+
+
+	// If the structure has changed, change it.
+	// And forward activate for the transition
+	if ((!(opt.to.modal || opt.from.modal)) && (opt.from.str !== opt.to.str))
+	{
+		dbg('Structure change from "' + opt.from.str  + '" to "' + opt.to.str + '"');
+		// The structure name is the stencil name
+		content.setContent([{selector: '#content', stencil: opt.to.str}], opt.to.params, undefined, function() {
+			opt.from.str = opt.to.str;
+			opt.from.loc = '';
+			self.activate(opt);
+		});
+		return;
+	}
+
+	// SUBSTITUTE NEW LOC FOR LOADING SCREENS ----------------------------
+
+	if (opt.to.extra && opt.to.extra.isLoadingScreen && client.shifter.hashInfo.qParams['loc'])
+	{
+		opt.to.loc = client.shifter.hashInfo.qParams['loc'];
+	}
+
+
+	// MODALS -------------------------------------
+
+	// if MODAL to MODAL
+	if(opt.from.modal && opt.to.modal)
+	{
+		dbg.log("MODAL TO MODAL");
+		setModalContent(finishedCallback);
+		return;
+	}
+	// if OPENING A MODAL (NORMAL PAGE to MODAL)
+	if(!opt.from.modal && opt.to.modal)
+	{
+		dbg.log("OPENING MODAL");
+		setModalContent(finishedCallback);
+		return;
+	}
+	// if CLOSING A MODAL (MODAL to NORMAL PAGE)
+	if(opt.from.modal && !opt.to.modal)
+	{
+		dbg.log("CLOSING MODAL");
+		emptyModal();
+		if (opt.to.extra && opt.from.extra.subnavid === opt.to.extra.subnavid)
+		{
+			dbg.log("AND WE'RE DONE");
+			finishedCallback();
+			return;
+		} else {
+			dbg.log("CONTINUE ON");
+			// continue on and fill new content
+		}
+	}
+
+
+	// PAGES -------------------------------------
+
+	if (opt.from.loc === '')
+	{
+		content.setContent(opt.setContent, opt.to.params, [], function() {
+			finishedCallback();
+		});
+		dbg.log("WELCOME");
+		// THIS IS SUPPOSED TO CONTINUE ON (i.e. not have a return;)
+	}
+
+	// if STARTING on MAIN
+	if (opt.from.loc === '' && opt.to.loc === 'main')
+	{
+		startWithButtons();
+		setStartingContent();
+		finishedCallback();
+		return;
+	}
+	// if STARTING on SECTION
+	if (opt.from.loc === '' && opt.to.loc === 'section')
+	{
+		startWithTabs();
+		addConceptBG();
+		setStartingContent();
+		finishedCallback();
+		return;
+	}
+	// if STARTING on LOGIN
+	if (opt.from.loc === '' && opt.to.loc === 'login')
+	{
+		startWithoutButtons();
+		setStartingContent();
+		finishedCallback();
+		return;
+	}
+	// if moving from FRONT to LOGIN:
+	if (opt.from.loc === 'front' && opt.to.loc === 'login')
+	{
+		slideBgReverse(2);
+		removeButtons();
+		removeWelcomeBannerReverse();
+		contentSwitcherooReverse(finishedCallback);
+		return;
+	}
+	// if moving from LOGIN to FRONT:
+	if (opt.from.loc === 'login' && opt.to.loc === 'front')
+	{
+		slideBg(2);
+		addButtons();
+		addWelcomeBanner();
+		contentSwitcheroo(finishedCallback);
+		return;
+	}
+	// if moving from FRONT to FRONT:
+	if (opt.from.loc === 'front' && opt.to.loc === 'front')
+	{
+		contentSwitcherooStatic(finishedCallback);
+		return;
+	}
+	// if moving from LOGIN to LOGIN:
+	if (opt.from.loc === 'login' && opt.to.loc === 'login')
+	{
+		contentSwitcherooStatic(finishedCallback);
+		return;
+	}
+
+	// if moving from SECTION to SECTION:
+	if (opt.from.loc === 'section' && opt.to.loc === 'section')
+	{
+		if (opt.from.extra.isLoadingScreen)
+		{
+			switchConceptBGStatic();
+			setMainNavHighlight(0);
+			checkHiddenTabs();
+			innerSwitcheroo(finishedCallback);
+			return;
+		}
+		else if (opt.from.extra.navid === opt.to.extra.navid)
+		{
+			checkHiddenTabs();
+			innerSwitcheroo(finishedCallback);
+			return;
+		}
+		else if (opt.from.extra.navid !== opt.to.extra.navid)
+		{
+			slideBg(1);
+			switchConceptBG();
+			setMainNavHighlight(0);
+			checkHiddenTabs();
+			contentSwitcheroo('delay', finishedCallback);
+			return;
+		}
+	}
+
+	// if moving from FRONT to SECTION:
+	if (opt.from.loc === 'front' && opt.to.loc === 'section')
+	{
+		slideBg(1);
+		addConceptBG();
+		turnButtonsToTabs();
+		removeWelcomeBanner();
+		setMainNavHighlight(450);
+		contentSwitcheroo('delay', finishedCallback);
+		return;
+	}
+	// if moving from SECTION to FRONT:
+	if (opt.from.loc === 'section' && opt.to.loc === 'front')
+	{
+		slideBgReverse(1);
+		removeConceptBG();
+		turnTabsToButtons();
+		addWelcomeBannerReverse();
+		setMainNavHighlight(0);
+		contentSwitcherooReverse(finishedCallback);
+		return;
+	}
+
+	// if moving from SECTION to LOGIN:
+	if (opt.from.loc === 'section' && opt.to.loc === 'login')
+	{
+		slideBgReverse(3);
+		removeConceptBG();
+		removeTabs();
+		setMainNavHighlight(0);
+		contentSwitcherooReverse(finishedCallback);
+		return;
+	}
+	// if moving from LOGIN to SECTION:
+	if (opt.from.loc === 'login' && opt.to.loc === 'section')
+	{
+		slideBg(3);
+		addConceptBG();
+		addTabs();
+		setMainNavHighlight(450);
+		contentSwitcheroo('delay', finishedCallback);
+		return;
+	}
+
+	// It should never reach this.
+	// If it reaches this, you missed a case above.
+	dbg("YOU GET NOTHING! YOU LOSE! GOOD DAY SIR!");
+
+	// You shouldn't be here, but lets try to recover
+	// at least SOME functionality if you are here.
+	this.shifter.onFinished(opt.to.hash, true);
+
+	return;
+}
+
+// ------------------------ CHECK OUT THESE MOVES ------------------------
+
+
+// STARTING CONDITIONS
+function startWithoutButtons() {
+	$('.sticky-nav').css({'left': '300%'});
+	$('.button-group').css({'right': '0'});
+	$('.button-back').hide();
+}
+function startWithButtons() {
+	$('.sticky-nav').css({'left': '100%'});
+	$('.button-group').css({'right': '460px'});
+	$('.button-back').hide();
+}
+function startWithTabs() {
+	$('.sticky-nav').css({'left': '-380px'});
+	$('.button-group').css({'right': '0'});
+	$('.button-back').show();
+	$('.deco-nav').show();
+	checkHiddenTabs();
+}
+function setStartingContent() {
+	$('#content_box').attr('class', s_opt.to.loc);
+	addBodyMarkers();
+}
+
+// BACKGROUND AND FOREGROUND MANEUVERS
+function slideBg(speed) {
+	$('.sticky-background').animate({left: ('-=' + (150 * speed) + 'px')}, 600);
+	$('.sticky-foreground').animate({left: ('-=' + (300 * speed) + 'px')}, 600);
+	$('.sticky-background').promise().done(function() {
+		checkBgPosition();
+	});
+	$('.sticky-foreground').promise().done(function() {
+		checkFgPosition();
+	});
+}
+function slideBgReverse(speed) {
+	$('.sticky-background').animate({left: ('+=' + (150 * speed) + 'px')}, 600);
+	$('.sticky-foreground').animate({left: ('+=' + (300 * speed) + 'px')}, 600);
+	$('.sticky-background').promise().done(function() {
+		checkBgPosition();
+	});
+	$('.sticky-foreground').promise().done(function() {
+		checkFgPosition();
+	});
+}
+var bgPosition;
+var bgWidth;
+function checkBgPosition() {
+	bgPosition = parseInt($(".sticky-background").css("left"), 10);
+	bgWidth = parseInt(($(".sticky-background").css("width")), 10) / 5;
+	dbg.log("background position: " + bgPosition);
+	if (bgPosition <= (bgWidth * -3))
+	{
+		$('.sticky-background').css({'left': ('+=' + bgWidth + 'px')});
+	}
+	if (bgPosition >= (bgWidth * -1))
+	{
+		$('.sticky-background').css({'left': ('-=' + bgWidth + 'px')});
+	}
+}
+var fgPosition;
+var fgWidth;
+function checkFgPosition() {
+	fgPosition = parseInt($(".sticky-foreground").css("left"), 10);
+	fgWidth = parseInt(($(".sticky-foreground").css("width")), 10) / 5;
+
+	dbg.log("foreground position: " + fgPosition);
+	if (fgPosition <= (fgWidth * -3))
+	{
+		$('.sticky-foreground').css({'left': ('+=' + fgWidth + 'px')});
+	}
+	if (fgPosition >= (fgWidth * -1))
+	{
+		$('.sticky-foreground').css({'left': ('-=' + fgWidth + 'px')});
+	}
+}
+
+// CONCEPT ART
+function addConceptBG() {
+	$('#concept_bg').attr('class', s_opt.to.extra.navid);
+	$('#concept_bg').delay(300).css({'left': '250%'}).animate({'left': '50%'}, 300);
+	$('#concept_footer').delay(300).promise().done(function() {
+		$('#concept_footer').attr('class', s_opt.to.extra.navid).show();
+	});
+	$('.sticky-footer').delay(300).animate({'margin-top': '100px'}, 300);
+}
+function removeConceptBG() {
+	$('#concept_bg').animate({'left': '250%'}, 300);
+	$('#concept_footer').delay(300).promise().done(function() {
+		$('#concept_footer').hide();
+	});
+	$('.sticky-footer').delay(300).animate({'margin-top': '0'}, 300);
+}
+function switchConceptBG() {
+	$('#concept_bg').animate({'left': '-1000px'}, 300).promise().done(function() {
+		$('#concept_bg').attr('class', s_opt.to.extra.navid);
+		$('#concept_bg').css({'left': '250%'}).animate({'left': '50%'}, 300);
+	});
+	$('#concept_footer').delay(300).promise().done(function() {
+		$('#concept_footer').attr('class', s_opt.to.extra.navid);
+	});
+}
+function switchConceptBGStatic() {
+	$('#concept_bg').attr('class', s_opt.to.extra.navid);
+	$('#concept_footer').attr('class', s_opt.to.extra.navid);
+}
+
+// BUTTONS AND TABS
+function addButtons() {
+	$('.sticky-nav').css({'left': '100%'});
+	$('.button-group').css({'right': '-800px'}).delay(300).animate({'right': '460px'}, 300);
+}
+function removeButtons() {
+	$('.sticky-nav').animate({'left': '300%'}, 600);
+	$('.button-group').animate({'right': '0'},600);
+}
+function turnButtonsToTabs() {
+	$('.sticky-nav').animate({'left': '-380px'}, 600);
+	$('.button-group').animate({'right': '0'},600);
+	$('.button-back').delay(300).fadeIn(200);
+	$('.deco-nav').delay(300).fadeIn(200);
+	checkHiddenTabs();
+}
+function turnTabsToButtons() {
+	$('.sticky-nav').animate({'left': '100%'}, 600);
+	$('.button-group').animate({'right': '460px'},600);
+	$('.button-back').delay(100).fadeOut(200);
+	$('.deco-nav').delay(100).fadeOut(200);
+	checkHiddenTabs();
+}
+function addTabs() {
+	$('.sticky-nav').css({'left': '100%'}).delay(200).animate({'left': '-380px'}, 400);
+	$('.button-group').css({'right': '0'});
+	$('.button-back').delay(300).fadeIn(200);
+	$('.deco-nav').delay(300).fadeIn(200);
+	checkHiddenTabs();
+}
+function removeTabs() {
+	$('.sticky-nav').animate({'left': '150%'}, 600);
+	$('.button-back').delay(100).fadeOut(200);
+	$('.deco-nav').delay(100).fadeOut(200);
+	checkHiddenTabs();
+}
+
+function checkHiddenTabs() {
+
+	if (s_opt.to.hasPrivilegedContent) {
+		if (s_opt.to.isPrivileged) {
+			$('.sticky-nav .button-list').delay(400).fadeIn(200);
+		}
+		else {
+			$('.sticky-nav .button-list').fadeOut(200);
+		}
+
+	} else if (s_opt.from.hasPrivilegedContent) {
+		$('.sticky-nav .button-list').delay(400).fadeIn(200);
+	} else {
+		// You're fine.
+	}
+
+}
+
+
+// THE WELCOME BANNER
+function addWelcomeBanner() {
+	$('#welcome_banner').show().css({'left': '15%'}).delay(300).animate({'left': '0%'}, 300);
+	$('.welcome-banner-bg').delay(350).fadeIn(900);
+}
+function addWelcomeBannerReverse() {
+	$('#welcome_banner').show().css({'left': '-15%'}).delay(300).animate({'left': '0%'}, 300);
+	$('.welcome-banner-bg').delay(350).fadeIn(900);
+}
+function removeWelcomeBanner() {
+	$('#welcome_banner').animate({'left': '-150%'}, 600);
+	$('.welcome-banner-bg').fadeOut(300);
+	$('#welcome_banner').promise().done(function() {
+		$('#welcome_banner').hide();
+	});
+}
+function removeWelcomeBannerReverse() {
+	$('#welcome_banner').animate({'left': '150%'}, 600);
+	$('.welcome-banner-bg').fadeOut(300);
+	$('#welcome_banner').promise().done(function() {
+		$('#welcome_banner').hide();
+	});
+}
+
+// CONTENT SWITCHEROO AND WINDOW SHENANIGANS
+function contentSwitcheroo(s_option, finished) {
+	if(typeof s_option === 'function')
+	{
+		finished = s_option;
+		s_option = undefined;
+	}
+	addBodyMarkers();
+	$('#content_login, #content_title').delay(300).hide();
+	$('#content_box').animate({'left': '-100%'}, 300);
+	$('#content_box').promise().done(function() {
+		fillTitle();
+		content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+			if (s_option === 'delay')
+			{
+				$('#content_login').delay(300).fadeIn(300);
+			} else {
+				$('#content_login').show();
+			}
+			addSubNavHighlight();
+			finished();
+		});
+		$('#content_box').css({'left': '80%'}).animate({'left': '0'}, 300);
+		$('#content_box').attr('class', s_opt.to.loc);
+
+	});
+}
+function contentSwitcherooReverse(finished) {
+	$('#content_login, #content_title').delay(300).hide();
+	$('#content_box').animate({'left': '+100%'}, 300);
+	$('#content_box').promise().done(function() {
+		fillTitle();
+		content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+			$('#content_login').show();
+			addSubNavHighlight();
+			finished();
+		});
+		$('#content_box').css({'left': '-80%'}).animate({'left': '0'}, 300);
+		$('#content_box').attr('class', s_opt.to.loc);
+		addBodyMarkers();
+	});
+}
+function contentSwitcherooStatic(finished) {
+	dbg.log("CONTENT SWITCHEROO STATIC");
+	$('#content_login, #content_title').hide();
+	$('#content_login').promise().done(function() {
+		addBodyMarkers();
+		fillTitle();
+		content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+			$('#content_title').text(s_opt.to.title);
+			$('#content_login').delay(100).show();
+			addSubNavHighlight();
+			finished();
+		});
+	});
+}
+function innerSwitcheroo(finished) {
+	dbg.log("INNER SWITCHEROO");
+	fillTitle();
+	content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+		addBodyMarkers();
+		addSubNavHighlight();
+		finished();
+	});
+}
+
+// MODALS
+function setModalContent(finished) {
+	content.setContent(s_opt.setContent, s_opt.to.params, [], function() {
+		addBodyMarkers();
+		if (s_opt.to.extra && s_opt.to.extra.complexpath)
+		{
+			$('.mobileModalArrowStandard').hide();
+		}
+		finished();
+	});
+}
+function emptyModal() {
+	addBodyMarkers();
+	$('#modal').empty();
+}
+function closeModal(optTo) {
+	s_opt.to = optTo;
+	emptyModal();
+}
+
+
+// MISCELLANEOUS HELPERS
+function fillTitle() {
+	$('#content_title').text(s_opt.to.title);
+	$('#content_title').show();
+}
+function addBodyMarkers() {
+	$('body').attr('class', 'body-' + s_opt.to.loc);
+	if (s_opt.to.extra && s_opt.to.extra.navid)
+	{
+		$('body').addClass('body-' + s_opt.to.extra.navid);
+	}
+	if (s_opt.to.extra && s_opt.to.extra.subnavid)
+	{
+		$('body').addClass('body-' + s_opt.to.extra.subnavid);
+	}
+	if (s_opt.to.modal)
+	{
+		$('body').addClass('body-modal');
+	}
+	if (s_opt.to.extra && s_opt.to.extra.guildpage)
+	{
+		$('body').addClass('body-guildpage');
+	}
+}
+function setMainNavHighlight(delay) {
+	if (s_opt.to.extra && s_opt.to.extra.navid)
+	{
+		$('.mainNav').delay(delay).promise().done(function() {
+			$('.mainNav.selected').removeClass('selected');
+			$('.mainNav.' + s_opt.to.extra.navid).addClass('selected');
+		});
+	} else {
+		$('.mainNav').delay(delay).promise().done(function() {
+			$('.mainNav.selected').removeClass('selected');
+		});
+	}
+}
+function addSubNavHighlight() {
+	$('.subNav').removeClass('selected');
+
+	if (s_opt.to.extra && s_opt.to.extra.subnavid)
+	{
+		$('.subNav.' + s_opt.to.extra.subnavid).addClass('selected');
+	}
+	if (client.shifter.hashInfo.urlsParams['subnavid'])
+	{
+		$('.subNav.' + client.shifter.hashInfo.urlsParams['subnavid']).addClass('selected');
+	}
+}
+
+
+// Usable outside transitions:
+transitions.closeModal = closeModal;
+
+module.exports = transitions;
+
+// End of File

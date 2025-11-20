@@ -1,0 +1,60 @@
+OperationDef
+	Name "Floor" // Name of the operation
+	Category "Combiner"
+	Description "Floor"
+	Type SIMPLE
+
+	Input
+		Name Value
+		Description "Value to make into an increment"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.5 0.5 0.5 0.5
+		EndDefault
+	EndInput
+
+	Input
+		Name Floorx
+		Description "Increment of flooring values"
+		Float 1
+		FloatRange 0.01 10
+		NoManualConnect 1
+		NotForAssembler 1
+		Default
+			Floats 0.01
+		EndDefault
+	EndInput
+
+	Input
+		Name Floory
+		Description "Increment of flooring values"
+		Float 1
+		FloatRange 0.01 10
+		NoManualConnect 1
+		NotForAssembler 1
+		Default
+			Floats 0.01
+		EndDefault
+	EndInput
+
+	Input
+		Name FloorValues
+		Description "x, 1/x, y, 1/y"
+		Type FloorValues
+		Float 4
+		NoAutoConnect 1
+		NoManualConnect 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Value converted into a multiple of Step"
+		Float 2
+		AlphaFrom Value
+	EndOutput
+
+EndOperationDef
+

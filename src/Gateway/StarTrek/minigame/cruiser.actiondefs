@@ -1,0 +1,289 @@
+({
+	id: 'cruiser',
+	name: 'Cruiser',
+	actions: [
+		{
+			id: 'acetonBeam',
+			name: 'Aceton Beam',
+			description: "Target: Enemy. If targeted enemy would deal damage this turn, it instead deals that damage to itself.",
+			notes: "1 target; if targeted enemy would deal damage this turn (after attack roll), instead deal that damage to self",
+			icon: 'Space_Boff_Acetonfield',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& wait() &>
+		},
+
+		{
+			id: 'auxiliaryToBattery',
+			name: 'Auxiliary to Battery',
+			description: "Target: Enemy. Attack with 75% auxiliary and 140% of weapons.",
+			notes: "1 target; attack at .75 auxiliary and 1.4 attack value",
+			icon: 'Space_Boff_Auxillarypoweemergencybattery',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.75 }) ),
+				attack(1.4)
+			] &>
+		},
+
+		{
+			id: 'auxiliaryToDampeners',
+			name: 'Auxiliary to Dampeners',
+			description: "Target: Enemy. Attack with 50% auxiliary and weapons. Also gain 150% defense and reduce incoming damage by 20% this turn.",
+			notes: "1 target; attack at .5 auxiliary and attack value; gain 50% defense boost and 20% absorption during orders",
+			icon: 'Space_Boff_Auxiliarypowertoinertialdampeners',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& onSource([
+				attribMultiply({ evasionRating: 1.5 }),
+				attribSet({ attackReduction: 0.2 })
+			]) &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.5 }) ),
+				attack(0.5)
+			] &>
+		},
+
+		{
+			id: 'auxiliaryToStructural',
+			name: 'Auxiliary to Structural',
+			description: "Target: Self. Repair 10% of hull and next turn reduce auxiliary to 75%.",
+			notes: "Heal 10% of own health and add a counter to self; next upkeep remove the counter and lose 25% of auxiliary",
+			icon: 'Space_Boff_Auxiliarypowertostructuralintegrityfield',
+
+			cooldown: 5,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& [
+				eachTarget([
+					attribModifyMultiplyBase({ hitpoints: 0.10 }),
+					addCounter(1)
+				])
+			] &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribMultiply({ accuracyRating: 0.75 }) ) &>
+		},
+
+		{
+			id: 'boardingParty',
+			name: 'Boarding Party',
+			description: "Target: Enemy. Attack with 150% auxiliary. If hit, enemy is disabled next turn.",
+			notes: "1 target; set auxiliary to 1.5; on hit, add a counter to target; next upkeep remove counter and disable ship",
+			icon: 'Space_Boff_Boardingparty',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.5 }) ),
+				onHit( addCounter(1) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, setState('disabled')) &>
+		},
+
+		{
+			id: 'braceForImpact',
+			name: 'Brace for Impact',
+			description: "Target: Self. Double defense and reduce incoming damage by 50% this turn.",
+			notes: "Double own defense value and increase absorption to .5",
+			icon: 'Science_Common_Braceforimpact',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& [
+				eachTarget([
+					attribMultiply({ evasionRating: 2 }),
+					attribSet({ attackReduction: 0.5 })
+				])
+			] &>
+		},
+
+		{
+			id: 'directedEnergyModulation',
+			name: 'Directed Energy Modulation',
+			description: "Target: Enemy. Attack the hull directly with 120% auxiliary.",
+			notes: '1 target; attack hull only at 1.2 auxiliary',
+			icon: 'Space_Boff_Directedenergymodulation',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.2 }) ),
+				attack({ hitpoints: 1.0 })
+			] &>
+		},
+
+		{
+			id: 'drawFire',
+			name: 'Draw Fire',
+			description: "Target: enemy. Reduce target's auxiliary by 10%. Until this enemy chooses this ship as a target, its auxiliary will continue to drop each turn.",
+			notes: "1 target; add a counter to target; if target doesn't attack source, add another counter to target; if target does attack source, remove all counters; next upkeep, keep counters but reduce auxiliary and damage by 10% per counter; next battle, if there are any counters still on the ship, add a counter if the original ship is not targeted and remove all counters if it is",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& eachTarget( attribMultiply({ accuracyRating: 0.9 }) ) &>
+		},
+
+		{
+			id: 'ejectWarpPlasma',
+			name: 'Eject Warp Plasma',
+			description: "Target: All enemies. Attack the hull directly with 140% auxiliary and 40% of weapons.",
+			notes: 'Attack at 1.4 auxiliary; on hit, each enemy takes .4 attack value; this attack is hull only',
+			icon: 'Space_Boff_Ejectwarpplasma',
+
+			cooldown: 4,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.4 }) ),
+				attack({ hitpoints: 1.0, attackScale: 0.4 })
+			] &>
+		},
+
+		{
+			id: 'emergencyPowerToAuxiliary',
+			name: 'Emergency Power to Auxiliary',
+			description: "Target: Enemy. Attack with 140% auxiliary and 75% of weapons.",
+			notes: "1 target; attack at 1.4 auxiliary and .75 attack value",
+			icon: 'Space_Boff_Emergencypowertoauxiliary',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.4 }) ),
+				attack(0.75)
+			] &>
+		},
+
+		{
+			id: 'emergencyPowerToEngines',
+			name: 'Emergency Power to Engines',
+			description: "Target: Enemy. Double this ship's engines and then attack target with 75% auxiliary and weapons.",
+			notes: "1 target; double own speed during orders and during battle attack at .75 auxiliary and .75 attack value",
+			icon: 'Space_Boff_Emergencypowertotheengine',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders:<& onSource( attribMultiply({ speed: 2 }) ) &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.75 }) ),
+				attack(0.75)
+			] &>
+		},
+
+		{
+			id: 'emergencyPowerToShields',
+			name: 'Emergency Power to Shields',
+			description: "Target: Self. Repair 50% of shields.",
+			notes: "repair 50% of own shields",
+			icon: 'Space_Boff_Emergencypowertotheshields',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSelf() &>,
+			onResolve: <& attribModifyMultiplyBase({ shield: 0.50 }) &>
+		},
+
+		{
+			id: 'emergencyPowerToWeapons',
+			name: 'Emergency Power to Weapons',
+			description: "Target: Enemy. Reduce this ship's engines to 1 and then attack target with 120% auxiliary and 140% of weapons.",
+			notes: "1 target; set own speed to 1 during orders and during battle attack at 1.4 attack value and 1.2 auxiliary",
+			icon: 'Space_Boff_Emergencypowertotheweapons',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& onSource( attribSet({ speed: 1 }) ) &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.2 }) ),
+				attack(1.4)
+			] &>
+		},
+
+		{
+			id: 'engineeringTeam',
+			name: 'Engineering Team',
+			description: "Target: Ally. Repair 20% of hull.",
+			notes: "1 target; repair 20% of hull",
+			icon: 'Space_Boff_Engineering_Team',
+
+			cooldown: 5,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onResolve: <& attribModifyMultiplyBase({ hitpoints: 0.20 }) &>
+		},
+
+		{
+			id: 'extendShields',
+			name: 'Extend Shields',
+			description: "Target: Other ally. Repair 25% of this ship's shields and 25% of target's shields.",
+			notes: "1 target; repair 25% of own shields and 25% of target's shields",
+			icon: 'Space_Boff_Extendshields',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleAllyExceptSource() &>,
+			onOrders: <& [
+				onSource( attribModifyMultiplyBase({ shield: 0.25 }) ),
+				eachTarget(	attribModifyMultiplyBase({ shield: 0.25 }) )
+			] &>
+		},
+
+		{
+			id: 'rammingSpeed',
+			name: 'Ramming Speed',
+			description: "Target: Enemy. Attack target with 200% of weapons and this ship also takes 30% of that damage.",
+			notes: "1 target; on hit, target takes 2x attack value and attacker takes .3 attack value",
+			icon: 'Science_Common_Rammingspeed',
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(2.0),
+				onSource( attack(0.3) )
+			] &>
+		},
+
+		{
+			id: 'reinforceHull',
+			name: 'Reinforce Hull',
+			description: "Target: Ally. Repair 25% of target's hull.",
+			notes: "1 target; Repair 25% of hull",
+			icon: '',
+
+			cooldown: 5,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onOrders: <& attribModifyMultiplyBase({ hitpoints: 0.25 }) &>
+		},
+
+		{
+			id: 'reverseShieldPolarity',
+			name: 'Reverse Shield Polarity',
+			description: "Target: Self. If this ship takes damage this turn, it instead repairs that amount in shields.",
+			notes: "If damage is taken this battle phase, instead of taking the damage, heal that amount in shields instead",
+			icon: 'Space_Boff_Reverseshieldpolarity',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSelf() &>,
+			onOrders: <& wait() &>
+		},
+
+	]
+
+})

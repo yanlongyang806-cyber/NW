@@ -1,0 +1,58 @@
+#include "vs_inc.hlsl"
+
+void postprocess_vertexshader(in VS_INPUT_POSTPROCESS vIn,
+						 out VS_OUTPUT_NORMAL vOut
+						 )
+{
+	float3 position_vs;
+	
+	float4 position_in = float4(vIn.position, 1);
+	#ifndef DEPTH_ONLY
+        float4 normal_in = float4(1, 0, 0, 0);
+	#endif
+    
+    position_vs = mul_modelview_mat(position_in, modelview_mat).xyz;
+
+    #ifndef DEPTH_ONLY
+        // Transform to view space
+        vOut.normal_vs_and_unused.xyz = float3( 0, 0, -1 );
+		#ifndef NO_NORMALMAP
+		    vOut.tangent_vs = rangeCompress(float3( 0, 1, 0 ));
+			vOut.binormal_vs = rangeCompress(float3( 1, 0, 0 ));
+		#endif
+	#endif
+
+	// Transform to clip space
+	calcClipPosition(vOut.position_clip, position_vs);
+
+	#ifndef NOPIXELSHADER
+		#ifndef DEPTH_ONLY
+			vOut.vpos_xyw_and_unused.xyz = vOut.position_clip.xyw;
+		#endif
+		
+		vOut.position_vs.xyz = position_vs;
+		#ifdef VERTEX_FOG
+			vOut.position_vs.w = fogVertexFog(length(vOut.position_vs.xyz));
+		#else
+			vOut.position_vs.w = fogCalculateHeightCoord(vOut.position_vs.xyz);
+		#endif
+
+		#ifdef USE_PSSM
+			vOut.shadow_coord = vOut.position_clip.zw;
+		#endif
+
+        vOut.texcoords = vIn.texcoords;
+        vOut.color0 = color0;
+        vOut.instanceParam = global_instance_param;
+
+	#endif
+		
+	#ifndef DEPTH_ONLY
+        vOut.vertex_lighting = float4( 0, 0, 0, 1 );
+		vOut.hemisphere_dir_vs_and_unused.xyzw = float4( 0, 0, 1, 0);
+		vOut.vpos_xyw_and_unused.w = 0;
+		#ifndef ALPHA_FADE_PLANE
+			vOut.normal_vs_and_unused.w = 0;
+		#endif
+	#endif
+}

@@ -1,0 +1,18 @@
+{
+	"dungeon" : {
+		"tiles": "dungeon",
+		"parchment": "parchment-01",
+		"backgrounds": [
+			"sca_bg_dungeon.jpg",
+			"sca_bg_lava_cave.jpg"
+		]
+	},
+
+	"tunnels" : {
+		"tiles": "dungeon",
+		"parchment": "parchment-01",
+		"backgrounds": [
+			"sca_bg_lava_cave.jpg"
+		]
+	}
+}

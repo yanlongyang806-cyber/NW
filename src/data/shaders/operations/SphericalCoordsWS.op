@@ -1,0 +1,27 @@
+OperationDef
+	Name "SphericalCoordsWS" // Name of the operation
+	ParentName "SphericalCoordsVS"
+	Description "World-space Spherical Coords"
+	OptionName "World-space Spherical Coords"
+	Type ADVANCED
+
+	MinShader 3.0
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Converts the normal into spherical texture coordinates"
+		Float 2
+	EndOutput
+
+EndOperationDef

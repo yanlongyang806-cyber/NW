@@ -1,0 +1,23 @@
+OperationDef
+	Name "ReflectionVector" // Name of the operation
+	Description "Reflection Vector"
+	Type ADVANCED
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "reflection of view vector and normal vector"
+		Float 3
+	EndOutput
+
+EndOperationDef

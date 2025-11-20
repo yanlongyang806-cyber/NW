@@ -1,0 +1,64 @@
+'use strict';
+
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+
+var applyCrypticDiff = require('cryptic/applyCrypticDiff');
+var escapeForJavascript = require('cryptic/escapeForJavascript');
+
+var GSSession = require('cryptic/proxy/GSSession');
+
+var ScaGameState = require('./ScaGameState');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Container Hooks
+//
+
+//
+// If we need to add handling for new containers, this is the place to do it.
+// Just like in GSSession, you can create receive, fullUpdate, and Diff handlers.
+// See GSSession for the function parameters.
+//
+
+var onReceive_GatewayGameData = function(packet)
+{
+	dbg.trace(this.sessionid, packet);
+
+	// this.gatewayGameData holds a copy of what the server tracks.
+	// this.ownerSession.sca holds the data that's sent to the client.
+	if(!this.gatewayGameData)
+		this.gatewayGameData = {};
+
+	if(packet.fullUpdate)
+	{
+		this.gatewayGameData = JSON.parse(packet.data);
+		packet.fullUpdate = true;
+	}
+	else
+	{
+		applyCrypticDiff(this.gatewayGameData, packet.data);
+	}
+
+	var gameState = ScaGameState.get(this.ownerSession);
+
+	if(gameState)
+	{
+		gameState.dataUpdate(this.gatewayGameData);
+
+		packet = gameState.gameStateDiff(packet);
+	}
+	else
+	{
+		packet.data = JSON.stringify(this.gatewayGameData);
+	}
+}
+
+
+// This adds the new container and its handlers.
+GSSession.addContainerHandlers('GatewayGameData', onReceive_GatewayGameData /*, onFullUpdate, onDiff */);
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

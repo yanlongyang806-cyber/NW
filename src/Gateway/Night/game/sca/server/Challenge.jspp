@@ -1,0 +1,77 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+var Trial = require('./Trial');
+
+///////////////////////////////////////////////////////////////////////////
+
+function Challenge(def)
+{
+	this.def = def;
+	this.currentTrial = 0;
+	this.isComplete = false;
+
+	this.trials = [];
+
+	for(var i = 0; i < this.def.trialDefs.length; i++)
+	{
+		this.trials.push(new Trial(this.def.trialDefs[i]));
+	}
+}
+
+Challenge.prototype.reset = function()
+{
+	this.currentTrial = 0;
+	this.isComplete = false;
+
+	for(var i = 0; i < this.trials.length; i++)
+	{
+		this.trials[i].reset();
+	}
+	this.trials[0].active = true;
+}
+
+Challenge.prototype.assign = function(die)
+{
+	var trial = this.trials[this.currentTrial];
+	trial.assign(die);
+	if(trial.isComplete())
+	{
+		this.trials[this.currentTrial].active = false;
+		this.currentTrial++;
+		if(this.currentTrial >= this.trials.length)
+		{
+			this.isComplete = true;
+		}
+		else
+		{
+			this.trials[this.currentTrial].active = true;
+		}
+
+		return true;
+	}
+
+	return false;
+}
+
+Challenge.prototype.isUsable = function(die)
+{
+	var trial = this.trials[this.currentTrial];
+	return trial ? !die.used && trial.isSideUsable(die.roll.side) : false;
+}
+
+Challenge.prototype.isSideUsable = function(side)
+{
+	var trial = this.trials[this.currentTrial];
+	return trial ? trial.isSideUsable(side) : false;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Challenge;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

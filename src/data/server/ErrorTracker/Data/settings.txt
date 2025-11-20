@@ -1,0 +1,16 @@
+{	
+	ErrorEmailAddress <&ErrorTracker_Errors@localhost&>
+	ProductionErrorEmailAddress <&ErrorTracker_ProdErrors@localhost&>
+	CrashEmailAddress <&ErrorTracker_Crashes@localhost&>
+	CrashCountEmailAddress <&ErrorTracker_CrashCount@localhost&>
+	WebInterfacePort 80
+
+	DumpDir "c:/Night/dumps"
+	AlternateDumpDir "c:/Night/localdata/ErrorTracker/WebRoot/dumps"
+	AlternateDumpDir "c:/Night/ErrorTracker/WebRoot/dumps"
+
+	RawDataDir "c:/Night/rawdata"
+
+	SVNUsername "errortracker"
+	SVNPassword ""
+}

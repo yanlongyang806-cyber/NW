@@ -1,0 +1,155 @@
+Light
+
+// Inputs: position_vs.xyz, N_vs (no mapping, assume these names from an Output.phl equivalent)
+// Mapped per-light inputs: See GfxMaterialProfile.c
+
+NormalText <<
+						// projector_light.Light
+						{
+							float3 shadow_color=0, light_ambient=0, light_type_minus_one=3;
+#ifndef NO_CCLIGHTING
+							// because of the other interals of standardAccumulation, having these not be constants=0 adds 6-7 instructions
+							//float light_scale = 1 - step(2, %light.light_type%);
+							//float light_scale = mad_sat1(%light.light_type%, -1, 3);
+							float light_scale = (%light.light_type% < 3)?1:0; // This optimizes down as well as/better than anything above!
+							shadow_color = %light.inv_world_view_x%*light_scale;
+							light_ambient = %light.inv_world_view_z%*ambient_occlusion*light_scale;
+							light_type_minus_one = %light.light_type%;
+#endif
+
+						lightProjector(diffuseComponent, diffuseLightingValue, specularComponent, shadow_term, 
+							spec_exponent, light_bleed, N_vs, reflect_vs, view_vs, bitangent,
+							%light.inv_world_view_x%, %light.inv_world_view_y%, %light.inv_world_view_z%, 
+							%light.pos_vs%, position_vs,
+							%light.one_plus_inner_radius_over_dradius%, %light.neg_inv_dradius%,
+							%light.min_tan_x_over_delta%, %light.neg_inv_delta_tan_x%, 
+							%light.min_tan_y_over_delta%, %light.neg_inv_delta_tan_y%, 
+							%light.projected_texture%, sam%light.projected_texture%,
+							shadow_color, light_ambient,
+							%light.diffuse%, %light.specular%, %light.shadow_mask%,
+							light_type_minus_one.x
+							DIFFUSE_WARP_SAMPLER_CALL()
+							);
+						}
+
+#ifdef ShowNumLightsPerObject
+	#define DEBUG_OUT
+	debug_out += 0.2;
+#endif
+
+>>
+
+ShadowTestText <<
+							// projector_light.Light
+							{
+#ifdef SCATTERING
+								shadow_term = 0;
+
+
+								float delta_len = length(position_vs);
+								float scattering = 0.0f;
+								
+								// DEBUG show effect of steady state scatter for entire distance, needs amplification to be visible
+								//scattering = scatter_param.z * (1 - exp(scatter_param.y * length(position_vs)));
+								//scattering *= 10;
+
+								#ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+								#endif
+								float far_limit = 60;
+								if (delta_len > far_limit)
+								{
+									// full scattering outside outer shadowmap, no shadows calc'd
+									//float alpha = delta_len - far_limit;
+									//scattering = scatter_param.z * (1 - exp(scatter_param.y * alpha));
+									
+									// bring initial sample position start pos in to the outer shadowmap
+									position_vs *= far_limit / delta_len;
+
+									delta_len = far_limit;
+								}
+
+						
+								const int SAMPLES = 128;
+
+								float3 position_delta, light_to_pos;
+								float decay_per_step = exp( scatter_param.y * delta_len );
+								float scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+								float4 shadow_coord;
+
+								light_to_pos = position_vs - %light.pos_vs%;
+								position_delta = position_vs * (-1.0 / (SAMPLES+1));
+								delta_len = length(position_delta);
+
+								decay_per_step = exp( scatter_param.y * delta_len );
+								scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+								#ifndef _PS3
+								#ifndef TRANSGAMING
+								[unroll(SAMPLES)]
+								#endif
+								#endif
+								for (int sample1 = 0; sample1 < SAMPLES; ++sample1)
+								{
+									shadow_coord.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+									shadow_coord.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+									shadow_coord.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+									shadow_coord.w = dot(%shadowmap0.camera_to_shadowmap_w%, float4(position_vs, 1));
+									
+									float2 sm_shadow_coord = shadow_coord.xy / shadow_coord.w;
+									// clip to first quadrant
+									if ( sm_shadow_coord.x > 0.0 && sm_shadow_coord.x < 0.5 && 
+										sm_shadow_coord.y > 0.0 && sm_shadow_coord.y < 0.5 )
+									{
+										float bScatterThisStep = shadowLookupSingle(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%);
+
+										float lightdir_length = length(light_to_pos);
+										// distance falloff
+										bScatterThisStep *= mad_sat1(lightdir_length, %light.neg_inv_dradius%, %light.one_plus_inner_radius_over_dradius%);
+										// angular falloff
+										bScatterThisStep *= mad_sat1(dot(%light.dir_vs%, light_to_pos)/lightdir_length, %light.inv_d_cos_angle%, %light.neg_cos_outer_angle_over_d_cos_angle%);
+
+										scattering += bScatterThisStep * scatter_per_step;
+									}
+									scattering *= decay_per_step;
+
+									position_vs += position_delta;
+									light_to_pos += position_delta;
+								}
+							
+								shadow_term = %light.shadow_mask% * sqrt( scattering * scatter_param.w );
+
+#else
+								float shadow_value;
+								float4 shadow_coord;
+								shadow_coord.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+								shadow_coord.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+								shadow_coord.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+								shadow_coord.w = dot(%shadowmap0.camera_to_shadowmap_w%, float4(position_vs, 1));
+								shadow_value = shadowLookup(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%, 3);
+								shadow_term = %light.shadow_mask% * clamp(1 - shadow_value, %light.max_shadow_val%, %light.min_shadow_val%);
+#endif
+							}
+>>
+
+// these line up with doVertexLighting in vs_inc.hlsl
+VertexLightParams
+{
+	// approximate as a spot light
+	Param light.diffuse, light.inv_d_cos_angle
+	Param light.pos_vs, light.one_plus_inner_radius_over_dradius_scaled
+	Param light.ambient, light.neg_inv_dradius_scaled
+	Param light.dir_vs, light.neg_cos_outer_angle_over_d_cos_angle
+}
+
+SingleDirLightParams
+{
+	Param light.dir_vs
+	Param light.diffuse
+	Param light.secondary_diffuse
+	Param light.specular
+}
+
+
+EndLight

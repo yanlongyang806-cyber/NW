@@ -1,0 +1,4 @@
+{
+	%Result%.xy = (%TexCoord%).xy + (%Value%).xy;
+	%Result%.zw = 0.0;
+}

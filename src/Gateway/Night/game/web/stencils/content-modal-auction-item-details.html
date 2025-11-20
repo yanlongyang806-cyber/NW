@@ -1,0 +1,61 @@
+<div class="mobileOnly sticky-mobile-back-button">
+	<div class="main-buttons">
+		<a class="nav-button mobile-back-button auctionDetailsBackButton">
+			<span class="cap-left"></span>
+			<span class="cap-right"></span>
+			<span class="nav-icon"></span>
+		</a>
+	</div>
+	<hr />
+</div>
+
+<div class="auction-details">
+	<div class="auction-details-img">
+		<div class="icon-slot readonly">
+			<img id="auctionDetailsIcon" src="" alt="" />
+		</div>
+	</div>
+	<div class="auction-details-info">
+		<h3 id="auctionDetailsItemName">Item Name Goes Here</h3>
+		<p>
+			Quantity: <span id="auctionDetailsQuantity">X</span><br />
+			Seller: <span id="auctionDetailsSellerName">Character Name</span><br />
+			<br />
+			Current Bid: <span class="currency-icon astral"></span><span id="auctionDetailsBid">000</span><br />
+			Buyout Price: <span class="currency-icon astral"></span><span id="auctionDetailsBuyout">000</span>
+		</p>
+	</div>
+	<hr />
+
+	<h2>Bid on this Item:</h2>
+
+	<div class="input-field text currency auctionBidInput">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<span class="currency-icon astral"></span>
+		<input type='text' maxlength="9" name='detailsBidAmount' value="" />
+	</div>
+
+	<div class="auction-details-placebid auctionBidButton">
+		<div class="input-field button">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.auctionDetailsPlaceBid()">Place a Bid</button>
+		</div>
+	</div>
+	<div class="auction-details-buyout auctionBuyoutButton">
+		<div class="input-field button">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onclick="client.auctionDetailsBuyout()">Buy Out</button>
+		</div>
+	</div>
+
+	<h5>Current Balance</h5>
+	<div class="current-money">
+		<span class="currency-icon astral"></span> <span data-path="ent.main.currencies.diamonds.$commify()">diamonds</span>
+	</div>
+</div>

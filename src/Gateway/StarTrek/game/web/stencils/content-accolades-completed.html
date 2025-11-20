@@ -1,0 +1,50 @@
+<div data-path="ent">
+	<h2>Completed Accolades</h2>
+	<div class="accolade-points">Accolade Points: <span class="accolade-points-number" data-path=".main.missioninfo.totalperkpoints">563</span></div>
+
+	<div class="accolade-container" data-path=".main.missioninfo.missioncategories">
+		<div class="list-group mobileList">
+			<table class="fancy-list-header">
+				<tr>
+					<td>
+						<span class="list-arrow up"></span>
+					</td>
+					<td>
+						<h3 class="mobileListHeader" data-path=".categoryname">Test</h3>
+					</td>
+					<td class="last-child">
+						<span class="fancy-list-bar">
+							<span class="fancy-list-bar-left"></span>
+							<span class="fancy-list-bar-right"></span>
+						</span>
+					</td>
+				</tr>
+			</table>
+			<span class="mobileListEntry">
+				<ul class="list-entries" data-path=".missions">
+					<li>
+						<a data-set-data-url-silent="info?accolade={$here()}">
+							<img class="accolade-img" data-set-src="/tex/{.missiondef.icon.$ifEmptyUse(prk_explore_diplomacy_rank_1)}.png" alt="" />
+						</a>
+						<span class="accolade-name" data-path=".missiondef.displayname.str">Lorem Ipsum Dolor</span>
+					</li>
+				</ul>
+				<div class="clear"></div>
+			</span>
+		</div>
+	</div>
+</div>
+
+<!-- if(dev) -->
+<script>
+	/* TEMPORARILY REMOVING COLLAPSIBLE ARROW LISTS */
+	/*
+	require('cryptic/client/contentHelpers').arrowList();
+	$(".selectable-entry").click(function() {
+		$('.selected').removeClass('selected');
+		$(this).addClass('selected');
+
+	});
+	*/
+</script>
+<!-- endif(dev) -->

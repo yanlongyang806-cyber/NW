@@ -1,0 +1,22 @@
+{
+	const float3 bumpBasis[3] = {
+		{sqrt(2/3.f), 0, 1/sqrt(3)},
+		{-1/sqrt(6),  1/sqrt(2), 1/sqrt(3)},
+		{-1/sqrt(6), -1/sqrt(2), 1/sqrt(3)},
+	};
+	float3 normal = %Normal%.xyz;
+#ifdef LightmapShowR
+	%Lightmap% = %R%;
+#elseifdef LightmapShowG
+	%Lightmap% = %G%;
+#elseifdef LightmapShowB
+	%Lightmap% = %B%;
+#else
+	#ifdef LightmapFlat
+		normal = float3(0, 0, 1);
+	#endif
+	%Lightmap% = %R% * dot( bumpBasis[0], normal) +
+		%G% * dot( bumpBasis[1], normal) +
+		%B% * dot( bumpBasis[2], normal);
+#endif
+}

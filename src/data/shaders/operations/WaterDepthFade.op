@@ -1,0 +1,61 @@
+OperationDef
+	Name "WaterDepthFade" // Name of the operation
+	Description "Depth based fade/murky Effect"
+	Type CUSTOM
+
+	Input
+		Name FadeEnd
+		Description "At what depth fading finishes (can come from a texture!)"
+		Float 1
+		FloatRange 0 10.0
+		Default
+			Floats 2.0
+		EndDefault
+	EndInput
+
+	Input
+		Name BackgroundColor
+		Description "Color to fade to"
+		Float 4
+		FloatRange 0 10
+		Default
+			Floats 0 0 0 1
+		EndDefault
+	EndInput
+
+	Input
+		Name ForegroundColor
+		Description "Color to fade from (Connect a ScreenColor to this node)"
+		Float 4
+		FloatRange 0 10
+		Default
+			Floats 0 0 0 0
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenDepth
+		Description "Depth for fading"
+        Float 1
+	EndInput
+
+    Input
+        Name Scale
+        Description "Scale on the depth fade"
+        Float 1
+        FloatRange 0 1
+        Default
+            Floats 1
+        EndDefault
+    EndInput
+
+	Output
+		Name Result
+		Description "Faded murky output"
+		Float 4
+		AutoConnect UnlitColor
+		AlphaFrom BackgroundColor
+		AlphaFrom ForegroundColor
+	EndOutput
+
+EndOperationDef

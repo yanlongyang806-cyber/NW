@@ -1,0 +1,12 @@
+// MapSnap_Water.phl
+{
+	float4 color;
+	color.rgb = float3(0.10,0.25,0.7)*0.5+%ColorParam%.rgb*0.5;
+	color.a = 0.4;
+	%UnlitColor% = color;
+
+	color.rgb = float3(0.10,0.25,0.4);
+
+	%LitColorOut% = color;
+}
+

@@ -1,0 +1,264 @@
+OperationDef
+	Name "Output" // Name of the operation
+	Description "Output values go here"
+	Type SINK
+
+	Input
+		Name LitColor
+		Description "RGB color channel of data that needs to be lit"
+		Float 3
+		Default
+			Type Value
+			Floats 0 0 0
+		EndDefault
+	EndInput
+
+	Input
+		Name Alpha
+		Description "Alpha channel"
+		Float 4 // Not 1 because the assembler/HLSL has issues with it being a single value and trying to access .w of it
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 1 1 1 1
+		EndDefault
+	EndInput
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 3
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name SpecularColor
+		Description "Specular highlight color (will be multiplied by light's specular color)"
+		Float 3
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 1 1 1 1
+		EndDefault
+	EndInput
+
+	Input
+		Name SpecularValue
+		Description "Specular value (glossiness)"
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name SpecularExponent
+		Description "Specular exponent factor (will be multiplied by 128; 0.0625 will create an exponent of 8 (default))"
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0625
+		EndDefault
+	EndInput
+
+	Input
+		Name UnlitColor
+		Description "RGB color channel of data that is pre-lit (will be added to output color)"
+		Float 3
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0 0.0 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name AlphaRef
+		Description "Value to use for AlphaCutout if NoAlphaCutout is not enabled.  Default of 0.6"
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.6
+		EndDefault
+	EndInput
+
+	Input
+		Name LightBleed
+		Description "Light bleed factor, range -1 to 1.  First component must be LightBleed / (1 + LightBleed).  Second component must be 1 / (1 + LightBleed).  Defaults to 0, 1."
+		Float 2
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name ReflectionWeight
+		Description "Reflection weight.  Defaults to 0"
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0
+		EndDefault
+	EndInput
+	
+	Input
+		Name ReflectionColorMask
+		Description "Color to mask the reflection by.  Defaults to full/white."
+		Float 3
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 1 1 1
+		EndDefault
+	EndInput
+		
+	Input
+		Name ReflectionAddPercent
+		Description "Percentage of the reflection weight that should be additive instead of multiplicative.  Ranges 0-1, Defaults to 0"
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0
+		EndDefault
+	EndInput
+	
+	Input
+		Name BackLightColor
+		Description "RGB color of the backlight (only works on templates that have back lighting enabled)"
+		Float 3
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0 0.0 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name BackLightBleed
+		Description "Light bleed factor for backlighting, range -1 to 1.  First component must be LightBleed / (1 + LightBleed).  Second component must be 1 / (1 + LightBleed).  Defaults to 0, 1."
+		Float 2
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0.0 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name Special
+		Description "Special input used differently in different projects/lighting models."
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0, 0, 0, 1
+		EndDefault
+	EndInput
+
+	Input
+		Name LightMap
+		Description "LightMap color"
+		Float 3
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0, 0, 0
+		EndDefault
+	EndInput
+
+	
+	Input
+		Name ReflectionMIPBias
+		Description "Bias for the reflection textures mip levels.  Allow ReflectionMIPBias must be set to use this."
+		Float 1
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 0
+		EndDefault
+	EndInput
+		
+	Input
+		Name DiffuseWarpY
+		Description "Y Coordinate to use for Diffuse Warp texture sampling"
+		Float 1
+		Default
+			Type Value
+			Floats 0.5
+		EndDefault
+	EndInput
+
+	Input
+		Name DiffuseWarp
+		Description "Diffuse light warping texture"
+		Type Texture_DiffuseWarp
+		Texture 1
+		Default
+			Strings "0_from_sky_file"
+		EndDefault
+	EndInput
+
+
+	Input
+		Name ReflectionTexture
+		Description "Reflection cubemap/spheremap"
+		Type Texture_Reflection
+		Texture 1
+		Default
+			Strings "0_from_sky_file"
+		EndDefault
+	EndInput
+
+	Input
+		Name AmbientCube
+		Description "Ambient cubemap if appropriate"
+		Type Texture_Ambient_Cube
+		Texture 1
+	EndInput
+
+	Input
+		Name Tesselation_Heightmap
+		Description "Heightmap used for tesselation"
+		Type Texture_Heightmap
+		Texture 1
+		Default
+			Strings "Use_PN_Tris"
+		EndDefault
+	EndInput
+
+	Input
+		Name Tesselation_Heightmap_Scale
+		Description "Scale applied to Heightmap"
+		Type Heightmap_Scale
+		NoAutoConnect 1
+		NoManualConnect 1
+		NotForAssembler 1
+		Float 1
+		FloatRange 0.0 10.0
+		Default
+			Type Value
+			Floats 1.0
+		EndDefault
+	EndInput
+
+// 	Input
+// 		Hidden 1
+// 		Name FogMatrix
+// 		Description "The transformation from view space to fog ellipsoid volume space."
+// 		Float 12
+// 		Type VolumeFogMatrix
+// 	EndInput	
+
+EndOperationDef

@@ -1,0 +1,28 @@
+<div data-path="guild" data-update="guild.activityentries">
+	<div class="page-content">
+		<div class="page-guild-news">
+			<div class="page-body">
+				<h3 class="page-title">Activity and Vault Logs</h3>
+				<table id="gatewayTableGuildActivity">
+					<thead>
+						<tr>
+							<th class="activity-date"><span>Date</span></th>
+							<th class="activity-type"><span>Type</span></th>
+							<th class="activity-entry"><span>Log Entry</span></th>
+						</tr>
+					</thead>
+					<tbody data-path=".activityentries">
+						<tr>
+							<td class="activity-date" data-path=".time.$shortDateTime()">1/1/2013, 2:04pm</td>
+							<td class="activity-type" data-path=".type">Activity</td>
+							<td class="activity-entry" data-path=".string">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc.</td>
+						</tr>
+					</tbody>
+				</table>
+				<script type="text/javascript">
+					client.guildActivityDataTable();
+				</script>
+			</div>
+		</div>
+	</div>
+</div>

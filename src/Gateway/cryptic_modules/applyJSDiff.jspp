@@ -1,0 +1,20 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+
+function applyJSDiff(dest,diff)
+{
+	try
+	{
+		eval(diff);
+	}
+	catch(e)
+	{
+		dbg.error('Failed to apply diff', e, e.stack, dest, diff);
+		return false;
+	}
+
+	return true;
+}
+
+module.exports = applyJSDiff;

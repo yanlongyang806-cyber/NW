@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Map Maker</title>
+		<link rel="stylesheet" href="http://localhost:6860/css/sca.css">
+
+		<link rel="stylesheet" href="./mapMaker.css">
+
+		<!--
+		<link rel="stylesheet" href="./theme/dungeon-master.css">
+		-->
+		<!-- <link rel="stylesheet" href="./theme/tileset-demo-25x25_01.css"> -->
+	</head>
+
+	<body class="mapmaker">
+		<div id="tooltip" class="tooltip"></div>
+		<div id="copy-box"><p><h4>File: <span id="copy-box-name"></span></h4><textarea id="copy-text"></textarea><br>
+			<button id="copy-box-close" onclick="$('#copy-box').hide();">Close</button>
+			<button id="copy-box-import" onclick="importMapListFromCopyBox(); $('#copy-box').hide();">Import</button>
+			<button id="copy-box-import-thingy" onclick="importMapPicture(); $('#copy-box').hide();">Import Picture</button>
+		</div>
+		<div id="content">
+			<p>
+				Map name: <input type="text" name="map-name"><button onclick="saveMap()">Save Map</button>
+				Map tags: <input type="text" name="map-tags">
+			</p>
+
+			<div class="explore-map column">
+				<div id="map" class="dungeon-map parchment-01"></div>
+			</div>
+
+			<div id="tools" class="column">
+				Encounter Tags:<br>
+				<input type="text" name="encounter-tags"> <button onclick="addEncounterAtSelection()">Add Encounter</button>
+				<br>
+				<button onclick="removeEncountersAtSelection()" data-tt="Clear all encounters within the selected area">Remove Encounters</button>
+			</div>
+			<div class="column">
+				<strong>Map List:</strong> <button onclick="exportMapList()">Export</button> <button onclick="importMapListPrompt()">Import</button>
+				<div id="maplist">
+				</div>
+			</div>
+
+			<div id="hiding" class="clear">
+				HIDING INACCASSIBLE ROOMS
+			</div>
+			<div id="help" class="clear">
+				<button onclick="toggleVisibility();">Toggle Visibility</button>
+				<button onclick="toggleColors();">Toggle Colors</button>
+				<p>
+					You can click and drag to select tiles in the grid.
+					<h3>Keybinds:</h3>
+					<ul>
+						<li>r - Make room from selection</li>
+						<li>h - Make hall from selection</li>
+						<li>s - Set start</li>
+						<li>del - Erase selection</li>
+						<li>a-g - Set room color</li>
+						<li>x - Add an encounter</li>
+						<li>X - Add End encounter (Shift + x)</li>
+						<li>t - Toggle encounter</li>
+						<li>ESC - Clear Selection</li>
+					</ul>
+
+				</p>
+			</div>
+			<div class="clear" id="encounters">
+			</div>
+		</div>
+
+		<!-- JQuery and bootstrapping ************************************** -->
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<script>
+			// ----------------------------------------------------------------------------
+			// From cutils
+			// ----------------------------------------------------------------------------
+
+			var TYPE_OBJECT = '[object Object]';
+			var TYPE_ARRAY  = '[object Array]';
+
+			function deepExtend(dest /* , src1, ..., srcn */)
+			{
+				for(var i = 0; i < arguments.length; i++)
+				{
+					var src = arguments[i];
+
+					for(var name in src)
+					{
+						if(Object.hasOwnProperty.call(src, name))
+						{
+							var value = src[name];
+							var type = Object.prototype.toString.call(value);
+							if(type === TYPE_OBJECT)
+							{
+								if(dest[name] === undefined)
+									dest[name] = {};
+
+								dest[name] = deepExtend(dest[name], value);
+							}
+							else if(type === TYPE_ARRAY)
+							{
+								if(dest[name] === undefined)
+									dest[name] = [];
+
+								dest[name] = value.concat(dest[name]);
+							}
+							else
+							{
+								dest[name] = value;
+							}
+						}
+					}
+				}
+
+				return dest;
+			}
+		</script>
+		<script src="./Map.js" ></script>
+		<script src="./mapMaker.js" ></script>
+
+
+		<script>
+			$(document).ready(function() {
+				/*
+				var map = emptyMap(5, 7);
+				var map = emptyMap(10, 14);
+				*/
+				var map = new Map(13, 19);
+				/*
+				var map = emptyMap(17, 24);
+				*/
+				setMap(map);
+			});
+		</script>
+
+	</body>
+</html>

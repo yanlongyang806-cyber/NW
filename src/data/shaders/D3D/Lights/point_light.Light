@@ -1,0 +1,188 @@
+Light
+
+// Inputs: position_vs.xyz, N_vs (no mapping, assume these names from an Output.phl equivalent)
+// Mapped per-light inputs: See GfxMaterialProfile.c
+
+NormalText <<
+						// point_light.Light
+						lightPoint(diffuseComponent, diffuseLightingValue, specularComponent, shadow_term,
+							spec_exponent, light_bleed, N_vs, reflect_vs, view_vs, bitangent,
+							%light.pos_vs%, position_vs, %light.one_plus_inner_radius_over_dradius%, %light.neg_inv_dradius%,
+							%light.diffuse%, %light.ambient% * ambient_occlusion, %light.specular%, %light.shadow_mask%, %light.shadow_color%,
+#ifdef NO_CCLIGHTING
+							1
+#else
+							%light.light_type%
+#endif
+							DIFFUSE_WARP_SAMPLER_CALL()
+							);
+#ifdef ShowNumLightsPerObject
+	#define DEBUG_OUT
+	debug_out += 0.2;
+#endif
+
+>>
+
+
+//
+// Unwrapped cube map is laid out as follows:
+//
+// |----|----|----|
+// | +y | +x | -y |
+// |----|----|----|
+// | -z | -x | +z |
+// |----|----|----|
+//
+// This configuration is used because it minimizes
+//   the number of edges that will produce PCF seams.
+//
+// The second row is actually a column that is 
+//   rotated and placed in the second row:
+//
+// |----|
+// | -z |
+// |----|
+// | -x |
+// |----|
+// | +z |
+// |----|
+//
+//
+
+ShadowTestText <<
+
+
+							// point_light.Light
+							{
+#ifdef SCATTERING
+								shadow_term = 0;
+
+
+								float delta_len = length(position_vs);
+								float scattering = 0.0f;
+								
+								#ifdef _PS3
+								#ifndef TRANSGAMING
+								[flatten]
+								#endif
+								#endif
+								float far_limit = 60;
+								if (delta_len > far_limit)
+								{
+									// bring initial sample position start pos in to the outer shadowmap
+									position_vs *= far_limit / delta_len;
+
+									delta_len = far_limit;
+								}
+
+						
+								const int SAMPLES = 64;
+
+								float3 position_delta;
+								float decay_per_step = exp( scatter_param.y * delta_len );
+								float scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+								float4 shadow_coord;
+
+								float3 light_to_pos = position_vs - %light.pos_vs%;
+								position_delta = position_vs * (-1.0 / (SAMPLES+1));
+								delta_len = length(position_delta);
+
+								decay_per_step = exp( scatter_param.y * delta_len );
+								scatter_per_step = scatter_param.z * ( 1 - decay_per_step );
+								#ifndef _PS3
+								#ifndef TRANSGAMING
+								[unroll(SAMPLES)]
+								#endif
+								#endif
+								for (int sample1 = 0; sample1 < SAMPLES; ++sample1)
+								{
+									// first matrix is viewspace->lightspace
+									float4 position_ls;
+									position_ls.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+									position_ls.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+									position_ls.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+									position_ls.w = 0;
+
+									float3 abs_light_vector = abs(position_ls.xyz);
+
+									// get texture coords for the appropriate face
+									shadow_coord.xy = sampleTexCubeNoMips(cubemap_lookup_texture, position_ls.xyz).xy * (%shadowmap1.camera_to_shadowmap_x%).xy; // multiply by ratio of shadowmap used
+									shadow_coord.z = max(max(abs_light_vector.x, abs_light_vector.y), abs_light_vector.z);
+
+									// convert z to depth
+									shadow_coord.z = (shadow_coord.z * %shadowmap1.near_fade% + %shadowmap1.far_fade%) / (shadow_coord.z * %shadowmap2.near_fade% + %shadowmap2.far_fade%);
+									shadow_coord.w = 1;
+
+									float bScatterThisStep = shadowLookupSingle(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%);
+									shadow_term = %light.shadow_mask% * clamp(1 - bScatterThisStep, %light.max_shadow_val%, %light.min_shadow_val%);
+
+									float lightdir_length = length(light_to_pos);
+									// distance falloff
+									bScatterThisStep *= mad_sat1(lightdir_length, %light.neg_inv_dradius%, %light.one_plus_inner_radius_over_dradius%);
+									scattering += bScatterThisStep * scatter_per_step;
+
+									position_vs += position_delta;
+									light_to_pos += position_delta;
+								}
+							
+								shadow_term = %light.shadow_mask% * sqrt( scattering * scatter_param.w );
+
+#else
+								float shadow_value;
+								float4 shadow_coord;
+
+								// first matrix is viewspace->lightspace
+								float4 position_ls;
+								position_ls.x = dot(%shadowmap0.camera_to_shadowmap_x%, float4(position_vs, 1));
+								position_ls.y = dot(%shadowmap0.camera_to_shadowmap_y%, float4(position_vs, 1));
+								position_ls.z = dot(%shadowmap0.camera_to_shadowmap_z%, float4(position_vs, 1));
+								position_ls.w = 0;
+
+								float3 abs_light_vector = abs(position_ls.xyz);
+
+								shadow_coord.z = max(max(abs_light_vector.x, abs_light_vector.y), abs_light_vector.z);
+
+								#ifdef D3D11
+									float3 direction = abs_light_vector == shadow_coord.zzz;
+									position_ls.xyz *= lerp(
+										1.0 - (0.45/4.0),
+										1.0,
+										direction);
+									shadow_coord.z *= 0.99;
+								#endif
+
+								// get texture coords for the appropriate face
+								shadow_coord.xy = sampleTexCubeNoMips(cubemap_lookup_texture, position_ls.xyz).xy * (%shadowmap1.camera_to_shadowmap_x%).xy; // multiply by ratio of shadowmap used
+
+								// convert z to depth
+								shadow_coord.z = (shadow_coord.z * %shadowmap1.near_fade% + %shadowmap1.far_fade%) / (shadow_coord.z * %shadowmap2.near_fade% + %shadowmap2.far_fade%);
+								shadow_coord.w = 1;
+
+								shadow_value = shadowLookup(%shadowmap.texture%, sam%shadowmap.texture%, shadow_coord, %shadowmap.texture_size%, 3);
+								shadow_term = %light.shadow_mask% * clamp(1 - shadow_value, %light.max_shadow_val%, %light.min_shadow_val%);
+// SCATTERING else
+#endif
+							}
+>>
+
+// these line up with doVertexLighting in vs_inc.hlsl
+VertexLightParams
+{
+	// approximated as a point light
+	Param light.diffuse, negative_one
+	Param light.pos_vs, light.one_plus_inner_radius_over_dradius
+	Param light.ambient, light.neg_inv_dradius
+	Param zero_vec, one
+}
+
+SingleDirLightParams
+{
+	Param light.dir_vs
+	Param light.diffuse
+	Param light.secondary_diffuse
+	Param light.specular
+}
+
+
+
+EndLight

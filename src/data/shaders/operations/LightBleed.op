@@ -1,0 +1,22 @@
+OperationDef
+	Name "LightBleed" // Name of the operation
+	Description "A light bleed value"
+	Type SIMPLE
+
+	Input
+		Name LightBleed
+		Description "Light bleed in -1 ... 1.  Second parameter used internally, input is ignored."
+		NoAutoConnect 1
+		NoManualConnect 1
+		Type LightBleedValue
+		Float 2
+		FloatRange -1 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Values for the Output shader: LightBleed / (1 + LightBleed), 1 / (1 + LightBleed)"
+		Float 2
+		AlphaFrom LightBleed
+	EndOutput
+EndOperationDef

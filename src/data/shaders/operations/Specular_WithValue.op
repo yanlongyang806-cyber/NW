@@ -1,0 +1,68 @@
+OperationDef
+	Name "Specular_WithValue" // Name of the operation
+	ParentName "Specular"
+	//DefaultOptionName "Specular"
+	OptionName "With Value Control"
+	
+	Description "Specular value controls"
+	Type SIMPLE
+
+	Input
+		Name SpecularColor
+		Description "Specular Color"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 4
+		FloatRange 0 1
+		Default
+			Floats 1 1 1 1
+		EndDefault
+	EndInput
+
+	Output
+		Name SpecColor
+		Description "Specular Color"
+		Float 3
+		AutoConnect SpecularColor
+	EndOutput
+	
+	Input
+		Name SpecularValue
+		Description "Specular Value"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 1
+		FloatRange 0 1
+		Default
+			Floats 1.0
+		EndDefault
+	EndInput
+
+	Output
+		Name SpecValue
+		Description "Specular Value"
+		Float 1
+		AutoConnect SpecularValue
+	EndOutput
+
+	Input
+		Name SpecularExponent
+		Description "Specular Exponent (will be multiplied by 128, default is 0.0625 (8)"
+		NoAutoConnect 1
+		NoManualConnect 1
+		Float 1
+		FloatRange 0.01 1
+		Default
+			Floats 0.0625
+		EndDefault
+	EndInput
+
+	Output
+		Name SpecExponent
+		Description "Specular Exponent"
+		Float 1
+		AutoConnect SpecularExponent
+	EndOutput
+
+
+EndOperationDef

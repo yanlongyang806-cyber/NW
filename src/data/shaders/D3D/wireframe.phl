@@ -1,0 +1,7 @@
+/// Wireframe pixelshader
+///
+/// All the wireframe lines should be completely white
+float4 wireframe_pixelshader() : COLOR
+{
+	return float4( 1.0, 1.0, 1.0, 1.0 );
+}

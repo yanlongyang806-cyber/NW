@@ -1,0 +1,24 @@
+// TexCellScroll.phl
+{
+	float HFrames = (%HorizFrames%).x;
+	float VFrames = (%VertFrames%).x;
+	float BlendAmount = %ScrollRate%.x * HFrames * VFrames;
+	BlendAmount = BlendAmount - floor(BlendAmount);
+	BlendAmount = (BlendAmount - (1.0 - %FrameBlend%.x)) / %FrameBlend%.x;
+	BlendAmount = saturate(BlendAmount); // should never be negative
+
+	float invHFrames = 1/HFrames;
+	float invVFrames = 1/VFrames;
+	float FrameStart = floor(%ScrollRate%.x * HFrames * VFrames) * invHFrames;
+	float4 BlendCoords;
+	BlendCoords.x = FrameStart + (%TexCoord%.x * invHFrames);
+	BlendCoords.y = (floor(FrameStart) + %TexCoord%.y) * invVFrames;
+	BlendCoords.z = FrameStart + ((%TexCoord%.x + 1) * invHFrames);
+	BlendCoords.w = (floor(FrameStart + invHFrames) + %TexCoord%.y) * invVFrames;
+
+	%Result% = lerp(
+		sampleTex2D(TexSampler%Texture%, BlendCoords.xy),
+		sampleTex2D(TexSampler%Texture%, BlendCoords.zw),
+		BlendAmount);
+}
+

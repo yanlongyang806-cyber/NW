@@ -1,0 +1,50 @@
+//
+// mkdirs Sync
+//
+// Recursively makes the given directory.
+//
+
+var fs = require('fs');
+var path = require('path');
+var util = require('util');
+var log = require('./log');
+var dbg = require('./dbg');
+
+
+function mkdirsSync(dirname, mode)
+{
+	var bMadeDir = false;
+	var dirs = dirname.split(/[\\\/]/);
+
+	var cwd = '';
+	for(var i = 0; i < dirs.length; i++)
+	{
+		cwd = path.join(cwd, dirs[i], '/');
+		try
+		{
+			var stat = fs.statSync(cwd);
+			if(!stat.isDirectory())
+			{
+				// I think this is fatal. it's a file.
+				throw('Unable to create directory: ' + cwd);
+			}
+		}
+		catch(e)
+		{
+			if(e.code === 'ENOENT')
+			{
+				fs.mkdirSync(cwd, mode);
+				bMadeDir = true;
+			}
+		}
+	}
+
+	if(bMadeDir)
+	{
+		dbg('Created directory: ' + dirname);
+	}
+}
+
+module.exports = mkdirsSync;
+
+// End of File

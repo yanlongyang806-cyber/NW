@@ -1,0 +1,30 @@
+OperationDef
+	Name "ScreenColor" // Name of the operation
+	Description "Screen color grabbed from opaque object rendering"
+	Type CUSTOM
+
+	Input
+		Name ScreenColor
+		Description "Internal"
+		Type Texture_ScreenColor
+		Texture 1
+		Hidden 1
+	EndInput
+
+// 	Input
+// 		Name ScreenColorHDR
+// 		Description "Internal"
+// 		Type Texture_ScreenColorHDR
+// 		Texture 1
+// 		Hidden 1
+// 	EndInput
+//
+	Output
+		Name Result
+		Description "ScreenColor Output"
+		Float 4
+		AutoConnect UnlitColor
+	EndOutput
+
+EndOperationDef
+

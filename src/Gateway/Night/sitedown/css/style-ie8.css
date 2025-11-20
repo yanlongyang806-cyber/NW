@@ -1,0 +1,25 @@
+hr{background-color:#CCB23C;background-image:none;}
+.box-top,.box-bot,.box-left,.box-right,.deco-left,.deco-right{background-image:url(/img_nw/kit_window_ie8.png);}
+.box-body{background-image:url(/img_nw/alpha_9_ie8.png);background-repeat:repeat;width:100%;height:100%;}.box-body .box-mid>.box-left,.box-body .box-mid>.box-right{background-image:url(/img_nw/kit_window_side_ie8.png);background-repeat:repeat-y;}
+.panel-left,.panel-right,.panel-center{background:url(/img_nw/kit_window_ie8.png);}
+.panel-mid .panel-left,.panel-mid .panel-right{background-image:url(/img_nw/kit_window_side_ie8.png);background-repeat:repeat-y;}
+.main-buttons li{background-image:url(/img_nw/kit_buttons_front_bg_ie8.png);background-repeat:repeat-x;}
+.main-buttons .button-back li{background-image:url(/img_nw/kit_buttons_front_bg_ie8.png);background-repeat:repeat-x;}
+.input-field{}.input-field .input-bg-mid{background-image:url(/img_nw/kit_buttons_forms_ie8.png);background-repeat:repeat-x;}
+.input-field.textarea .input-box-mid .input-bg-left,.input-field.textarea .input-box-mid .input-bg-right{background-repeat:repeat-y;}
+.input-field.textarea .input-box-mid .input-bg-mid{background:#000;}
+.input-field.button .input-bg-mid{background-image:url(/img_nw/kit_buttons_bg_ie8.png);background-repeat:repeat-x;}
+.tabs-fancy .tab,.tabs-fancy .tab .tab-left,.tabs-fancy .tab .tab-right,.tabs-fancy .tab:hover,.tabs-fancy .tab .tab-left:hover,.tabs-fancy .tab .tab-right:hover{background-image:url(/img_nw/kit_tabs_fancy_ie8.png);}
+.subtab.selected,.subtab.selected:hover{background-image:url(/img_nw/kit_tabs_subtab_ie8.png);background-repeat:repeat-x;background-position:0 0;background-color:#000;}
+.bar-container .bar-bg-mid{background-image:url(/img_nw/kit_bars_ie8.png);background-repeat:repeat-x;}
+.modal-bg{background:url(/img_nw/alpha_5_ie8.png);}
+.modal-window{background:url(/img_nw/alpha_9_ie8.png);}
+.notification{background:url(/img_nw/alpha_9_ie8.png);}
+.dataTables_filter input{background:url(/img_nw/alpha_5_ie8.png);}
+.single-row-button:hover{background:#312a18;}
+.single-row-button.selected{background:#5f512f;}
+#welcome_banner .welcome-banner-bg{background-image:url(/img_nw/gradient_banded_large_ie8.png);background-repeat:no-repeat;background-position:center top;}
+.page-front{background-image:url(/img_nw/alpha_5_ie8.png);background-repeat:repeat;}
+.charsheet-stats li{width:29%;margin-right:4%;}
+.professions-slots li{margin-right:1.3%;}
+.wrapper.login input[type="text"],.wrapper.login input[type="password"]{background:#000;}

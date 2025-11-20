@@ -1,0 +1,815 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+var dbg = require('cryptic/dbg');
+var getArgs = require('cryptic/getArgs');
+var Synchro = require('cryptic/synchro');
+
+//
+// new Resolver
+//
+// Used to resolve object paths for general use as well as in stencils.
+// Requires a ResourceManager and ContainerManager to do extra resource/entity
+//   fetching, if any comes up.
+//
+var Resolver = function(resourceManager, containerManager)
+{
+	this.rmgr = resourceManager;
+	this.cmgr = containerManager;
+}
+
+function StackItem(obj, stack)
+{
+	this.obj = obj;
+	this.stack = stack;
+}
+
+Resolver.prototype.makeStackItem = function(obj, path)
+{
+	return new StackItem(obj, path);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// resolvePath
+//
+// Given a dot-path and an object, calls the given callback with the
+//   value at that location. This may take some time since it may have to
+//   ask the server for new resources it doesn't yet have.
+//
+// The callback is in the form fn(err, value). Error will be an error object
+//   on error or undefined. Value will be undefined on error.
+//
+
+Resolver.prototype.resolvePath = function (str, obj, fn)
+{
+	this.resolvePathInternal([ this.makeStackItem(obj) ], str, obj, fn);
+}
+
+var reParsePath = /^([.]?)([$@%]?)([\w]*)([\[\(]?)(.*)/;
+	// ignore a leading period
+	// 1 = $, @, or empty
+	// 2 = field name
+	// 3 = [, (, or empty
+	// 4 = remainder of string
+
+Resolver.prototype.resolvePathInternal = function (ctx, str, obj, fn)
+{
+	var e;
+	var args;
+	var self = this;
+	var strLast = str;
+	dbg.trace(str, obj)
+
+	if(!str)
+	{
+		// Nothing left in the string. We're done.
+		fn(undefined, obj);
+		return;
+	}
+
+	var res = reParsePath.exec(str);
+	if(res)
+	{
+		var leader = res[1];
+		var prefix = res[2];
+		var identifier = res[3];
+		var isarray = res[4];
+		var remainder = isarray + res[5];
+		// res shouldn't be used after here.
+
+		if(prefix === '$' && identifier)
+		{
+			// This is a function to execute.
+			args = getArgs(remainder, 0, '(', ')');
+			dbg.trace('function', identifier, args);
+
+			if(typeof self.resolvers[identifier] === 'function')
+			{
+				self.resolvers[identifier].call(self, ctx, obj, args, function(e, r) {
+					self.resolvePathInternal(ctx, args.rest, r, fn);
+				});
+			}
+			else
+			{
+				e = new Error('Function "'+identifier+'" doesn\'t exist on the resolver.');
+				fn(e, undefined);
+			}
+
+			return;
+		}
+
+		if(prefix === '@' && identifier)
+		{
+			// This is an absolute resource to fetch
+			args = getArgs(remainder, 0, '[', ']');
+
+			dbg.trace("fetching direct resource",  identifier, args[0]);
+			self.rmgr.fetch(identifier, args[0], function(error, obj) {
+				if(error)
+				{
+					fn(error, undefined)
+				}
+				else
+				{
+					dbg.trace("Got:", obj.value);
+					self.resolvePathInternal(ctx, args.rest, obj.value, fn);
+				}
+			});
+
+			return;
+		}
+
+		if(prefix === '%' && identifier)
+		{
+			// This is an absolute resource to fetch
+			args = getArgs(remainder, 0, '[', ']');
+
+			dbg.trace("fetching session resource",  identifier, args[0]);
+			self.cmgr.requestEntityResource('%'+identifier+'['+args[0]+']', function(error, slot) {
+				if(error)
+				{
+					fn(error, undefined)
+				}
+				else
+				{
+					dbg.trace("Got:", slot.container);
+					self.resolvePathInternal(ctx, args.rest, slot.container, fn);
+				}
+			});
+
+			return;
+		}
+
+		if(!leader && identifier)
+		{
+			// There was no leading dot and there is something named to fetch.
+			//   (If there is no identifier, it's likely an array index [x], this
+			//    can happen for multi-dimensional arrays.)
+			// Assume that they want to refer to the root object in the context.
+
+			// Go to the root, and re-evaluate from there as a relative path.
+			self.resolvePathInternal(ctx, '.'+str, ctx[0].obj, fn);
+			return;
+		}
+
+
+		var objNext;
+		if(obj && identifier)
+		{
+			if(identifier in obj)
+			{
+				objNext = obj[identifier];
+			}
+			else
+			{
+				identifier = identifier.toLowerCase();
+				if(identifier in obj)
+				{
+					objNext = obj[identifier];
+				}
+			}
+		}
+		else
+		{
+			objNext = obj;
+		}
+
+		if(typeof objNext === 'string' && objNext.charAt(0) === '@')
+		{
+			// We've fetched a resource reference, go fetch it.
+			var i = objNext.indexOf('[');
+			if(i >= 0)
+			{
+				var dict = objNext.slice(1, i);
+				var key = objNext.slice(i+1, -1);
+
+				dbg.trace("Fetching indirect resource:", dict, key);
+				self.rmgr.fetch(dict, key, function(error, obj) {
+					if(error)
+					{
+						fn(error, undefined)
+					}
+					else
+					{
+						dbg.trace("Got:", obj.value);
+						self.resolvePathInternal(ctx, remainder, obj.value, fn);
+					}
+				});
+
+				return;
+			}
+		}
+
+		if(typeof objNext !== 'undefined' && objNext !== null && isarray === '[')
+		{
+			dbg.trace('array');
+			// handle array lookup
+			args = getArgs(remainder, 0, '[', ']');
+			remainder = args.rest;
+			objNext = lookUpWithFilter(objNext, args[0]);
+		}
+
+		if(typeof objNext !== 'undefined' && objNext !== null)
+		{
+			if(!remainder)
+			{
+				fn(undefined, objNext);
+			}
+			else
+			{
+				if(strLast === remainder) { dbg.error('Infinitely recursive resolve path! ', ctx, remainder, objNext); fn(new Error('Infinit recursion'), undefined); return; }
+				self.resolvePathInternal(ctx, remainder, objNext, fn);
+			}
+			return;
+		}
+	}
+
+	// Cant see how the error below gets handled, so outputting error
+	// here for sanity's sake.
+	dbg.error('Unable to reduce string "'+str+'" on object', obj);
+
+	e = new Error('Unable to reduce string "'+str+'" on object '+JSON.stringify(obj));
+	fn(e, undefined);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+var opsStr = "= == != eq ne lt le gt ge".split(' ').join('|');
+var reFilter = new RegExp('(\\w+)\\s*('+opsStr+')\\s*(\\w*)');
+	// 1 = field
+	// 2 = operation
+	// 3 = the thing to test
+function lookUpWithFilter(obj, filterStr)
+{
+	var objNext = obj[filterStr];
+	var res = reFilter.exec(filterStr);
+	if(res)
+	{
+		var field = res[1];
+		var val = res[3];
+
+		var objFound = [];
+		if(res[2])
+		{
+			obj.forEach(function(item) { if(evalIf(res[2], item[field], val)) { objFound.push(item); } });
+		}
+		else
+		{
+			objFound = objNext;
+		}
+
+		objNext = objFound.length === 1 ? objFound[0] : objFound;
+	}
+
+	return objNext;
+}
+
+
+//
+// applyResult
+//
+// This takes the result of a lookup and does the right thing with it.
+//   Scalars are pushed into the html array.
+//   Objects are pushed onto the stack.
+//   Arrays are iterated over if there are children for this item, otherwise
+//     they are pushed onto the stack.
+//
+// If the item has children, they are exec-ed.
+//
+Resolver.prototype.applyResult = function(ctx, html, item, applyDone, e, val)
+{
+	var self = this;
+
+	if(typeof val === 'object')
+	{
+		if(Array.isArray(val) && item.c /*children*/)
+		{
+			var i = 0;
+
+			cutils.forEachSeries(val, function(obj, eachArrayObjectDone) {
+				if(typeof obj === 'undefined')
+				{
+					eachArrayObjectDone();
+				}
+				else
+				{
+					self.recurseChildren(ctx, html,
+						self.makeStackItem(obj, item.r + '[' + i++ + ']'),
+						item.c,
+						eachArrayObjectDone);
+				}
+			},
+			applyDone);
+		}
+		else
+		{
+			if(!(val instanceof StackItem))
+			{
+				val = this.makeStackItem(val, item.r);
+			}
+
+			if(item.c /*children*/)
+			{
+				self.recurseChildren(ctx, html,
+					val,
+					item.c,
+					applyDone);
+			}
+			else
+			{
+				ctx.push(val);
+				applyDone();
+			}
+		}
+	}
+	else
+	{
+		// This is a scalar and therefore replaces
+		//   whatever children are inside.
+		if(typeof val !== 'undefined')
+		{
+			html.push(''+val);
+		}
+		applyDone();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// resolveArray
+//
+// Takes a context stack, an array to deposit HTML, and an array of stencil
+// nodes and resolves them into the HTML array. When complete, execDone is
+// called with (e, result).
+//
+Resolver.prototype.resolveArray = function(name, obj, html, arr, execDone)
+{
+	if(!(obj instanceof StackItem))
+	{
+		obj = this.makeStackItem(obj);
+	}
+	var ctx = [ obj ];
+	ctx.name = name;
+
+	return this.resolveArrayInternal(ctx, html, arr, execDone);
+}
+
+Resolver.prototype.recurseChildren = function (ctx, html, newItem, children, done)
+{
+	var top = ctx.length;
+
+	if(newItem)
+		ctx.push(newItem);
+
+	this.resolveArrayInternal(ctx, html, children, function() {
+		while(ctx.length > top)
+			ctx.pop();
+		done();
+	});
+}
+
+Resolver.prototype.resolveArrayInternal = function(ctx, html, arr, execDone)
+{
+	dbg.trace();
+	var self = this;
+	var obj;
+
+	cutils.forEachSeries(arr, function _forEachStencilArrayItem(item, eachItemDone) {
+		var res;
+		if(typeof item.s !== 'undefined')
+		{
+			self.applyResult(ctx, html, item, eachItemDone, undefined, item.s);
+		}
+		else if(item.t)
+		{
+			res = self.rmgr.find("Message", item.t);
+			if(!res)
+			{
+				self.applyResult(ctx, html, item, eachItemDone, undefined,
+					'<u class="sample">' + item.t + '</u>');
+			}
+			else
+			{
+				self.applyResult(ctx, html, item, eachItemDone, undefined, res.value.str);
+			}
+		}
+		else if(item.r)
+		{
+			obj = ctx.slice(-1)[0].obj;
+			if(true)
+			{
+				self.resolvePathInternal(ctx, item.r, obj, cutils.bind(self, self.applyResult, ctx, html, item, eachItemDone));
+			}
+			else
+			{
+				eachItemDone(new Error('Trying to deref an empty object.'), '');
+			}
+		}
+		else if(item.c)
+		{
+			if(item.u)
+			{
+				var id = 'update-' + ctx.name + '-' + item.u.n;
+				addUpdate(item, ctx.name, id, self.calcStack(ctx));
+
+				html.push('<span id="' + id + '">');
+			}
+
+			if(item.i)
+			{
+				obj = ctx.slice(-1)[0].obj;
+
+				var sync = new Synchro();
+				for(var i = 0; i < item.i.t.length; i++)
+				{
+					/*jshint loopfunc:true */
+					(function(term) {
+						sync.add(function(ready) {
+							self.resolvePathInternal(ctx, term, obj, ready);
+						});
+					})(item.i.t[i]);
+					/*jshint loopfunc:false */
+				}
+
+				sync.waitForAll(function _evaluatedIfParams(aErrors, r) {
+					var ifResult = false;
+					try
+					{
+						dbg.trace(item.i.e, r)
+						try
+						{
+							ifResult = eval(item.i.e);
+						}
+						catch(e)
+						{
+							dbg.trace(e);
+							ifResult = false;
+						}
+						dbg.trace(ifResult);
+					}
+					catch(e)
+					{
+						dbg.error(e);
+					}
+
+					if(ifResult)
+					{
+						self.recurseChildren(ctx, html,
+							undefined,
+							item.c,
+							function() {
+								if(item.u)
+									html.push('</span>');
+								eachItemDone();
+							});
+					}
+					else
+					{
+						if(item.u)
+							html.push('</span>');
+						eachItemDone();
+					}
+				});
+			}
+			else
+			{
+				self.recurseChildren(ctx, html,
+					undefined,
+					item.c,
+					function() {
+						if(item.u)
+							html.push('</span>');
+						eachItemDone();
+					});
+			}
+		}
+		else
+		{
+			dbg.error('Error: resolveArrayInternal(): Could not resolve item: ',item);
+		}
+	}, function _onAllStencilArrayItemsDone() {
+		dbg.trace();
+		execDone();
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+function evalIf(op, lval, rval)
+{
+	switch(op)
+	{
+		case '=':
+		case '==':
+		case 'eq': return (lval == rval);
+
+		case '!=':
+		case 'ne': return (lval != rval);
+
+		case 'lt': return (lval < rval);
+		case 'le': return (lval <= rval);
+		case 'gt': return (lval > rval);
+		case 'ge': return (lval >= rval);
+	}
+
+	return !!lval;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+Resolver.prototype.calcStack = function(ctx, index)
+{
+	index = index || ctx.length-1;
+
+	var s = '';
+	for(var i = 0; i <= index; i++)
+	{
+		if(ctx[i].stack)
+		{
+			var char = ctx[i].stack.charAt(0);
+
+			if(char === '/')
+				s = ctx[i].stack.substring(1);
+			else if(char !== '.')
+				s = ctx[i].stack;
+			else
+				s += ctx[i].stack;
+		}
+		else
+		{
+			s = '';
+		}
+	}
+
+	return s;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+var s_updates = {};
+function addUpdate(item, stencil, id, curPath)
+{
+	// dbg.trace(item, stencil, id, curPath)
+	if(!s_updates[stencil])
+	{
+		s_updates[stencil] = {};
+	}
+	var updates = s_updates[stencil];
+
+	updates[id] = {
+		item: item,
+		paths: item.u.p.split(/[\s,;]/),
+		excludes: item.u.x ? item.u.x.split(/[\s,;]/) : undefined,
+		curPath: curPath
+	};
+
+	for(var i = updates[id].paths.length-1; i >= 0; i--)
+	{
+		var path = updates[id].paths[i];
+		if(path[0] == '.' && !curPath)
+		{
+			path = path.slice(1);
+		}
+		else if(path[0] == '.')
+		{
+			path = curPath + path;
+		}
+
+		updates[id].paths[i] = path;
+	}
+}
+
+Resolver.prototype.getUpdateList = function()
+{
+	return s_updates;
+}
+
+Resolver.prototype.dropUpdates = function(stencil)
+{
+	dbg.trace(stencil);
+
+	if(s_updates[stencil])
+	{
+		delete s_updates[stencil];
+	}
+}
+
+Resolver.prototype.dropAllUpdates = function()
+{
+	s_updates = {};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+var reJSDiff = /^(delete )?dest(\.\S*)(\s=\s(.*))?;$/;
+var reDiff = /^(\S*)\s(\S*)(\s=\s(.*))?$/;
+var s_updatesPaused = 0;
+var s_updatesQueue = [];
+Resolver.prototype.renderUpdates = function(diff, baseInModel, force)
+{
+	dbg.trace(diff, baseInModel);
+
+	if(!diff)
+		return;
+
+	var diffs = diff.split(/[\r\n]+/);
+	var jsDiff = diff.indexOf('/* JSDIFF */') === 0;
+
+	diffs = diffs.map(function(a) {
+		var res;
+		if(jsDiff)
+		{
+			res = reJSDiff.exec(a);
+		}
+		else
+		{
+			res = reDiff.exec(a);
+		}
+
+		if(res)
+		{
+			res[2] = res[2] === '*' ? '' : res[2];
+			return { op: res[1], path: baseInModel+res[2].toLowerCase(), val: res[4] };
+		}
+	});
+
+	if(s_updatesPaused && !force)
+	{
+		dbg.trace("Update Queued: ", diffs);
+		s_updatesQueue = s_updatesQueue.concat(diffs);
+		return;
+	}
+	else
+	{
+		this.processUpdates(diffs);
+	}
+}
+
+Resolver.prototype.processUpdates = function(diffs)
+{
+	this.pauseUpdates();
+
+	dbg.trace(diffs);
+	var updateList = this.getUpdateList();
+	for(var stencil in updateList)
+	{
+		var bDirty = false;
+
+		var updates = updateList[stencil];
+		for(var id in updates)
+		{
+			var section = updates[id];
+			var curDiff;
+
+			for(var j = 0; !bDirty && j < diffs.length ; j++)
+			{
+				curDiff = diffs[j];
+				if(!curDiff)
+					continue;
+
+				dbg.trace(curDiff.op, curDiff.path, curDiff.val);
+				var i;
+				var path;
+				for(i = 0; !bDirty && i < section.paths.length; i++)
+				{
+					path = section.paths[i];
+					if(curDiff)
+					{
+						if(curDiff.path.length >= path.length)
+						{
+							if(curDiff.path.substr(0, path.length) === path)
+							{
+								bDirty = true;
+							}
+						}
+						else
+						{
+							if(path.substr(0, curDiff.path.length) === curDiff.path)
+							{
+								bDirty = true;
+							}
+						}
+					}
+				}
+
+				if(bDirty && section.excludes)
+				{
+					for(i = 0; bDirty && i < section.excludes.length; i++)
+					{
+						path = section.excludes[i];
+						if(curDiff)
+						{
+							if(curDiff.path.length >= path.length)
+							{
+								if(curDiff.path.substr(0, path.length) === path)
+								{
+									bDirty = false;
+								}
+							}
+						}
+					}
+				}
+			}
+
+			if(bDirty)
+			{
+				dbg.trace('Update to '+curDiff.path+' matching '+section.paths.join(', ')+' causing section update.');
+				dbg.trace('Redraw into element '+id+' starting at path '+(section.curPath ? section.curPath : '(root)'));
+
+				var dataModel = this;
+
+				/*jshint loopfunc:true */
+				if(section.curPath)
+				{
+					dataModel.resolvePath(section.curPath, dataModel.model, function _updateSectionWithPath(e, obj) {
+						var html = [];
+						var curid = id; // Need the alias because of asynchrony.
+						var ctx;
+
+						ctx = [dataModel.makeStackItem(dataModel.model), dataModel.makeStackItem(obj, section.curPath)];
+						ctx.name = stencil;
+
+						dataModel.pauseUpdates();
+						dataModel.resolveArrayInternal(ctx,
+							html,
+							section.item.c,
+							function _updateSectionWP_sethtml(e) {
+								$('#'+curid).html(html.join(''));
+
+								if(client.onAfterSetStencil)
+									client.onAfterSetStencil(function(){});
+
+								cutils.nextTick(function() { dataModel.resumeUpdates(); });
+							});
+					});
+				}
+				else
+				{
+					(function _updateSection(id) {
+						var html = [];
+
+						dataModel.pauseUpdates();
+						dataModel.resolveArray(stencil,
+							dataModel.model,
+							html,
+							section.item.c,
+							function _updateSection_sethtml(e) {
+								$('#'+id).html(html.join(''));
+
+								if(client.onAfterSetStencil)
+									client.onAfterSetStencil(function(){});
+
+								cutils.nextTick(function() { dataModel.resumeUpdates(); });
+							});
+					})(id);
+				}
+				/*jshint loopfunc:false */
+
+			}
+		}
+	}
+
+	this.resumeUpdates();
+}
+
+// Hold the line of updates please
+Resolver.prototype.pauseUpdates = function()
+{
+	s_updatesPaused++;
+}
+
+// Run through the queue.  If more are added during, they will
+// be pushed onto the stack and presumably caught here.
+// No more updates should be waiting by the time we are done.
+Resolver.prototype.resumeUpdates = function()
+{
+	s_updatesPaused--;
+	if(s_updatesPaused <= 0)
+	{
+		s_updatesPaused = 0;
+
+		if(s_updatesQueue.length > 0)
+		{
+			var diffs = s_updatesQueue;
+			s_updatesQueue = [];
+			this.processUpdates(diffs);
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+Resolver.prototype.resolvers = {};
+cutils.extend(Resolver.prototype.resolvers, require('./Resolvers'));
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Resolver;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

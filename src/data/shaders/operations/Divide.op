@@ -1,0 +1,19 @@
+OperationDef
+	Name "Divide" // Name of the operation
+	Category "Combiner"
+	Description "Divide"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "Output of A / B"
+		Float 4
+		AlphaFrom A
+		AlphaFrom B
+	EndOutput
+
+EndOperationDef
+

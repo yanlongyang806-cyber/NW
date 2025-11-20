@@ -1,0 +1,2 @@
+Because of shader dependency checking systems, the files in these folders must be included in production builds
+(even though they will be loaded from .bins).

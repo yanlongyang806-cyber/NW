@@ -1,0 +1,100 @@
+'use strict';
+
+var clientMail = module.exports;
+var buildCommand = require('cryptic/commands/buildCommand');
+
+clientMail.mailInboxDataTable = function()
+{
+	$('document').ready(function() {
+		$('table#gatewayTablemailInbox').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 8,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null,
+				null,
+				null,
+				null,
+				null
+			],
+			'aaSorting': [[2, 'desc']]
+		});
+	});
+}
+
+clientMail.mailReadMessage = function(id, type, elem)
+{
+	var newId = type + ':' + id;
+
+	$('.single-row-button').removeClass('selected');
+	$(elem).addClass('selected');
+
+	client.analyticTick('User:MailMessageRead');
+	client.dataModel.fetchMailDetail(newId);
+}
+
+clientMail.mailDeleteMessage = function()
+{
+	var mailDetail = client.dataModel.model.maildetail;
+
+	if(mailDetail && mailDetail.header && mailDetail.header.type && mailDetail.header.id)
+	{
+		var newId = mailDetail.header.type + ':' + mailDetail.header.id;
+
+		var cmd = buildCommand('GatewayMail_Delete', { id: newId });
+		if(cmd)
+		{
+			client.analyticTick('User:MailMessageDelete');
+			client.sendCommand(cmd);
+			client.dataModel.clearMailDetail();
+		}
+	}
+}
+
+clientMail.mailReportSpamMessage = function()
+{
+	var mailDetail = client.dataModel.model.maildetail;
+
+	if(mailDetail && mailDetail.header && mailDetail.header.type && mailDetail.header.id && mailDetail.header.fromhandle)
+	{
+		var newId = mailDetail.header.type + ':' + mailDetail.header.id;
+
+		var cmd = buildCommand('GatewayMail_ReportSpam', {
+			handle: '@'+mailDetail.header.fromhandle,
+			id: newId
+		});
+
+		if(cmd)
+		{
+			client.analyticTick('User:MailMessageReport');
+			client.sendCommand(cmd);
+		}
+	}
+}
+
+clientMail.mailSendMessage = function()
+{
+	var cmd = buildCommand('GatewayMail_Send', {
+		to: $('input#address').val(),
+		subject: $('input#subject').val(),
+		body: $('textarea#body').val()
+	});
+
+	if(cmd)
+	{
+		client.analyticTick('User:MailMessageSend');
+		client.sendCommand(cmd);
+	}
+}
+
+clientMail.mailClearComposeForm = function()
+{
+	$('input#address').val('');
+	$('input#subject').val('');
+	$('textarea#body').val('');
+}
+
+clientMail.mailFetchMessageList = function()
+{
+	client.dataModel.fetchMailList('mailList');
+}

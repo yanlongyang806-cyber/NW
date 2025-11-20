@@ -1,0 +1,184 @@
+({
+	id: 'carrier',
+	name: 'Carrier',
+	actions: [
+
+		{
+			id: 'coordinatedAttack',
+			name: 'Coordinated Attack',
+			description: "Target: All allies. Double each ally's speed for this turn.",
+			notes: "Double each ally's speed",
+			icon: '',
+
+			cooldown: 4,
+
+			onChoose: <& chooseAllAllies() &>,
+			onOrders: <& eachTarget( attribMultiply({ speed: 2 }) ) &>
+		},
+
+		{
+			id: 'launchAdvancedFighters',
+			name: 'Launch Advanced Fighters',
+			description: "Target: All enemies. Reduce target's defense to 80%. Hits automatically.",
+			notes: "Reduce each enemy's defense by 20%, hits automatically",
+			icon: '',
+
+			cooldown: 4,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onOrders: <& eachTarget( attribMultiply({ evasionRating: 0.8 }) ) &>
+		},
+
+		{
+			id: 'launchAdvancedShuttles',
+			name: 'Launch Advanced Shuttles',
+			description: "Target: All enemies. Attack with 50% auxiliary and 0% of weapons. Each ship, if hit, is 'Confused' on its next turn.",
+			notes: "Attack all enemies at .5 auxiliary; do no damage but add a confuse counter to be resolved next upkeep",
+			icon: '',
+
+			cooldown: 6,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.5 }) ),
+				onHit( addCounter(1) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, setState('confused')) &>
+		},
+
+		{
+			id: 'launchDecoy',
+			name: 'Launch Decoy',
+			description: "Target: Random Enemy. Target's weapons are set to 0% for this turn. Hits automatically.",
+			notes: "Random enemy's attack value is set to 0",
+			icon: '',
+
+			cooldown: 4,
+
+			onChoose: <& chooseRandomOpponents(1) &>,
+			onOrders: <& eachTarget( attribSet({ attackMin: 0, attackMax: 0}) ) &>
+		},
+
+		{
+			id: 'launchFighters',
+			name: 'Launch Fighters',
+			description: "Target: Enemy. Before the target can act this turn, it will first be attacked with 40% of weapons. Hits automatically.",
+			notes: "1 target; place counter on target; on target's battle phase, first remove the counter and attack at .4 attack value; this attack cannot miss and can destroy the target before it gets to take its turn",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1, attackForceHit(0.4)) &>
+		},
+
+		{
+			id: 'launchFrigates',
+			name: 'Launch Frigates',
+			description: "Target: All allies. Each ally's auxiliary is boosted to 110% this turn.",
+			notes: "Each ally gains 10% bonus to auxiliary",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseAllAllies() &>,
+			onOrders: <& eachTarget( attribMultiply({ accuracyRating: 1.1 }) ) &>
+		},
+
+		{
+			id: 'launchPowerSiphons',
+			name: 'Launch Power Siphons',
+			description: "Target: All enemies. Before each enemy acts, they are attacked with 0% of weapons. Each ship, if hit, has their weapons drained to 80%. Next turn, a random ally will gain a 10% boost to weapons for each ship hit in this way.",
+			notes: "Place 1 counter on each enemy; on their battle phase, remove a counter and roll to hit using carrier's auxiliary; on hit, reduce attack value by 20% and add a counter; next upkeep remove each counter and boost a random ally's attack for 10% per counter",
+			icon: '',
+
+			cooldown: 4,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1, [
+					onHit([
+						attribMultiply({ attackMin: 0.8, attackMax: 0.8 }),
+		//				applyAction(chooseRandomAlly(1), action)
+					])
+				]) &>
+		},
+
+		{
+			id: 'launchRepairStations',
+			name: 'Launch Repair Stations',
+			description: "Target: All allies. Before each ally's action this turn, they repair 20% of their hull.",
+			notes: "Place 1 counter on each ally; on their battle phase, remove a counter and repair 20% of hull",
+			icon: '',
+
+			cooldown: 6,
+
+			onChoose: <& chooseAllAllies() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1, attribModifyMultiplyBase({ hitpoints: 0.2 })) &>
+		},
+
+		{
+			id: 'launchShieldDrones',
+			name: 'Launch Shield Drones',
+			description: "Target: All allies. Before each ally's action this turn, they repair 20% of their shields.",
+			notes: "Place 1 counter on each ally; on their battle phase, remove a counter and repair 20% of shields",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseAllAllies() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1, attribModifyMultiplyBase({ shield: 0.2 })) &>
+		},
+
+		{
+			id: 'launchShieldSiphons',
+			name: 'Launch Shield Siphons',
+			description: "Target: All enemies. Before each enemy acts, they are attacked with 0% of weapons. Each ship, if hit, loses 20% of their current shields and a random ally will repair their shields for the same amount.",
+			notes: "Place 1 counter on each enemy; on their battle phase, remove a counter and roll to hit using carrier's auxiliary; on hit, damage 20% of current shields; the amount damaged is used to repair the shields of random ally",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseAllOpponents() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1,
+					onHit([
+						attribModifyMultiply({ shield: -0.2 }),
+						onSource( attribModifyMultiply({ shield: 0.2 })  )
+					])
+				) &>
+		},
+
+		{
+			id: 'launchShuttles',
+			name: 'Launch Shuttles',
+			description: "Target: Enemy. This ship increases its defense to 120% and before target ship can act, it will be attacked with 80% auxiliary and 0% of weapons. If hit, it will be 'Confused' next turn.",
+			notes: "1 target; increase own defense by 20% and on target's battle phase, get attacked at .8 auxiliary; on hit, add confuse counter to be resolved next upkeep",
+			icon: '',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& onSource( attribMultiply({ accuracyRating: 0.8, evasionRating: 1.2 }) ) &>,
+			onEachTargetEarlyResolve: <& onHit( addCounter(1) ) &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, setState('confused')) &>
+		},
+
+		{
+			id: 'launchStealthFighters',
+			name: 'Launch Stealth Fighters',
+			description: " Target: Enemy. Before target ship can act, it will be attacked with 0% of weapons. If hit, the ship will be disabled for this turn.",
+			notes: "1 target; place counter on target; on target's battle phase, first remove the counter and roll to hit using carrier's auxiliary; on hit, target is disabled for this battle phase and loses the rest of their turn",
+			icon: '',
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onOrders: <& eachTarget( addCounter(1) ) &>,
+			onEachTargetEarlyResolve: <& useCounter(1, onHit( setState('disabled') )) &>
+		},
+	]
+})

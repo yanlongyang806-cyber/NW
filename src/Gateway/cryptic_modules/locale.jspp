@@ -1,0 +1,280 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// locale
+//
+// Helpers for handling translation
+//
+//
+
+var fs = require('fs'); // for fs.writeFile
+var path = require('path');
+
+var mkdirsSync = require('cryptic/mkdirsSync');
+var dbg = require('cryptic/dbg');
+
+var locale = {};
+
+// crypticLanguage should be the same as the index in the array.
+locale.allLocales = [
+	{
+		crypticLanguage: 0,
+		name: 'Unused',
+		supported: false
+	},
+	{
+		crypticLanguage: 1,
+		name: 'English', // English
+		httpLanguage: 'en',
+		supported: true,
+		received: false
+	},
+	{
+		crypticLanguage: 2,
+		name: '日本語', // Japanese
+		httpLanguage: 'ja',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 3,
+		name: 'Deutsch', // German
+		httpLanguage: 'de',
+		supported: true,
+		received: false
+	},
+	{
+		crypticLanguage: 4,
+		name: 'Français', // French
+		httpLanguage: 'fr',
+		supported: true,
+		received: false
+	},
+	{
+		crypticLanguage: 5,
+		name: 'Español', // Spanish
+		httpLanguage: 'es',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 6,
+		name: 'Italiano', // Italian
+		httpLanguage: 'it',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 7,
+		name: '日本語', // Korean
+		httpLanguage: 'ko',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 8,
+		name: '中文', // Traditional Chinese
+		httpLanguage: 'zh-tw',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 9,
+		name: 'Português', // Portugese
+		httpLanguage: 'pt',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 10,
+		name: '中文', // Simplified Chinese
+		httpLanguage: 'zh', // zh-cn
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 11,
+		name: 'Polski', // Polish
+		httpLanguage: 'pl',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 12,
+		name: 'русский язык', // Russian
+		httpLanguage: 'ru',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 13,
+		name: 'Czech', // Czech
+		httpLanguage: 'cs',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 14,
+		name: 'Dutch', // Dutch
+		httpLanguage: 'nl',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 15,
+		name: 'Norweigan', // Norweigan
+		httpLanguage: 'no',
+		supported: false,
+		received: false
+	},
+	{
+		crypticLanguage: 16,
+		name: 'Türkçe', // Turkish
+		httpLanguage: 'tr',
+		supported: false,
+		received: false
+	}
+];
+
+locale.defaultLocale = locale.allLocales[1];
+locale.defaultTable = {};
+
+locale.makeTranslationFiles = function(conn, translationTable, outdir, callback)
+{
+	locale.defaultTable = translationTable;
+	locale.callback = callback;
+
+	var keys = Object.keys(translationTable);
+	for(var i = 0; i < locale.allLocales.length; i++)
+	{
+		var lang = locale.allLocales[i];
+
+		if(!lang.supported)
+			continue;
+
+		lang.filename = path.resolve(outdir, lang.httpLanguage, 'lang.js');
+		conn.requestTranslations(lang.crypticLanguage, keys);
+	}
+}
+
+locale.setTranslations = function(lang, translationTable)
+{
+	if(lang < locale.allLocales.length && lang > 0 && locale.allLocales[lang].supported)
+	{
+		lang = locale.allLocales[lang];
+		translationTable['httpLanguage'] = lang.httpLanguage;
+		for(var key in translationTable)
+		{
+			if(translationTable[key] === '')
+			{
+				// Commented this out since we don't have a style for it anyway.
+				// Translations can now also appear in HTML attribs, so using HTML to mark them is verboten.
+				//translationTable[key] = '<u class="untranslated ' + lang.httpLanguage + '">' + locale.defaultTable[key] + '</u>';
+				translationTable[key] = locale.defaultTable[key];
+			}
+		}
+
+		lang.table = translationTable;
+
+		mkdirsSync(path.dirname(lang.filename));
+
+		var s = JSON.stringify(lang.table, null, 2);
+		s = 'var crypticMessages = '
+			+ s
+			+ '\nif(typeof exports !== "undefined") { exports.msgs = crypticMessages; }';
+		fs.writeFileSync(lang.filename, s);
+
+		lang.received = true;
+	}
+
+	if(locale.callback)
+	{
+		var haveAll = true;
+		for(var i = 0; i < locale.allLocales.length; i++)
+		{
+			if(locale.allLocales[i].supported)
+			{
+				haveAll = haveAll && locale.allLocales[i].received;
+			}
+		}
+		if(haveAll === true)
+		{
+			var cb = locale.callback;
+			locale.callback = null;
+			cb();
+		}
+	}
+}
+
+locale.chooseBestLanguage = function (acceptLanguageHeader)
+{
+	var langBest;
+    var languages = [];
+
+	if (acceptLanguageHeader)
+	{
+		// Structure of a accept-language header:
+		//    http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4
+		// Examples: en-piglatin;q=0.8, en-gb, de
+		var suborder = 0;
+		acceptLanguageHeader.split(',').forEach(function (chunk) {
+
+			var a = chunk.split(';', 1);
+
+			var lang = a[0].split('-', 2);
+			lang.suborder = suborder++;
+			lang.quality = a[1] || 'q=1';
+			if(/^q=/.test(lang.quality))
+			{
+				lang.quality = parseInt(lang.quality.slice(2), 10);
+			}
+			else
+			{
+				lang.quality = 1;
+			}
+
+			languages.push(lang);
+		});
+
+		if (languages.length > 0)
+		{
+			languages.sort(function(a, b) {
+				if(a.quality < b.quality)
+					return -1;
+				else if(a.quality > b.quality)
+					return 1;
+				else
+					return a.suborder - b.suborder;
+			});
+
+			for(var i = 0; i < languages.length && !langBest; i++)
+			{
+				for(var j = 0; j < locale.allLocales.length; j++)
+				{
+					if(locale.allLocales[j].supported
+						&& languages[i][0].toLowerCase() === locale.allLocales[j].httpLanguage.toLowerCase())
+					{
+						langBest = locale.allLocales[j];
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	langBest = langBest || locale.defaultLocale;
+
+	dbg.trace('Best choice from ' + acceptLanguageHeader + ' is ' + langBest.name);
+
+	return langBest;
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = locale;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

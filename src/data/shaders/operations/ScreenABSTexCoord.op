@@ -1,0 +1,15 @@
+OperationDef
+	Name "ScreenABSTexCoord" // Name of the operation
+	Description "Texture coords based on a 64x64 pixel portion of the screen"
+	Type TEXTURE
+
+	MinShader 3.0
+    
+	Output
+		Name TexCoord
+        Type TexCoord
+		Description "Screen Texture Coord"
+		Float 2
+	EndOutput
+
+EndOperationDef

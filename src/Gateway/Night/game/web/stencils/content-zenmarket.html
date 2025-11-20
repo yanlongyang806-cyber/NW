@@ -1,0 +1,93 @@
+
+<div>
+	<div class="page-zenmarket">
+		<div class="page-content">
+			<span data-update="cstore">
+				<div data-path="cstore">
+					<div data-if="{.categories} && {._gotBundle}">
+
+						<div data-set-class="mobileOnly zenmarket-splash {.name}">
+							Welcome to the Zen Market!
+						</div>
+
+						<div class="tabs-vertical">
+							<span data-path=".topLevel">
+								<a data-set-class="tab tabSide subNav {.name}" data-set-data-tabid="tabcontent_{.name}" data-set-data-url="/zenmarket/{.name}">
+									<label>
+										<span class="tab-name">
+											<input type="radio" name="category" data-set-value="{.name}" checked="checked" /> <span data-path=".displayname.str">Category</span>
+											<span data-path=".products[].id">asdf</span>
+										</span>
+										<span class="tab-left"></span>
+										<span class="tab-right"></span>
+									</label>
+								</a>
+
+								<a class="tabSideContent hidden" data-set-id="tabcontent_{.name}">
+									<div class="subtabs-vertical" data-path=".children">
+										<div data-set-class="subtab subtabSide subNav {.name}">
+											<label>
+												<span data-set-data-url="/zenmarket/{.name}" class="tab-name" tabindex="-1">
+													<input type="radio" name="category" data-set-value="{.name}" /><span data-path=".displayname.str">Subcategory</span>
+												</span>
+												<span class="tab-left"></span>
+												<span class="tab-right"></span>
+											</label>
+										</div>
+									</div>
+								</a>
+
+							</span>
+						</div>
+					</div>
+				</div>
+			</span>
+			<div class="page-body with-sidebar">
+				<div id="content_zenmarket"></div>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="box-footer-block footer-zenmarket">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-body">
+						<hr class="mobileOnly" />
+						<div class="input-field button">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+							<button data-url-silent="buyzen"><img src="/tex/icon_cstore_buyzen.png" alt="" /> Buy Zen</button>
+						</div>
+						<div class="current-money" data-update="loginInfo.loginentity.zen">
+							<h4 class="mobileOnly">Current Zen:</h4>
+							<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /><span data-path=".loginInfo.loginentity.zen.$commify()">99,999,999</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+
+
+<script data-if="!{.cstore.categories}">
+	client.dataModel.fetchCStore();
+</script>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>

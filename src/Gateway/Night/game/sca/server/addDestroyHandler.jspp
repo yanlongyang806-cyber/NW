@@ -1,0 +1,14 @@
+'use strict';
+
+var clientSession = require('cryptic/proxy/ClientSession');
+var ScaGameState = require('./ScaGameState');
+
+
+var onClientSessionDestroy = function ()
+{
+	ScaGameState.destroy(this);
+}
+
+clientSession.addDestroyHandler(onClientSessionDestroy);
+
+// End of File

@@ -1,0 +1,177 @@
+
+<div data-update="vendor">
+	<span data-path="vendor">
+		<div class="page-content">
+			<div class="page-professions-vendor">
+				<h2>Profession Supplies Vendor</h2>
+				<div data-if="!{.items}"> <!-- " || !{._gotBundle}"> -->
+					<div class="loading-block">
+						<h2>Loading...</h2>
+						<div class="loading-image"></div>
+					</div>
+				</div>
+				<div data-if="{.items}">
+
+					<div class="page-body">
+
+						<h3>Resources</h3>
+
+						<ul class="vendor-group resources" data-path=".items[storename=Store_Crafting_Resources]">
+							<!-- Start copy -->
+							<!-- Start copy -->
+							<!-- Start copy -->
+							<li class="vendor-entry">
+
+								<div data-set-class="icon-slot small {.quality}" data-set-data-tt-item="{.hdef.name}">
+									<img data-set-src="tex/{.icon}.png" alt="" />
+									<span class="quantity" data-if="{.count} gt 1">
+										x<span data-path=".count">10</span>
+									</span>
+								</div>
+
+								<h4 data-path=".displayname">Item Name</h4>
+								<span data-if="{.errortype} ne 'None'" class="alert-red" data-set-data-tt-text="{.errorreason}">
+									<div class="vendor-price">
+										<span data-path=".formattedvalue.$cleanUpSMF()">200</span>
+									</div>
+
+									<div class="input-field button light with-arrow">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+										<button data-set-data-url-silent="/professions/vendor/{.storename}/{.storeindex}">
+											Buy
+										</button>
+									</div>
+								</span>
+								<span data-if="{.errortype} eq 'None'">
+									<div class="vendor-price">
+										<span data-path=".formattedvalue.$cleanUpSMF()">200</span>
+									</div>
+									<div class="input-field button light with-arrow">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+										<button data-set-data-url-silent="/professions/vendor/{.storename}/{.storeindex}">
+											Buy
+										</button>
+									</div>
+								</span>
+								<!--
+								<span data-if="{.price} ne {.fullprice}">
+									ON SALE! (Regularly <span data-path=".fullprice">200</span>)
+								</span>
+								-->
+							</li>
+							<!-- End copy -->
+							<!-- End copy -->
+							<!-- End copy -->
+						</ul>
+
+						<h3>Assets</h3>
+
+						<ul class="vendor-group assets" data-path=".items[storename=Store_Crafting_Assets]">
+							<!-- This is a exact copy of the section above. Make changes there until it's good then just copy here. -->
+							<!-- Start copy -->
+							<!-- Start copy -->
+							<!-- Start copy -->
+							<li class="vendor-entry">
+
+								<div data-set-class="icon-slot small {.quality}" data-set-data-tt-item="{.hdef.name}">
+									<img data-set-src="tex/{.icon}.png" alt="" />
+									<span class="quantity" data-if="{.count} gt 1">
+										x<span data-path=".count">10</span>
+									</span>
+								</div>
+
+								<h4 data-path=".displayname">Item Name</h4>
+								<span data-if="{.errortype} ne 'None'" class="alert-red" data-set-data-tt-text="{.errorreason}">
+									<div class="vendor-price">
+										<span data-path=".formattedvalue.$cleanUpSMF()">200</span>
+									</div>
+									<div class="input-field button light with-arrow">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+										<button data-set-data-url-silent="/professions/vendor/{.storename}/{.storeindex}">
+											Buy
+										</button>
+									</div>
+								</span>
+								<span data-if="{.errortype} eq 'None'">
+									<div class="vendor-price">
+										<span data-path=".formattedvalue.$cleanUpSMF()">200</span>
+									</div>
+									<div class="input-field button light with-arrow">
+										<div class="input-bg-left"></div>
+										<div class="input-bg-mid"></div>
+										<div class="input-bg-right"></div>
+										<button data-set-data-url-silent="/professions/vendor/{.storename}/{.storeindex}">
+											Buy
+										</button>
+									</div>
+								</span>
+
+								<!--
+								<span data-if="{.price} ne {.fullprice}">
+									ON SALE! (Regularly <span data-path=".fullprice">200</span>)
+								</span>
+								-->
+							</li>
+							<!-- End copy -->
+							<!-- End copy -->
+							<!-- End copy -->
+						</ul>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</span>
+</div>
+
+
+
+<div class="box-footer-block footer-professions-vendor">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-sidebar">
+						<hr class="mobileOnly" />
+						<div class="current-money" data-update="ent.main.currencies" data-path="ent.main">
+							<img src="./tex/Currency_Icon_Tiny_Gold.png" alt=""><span data-path=".currencies.gold.$commify()">1,000</span>
+							<img src="./tex/Currency_Icon_Tiny_Silver.png" alt=""><span data-path=".currencies.silver.$commify()">24</span>
+							<img src="./tex/Currency_Icon_Tiny_Copper.png" alt=""><span data-path=".currencies.copper.$commify()">2</span>
+						</div>
+					</div>
+					<div class="footer-body with-sidebar">
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+
+<script data-if="!{.cstore.categories}">
+	client.dataModel.fetchCStore();
+</script>
+
+
+<script data-if="!{.vendor.items}">
+	client.dataModel.fetchVendor('Nw_Gateway_Professions_Merchant');
+</script>
+

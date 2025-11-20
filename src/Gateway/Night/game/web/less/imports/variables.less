@@ -1,0 +1,348 @@
+/* ------------------ VARIABLES AND MIX-INS ------------------- */
+
+/* COMMON IMAGES */
+@img-foreground-top:				url(../img_nw/lava_foreground_top.png);
+@img-foreground-bot:				url(../img_nw/lava_foreground_bot.jpg);
+@img-background:					url(../img_nw/lava_background.jpg);
+@img-background-login-empty:		url(../img_nw/lava_background_login.jpg);
+@img-background-login:				url(../img_nw/lava_background_login_2.jpg);
+@img-background-login-module1:		url(../img_nw/lava_background_login_2_module1.jpg);
+
+@img-headers:						url(../img_nw/bg_headers.png);
+@img-headers-module1:				url(../img_nw/bg_headers_module1.png);
+@img-logo:							url(../img_nw/logo_small.png);
+@img-logo-beta:						url(../img_nw/logo_small_beta_3.png);
+@img-logo-beta-2:					url(../img_nw/logo_small_beta_4.png);
+@img-logo-large:					url(../img_nw/logo_large.png);
+@img-logo-large-module1:			url(../img_nw/logo_large_2_module1.png);
+@img-logo-large-beta:				url(../img_nw/logo_large_beta_3.png);
+@img-logo-large-beta-module1:		url(../img_nw/logo_large_beta_3_module1.png);
+
+@img-misc:							url(../img_nw/kit_misc.png);
+@img-header-buttons:				url(../img_nw/sprites_headers.png);
+@img-nav-icons:						url(../img_nw/sprites_nav.png);
+@img-nav-icons-2:					url(../img_nw/sprites_nav_2.png);
+@img-nav-arrows:					url(../img_nw/sprites_nav_arrows.png);
+@img-kit-window:					url(../img_nw/kit_window.png);
+@img-kit-buttons:					url(../img_nw/kit_buttons.png);
+@img-kit-buttons-front:				url(../img_nw/kit_buttons_front.png);
+@img-kit-buttons-front-2:			url(../img_nw/kit_buttons_front_2.png);
+@img-kit-buttons-misc:				url(../img_nw/kit_buttons_misc.png);
+@img-kit-form-buttons:				url(../img_nw/kit_form_buttons.png);
+@img-kit-front:						url(../img_nw/kit_front.png);
+@img-kit-front-top:					url(../img_nw/kit_front_top.png);
+@img-kit-fancy-box:					url(../img_nw/kit_fancy_box.png);
+@img-kit-fancy-box-top:				url(../img_nw/kit_fancy_box_top.png);
+@img-classes:						url(../img_nw/sprites_classes.png);
+@img-slots:							url(../img_nw/sprites_slots.png);
+@img-slots-hover:					url(../img_nw/sprites_slots_hover.png);
+@img-slots-extras:					url(../img_nw/sprites_slots_extras.png);
+@img-overlays:						url(../img_nw/sprites_overlays.png);
+@img-charsheet-footer:				url(../img_nw/bg_charsheet_footer.png);
+@img-charsheet-ability-bgs:			url(../img_nw/sprites_ability_bgs.png);
+@img-charsheet-sprites:				url(../img_nw/sprites_charsheet.png);
+@img-professions:					url(../img_nw/sprites_professions.png);
+@img-gradient-circular-dark-blue:	url(../img_nw/gradient_circular_dark_blue.png);
+@img-loading-large:					url(../img_nw/loading_large.gif);
+@img-loading:						url(../img_nw/loading.gif);
+@img-zenmarket-bg-white:			url(../img_nw/zenmarket_bg_white.jpg);
+@img-zenmarket-bg-green:			url(../img_nw/zenmarket_bg_green.jpg);
+@img-zenmarket-bg-blue:				url(../img_nw/zenmarket_bg_blue.jpg);
+@img-zenmarket-bg-purple:			url(../img_nw/zenmarket_bg_purple.jpg);
+@img-zenmarket-bg-orange:			url(../img_nw/zenmarket_bg_orange.jpg);
+@img-zenmarket-banner:				url(../img_nw/zenmarket_banner.png);
+@img-zenmarket-coin:				url(../img_nw/zenmarket_coin.png);
+@img-reward-headers:				url(../img_nw/sprites_reward_headers.png);
+
+@img-dungeon-title-bg:				url(/img_nw/dungeon_title_bg.png);
+@img-dungeon-title-logo:			url(/img_nw/dungeon_title_logo.png);
+@img-dungeon-party-frame:			url(/img_nw/dungeon_party_frame.png);
+@img-dungeon-party-parchment:		url(/img_nw/dungeon_party_parchment.png);
+@img-companion-frame:				url(/img_nw/companion_frame.png);
+
+@img-dungeon-dicebox:				url(/img_nw/dice-box-01.png);
+
+@img-magnify:						url(../tex/Screenshots_Cstore_States_Magnify.png);
+@img-reward-left-green:				url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Quality_2.png);
+@img-reward-right-green:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Quality_2.png);
+@img-reward-left-blue:				url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Quality_3.png);
+@img-reward-right-blue:				url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Quality_3.png);
+@img-reward-left-purple:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Quality_4.png);
+@img-reward-right-purple:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Quality_4.png);
+@img-reward-left-nightmare:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Mount_Nightmare_Armored.png);
+@img-reward-right-nightmare:		url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Mount_Nightmare_Armored.png);
+@img-reward-left-feywild:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Mount_Stag_02.png);
+@img-reward-right-feywild:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Mount_Stag_02.png);
+@img-reward-left-aranea:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Pet_Aranea.png);
+@img-reward-right-aranea:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Pet_Aranea.png);
+@img-reward-left-tymora:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Head_All_Fools_Crown_T00_L00.png);
+@img-reward-right-tymora:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Head_All_Fools_Crown_T00_L00.png);
+
+@img-reward-left-owlbear:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Mount_Owlbear.png);
+@img-reward-right-owlbear:			url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Mount_Owlbear.png);
+@img-reward-left-pseudodragon:		url(../tex/Rewardpack_Viewer_SpecialTreatment_Left_Pet_Pseudodragon.png);
+@img-reward-right-pseudodragon:		url(../tex/Rewardpack_Viewer_SpecialTreatment_Right_Pet_Pseudodragon.png);
+
+
+/* CONCEPT ART */
+@concept-bg-login:					url(../img_nw/concept_login_01.png);
+
+@concept-bg-charactersheet:			url(../img_nw/concept_bg_01.png);
+@concept-bg-auctionhouse:			url(../img_nw/concept_bg_02.png);
+@concept-bg-professions:			url(../img_nw/concept_bg_03.png);
+@concept-bg-guild:					url(../img_nw/concept_bg_04.png);
+@concept-bg-mail:					url(../img_nw/concept_bg_05.png);
+@concept-bg-inventory:				url(../img_nw/concept_bg_06.png);
+@concept-bg-zenmarket:				url(../img_nw/concept_bg_07.png);
+
+@concept-footer-charactersheet:		url(../img_nw/concept_footer_01.png);
+@concept-footer-auctionhouse:		url(../img_nw/concept_footer_02.png);
+@concept-footer-professions:		url(../img_nw/concept_footer_03.png);
+@concept-footer-guild:				url(../img_nw/concept_footer_04.png);
+@concept-footer-mail:				url(../img_nw/concept_footer_05.png);
+@concept-footer-inventory:			url(../img_nw/concept_footer_06.png);
+@concept-footer-zenmarket:			url(../img_nw/concept_footer_07.png);
+
+/* IMAGES WITH BACKGROUND-SIZE REQUIREMENTS */
+
+@img-kit-buttons-bg:				url(../img_nw/kit_buttons_bg.png);
+@size-kit-buttons-bg:				1370px;
+
+@img-kit-buttons-front-bg:			url(../img_nw/kit_buttons_front_bg.png);
+@img-kit-buttons-front-bg-2:		url(../img_nw/kit_buttons_front_bg_2.png);
+@size-kit-buttons-front-bg:			850px;
+
+@img-kit-buttons-forms:				url(../img_nw/kit_buttons_forms.png);
+@size-kit-buttons-forms:			850px;
+
+@img-kit-textarea-side:				url(../img_nw/kit_textarea_side.png);
+@size-kit-textarea-side:			33px;
+
+@img-gradient-front-banner:			url(../img_nw/gradient_banded_large.png);
+@size-gradient-front-banner:		66px;
+
+@img-gradient-login:				url(../img_nw/gradient_banded_login.png);
+@size-gradient-login:				56px;
+
+@img-gradient-medium:				url(../img_nw/gradient_banded_medium.png);
+@size-gradient-medium:				40px;
+
+@img-gradient-medium-gray:			url(../img_nw/gradient_banded_medium_gray.png);
+@size-gradient-medium-gray:			66px;
+
+@img-gradient-small:				url(../img_nw/gradient_banded_small.png);
+@size-gradient-small:				32px;
+
+@img-gradient-smaller:				url(../img_nw/gradient_banded_smaller.png);
+@size-gradient-smaller:				16px;
+
+@img-gradient-smaller-red:			url(../img_nw/gradient_banded_smaller_red.png);
+@size-gradient-smaller-red:			16px;
+
+@img-gradient-menu:					url(../img_nw/gradient_banded_menu.png);
+@size-gradient-menu:				24px;
+
+@img-kit-tabs:						url(../img_nw/kit_tabs.png);
+@size-kit-tabs:						1250px;
+
+@img-kit-tabs-2:					url(../img_nw/kit_tabs_2.png);
+@size-kit-tabs-2:					960px;
+
+@img-kit-tabs-fancy:				url(../img_nw/kit_tabs_fancy.png);
+@size-kit-tabs-fancy:				580px;
+
+@img-kit-bars:						url(../img_nw/kit_bars_2.png);
+@size-kit-bars:						280px;
+
+@img-kit-bars-large:				url(../img_nw/kit_bars_large.png);
+@size-kit-bars-large:				200px;
+
+@img-kit-window-side:				url(../img_nw/kit_window_side.png);
+@size-kit-window-side:				80px;
+									/* this one is width, not height */
+
+/* COMMON COLORS */
+@color-bg:						#050505;
+@color-link:					#ec8b00;
+@color-link-hover:				#ecb700;
+@color-disabled:				#666;
+@color-semi-disabled:			#999;
+
+@color-button-yellow:			#ffbe32;
+@color-button-yellow-hover:		#ffd780;
+@color-mid-yellow:				#776e39;
+@color-pale-yellow:				#eaca6c;
+@color-paler-yellow:			#ffefbf;
+@color-mid-light-brown:			#715500;
+@color-mid-brown:				#4a3200;
+@color-pale-brown:				#4C361A;
+@color-very-dark-brown:			#010100;
+@color-light-brown:				#A68C46;
+
+@color-medium-blue:				#7cb3ff;
+@color-light-blue:				#a5f1ff;
+@color-medium-pale-blue:		#1b4f83;
+@color-stone-gray:				#98a6a7;
+@color-light-stone-gray:		#b3c0c1;
+@color-light-cool-gray:			#646e81;
+@color-blue-gray:				#6384A5;
+@color-mid-cool-gray:			#29323B;
+@color-dark-cool-gray:			#12191F;
+@color-very-dark-cool-gray:		#15191e;
+@color-mid-gray:				#818180;
+@color-dark-gray:				#2A333C;
+@color-off-black:				#0b0b0b;
+@color-off-white:				#e5e1d4;
+@color-navy-gray:				#1e1d1f;
+@color-dark-navy:				#0e0d0f;
+@color-very-dark-gray:			#151510;
+
+@color-table-hover:				rgba(232,201,115,.2);
+@color-table-highlight:			rgba(232,201,115,.4);
+@color-transparent-blue:		rgba(16, 89, 164,.3);
+@color-almost-transparent-blue: rgba(91, 199, 255, .1);
+
+@color-rarity-green:			#8aff00;
+@color-rarity-blue:				#007eff;
+@color-rarity-purple:			#7C37F6;
+@color-rarity-orange:			#ffa71c;
+
+@color-rarity-light-blue:		#3DAEDD;
+
+@color-simple-border-gray:		#4e4e4e;
+@color-simple-border-green:		#4cad00;
+@color-simple-border-blue:		#007dac;
+@color-simple-border-purple:	#6833df;
+@color-simple-border-orange:	#ff7112;
+@color-simple-border-red:		#991c1c;
+
+@color-gemslot-red:				#900101;
+@color-gemslot-red-dark:		#340000;
+@color-gemslot-red-bright:		#ce0102;
+@color-gemslot-green:			#0a7556;
+@color-gemslot-green-dark:		#053a2b;
+@color-gemslot-green-bright:	#0ea77b;
+@color-gemslot-yellow:			#978908;
+@color-gemslot-yellow-dark:		#4c4404;
+@color-gemslot-yellow-bright:	#d9c40b;
+@color-gemslot-purple:			#ab39b2;
+@color-gemslot-purple-dark:		#551c59;
+@color-gemslot-purple-bright:	#ea4ef4;
+@color-enchant-pink:			#f451fe;
+
+@color-alert-green:				#12ff00;
+@color-alert-yellow:			#fff000;
+@color-alert-red:				#ec2b2b;
+
+@color-overlay-gray: rgba(60,60,60,.8);
+@color-overlay-red: rgba(170,0,0,.8);
+@color-overlay-light-blue: #A2CCF3;
+@color-overlay-blue: rgba(73,167,255,.6);
+
+
+/* FONT MIX-INS */
+.fontSava {
+	font-family: "Sava";
+	font-weight: normal;
+}
+.fontSavaBold {
+	font-family: "SavaBold";
+	font-weight: normal;
+}
+.fontStoneSans {
+	font-family: "StoneSans";
+	font-weight: normal;
+}
+.fontStoneSansItalic {
+	font-family: "StoneSansItalic";
+	font-weight: normal;
+	font-style: normal;
+}
+.fontStoneSansBold {
+	font-family: "StoneSansBold";
+	font-weight: normal;
+}
+.fontStoneSansBoldItalic {
+	font-family: "StoneSansBoldItalic";
+	font-weight: normal;
+	font-style: normal;
+}
+.fontSansSerif {
+	font-family: Helvetica, Arial, sans-serif;
+}
+
+/* COMMON MIX-INS */
+.selectNone {
+	-moz-user-select: none;
+	-webkit-user-select: none;
+}
+.textOutline {
+	text-shadow: 1px 0 0 #000, 0 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+}
+.boxOutline{
+	box-shadow: 1px 0 0 #000, 0 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000;
+}
+.textShadow {
+	text-shadow: 1px 0 0 #000, 0 1px 0 #000, -1px 0 0 #000, 0 -1px 0 #000, 0 2px 3px #000, 0 2px 5px #000;
+}
+
+.opacity(@x) {
+	@y: @x * 100;
+	opacity: @x;
+	filter:alpha(opacity=@y);
+}
+.scale(@a, @xo, @yo) {
+	transform: scale(@a);
+	-ms-transform: scale(@a);
+	-webkit-transform: scale(@a);
+
+	-webkit-transform-origin: @xo @yo;
+	-ms-transform-origin: @xo @yo;
+	transform-origin: @xo @yo;
+}
+.textGlowColor(@a) {
+	text-shadow: 0 0 3px @a;
+}
+.textGlowColorStrong(@a) {
+	text-shadow: 0 1px 1px @a, 0 -1px 1px @a, -1px 0 1px @a, -1px 0 1px @a;
+}
+.pulse(@t) {
+	-webkit-animation: pulsate @t ease-in-out;
+	-webkit-animation-iteration-count: infinite;
+	animation: pulsate @t ease-in-out;
+	animation-iteration-count: infinite;
+}
+.pulseNone {
+	-webkit-animation: none;
+	animation: none;
+}
+
+@-webkit-keyframes pulsate {
+	0% { -webkit-transform: scale(1.0, 1.0); }
+	50% { -webkit-transform: scale(1.1, 1.1); }
+	100% { -webkit-transform: scale(1.0, 1.0); }
+}
+
+@keyframes pulsate {
+	0% { transform: scale(1.0, 1.0); }
+	50% { transform: scale(1.1, 1.1); }
+	100% { transform: scale(1.0, 1.0); }
+}
+
+.noTitle {
+	.box-title {
+		display: none;
+	}
+}
+.noBox {
+	.box-title,
+	.box-top,
+	.box-bot,
+	.box-left,
+	.box-right {
+		display: none;
+	}
+	.box-body {
+		background: none;
+	}
+}

@@ -1,0 +1,9 @@
+{
+	%Result%.w = 1; // (%Diffuse%).w;
+
+	float sum = dot((%TintColorMap%).xyz, float3(1,1,1));
+	float w0 = clamp(1.0 - sum, 0.0, 1.0f);
+	%Result%.xyz = w0 * (%Color0%).xyz + %TintColorMap%.x * (%Color1%).xyz + %TintColorMap%.y * (%Color2%).xyz + %TintColorMap%.z * (%Color3%).xyz;
+	%Result%.xyz = (lerp(float4(1.0,1.0,1.0,1.0), %Result%, %TintMask%)).xyz;
+	%Result%.xyz = %Diffuse%.xyz * %Result%.xyz;
+}

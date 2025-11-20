@@ -1,0 +1,5 @@
+//Rand.phl
+{
+	float2 key_vector = float2( 142.43105983501, 6.209423705);
+	%Result% = frac( sin( fmod( 539205762, 64 * dot(%Seed%.xy,key_vector) ) ) );
+}

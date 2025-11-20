@@ -1,0 +1,63 @@
+[
+	/////////////////////
+	//
+	// This file is for all the stuff that only needs to be done once.
+	// These files are shared by all projects.
+	//
+	/////////////////////
+
+	{
+		name: 'global settings for all tasks',
+		task: 'global',
+
+		extignore: [ '.000' ],
+		dirignore: [ '.git', './smelter', './delog', './build', './3rdparty', './phantom', './bin', './tools', '.svn', 'UnusedStencils' ],
+
+		prefix: 'NW'
+	},
+
+
+//	{
+//		name:     'debug stencils minigame',
+//		task:     stencil,
+//
+//		watch:    '../Night/minigame/stencils',
+//		extmatch: '.html',
+//
+//		out:      [ '../Night/minigame/Stencils.js' ],
+//
+//		options : { optimize: false, dev: true, noTranslate: true }
+//
+//	},
+
+	{
+		name:     'bundle debug client',
+		task:     bundle,
+
+		after:    'debug stencils minigame',
+		watch:    '../Night/minigame',
+		extmatch: '.js',
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ] , debug: true},
+
+		bundle:   '../Night/minigame/diceStartup.js',
+		out:      [ '../Night/minigame/dice-bundle.jsb' ],
+		uglify:   false
+	},
+
+//	{
+//		name:     'bundle debug cardmaker',
+//		task:     bundle,
+//
+//		watch:    '../Night/minigame',
+//		extmatch: '.js',
+//
+//		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ] , debug: true},
+//
+//		bundle:   '../Night/minigame/cardMaker.js',
+//		out:      [ '../Night/minigame/cm-bundle.jsb' ],
+//		uglify:   false
+//	},
+
+
+]

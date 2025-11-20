@@ -1,0 +1,16 @@
+{
+	"predef": [
+		'confirm'
+	],
+
+	// Environments
+	"node": true,
+	"browser": true,
+	"jquery": true,
+	"es5": true,
+
+	"globalstrict": true, // Don't complain about global strict
+	"asi": true,          // Don't complain about missing semicolons
+	"sub": true,          // Don't complain about using [] instead of .
+	"laxbreak": true      // Don't complain about things like || at beginning of line
+}

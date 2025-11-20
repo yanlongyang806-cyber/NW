@@ -1,0 +1,6 @@
+{
+	float sum = dot((%TintColorMap%).xyz, float3(1,1,1));
+	float w0 = clamp(1 - sum, 0, 1.0f);
+	%Result% = dot(float4((%TintColorMap%).xyz, w0), %Weight%);
+	%Result% = clamp(%Result%, 0, 1.0f);
+}

@@ -1,0 +1,32 @@
+OperationDef
+	Name "OldDualColor" // Name of the operation
+	Description "DualColor tinting as used in CoH/CoV"
+	Type ADVANCED
+
+	Input: A, "First texture, RGB: diffuse map, A: how much of tinted TexB"
+	Input: B, "Second texture, RGB: how much of each tint color (black = all color 0), A: transparency"
+	Input
+		Name Color0
+		Description "Tint color 0"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Color0
+		EndDefault
+	EndInput
+	Input
+		Name Color1
+		Description "Tint color 1"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Color tinted output"
+		Float 4
+		AlphaFrom B
+	EndOutput
+
+EndOperationDef
+

@@ -1,0 +1,175 @@
+
+<div class="holdings-container">
+	<div class="holdings-header">
+		<h2 data-path=".playername.$escapeForHTML()">Deep Space 99</h2>
+		<h3>Provisions</h3>
+
+		<div class="holdings-motd" data-if=".message">
+			<h4><span data-path=".typename">Starbase</span> Message of the Day:</h4>
+			<p data-path=".message.$escapeForHTML()">Clear out this bartender so we can construct our Industrial Fabricator II!</p>
+		</div>	
+	</div>
+
+	<div id="holdings_nav_mobile"></div>
+
+	<div class="holdings-provisions">
+		<p>Below is the current inventory of provisions on your <span data-path=".shortname.$escapeForHTML()">Starbase</span>. Available inventory in each category allows you to purchase items from vendors. Complete provisioning projects to replenish your vendors' inventory.</p>
+		<ul data-set-class="provisions-list {.shortname.$toLowerCase()}">
+
+			<!-- STARBASE PROVISIONS -->
+
+			<li class="mobileList" data-if=".numericdata[group eq Military].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem military"></span>
+					Military Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Military]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<li class="mobileList" data-if=".numericdata[group eq Engineering].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem engineering"></span>
+					Engineering Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Engineering]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<li class="mobileList" data-if=".numericdata[group eq Science].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem science"></span>
+					Science Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Science]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<!-- EMBASSY PROVISIONS -->
+
+			<li class="mobileList" data-if=".numericdata[group eq Diplomacy].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem diplomacy"></span>
+					Diplomacy Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Diplomacy]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<li class="mobileList" data-if=".numericdata[group eq Recruitment].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem recruitment"></span>
+					Recruitment Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Recruitment]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<!-- DILITHIUM MINE PROVISIONS -->
+
+			<li class="mobileList" data-if=".numericdata[group eq Trade].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem trade"></span>
+					Trade Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Trade]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+			<li class="mobileList" data-if=".numericdata[group eq Development].$length() gt 0">
+				<div class="provisions-divider">
+					<span class="divider-top"></span>
+					<span class="divider-mid"></span>
+					<span class="divider-connector"></span>
+				</div>
+				<h3 class="mobileListHeader">
+					<span class="tier-emblem development"></span>
+					Development Provisions
+				</h3>
+				<ul class="mobileListEntry" data-path=".numericdata[group eq Development]">
+					<li>
+						<div class="item-icon large">
+							<img alt="" data-set-src="/tex/{.icon}">
+						</div>
+						<h4 data-path=".displayname.str"><!-- Display Name --></h4>
+						<span class="provisions" data-path=".count"><!-- Count --></span>
+					</li>
+				</ul>
+			</li>
+
+		</ul>
+	</div>
+</div>
+

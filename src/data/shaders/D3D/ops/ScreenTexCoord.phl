@@ -1,0 +1,5 @@
+{
+	float2 coord;
+	getVPosNormalized(coord, v);
+	%TexCoord% = float4( coord, 1, 1 );
+}

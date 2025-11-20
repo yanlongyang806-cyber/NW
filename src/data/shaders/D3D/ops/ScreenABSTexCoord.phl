@@ -1,0 +1,14 @@
+// ScreenABSTexCoord.phl
+{
+	#ifdef TRANSGAMING
+		float2 vPos;
+		getVPos(vPos, v);
+		%TexCoord% = float4(v.xy, 1, 1);
+	#else
+		#ifdef D3D11
+			%TexCoord% = float4( v.position_screen.xy, 1, 1 );
+		#else
+			%TexCoord% = float4( v.position_screen.xy + float2(0.5,0.5), 1, 1 );
+		#endif
+	#endif
+}

@@ -1,0 +1,5 @@
+{
+	float2 theta = %Theta%.xy * 6.28318530717958647692;
+	%Result%.xy = %TexCoords%.xy + float2(sin(theta.x), cos(theta.y)) * %JiggleScale%.xy;
+	%Result%.zw = 0.0;
+}

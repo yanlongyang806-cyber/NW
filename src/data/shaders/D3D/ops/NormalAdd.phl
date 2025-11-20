@@ -1,0 +1,8 @@
+{
+	float3 tangent, binormal;
+	binormal = float3(0,1,0);
+	tangent = cross(binormal, (%TangentNormal%).xyz);
+	binormal = cross((%TangentNormal%).xyz, tangent);
+	%Result%.xyz = fromTangentSpace(tangent, binormal, (%TangentNormal%).xyz, (%DetailNormal%).xyz);
+	%Result%.w = (%DetailNormal%).w;
+}

@@ -1,0 +1,27 @@
+<span data-if="!{ent.main.hidden}">
+	<a class="button-nav" data-url="/ship-equipment"><span>Ship Systems</span></a>
+	<a class="button-nav" data-url="/personnel-captainprofile"><span>Personnel Files</span></a>
+
+	<!-- if(dev) -->
+	<span data-update="personalproject">
+		<a data-if="personalproject.states" class="button-nav" data-url="/reputation/Romulan/overview/tier?tier=personalproject.states[.internalname=Personal_Possession_Romulan].categories[0].tiers[0]"><span>Reputation</span></a>
+
+		<span data-if="!{personalproject.states}" class="button-nav disabled"><span>Reputation</span></span>
+	</span>
+
+	<!-- endif(dev) -->
+
+	<!-- if(dev) -->
+	<a class="button-nav" data-url="/zenstore"><span>ZEN Store</span></a>
+	<!-- endif(dev) -->
+
+	<a class="button-nav" data-url="/accolades"><span>Accolades</span></a>
+
+	<a data-if="ent.main.guildname" class="button-nav" data-set-data-url="#fleet({ent.main.guildname})/"><span>Fleet</span></a>
+	<span data-if="!{ent.main.guildname}" class="button-nav disabled"><span>Fleet</span></span>
+</span>
+
+<span class="mobile-login mobileOnly">
+	<a class="button-entry" href="#/characterselect">Character Select</a>
+	<a class="button-entry" href="/logout">Log Out</a>
+</span>

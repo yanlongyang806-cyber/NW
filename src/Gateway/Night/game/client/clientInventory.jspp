@@ -1,0 +1,10 @@
+'use strict';
+
+var clientInventory = module.exports;
+
+clientInventory.withdrawTips = function()
+{
+	var withdrawAmount = (parseInt($("input[name='withdrawAmount']:visible").val(),0))
+
+	client.sendCommand('Gateway_WithdrawTips', withdrawAmount);
+}

@@ -1,0 +1,10 @@
+// TextureNormal.phl
+{
+#define HAS_NORMALMAP
+	%Result% = tex2D(TexSampler%NormalMap%, %TexCoord%);
+	%Result%.xyz = rangeExpand(%Result%);
+	%Result%.x *= sign(%TexCoord%.x);
+	%Result%.y *= sign(%TexCoord%.y);
+//#define DEBUG_OUT
+//	debug_out = %Result%.y*0.5 + 0.5;
+}

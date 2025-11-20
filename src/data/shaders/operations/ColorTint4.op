@@ -1,0 +1,51 @@
+OperationDef
+	Name "ColorTint4" // Name of the operation
+	DefaultOptionName "ColorTint4"
+	OptionName "Use Alpha from Diffuse"
+	Description "4-Color tinting"
+	Type ADVANCED
+
+	Input: Diffuse, "RGB: diffuse map, A: alpha output"
+	Input: TintMask, "RGB: how much tint to apply, A: ignored"
+	Input: TintColorMap0, "RGB: how much of color 0 (black = all color 0), A: ignored"
+	Input: TintColorMap1, "RGB: how much of color 1 (black = all color 1 (except where previously masked)), A: ignored"
+	Input: TintColorMap2, "RGB: how much of color 1 (black = all color 2 (except where previously masked)), A: ignored"
+	Input
+		Name Color0
+		Description "Tint color 0"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Color0
+		EndDefault
+	EndInput
+	Input
+		Name Color1
+		Description "Tint color 1"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Input
+		Name Color2
+		Description "Tint color 2"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Input
+		Name Color3
+		Description "Tint color 3"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Color tinted output"
+		AlphaFrom Diffuse
+		Float 4
+	EndOutput
+
+EndOperationDef
+

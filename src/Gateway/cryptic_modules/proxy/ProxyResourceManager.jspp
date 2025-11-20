@@ -1,0 +1,297 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ProxyResourceManager
+//
+// Extends ResourceManager with the networking needed to fetch and cache
+// resources from the server.
+//
+
+var cutils = require('cryptic/cutils.js');
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+
+var ResourceManager = require('cryptic/ResourceManager');
+var Resource = require('cryptic/Resource');
+
+var g_allowedDictNames = require('./DictNames');
+
+//
+// new ResourceManager
+//
+// See ResourceManager.js for documentation
+//
+var ProxyResourceManager = function ProxyResourceManager(conn)
+{
+	ResourceManager.call(this);
+
+	this.conn = conn;
+
+	conn.on('Server_Resource',        this.onServer_Resource.bind(this));
+	conn.on('Server_DefaultResource', this.onServer_DefaultResource.bind(this));
+	conn.on('Server_DictionaryKeys',  this.onServer_DictionaryKeys.bind(this));
+}
+
+cutils.inherits(ProxyResourceManager, ResourceManager);
+
+///////////////////////////////////////////////////////////////////////////
+
+// Server requests
+
+//
+// requestResource
+//
+// Requests a resource from the server.
+//
+ProxyResourceManager.prototype.requestResource = function requestResource(dictname, ref)
+{
+	dbg.trace(dictname, ref);
+
+	var pkt = this.conn.startConnectionPacket('Proxy_RequestResource');
+
+	pkt.sendString(dictname);
+	pkt.sendString(ref);
+	pkt.endPacket();
+}
+
+//
+// requestDefaultResource
+//
+// Requests a default, fully-populated resource for a particular dictionary
+// from the server.
+//
+ProxyResourceManager.prototype.requestDefaultResource = function requestDefaultResource(dictname)
+{
+	dbg.trace(dictname);
+
+	var pkt = this.conn.startConnectionPacket('Proxy_RequestDefaultResource');
+	pkt.sendString(dictname);
+	pkt.endPacket();
+}
+
+//
+// requestDictionaryKeys
+//
+// Requests the entire list of reference ids in a dictionary.
+//
+ProxyResourceManager.prototype.requestDictionaryKeys = function requestDictionaryKeys(dictname)
+{
+	dbg.trace(dictname);
+
+	var pkt = this.conn.startConnectionPacket('Proxy_RequestDictionaryKeys');
+	pkt.sendString(dictname);
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Message Handlers
+
+//
+// onServer_Resource
+//
+// Handler for Resource message
+//
+ProxyResourceManager.prototype.onServer_Resource = function onServer_Resource(pkt)
+{
+
+	var dictname = pkt.readString();
+	var id = pkt.readString();
+	var json = pkt.readString();
+
+	dbg.trace(dictname, id);
+
+	var dict = this.findDictionary(dictname);
+	try // to protect us from bad JSON
+	{
+		var obj;
+
+		if(json !== 'undefined')
+		{
+			obj = JSON.parse(json);
+		}
+
+		if(!dict && obj)
+		{
+			dict = this.findOrCreateDictionary(dictname);
+		}
+
+		if(dict)
+		{
+			// Also notifies requesters, and then deletes if undefined
+			dict.setResource(id, obj);
+		}
+	}
+	catch (e)
+	{
+		log.error('Invalid JSON from server for ('+dictname+'.'+id+')!', json);
+		if(dict)
+		{
+			dict.setResource(id, undefined);
+		}
+	}
+}
+
+//
+// onServer_DefaultResource
+//
+// Handler for DefaultResource message
+//
+ProxyResourceManager.prototype.onServer_DefaultResource = function onServer_DefaultResource(pkt)
+{
+
+	var dictname = pkt.readString();
+	var json = pkt.readString();
+
+	dbg.trace(dictname);
+
+	var dict = this.findDictionary(dictname);
+	try // to protect us from bad JSON
+	{
+		var obj = JSON.parse(json);
+
+		if(!dict && obj)
+		{
+			dict = this.findOrCreateDictionary(dictname);
+		}
+
+		if(dict)
+		{
+			// Also notifies requesters
+			dict.setDefaultResource(obj);
+
+			if(!obj)
+			{
+				this.destroyDictionary(dictname);
+			}
+		}
+	}
+	catch(e)
+	{
+		dbg(json);
+		log.error('Invalid JSON from server for default resource (...@'+dictname+')!');
+		log.error(e);
+
+		if(dict)
+		{
+			dict.setDefaultResource(undefined);
+			this.destroyDictionary(dictname);
+		}
+	}
+}
+
+//
+// onServer_DictionaryKeys
+//
+// Handler for DictionaryKeys message
+//
+ProxyResourceManager.prototype.onServer_DictionaryKeys = function onServer_DictionaryKeys(pkt)
+{
+	dbg.trace();
+
+	var dictname = pkt.readString();
+	var json = pkt.readString();
+
+	dbg.trace(dictname, json);
+
+	var dict = this.findDictionary(dictname);
+	try
+	{
+		var obj = JSON.parse(json);
+		var a = obj ? obj[dictname] : undefined;
+
+		if(!dict && a)
+		{
+			dict = this.findOrCreateDictionary(dictname);
+		}
+
+		if(dict)
+		{
+			// Also notifies requesters
+			dict.setKeys(a);
+
+			if(!a)
+			{
+				this.destroyDictionary(dictname);
+			}
+		}
+	}
+	catch(e)
+	{
+		dbg(json);
+		log.error('Invalid JSON from server for dictionary keys (...@'+dictname+')!');
+		log.error(e);
+
+		if(dict)
+		{
+			dict.setKeys(undefined);
+			this.destroyDictionary(dictname);
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// fetchForLanguage
+//
+// Makes sure the data for resource is available, or requests it if hasn't
+// already been requested.
+//
+ProxyResourceManager.prototype.fetchForLanguage = function fetchForLanguage(lang, dictname, id, callback)
+{
+	// OK, I am rather unhappy about this test here, but to do it generically
+	//   makes a pretty big mess of everything else. So, the expedient solution
+	//   wins the day. If we end up with another translatable resource dictionary,
+	//   this decision should be revisited.
+	if(this.isTranslatableDictionary(dictname))
+	{
+		id = id + '/' + lang;
+		if(lang === 0)
+		{
+			console.log('Lang is 0 for @'+dictname+'['+id+']');
+		}
+	}
+
+	// Note that the callback is called with a Resource, which may have
+	//   the /lang at the end of it. If you're sending that to the client,
+	//   you'll need to strip it off or use the client's originally requested
+	//   id to respond with.
+	return this.fetch(dictname, id, callback);
+}
+
+//
+// isValidDictName
+//
+// Verifies that the dictionary name is one of the whitelisted dictionaries.
+//
+ProxyResourceManager.prototype.isValidDictName = function isValidDictName(dictname)
+{
+	if(typeof dictname === 'string' && dictname.length < 256)
+	{
+		if(dictname in g_allowedDictNames)
+		{
+			return true;
+		}
+	}
+
+	log.error('Disallowed dictionary requested', dictname);
+
+	return false;
+}
+
+//
+// isTranslatableDictionary
+//
+// True if the dictionary has locale-specific data in it.
+//
+ProxyResourceManager.prototype.isTranslatableDictionary = function isTranslatableDictionary(dictname)
+{
+	return dictname.toLowerCase() === 'message';
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ProxyResourceManager;
+
+// End of File

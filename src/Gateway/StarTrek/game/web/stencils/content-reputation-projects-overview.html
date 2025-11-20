@@ -1,0 +1,54 @@
+<div data-set-class="holdings-projects-overview {.shortname}">
+
+	<div class="mobileOnly holding-overview-header-mobile" data-set-style="background-image: url(/tex/{.image}.png);"></div>
+	
+	<ul class="project-tiers" data-path=".categories">
+		<li class="tier-row {.style.$map(tierStyles)}">
+
+			<span class="tier-emblem"><img data-set-src="/tex/{.image}.png"></span>
+
+			<h4 data-path=".displayname">Task Force Omega (Tier 0)</h4>
+
+			<h6 data-path=".experience">0 Reputation</h6>
+			<ul class="tier-bars-container" data-path=".tiers">
+				<li>
+					<a class="desktopOnly selectable-tier" data-set-data-url="?tier={$here()}">
+						<h5 data-path=".numeral">I</h5>
+						<span class="tier-empty"></span>
+						<span class="tier-bar" data-set-style="width: {.progresspercent}%"><span class="tier-fill"></span></span>
+					</a>
+					<a class="mobileOnly selectable-tier" data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/detail?tier={$here()}">
+						<h5 data-path=".numeral">I</h5>
+						<span class="tier-empty"></span>
+						<span class="tier-bar" data-set-style="width: {.progresspercent}%"><span class="tier-fill"></span></span>
+					</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+
+	<div class="reputation-powers">
+		<ul data-path=".powertiers">
+			<li>
+				<span data-if=".powers.$length() gt 1">
+					<span class="power-top active" data-path=".powers[0]">
+						<img data-set-src="/tex/{.iconname}" alt="">
+					</span>
+					<span class="power-bot active" data-path=".powers[1]">
+						<img data-set-src="/tex/{.iconname}" alt="">
+					</span>
+				</span>
+				<span data-if=".powers.$length() == 1">
+					<span class="power-last" data-path=".powers[0]">
+						<img data-set-src="/tex/{.iconname}" alt="">
+					</span>
+				<span>
+			</li>
+		</ul>
+	</div>
+
+
+	<div id="reputation_project_overview_details"></div>
+</div>
+
+<!-- endif(dev) -->

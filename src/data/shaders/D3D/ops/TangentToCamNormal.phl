@@ -1,0 +1,14 @@
+// TangentToCamNormal.phl
+#define NORMAL_PRECALCULATED
+{
+	#ifndef DEPTH_ONLY
+		#ifdef NO_NORMALMAP
+			float3 N_vs = normal_vs.xyz;
+		#else
+			float3 N_vs = fromTangentSpace(tangent_vs, binormal_vs, normal_vs, %Normal%.xyz);
+		#endif
+		%Result% = float4(normalize(N_vs),0);
+	#else
+		%Result% = float4(normalize(normal_vs.xyz),0);
+	#endif
+}

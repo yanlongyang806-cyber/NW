@@ -1,0 +1,19 @@
+OperationDef
+	Name "Min" // Name of the operation
+	Description "For each channel, returns the smaller of the 2 inputs"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "For each channel, returns the smaller of the two inputs"
+		Float 4
+		AlphaModeAnd 1
+		AlphaFrom A
+		AlphaFrom B
+	EndOutput
+
+EndOperationDef
+

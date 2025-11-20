@@ -1,0 +1,5 @@
+// Texture_RangeExpanded.phl
+{
+	%Result% = sampleTex2D(TexSampler%Texture%, %TexCoord%.xy);
+	%Result%.xyz = rangeExpand(%Result%.xyz);
+}

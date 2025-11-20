@@ -1,0 +1,25 @@
+
+<div data-if="{$root().guildproject.viewerismember}">
+	<div class="button-group-holdings-asset" data-path="guildproject.states">
+		<a data-set-id="nav_holdings_{.shortname}" class="button-nav" data-set-data-url="/holdings/{.shortname}/overview/tier?tier=guildproject.states[.internalname={.internalname}].categories[0].tiers[0]">
+			<span class="desktopOnly" data-path=".typename">Starbase</span>
+			<span class="mobileOnly" data-path=".shortname">Starbase</span>
+		</a>
+	</div>
+
+	<div id="holdings_subnav"></div>
+
+	<!--
+	<div class="button-group-holdings-nav desktopOnly">
+		<a id="nav_holdings_projects" class="button-nav" data-set-data-url="/holdings/{$root().queryParams.projectname}/overview/tier?tier=guildproject.states[.internalname=Fleet_Possession_{$root().queryParams.projectname}].categories[0].tiers[0]">
+			<span>Projects</span>
+		</a>
+		<a id="nav_holdings_provisions" class="button-nav" data-set-data-url="/holdings/{$root().queryParams.projectname}/provisions">
+			<span>Provisions</span>
+		</a>
+		<a id="nav_holdings_leaderboard" class="button-nav" data-set-data-url="/holdings/{$root().queryParams.projectname}/leaderboard">
+			<span>Leaderboard</span>
+		</a>
+	</div>
+	-->
+</div>

@@ -1,0 +1,283 @@
+<div class="wrapper">
+
+	<div class="sticky-background"></div>
+	<div class="sticky-foreground">
+		<div class="fg-top"></div>
+		<div class="fg-bot"></div>
+	</div>
+	<div class="sticky-header">
+		<span class="header-bg"></span>
+		<span class="header-logo"></span>
+		<div class="header-player" data-update="loginInfo.loginentity">
+			<h3 data-if="loginInfo">
+				<span class="name-char" data-if="loginInfo.loginEntity" data-path="loginInfo.loginentity.name">Character Name</span><!-- NO WHITESPACE
+				-->@<span class="name-player" data-path="loginInfo.publicaccountname">PublicAccountName</span>
+			</h3>
+			<p class="header-links">
+				<span data-if="loginInfo.loginEntity">
+					<a data-url-silent="#/characterselect/modal">Change Character</a> |
+				</span>
+				<a href="/logout">Log Out</span>
+			</p>
+			<!-- disable for now
+			<ul class="header-options">
+				<li class="options-button chat"></li>
+				<li class="options-button mail"></li>
+				<li class="options-button settings"></li>
+			</ul>
+			-->
+		</div>
+
+
+		<div class="header-newrelease">
+
+			<a href="http://nw.perfectworld.com/news/?p=994581" target="_blank" class="promo-image" style="background-image: url(/img_nw/promo_darkforestlockbox.jpg)">
+				<h3 class="copy-top">Dark Forest Lockbox</h3>
+				<h3 class="copy-bot">Unlock for a chance to win an Owlbear Mount or Pseudodragon Companion</h3>
+			</a>
+		</div>
+
+
+	</div>
+
+	<div id="welcome_banner">
+		<div class="welcome-banner-bg">
+			<h1>Welcome to the Neverwinter Gateway</h1>
+		</div>
+	</div>
+
+	<div id="concept_bg"></div>
+
+	<div class="mobileOnly sticky-mobile-back-button mobileBackButton">
+		<div class="main-buttons">
+
+			<a class="nav-button mobile-back-button linkPreviousPage" data-url="back">
+				<span class="cap-left"></span>
+				<span class="cap-right"></span>
+				<span class="nav-icon"></span>
+			</a>
+			<a class="nav-button mobile-back-button linkDirectlyToFront" data-update="loginInfo.loginentity" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/">
+				<span class="cap-left"></span>
+				<span class="cap-right"></span>
+				<span class="nav-icon"></span>
+			</a>
+
+		</div>
+		<hr />
+	</div>
+
+	<div id="content_box" class="front">
+		<div class="box-title">
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+
+			<div class="box-mid">
+				<div class="box-content" id="content_title">
+					<!-- CONTENT TITLE -->
+				</div>
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-bot">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="deco-left"></div>
+			<div class="deco-right"></div>
+		</div>
+		<div class="box-body">
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div id="content_frame_mid" class="box-mid">
+				<div class="box-content" id="content_login">
+				</div>
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-bot">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+		</div>
+
+		<div id="concept_footer"></div><!-- yes this goes here -->
+
+	</div>
+
+	<div class="sticky-nav">
+		<div class="button-group main-buttons">
+			<span class="deco-nav deco-top"></span>
+			<div class="button-back">
+				<a class="nav-button" data-update="loginInfo.loginentity" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/">
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+			</div>
+
+			<div class="button-list" data-update="loginInfo.loginentity ent.main.levelui">
+
+				<!-- if(dev) -->
+				<style type="text/css">
+					.page-front .front-box-mid {
+						min-height: 430px;
+						padding: 10px 10px 0;
+					}
+					.main-buttons .nav-button {
+						font-size: 22px;
+						padding-top: 9px;
+						height: 44px;
+					}
+					.main-buttons .nav-button,
+					.main-buttons .nav-button:hover {
+						background-image: url(../img_nw/kit_buttons_front_bg_2.png);
+					}
+					.main-buttons .nav-button .cap-left,
+					.main-buttons .nav-button .cap-right,
+					.main-buttons .nav-button:hover .cap-left,
+					.main-buttons .nav-button:hover .cap-right {
+						background-image: url(../img_nw/kit_buttons_front_2.png);
+					}
+					.main-buttons .nav-button .nav-icon {
+						background-image: url(../img_nw/sprites_nav_2.png);
+						height: 35px;
+						width: 35px;
+						right: 4px;
+					}
+					/* merge ie8 styles also when merging these */
+				</style>
+				<!-- endif(dev) -->
+
+
+				<!-- if(dev) -->
+				<!-- DUNGEONS -->
+				<a class="nav-button mainNav dungeons nav-dungeons" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/adventures">
+					Sword Coast Adventures
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+				<!-- endif(dev) -->
+
+				<!-- CHARACTER SHEET -->
+				<a class="nav-button mainNav charactersheet nav-charsheet" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/charactersheet">
+					Character Sheet
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- INVENTORY -->
+				<a class="nav-button mainNav inventory nav-inventory" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/inventory">
+					Inventory
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- PROFESSIONS -->
+				<a data-if="{ent.main.levelui} lt 10" class="nav-button mainNav professions nav-professions disabled" data-tt-text="You must be at least level 10 to use professions.">
+					Professions
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+				<a data-if="!({ent.main.levelui} lt 10)" class="nav-button mainNav professions nav-professions" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/professions">
+					Professions
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- AUCTION HOUSE -->
+				<a class="nav-button mainNav auctionhouse nav-auction" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/auctionhouse">
+					Auction House
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- if(dev) -->
+				<!-- ASTRAL DIAMOND EXCHANGE -->
+				<a class="nav-button mainNav exchange nav-exchange" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/exchange">
+					Astral Diamond Exchange
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+				<!-- endif(dev) -->
+
+				<!-- ZEN MARKET -->
+				<a class="nav-button mainNav zenmarket nav-zenmarket" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/zenmarket">
+					Zen Market
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- GUILD -->
+				<a data-if="!{loginInfo.loginentity.guildname}" class="nav-button mainNav guild nav-guild disabled" data-tt-text="This character is not in a guild.">
+					Guild
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+				<a data-if="{loginInfo.loginentity.guildname}" class="nav-button mainNav guild nav-guild" data-set-data-url="#guild({loginInfo.loginentity.guildname})">
+					Guild
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+
+				<!-- MAIL -->
+				<a class="nav-button mainNav mail nav-mail" data-set-data-url="#char({loginInfo.loginentity.name}@{loginInfo.loginentity.publicaccountname})/mail">
+					Mail
+					<span class="cap-left"></span>
+					<span class="cap-right"></span>
+					<span class="nav-icon"></span>
+				</a>
+			</div>
+			<span class="deco-nav deco-bot"></span>
+		</div>
+	</div>
+
+	<div class="secondary-nav mobileOnly">
+		<a data-url="#/characterselect">Change Character</a>
+		<a href="/logout">Log Out</span>
+		<!-- if(dev) -->
+		<!--
+		<a data-url="/mobiletests">Mobile Tests</a>
+		-->
+		<!-- endif(dev) -->
+
+	</div>
+
+	<div class="sticky-footer">
+		<span class="footer-bg"></span>
+		<div class="footer-links">
+			<ul>
+				<li><a href="http://www.pwe-inc.com/about" target="_blank">About Us</a></li>
+				<li><a href="http://www.perfectworld.com/about/terms" target="_blank">Terms of Service</a></li>
+				<li><a href="http://www.perfectworld.com/about/privacy" target="_blank">Privacy Policy</a></li>
+				<li><a href="http://www.pwe-inc.com/contact" target="_blank">Contact Us</a></li>
+				<li><a href="http://www.pwe-inc.com/career" target="_blank">Career</a></li>
+			</ul>
+			<p class="copyright">Copyright &copy; 2013. Perfect World Entertainment Inc, All Rights Reserved</p>
+		</div>
+		<div class="footer-brands">
+			<ul>
+				<li class="brand pw"><a href="http://www.pwe-inc.com/" target="_blank"><span>Perfect World</span></a></li>
+				<li class="brand cryptic"><a href="http://www.crypticstudios.com/" target="_blank"><span>Cryptic Studios</span></a></li>
+				<li class="brand hasbro"><a href="http://www.hasbro.com/" target="_blank"><span>Hasbro</span></a></li>
+				<li class="brand wotc"><a href="http://www.wizards.com/" target="_blank"><span>Wizards of the Coast</span></a></li>
+			</ul>
+		</div>
+	</div>
+
+</div>
+
+

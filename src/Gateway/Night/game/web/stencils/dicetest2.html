@@ -1,0 +1,471 @@
+<!-- if(dev) -->
+<style type="text/css">
+
+.preload1, .preload2 {
+	height: 1px;
+	width: 1px;
+	position: absolute;
+	top: -9999px;
+	left: -9999px;
+}
+.preload1 {
+	background-image: url(/img_nw/d6_spin.png);
+}
+.preload2 {
+	background-image: url(/img_nw/d6_numbers.png);
+}
+.dice-tray {
+	/*
+	width: 300px;
+	height: 500px;
+	position: relative;
+	overflow: hidden;
+	margin: 0 auto;
+	border: 1px solid #B79F52;
+	border-radius: 5px;
+	background: #000;
+	*/
+
+	width: 367px;
+	height: 313px;
+	background: url(/img_nw/test_dicebox.png);
+	margin: 20px auto 0;
+	position: relative;
+	overflow: hidden;
+}
+.dice {
+	width: 64px;
+	height: 64px;
+	position: absolute;
+	display: none;
+}
+.dice-roll-1 {		background-position: 0 0;		}
+.dice-roll-2 {		background-position: 0 -100px;	}
+.dice-roll-3 {		background-position: 0 -200px;	}
+.dice-roll-4 {		background-position: 0 -300px;	}
+.dice-roll-5 {		background-position: 0 -400px;	}
+.dice-roll-6 {		background-position: 0 -500px;	}
+.dice-roll-7 {		background-position: 0 -600px;	}
+.dice-roll-8 {		background-position: 0 -700px;	}
+.dice-roll-9 {		background-position: 0 -800px;	}
+.dice-roll-10 {		background-position: 0 -900px;	}
+.dice-roll-11 {		background-position: 0 -1000px;	}
+.dice-roll-12 {		background-position: 0 -1100px;	}
+.dice-roll-13 {		background-position: 0 -1200px;	}
+.dice-roll-14 {		background-position: 0 -1300px;	}
+.dice-roll-15 {		background-position: 0 -1400px;	}
+.dice-roll-16 {		background-position: 0 -1500px;	}
+.dice-roll-17 {		background-position: 0 -1600px;	}
+.dice-roll-18 {		background-position: 0 -1700px;	}
+.dice-roll-19 {		background-position: 0 -1800px;	}
+.dice-roll-20 {		background-position: 0 -1900px;	}
+
+.score {
+	width: 100%;
+	position: absolute;
+	bottom: 50px;
+	left: 0;
+	font-family: "Sava";
+	text-align: center;
+	font-size: 32px;
+}
+
+.rolldice {
+	position: absolute;
+	bottom: 15px;
+	width: 100%;
+	text-align: center;
+	z-index: 100;
+	.input-field.button.light button {
+		padding: 0 15px;
+	}
+
+}
+
+@-webkit-keyframes rotatespin {
+    from{
+        -webkit-transform: rotate(0deg);
+    }
+    to{
+        -webkit-transform: rotate(360deg);
+    }
+}
+@-webkit-keyframes rotatesettle {
+    from{
+        -webkit-transform: rotate(10deg);
+    }
+    to{
+        -webkit-transform: rotate(0deg);
+    }
+}
+
+.spin {
+    -webkit-animation: rotatespin .35s linear infinite;
+}
+.settle {
+    -webkit-animation: rotatesettle .4s ease-out 1;
+}
+
+.goback {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+</style>
+
+<div class="goback">
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="/dungeons">Back</button>
+	</div>
+</div>
+
+
+
+<div class="dice-tray">
+	<div class="dice dice-1"></div>
+	<div class="dice dice-2"></div>
+	<div class="dice dice-3"></div>
+	<div class="dice dice-4"></div>
+	<div class="dice dice-5"></div>
+	<div class="dice dice-6"></div>
+	<div class="dice dice-7"></div>
+	<div class="dice dice-8"></div>
+	<div class="dice dice-9"></div>
+	<div class="dice dice-10"></div>
+	<!--
+
+	<div class="score">
+	</div>
+	-->
+	<span class="preload1"></span>
+	<span class="preload2"></span>
+</div>
+
+<div class="rolldice">
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button onClick="rollDice();">Roll Dice</button>
+	</div>
+</div>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script type="text/javascript">
+
+
+function rollDice() {
+	$('.dice').fadeOut(150).promise().done(function() {
+
+		var d20_1 = Math.floor((Math.random()*6)+1);
+		var d20_2 = Math.floor((Math.random()*6)+1);
+		var d20_3 = Math.floor((Math.random()*6)+1);
+		var d20_4 = Math.floor((Math.random()*6)+1);
+		var d20_5 = Math.floor((Math.random()*6)+1);
+		var d20_6 = Math.floor((Math.random()*6)+1);
+		var d20_7 = Math.floor((Math.random()*6)+1);
+		var d20_8 = Math.floor((Math.random()*6)+1);
+		var d20_9 = Math.floor((Math.random()*6)+1);
+		var d20_10 = Math.floor((Math.random()*6)+1);
+
+		$('.dice-1')
+			.show()
+			.removeClass()
+			.addClass('dice dice-1 spin')
+			.css({
+				'background-image': 'url(/img_nw/d6_spin.png)',
+				'top': '500px',
+				'left': '100px'
+			})
+			.promise().done(function() {
+			$('.dice-1')
+				.animate({
+					'top': '15px',
+					'left': '255px'
+				}, 180, 'linear')
+				.promise().done(function() {
+				$('.dice-1')
+					.animate({
+						'top': '86px',
+						'left': '287px'
+					}, 130, 'linear')
+					.promise()
+					.done(function() {
+					$('.dice-1')
+						.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+						.removeClass('spin')
+						.addClass('settle dice-roll-' + d20_1)
+						.animate({
+							'top': '140px',
+							'left': '215px'
+						}, 400, 'easeOutQuad');
+				});
+			});
+		});
+
+
+
+		$('.dice-2')
+			.show()
+			.removeClass()
+			.addClass('dice dice-2 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '650px', 'left': '150px'})
+			.promise().done(function() {
+			$('.dice-2')
+				.animate({'top': '120px', 'left': '15px'}, 230, 'linear')
+				.promise().done(function() {
+				$('.dice-2')
+					.animate({'top': '12px', 'left': '50px'}, 120, 'linear')
+					.promise()
+					.done(function() {
+					$('.dice-2')
+						.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+						.removeClass('spin')
+						.addClass('settle dice-roll-' + d20_2)
+						.animate({'top': '50px', 'left': '60px'}, 420, 'easeOutQuad');
+				});
+			});
+		});
+
+		$('.dice-3')
+			.show()
+			.removeClass()
+			.addClass('dice dice-3 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-3')
+				.animate({'top': '10px', 'left': '150px'}, 290, 'linear')
+				.promise().done(function() {
+				$('.dice-3')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_3)
+					.animate({'top': '120px', 'left': '130px'}, 480, 'easeOutQuad');
+
+			});
+		});
+
+
+
+
+
+
+
+
+
+
+
+
+		$('.dice-4')
+			.show()
+			.removeClass()
+			.addClass('dice dice-4 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-4')
+				.animate({'top': '10px', 'left': '120px'}, 250, 'linear')
+				.promise().done(function() {
+				$('.dice-4')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_4)
+					.animate({'top': '60px', 'left': '130px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-5')
+			.show()
+			.removeClass()
+			.addClass('dice dice-5 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-5')
+				.animate({'top': '10px', 'left': '90px'}, 320, 'linear')
+				.promise().done(function() {
+				$('.dice-5')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_5)
+					.animate({'top': '70px', 'left': '190px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-6')
+			.show()
+			.removeClass()
+			.addClass('dice dice-6 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-6')
+				.animate({'top': '10px', 'left': '30px'}, 260, 'linear')
+				.promise().done(function() {
+				$('.dice-6')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_6)
+					.animate({'top': '120px', 'left': '35px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-7')
+			.show()
+			.removeClass()
+			.addClass('dice dice-7 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-7')
+				.animate({'top': '10px', 'left': '180px'}, 220, 'linear')
+				.promise().done(function() {
+				$('.dice-7')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_7)
+					.animate({'top': '180px', 'left': '65px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-8')
+			.show()
+			.removeClass()
+			.addClass('dice dice-8 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-8')
+				.animate({'top': '10px', 'left': '210px'}, 310, 'linear')
+				.promise().done(function() {
+				$('.dice-8')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_8)
+					.animate({'top': '200px', 'left': '130px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-9')
+			.show()
+			.removeClass()
+			.addClass('dice dice-9 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-9')
+				.animate({'top': '10px', 'left': '130px'}, 270, 'linear')
+				.promise().done(function() {
+				$('.dice-9')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_9)
+					.animate({'top': '220px', 'left': '200px'}, 480, 'easeOutQuad');
+
+			});
+		});
+		$('.dice-10')
+			.show()
+			.removeClass()
+			.addClass('dice dice-10 spin')
+			.css({'background-image': 'url(/img_nw/d6_spin.png)', 'top': '600px', 'left': '180px'})
+			.promise().done(function() {
+			$('.dice-10')
+				.animate({'top': '10px', 'left': '80px'}, 370, 'linear')
+				.promise().done(function() {
+				$('.dice-10')
+
+					.css({'background-image': 'url(/img_nw/d6_numbers.png)'})
+					.removeClass('spin')
+					.addClass('settle dice-roll-' + d20_10)
+					.animate({'top': '190px', 'left': '270px'}, 480, 'easeOutQuad');
+
+			});
+		});
+
+
+
+
+
+
+
+
+
+
+	});
+
+}
+
+
+
+
+
+
+
+
+var og_top = 600;
+var og_left = 150;
+var og_size = 30;
+var roll_time = 1000;
+
+var d1_top = 300;
+var d1_left = 250;
+
+
+function rollDice1() {
+	$('.dice').fadeOut(150).promise().done(function() {
+
+		/* RESET LOCATION */
+		$('.dice').css({'top': (og_top + 'px'), 'left': (og_left + 'px'), 'height': ((og_size * 2) + 'px'), 'width': ((og_size * 2) + 'px')}).promise().done(function() {
+
+			$('.dice-1').show();
+
+			/* FIRST DOWN */
+			$('.dice-1')
+				.animate({
+					'top': d1_top + ((og_top - d1_top) / 2) + 'px',
+					'left': d1_left + ((og_left - d1_left) / 2) + 'px',
+					'height': og_size + 'px',
+					'width': og_size + 'px'
+					},
+					(roll_time / 2),
+					'linear')
+				.promise().done(function() {
+
+					/* SECOND UP */
+					$('.dice-1')
+						.animate({
+							'top': d1_top + ((og_top - d1_top) / 4) + 'px',
+							'left': d1_left + ((og_left - d1_left) / 4) + 'px',
+							'height': (og_size * 1.2) + 'px',
+							'width': (og_size * 1.2) + 'px'
+							},
+							(roll_time / 4),
+							'linear')
+						.promise().done(function() {
+
+							/* SECOND DOWN */
+							$('.dice-1')
+								.animate({
+									'top': d1_top + 'px',
+									'left': d1_left + 'px',
+									'height': og_size + 'px',
+									'width': og_size + 'px'
+									},
+									(roll_time / 4),
+									'linear');
+						});
+				});
+		});
+	});
+
+}
+
+
+</script>
+<!-- endif(dev) -->

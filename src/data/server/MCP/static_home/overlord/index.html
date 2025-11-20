@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Overlord Web Interface</title>
+		<link rel="stylesheet" type="text/css" href="static/overlord/main.css" />
+		<script type="text/javascript" src="static/overlord/jquery.js"></script>
+		<script type="text/javascript" src="static/overlord/jquery.timeago.js"></script>
+		<script type="text/javascript" src="static/overlord/handlebars.js"></script>
+		<script type="text/javascript" src="static/overlord/messages.js"></script>
+		<script type="text/javascript" src="static/overlord/overlord.js"></script>
+		<script type="text/javascript" src="static/overlord/main.js"></script>
+	</head>
+	<body class="auto-refresh">
+		<header>
+			<h1>...</h1>
+		</header>
+		<script id="template" type="text/x-handlebars-template">
+			<header>
+				<fieldset>
+					<label>{{{trans 'Cluster'}}}</label>
+					<select id="cluster">
+						{{#clusters}}
+							<option value="{{index}}">{{name}}</option>
+						{{/clusters}}
+					</select>
+				</fieldset>
+				<fieldset>
+					<label>{{{trans 'Shard'}}}</label>
+					<select id="shard">
+						<option value="all">{{{trans 'All'}}}</option>
+						{{#shards}}
+							<option value="{{index}}" data-cluster="{{cluster}}">{{name}}</option>
+						{{/shards}}
+					</select>
+				</fieldset>
+				<fieldset>
+					<label>{{{trans 'Status'}}}</label>
+					<span id="status">...</span>
+				</fieldset>
+				<fieldset class="language">
+					<label>{{{trans 'Language'}}}</label>
+					<select id="language">
+						{{#languages}}
+							<option value="{{id}}">{{name}}</option>
+						{{/languages}}
+					</select>
+				</fieldset>
+			</header>
+			<header>
+				<fieldset>
+					<label>{{{trans 'Patched Version'}}}</label>
+					<span id="patched">...</span>
+				</fieldset>
+				<fieldset>
+					<label>{{{trans 'Primed Version'}}}</label>
+					<span id="primed">...</span>
+				</fieldset>
+			</header>
+			<header>
+				<a href="#" data-tab="prime">{{{trans 'Prime'}}}</a>
+				<a href="#" data-tab="start">{{{trans 'Start'}}}</a>
+				<a href="#" data-tab="locking">{{{trans 'Locking'}}}</a>
+				<a href="#" data-tab="stop">{{{trans 'Stop'}}}</a>
+			</header>
+			<section data-tab="prime">
+				<p>{{{trans 'Verbose description of the action and its arguments.'}}}</p>
+				<label>{{{trans 'Version'}}}:</label>
+				<select name="version">
+					{{#versions}}
+						<option value="{{index}}">{{name}}</option>
+					{{/versions}}
+				</select>
+				<br />
+				<label></label>
+				<input type="button" data-cmd="prime" value="{{{trans 'Prime'}}}" />
+			</section>
+			<section data-tab="start">
+				<p>{{{trans 'Verbose description of the action and its arguments.'}}}</p>
+				<label>{{{trans 'Version'}}}:</label>
+				<select name="version">
+					{{#versions}}
+						<option value="{{index}}">{{name}}</option>
+					{{/versions}}
+				</select>
+				<br />
+				<label></label>
+				<input type="button" data-cmd="start" value="{{{trans 'Start'}}}" />
+			</section>
+			<section data-tab="locking">
+				<p>{{{trans 'Verbose description of the action and its arguments.'}}}</p>
+				<label></label>
+				<input type="button" data-cmd="lock" value="{{{trans 'Lock'}}}" />
+				<br />
+				<label></label>
+				<input type="button" data-cmd="unlock" value="{{{trans 'Unlock'}}}" />
+			</section>
+			<section data-tab="stop">
+				<p>{{{trans 'Verbose description of the action and its arguments.'}}}</p>
+				<label>{{{trans 'Countdown Time'}}}:</label>
+				<input type="text" name="time" size="5" value="{{{dateTime}}}" />
+				<br />
+				<label>{{{trans 'Message'}}}:</label>
+				<textarea name="message" rows="4" cols="29"></textarea>
+				<br />
+				<label></label>
+				<input type="button" data-cmd="stop" value="{{{trans 'Stop'}}}" />
+			</section>
+			<footer>
+				{{{trans 'Overlord version'}}} {{version}}
+			</footer>
+		</script>
+	</body>
+</html>

@@ -1,0 +1,59 @@
+'use strict';
+
+//
+// emitExecutor
+//
+// A emitting executor for use with FunctionQueuer.
+//
+
+var emitExecutor = {
+	int: function(v) {
+		return v.toString();
+	},
+	str: function(v) {
+		return '"'+escapeCmdStringArg(v)+'"';
+	},
+	id: function(v) {
+		return v;
+	},
+
+	minlen: function(v, m) {
+		return v;
+	},
+	maxlen: function(v, m) {
+		return v;
+	},
+	min: function(v, m) {
+		return v;
+	},
+	max: function(v, m) {
+		return v;
+	},
+	nonzero: function(v, m) {
+		return v;
+	}
+};
+
+var s_escapes = {
+	'\n':'\\n',
+	'\r':'\\r',
+	'\t':'\\t',
+	'"':'\\q',
+	'\'':'\\s',
+	'\\':'\\\\',
+	'%':'\\p',
+	'$':'\\d'
+};
+var s_reEscapes = /([\n\r\t"'\\%$])/g;
+function escapeCmdStringArg(str)
+{
+	return str.replace(s_reEscapes, function(match, p1, offset, str) {
+		return s_escapes[p1] ? s_escapes[p1] : p1;
+	});
+}
+
+////////////////////////////////////////////////////////////////////////////
+
+module.exports = emitExecutor;
+
+// End of File

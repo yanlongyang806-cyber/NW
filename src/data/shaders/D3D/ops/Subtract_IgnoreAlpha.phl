@@ -1,0 +1,5 @@
+// Subtract_IgnoreAlpha.phl
+{
+	%Result%.xyz = %A%.xyz - %B%.xyz;
+	%Result%.w = 1;
+}

@@ -1,0 +1,284 @@
+({
+	id: "escort",
+	name: "Escort",
+	actions: [
+		{
+			id: "attackPatternAlpha",
+			name: "Attack Pattern Alpha",
+			description: "Target: Self. Do nothing this turn. Next turn this ship's auxiliary is doubled.",
+			notes: "Add 1 counter to self; next upkeep remove the counter and double accuracy",
+			icon: "Space_Boff_Attackpatternalpha",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSelf() &>,
+			onResolve: <& addCounter(1) &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribMultiply({ accuracyRating: 2.0 }) ) &>
+		},
+
+		{
+			id: "attackPatternBeta",
+			name: "Attack Pattern Beta",
+			description: "Target: Ally. For the next 2 upkeeps, target ship's defense is increased by 50%.",
+			notes: "1 target; add 2 counters; next 2 upkeeps, remove a counter and add (this ship's base evasion *.5) to its current evasion",
+			icon: "Space_Boff_Attackpatternbeta",
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onResolve: <& addCounter(2) &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribMultiply({ evasionRating: 1.5 }) ) &>
+		},
+
+		{
+			id: "attackPatternDelta",
+			name: "Attack Pattern Delta",
+			description: "Target: Enemy. Attack the target with 120% auxiliary and weapons.",
+			notes: "1 target; attack target at 1.2 attack value with 1.2 auxiliary",
+			icon: "Space_Boff_Attackpatterndelta",
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 1.2 }) ),
+				attack(1.2)
+			] &>
+		},
+
+		{
+			id: "attackPatternOmega",
+			name: "Attack Pattern Omega",
+			description: "Target: Enemy. Attack the target with 80% auxiliary. If hit, the ship is also disabled next round.",
+			notes: "1 target; attack target at standard attack value and .8 auxiliary; on hit, ship is also disabled for its next turn",
+			icon: "Space_Boff_Attackpatternomega",
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.8 }) ),
+				attack(),
+				onHit( addCounter(1) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, setState("disabled")) &>
+		},
+
+		{
+			id: "beamFireAtWill",
+			name: "Beam Fire at Will",
+			description: "Target: Enemy. Attack twice with 120% auxiliary and 80% of weapons.",
+			notes: "1 target; attack target twice at 1.2 auxiliary and .8 attack value",
+			icon: "Space_Boff_Ba_Fireatwill_Power",
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve:<&  [
+				onSource( attribMultiply({ accuracyRating: 1.2 }) ),
+				attack(0.8),
+				clearAttack(),
+				attack(0.8)
+			] &>
+		},
+
+		{
+			id: "beamOverload",
+			name: "Beam Overload",
+			description: "Target: Enemy. Attack with 130% of weapons.",
+			notes: "1 target; attack target at 1.3 attack value",
+			icon: "Space_Boff_Ba_Beam_Overload_Power",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& attack(1.3) &>
+		},
+
+		{
+			id: "cannonRapidFire",
+			name: "Cannon Rapid Fire",
+			description: "Target: Enemy. Attack with 75% auxiliary and 160% of weapons.",
+			notes: "1 target; attack target at 1.6 attack value and .75 auxiliary",
+			icon: "Space_Boff_Cannon_Rapidfire_Power",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.75}) ),
+				attack(1.6)
+			] &>
+		},
+
+		{
+			id: "cannonScatterVolley",
+			name: "Cannon Scatter Volley",
+			description: "Target: Enemy. Attack twice with 80% auxiliary and 120% of weapons.",
+			notes: "1 target; attack target twice at .8 auxiliary and 1.2 attack value",
+			icon: "Space_Boff_Cannon_Scattervolley_Power",
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				onSource( attribMultiply({ accuracyRating: 0.8 }) ),
+				attack(1.2),
+				clearAttack(),
+				attack(1.2)
+			] &>
+
+		},
+
+		{
+			id: "dispersalPatternAlpha",
+			name: "Dispersal Pattern Alpha",
+			description: "Target: Ally. This turn reduce incoming damage by 30% and reflect that damage back to the attacker.",
+			notes: "1 target; set attackReduction and attackReflection to .3",
+			icon: "Space_Boff_Mine_Clusterfield",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onOrders: <& eachTarget( attribSet({ attackReduction: 0.3, attackReflection: 0.3 }) ) &>
+
+		},
+
+		{
+			id: "dispersalPatternBeta",
+			description: "Target: All allies. This turn reduce incoming damage by 20% and reflect that damage back to the attacker.",
+			notes: "All Allies; set attackReduction and attackReflection to .2",
+			icon: "Space_Boff_Mine_Extend",
+
+			cooldown: 3,
+
+			onChoose: <& chooseAllAllies() &>,
+			onOrders: <& eachTarget( attribSet({ attackReduction: 0.2, attackReflection: 0.2 }) ) &>
+
+		},
+
+		{
+			id: "highYieldTorpedo",
+			name: "High Yield Torpedo",
+			description: "Target: Enemy. Do a standard attack. On that target's next turn, they are automatically hit again for 50% of weapons.",
+			notes: "1 target; on hit do standard attack value add 1 counter to target; next upkeep remove the counter and that ship takes damage equal to (flat amount of damage*ship level)",
+			icon: "Space_Boff_Torpedohighyield",
+
+			cooldown: 4,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(),
+				onHit( addCounter(1) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attackForceHit(0.5)) &>
+		},
+
+		{
+			id: "tacticalAdvantage",
+			name: "Tactical Advantage",
+			description: "Target: All other allies. Each other ally has 120% auxiliary for this turn.",
+			notes: "Each other ally gets a 20% auxiliary increase for this battle phase",
+			icon: "",
+
+			cooldown: 2,
+
+			onChoose: <& chooseAllAlliesExceptSource() &>,
+			onOrders:<& eachTarget( attribMultiply({ accuracyRating: 1.2 }) ) &>
+		},
+
+		{
+			id: "tacticalTeam",
+			name: "Tactical Team",
+			description: "Target: Ally. Small shield repair and next turn target's auxiliary is 150%.",
+			notes: "1 target; Add a counter to target; next turn remove counter and 1.5 auxiliary + 15% shield heal",
+			icon: "Space_Boff_Securityteam",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleAlly() &>,
+			onResolve: <& [
+				addCounter(1),
+				attribModifyMultiplyBase({ shield: 0.15 })
+			] &>,
+			onEachTargetLateUpkeep: <& useCounter(1, attribMultiply({ accuracyRating: 1.5 })) &>
+
+		},
+
+		{
+			id: "targetAuxiliary",
+			name: "Target Auxiliary",
+			description: "Target: Enemy. Attack with 40% of weapons. If hit, target's auxiliary is cut in half for this turn.",
+			notes: "1 target; on hit, do .4 attack value and reduce enemy's current auxiliary to half for this battle phase",
+			icon: "Space_Boff_Ba_Targetauxiliary_Power",
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(0.4),
+				onHit( attribMultiply( { accuracyRating: .5 } ) )
+			] &>
+		},
+
+		{
+			id: "targetEngines",
+			name: "Target Engines",
+			description: "Target: Enemy. Attack with 40% of weapons. If hit, target's speed is cut in half next turn.",
+			notes: "1 target; on hit, do .4 attack value and add 1 counter to target; next upkeep remove the counter and cut target's current speed in half",
+			icon: "Space_Boff_Ba_targetengine_Power",
+
+			cooldown: 2,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(0.4),
+				onHit( addCounter(1) )
+			] &>,
+			onEachTargetEarlyUpkeep: <& useCounter(1, attribMultiply({ speed: 0.5 }) ) &>
+		},
+
+		{
+			id: "targetShields",
+			name: "Target Shields",
+			description: "Target: Enemy. Attack shields only with 200% of weapons.",
+			notes: "1 target; on hit do (standard attack*2) to shields only",
+			icon: "Space_Boff_Ba_Targetshield_Power",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& attack({ shield: 1.0, attackScale: 2.0 }) &>
+		},
+
+		{
+			id: "targetWeapons",
+			name: "Target Weapons",
+			description: "Target: Enemy. Attack with 40% of weapons. If hit, target's weapons are reduced to 0 for this turn.",
+			notes: "1 target; on hit, do .4 attack value and reduce enemy's current attack max and min to 0 for this battle phase",
+			icon: "Space_Boff_Ba_Targetweapon_Power",
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& [
+				attack(0.4),
+				onHit( attribSet({ attackMin: 0, attackMax: 0}) )
+			] &>
+		},
+
+		{
+			id: "torpedoSpread",
+			name: "Torpedo Spread",
+			description: "Target: All enemies. Attack with 60% of weapons.",
+			notes: "Attack all enemies at .6 attack value",
+			icon: "Space_Boff_Torpedo_Spread_Photon",
+
+			cooldown: 3,
+
+			onResolve: <& [
+				chooseAllOpponents(),
+				eachTarget ( attack(0.6) )
+			] &>
+		}
+	]
+})

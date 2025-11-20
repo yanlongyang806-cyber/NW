@@ -1,0 +1,75 @@
+'use strict';
+
+var fs = require("fs");
+var csv = require("ya-csv");
+
+function loadCSV(file, opt, cb)
+{
+	// Options
+	//		id (string): The name of the column to use as the key.
+	//		array (string): base name of column which is actually an array
+	//		arrayLength: Check the array to be this length
+	//		ignore (array of strings): Ignore columns with these names
+
+	var obj = opt.id ? {} : [];
+
+	var reader = csv.createCsvFileReader(file, { columnsFromHeader: true });
+	var line = 1;
+	reader.on('data', function (data) {
+		var id;
+		line++;
+		if(opt.id)
+		{
+			if(!data[opt.id])
+			{
+				// Don't give an error for entirely blank lines.
+				for(id in data)
+				{
+					if(data[id])
+					{
+						console.error('Error processing CSV. Missing the '+opt.id+' column on line ' + line + ' in file '+file);
+						break;
+					}
+				}
+				return;
+			}
+
+			if(obj[''])
+				delete obj[''];
+
+			if(opt.array)
+			{
+				var len = opt.arrayLength || 50;
+				data[opt.array] = [];
+				for(var i = 1; i <= len; i++)
+				{
+					id = opt.array + i;
+					if(id in data)
+					{
+						if(data[id])
+							data[opt.array][i-1] = data[id];
+
+						delete data[id];
+					}
+				}
+			}
+
+			obj[data[opt.id]] = data;
+		}
+		else
+		{
+			obj.push(data);
+		}
+	});
+
+	reader.on('end', function () {
+		cb(undefined, obj);
+	});
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+
+module.exports = loadCSV;
+
+// End of File

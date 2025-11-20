@@ -1,0 +1,312 @@
+{
+
+ContainerStaticInfo
+{
+	SlotNum 0
+	ContainerType Controller
+	ControllerCreationType NEVER
+	CommandName controller.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 1
+	ContainerType Launcher
+	ControllerCreationType NEVER
+	CommandName launcher.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 2
+	ContainerType LogServer
+	ControllerCreationType ALWAYS
+	CommandName logserver.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 3
+	ContainerType TransactionServer
+	ControllerCreationType ALWAYS
+	CommandName transactionserver.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 4
+	ContainerType ObjectDB
+	ControllerCreationType ALWAYS
+	CommandName objectdb.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 5
+	ContainerType MapManager
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 6
+	ContainerType LoginServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 7
+	ContainerType GameServer
+	ControllerCreationType ALWAYS
+	CommandName gameserver.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 8
+	ContainerType Client
+	ControllerCreationType LOCALONLY
+	CommandName gameclient.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 9
+	ContainerType Multiplexer
+	ControllerCreationType ALWAYS
+	CommandName multiplexer.exe
+}
+
+
+ContainerStaticInfo
+{
+	SlotNum 10
+	ContainerType LogParser
+	ControllerCreationType ALWAYS
+	CommandName LogParser.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum 11
+	ContainerType AccountServer
+	ControllerCreationType ALWAYS
+	CommandName AccountServer.exe
+	IsInMinimalShard 1
+}
+
+ContainerStaticInfo
+{
+	SlotNum 12
+	ContainerType AccountProxyServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType TeamServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType LeaderboardServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType AuctionServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType CurrencyExchangeServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType GuildServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType ChatServer
+	ControllerCreationType ALWAYS
+	CommandName chatserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType ChatRelay
+	ControllerCreationType ALWAYS
+	CommandName chatrelay.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType GlobalChatServer
+	ControllerCreationType ALWAYS
+	CommandName globalchatserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType QueueServer
+	ControllerCreationType ALWAYS
+	CommandName appserver.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType TestServer
+	ControllerCreationType ALWAYS
+	CommandName TestServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType JobManager
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType BcnMasterServer
+	ControllerCreationType ALWAYS
+	CommandName GameServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType BcnClientSentry
+	ControllerCreationType ALWAYS
+	CommandName GameServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType UGCDataManager
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType UGCSearchManager
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType ResourceDB
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType ServerBinner
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType ClientBinner
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType WebRequestServer
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType GatewayServer
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType GroupProjectServer
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType TextureServer
+	ControllerCreationType ALWAYS
+	CommandName TextureServer.exe
+}
+
+ContainerStaticInfo
+{
+	SlotNum -1
+	ContainerType GatewayLoginLauncher
+	ControllerCreationType ALWAYS
+	CommandName AppServer.exe
+}
+
+ServerConfig UGCDev
+{
+	Comment "For developing UGC tech"
+	BasedOn MinimalShard
+	Add JOBMANAGER, CHATSERVER, ACCOUNTPROXYSERVER, GLOBALCHATSERVER, UGCDATAMANAGER, UGCSEARCHMANAGER, RESOURCEDB
+}
+
+}
+
+
+

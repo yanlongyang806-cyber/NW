@@ -1,0 +1,280 @@
+<!-- if(dev) -->
+<style type="text/css">
+
+.preload1, .preload2 {
+	height: 1px;
+	width: 1px;
+	position: absolute;
+	top: -9999px;
+	left: -9999px;
+}
+.preload1 {
+	background-image: url(/img_nw/d20_spin.gif);
+}
+.preload2 {
+	background-image: url(/img_nw/d20_numbers.png);
+}
+.dice-tray {
+	/*
+	width: 300px;
+	height: 500px;
+	position: relative;
+	overflow: hidden;
+	margin: 0 auto;
+	border: 1px solid #B79F52;
+	border-radius: 5px;
+	background: #000;
+	*/
+
+	width: 367px;
+	height: 313px;
+	background: url(/img_nw/test_dicebox.png);
+	margin: 0 auto;
+	position: relative;
+	overflow: hidden;
+}
+.dice {
+	width: 64px;
+	height: 64px;
+	position: absolute;
+	display: none;
+}
+.dice-roll-1 {		background-position: 0 0;		}
+.dice-roll-2 {		background-position: 0 -100px;	}
+.dice-roll-3 {		background-position: 0 -200px;	}
+.dice-roll-4 {		background-position: 0 -300px;	}
+.dice-roll-5 {		background-position: 0 -400px;	}
+.dice-roll-6 {		background-position: 0 -500px;	}
+.dice-roll-7 {		background-position: 0 -600px;	}
+.dice-roll-8 {		background-position: 0 -700px;	}
+.dice-roll-9 {		background-position: 0 -800px;	}
+.dice-roll-10 {		background-position: 0 -900px;	}
+.dice-roll-11 {		background-position: 0 -1000px;	}
+.dice-roll-12 {		background-position: 0 -1100px;	}
+.dice-roll-13 {		background-position: 0 -1200px;	}
+.dice-roll-14 {		background-position: 0 -1300px;	}
+.dice-roll-15 {		background-position: 0 -1400px;	}
+.dice-roll-16 {		background-position: 0 -1500px;	}
+.dice-roll-17 {		background-position: 0 -1600px;	}
+.dice-roll-18 {		background-position: 0 -1700px;	}
+.dice-roll-19 {		background-position: 0 -1800px;	}
+.dice-roll-20 {		background-position: 0 -1900px;	}
+
+.score {
+	width: 100%;
+	position: absolute;
+	bottom: 50px;
+	left: 0;
+	font-family: "Sava";
+	text-align: center;
+	font-size: 32px;
+}
+
+.rolldice {
+	position: absolute;
+	bottom: 15px;
+	width: 100%;
+	text-align: center;
+	z-index: 100;
+	.input-field.button.light button {
+		padding: 0 15px;
+	}
+
+}
+
+.goback {
+	position: absolute;
+	top: 10px;
+	left: 10px;
+}
+</style>
+
+<div class="goback">
+	<div class="input-field button light">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="/dungeons">Back</button>
+	</div>
+</div>
+
+<div class="dice-tray">
+
+	<div class="rolldice">
+		<div class="input-field button light">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button onClick="rollDice();">Roll Dice</button>
+		</div>
+	</div>
+
+
+	<div class="dice dice-1"></div>
+	<div class="dice dice-2"></div>
+	<div class="dice dice-3"></div>
+
+	<div class="score">
+	</div>
+
+	<span class="preload1"></span>
+	<span class="preload2"></span>
+</div>
+
+
+<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+<script type="text/javascript">
+
+
+function rollDice() {
+	$('.dice').fadeOut(150).promise().done(function() {
+
+		var d20_1 = Math.floor((Math.random()*20)+1);
+		var d20_2 = Math.floor((Math.random()*20)+1);
+		var d20_3 = Math.floor((Math.random()*20)+1);
+
+		$('.dice-1')
+			.show()
+			.removeClass()
+			.addClass('dice dice-1')
+			.css({'background-image': 'url(/img_nw/d20_spin.gif)', 'top': '700px', 'left': '0px'})
+			.promise().done(function() {
+			$('.dice-1')
+				.animate({'top': '0px', 'left': '180px'}, 250, 'linear')
+				.promise().done(function() {
+				$('.dice-1')
+					.animate({'top': '100px', 'left': (300 - 64) + 'px'}, 180, 'linear')
+					.promise()
+					.done(function() {
+					$('.dice-1')
+						.css({'background-image': 'url(/img_nw/d20_numbers.png)'})
+						.addClass('dice-roll-' + d20_1)
+						.animate({'top': '160px', 'left': '180px'}, 400, 'easeOutQuad');
+				});
+			});
+		});
+
+
+
+		$('.dice-2')
+			.show()
+			.removeClass()
+			.addClass('dice dice-2')
+			.css({'background-image': 'url(/img_nw/d20_spin.gif)', 'top': '850px', 'left': '200px'})
+			.promise().done(function() {
+			$('.dice-2')
+				.animate({'top': '250px', 'left': '0px'}, 240, 'linear')
+				.promise().done(function() {
+				$('.dice-2')
+					.animate({'top': '0', 'left': '40px'}, 140, 'linear')
+					.promise()
+					.done(function() {
+					$('.dice-2')
+						.css({'background-image': 'url(/img_nw/d20_numbers.png)'})
+						.addClass('dice-roll-' + d20_2)
+						.animate({'top': '50px', 'left': '60px'}, 420, 'easeOutQuad');
+				});
+			});
+		});
+
+		$('.dice-3')
+			.show()
+			.removeClass()
+			.addClass('dice dice-3')
+			.css({'background-image': 'url(/img_nw/d20_spin.gif)', 'top': '750px', 'left': '220px'})
+			.promise().done(function() {
+			$('.dice-3')
+				.animate({'top': '0px', 'left': '130px'}, 330, 'linear')
+				.promise().done(function() {
+
+					$('.dice-3')
+						.css({'background-image': 'url(/img_nw/d20_numbers.png)'})
+						.addClass('dice-roll-' + d20_3)
+						.animate({'top': '120px', 'left': '90px'}, 480, 'easeOutQuad');
+
+			});
+		});
+
+		$('.score').hide().promise().done(function() {
+			$('.score')
+				.delay(500)
+				.text(d20_1 + ' + ' + d20_2 + ' + ' + d20_3 + ' = ' + (d20_1 + d20_2 + d20_3))
+				.promise().done(function() {
+
+					$('.score').fadeIn(200);
+
+			});
+		});
+
+	});
+
+}
+
+
+
+
+
+
+
+
+var og_top = 600;
+var og_left = 150;
+var og_size = 30;
+var roll_time = 1000;
+
+var d1_top = 300;
+var d1_left = 250;
+
+
+function rollDice1() {
+	$('.dice').fadeOut(150).promise().done(function() {
+
+		/* RESET LOCATION */
+		$('.dice').css({'top': (og_top + 'px'), 'left': (og_left + 'px'), 'height': ((og_size * 2) + 'px'), 'width': ((og_size * 2) + 'px')}).promise().done(function() {
+
+			$('.dice-1').show();
+
+			/* FIRST DOWN */
+			$('.dice-1')
+				.animate({
+					'top': d1_top + ((og_top - d1_top) / 2) + 'px',
+					'left': d1_left + ((og_left - d1_left) / 2) + 'px',
+					'height': og_size + 'px',
+					'width': og_size + 'px'
+					},
+					(roll_time / 2),
+					'linear')
+				.promise().done(function() {
+
+					/* SECOND UP */
+					$('.dice-1')
+						.animate({
+							'top': d1_top + ((og_top - d1_top) / 4) + 'px',
+							'left': d1_left + ((og_left - d1_left) / 4) + 'px',
+							'height': (og_size * 1.2) + 'px',
+							'width': (og_size * 1.2) + 'px'
+							},
+							(roll_time / 4),
+							'linear')
+						.promise().done(function() {
+
+							/* SECOND DOWN */
+							$('.dice-1')
+								.animate({
+									'top': d1_top + 'px',
+									'left': d1_left + 'px',
+									'height': og_size + 'px',
+									'width': og_size + 'px'
+									},
+									(roll_time / 4),
+									'linear');
+						});
+				});
+		});
+	});
+
+}
+
+
+</script>
+<!-- endif(dev) -->

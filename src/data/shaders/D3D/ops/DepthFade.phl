@@ -1,0 +1,22 @@
+{
+#define HAS_DEPTH_FADE
+
+#ifndef DEPTH_TEXTURE
+	%Result% = lerp(%ForegroundColor%, %BackgroundColor%, 0.5);
+#else
+	float depthbuffer;
+	float4 weight;
+	float2 coord_orig;
+	float deltaDepth;
+
+	float mydepth = -v.position_vs.z;
+
+	getVPosNormalized(coord_orig, v);
+	depthbuffer = sampleTexDepthVS(TexSampler%ScreenDepth%, coord_orig);
+	deltaDepth = saturate((depthbuffer - mydepth) / (%FadeEnd%).x);
+
+	weight = pow(deltaDepth, 0.5f);
+
+	%Result% = lerp(%ForegroundColor%, %BackgroundColor%, weight);
+#endif
+}

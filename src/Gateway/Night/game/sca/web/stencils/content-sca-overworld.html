@@ -1,0 +1,121 @@
+<!-- if(dev) -->
+
+<div class="page-content" data-path="gatewaygamedata">
+	<div class="page-dungeon-overworld">
+
+		<!-- desktop map -->
+		<div class="overworld-map desktopOnly">
+			<div class="overworld-details">
+				<div class="fancy-box">
+					<div class="fancy-box-top">
+						<div class="fancy-box-left"></div>
+						<div class="fancy-box-right"></div>
+					</div>
+					<div class="fancy-box-mid">
+						<div class="fancy-box-left"></div>
+						<div class="fancy-box-content">
+
+							<div class="overworld-instructions">
+								<h2>Select a Location to Explore</h2>
+							</div>
+							<div class="dungeon-info">
+							</div>
+
+
+						</div>
+						<div class="fancy-box-right"></div>
+					</div>
+					<div class="fancy-box-bot">
+						<div class="fancy-box-left"></div>
+						<div class="fancy-box-right"></div>
+					</div>
+				</div>
+			</div>
+			<div class="overworld-locations" data-path=".questslots" data-update="gatewaygamedata">
+				<button data-set-onclick="client.scaSetQuest('{.slot}')" data-set-class="location tier-{.tier} hex-{.col} hex-{.row}"><span class="location-icon"></span></button>
+			</div>
+		</div>
+		<!-- desktop map -->
+
+
+		<!-- mobile map -->
+		<div class="overworld-map-mobile mobileOnly">
+			<div class="overworld-map-banner">
+				<h1>The Sword Coast</h1>
+			</div>
+			<div class="overworld-locations mobileOnly" data-path=".questslots" data-update="gatewaygamedata">
+				<button data-set-onclick="client.scaSetQuest('{.slot}')" data-set-class="location tier-{.tier} hex-{.col} hex-{.row}"><span class="location-icon"></span></button>
+			</div>
+		</div>
+		<div class="overworld-details-mobile mobileOnly">
+			<div class="fancy-box">
+				<div class="fancy-box-top">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-mid">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-content">
+
+						<div class="overworld-instructions">
+							<h2>Select a Location to Explore</h2>
+						</div>
+						<div class="dungeon-info">
+						</div>
+
+
+					</div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-bot">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+			</div>
+		<!-- mobile map -->
+		</div>
+	</div>
+</div>
+<script>
+	client.scaSetQuest();
+
+	$(document).on('click', 'button.location', function() {
+		$('button.location').removeClass('selected');
+		$(this).addClass('selected');
+		$('.overworld-instructions').hide();
+		$('.dungeon-info').show();
+	});
+
+</script>
+
+<script>
+(function (window, document, $) {
+    $(function ($) {
+		var $win = $(window);
+
+		var $oMapX = 720;
+		var $oMapY = 630;
+
+		function update () {
+            var viewportWidth = document.documentElement.clientWidth
+              , viewportHeight = document.documentElement.clientHeight;
+			$('.overworld-map-mobile').css( "width", viewportWidth * .96 );
+			$('.overworld-map-mobile').css( "height", viewportWidth * .96 * ($oMapY / $oMapX) );
+
+			if (viewportWidth <= ($oMapX / .96))
+			{
+				$('.overworld-details-mobile .fancy-box').css( "height", viewportHeight - 30 - (viewportWidth * .96 * ($oMapY / $oMapX) ) );
+			} else {
+				$('.overworld-details-mobile .fancy-box').css( "height", (viewportHeight - 30 - $oMapY) );
+			}
+
+			console.log('x: ' + viewportWidth + ', y: ' + viewportHeight);
+
+        }
+        update();
+        $win.on('resize', update);
+    });
+}(this, document, jQuery));
+</script>
+
+<!-- endif(dev) -->

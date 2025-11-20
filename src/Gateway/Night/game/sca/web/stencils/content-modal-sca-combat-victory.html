@@ -1,0 +1,104 @@
+<div class="modal-window sca large" data-path="gatewaygamedata">
+	<div class="fancy-box fit-content">
+		<div class="fancy-box-top">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-mid">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-content">
+
+				<div class="modal-confirm combat-victory">
+					<h3>Victory!</h3>
+					<div class="victory-flavor" data-path=".quest.encounter.challenge.def.description">You have slain the wumpus!</div>
+
+					<div class="companion-xp-block" data-path=".quest.roller">
+						<div class="party-entry">
+							<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+						</div>
+						<h3 class="party-name" data-path=".name">Companion Name</h3>
+						<table class="party-xp">
+							<tr>
+								<td>Current XP:</td>
+								<span data-update="gatewaygamedata.quest.roller.xp"><span id="xp-spinner-max" data-set-data-max=".xp"><script>client.startSpinup('xp-spinner')</script></span></span>
+								<td class="xp-new"><span id="xp-spinner" data-path=".xp">0</span> XP</td>
+							</tr>
+							<tr data-if="{.nextxp} ne 0">
+								<td>Next Level:</td>
+								<td><span data-path=".nextxp.$commify()">10,000</span> XP</td>
+							</tr>
+						</table>
+						<span data-if="{.nextxp} ne 0">
+							<span data-update="gatewaygamedata.lastrewardbag">
+								<span id="gained-spinner-max" data-set-data-max="gatewaygamedata.lastrewardbag.rewards[name=Gatewaysupercritterpetxp].count">
+									<script>client.startSpinup('gained-spinner')</script>
+								</span>
+							</span>
+							<div class="xp-gained">+<span id="gained-spinner">0</span> XP</div>
+						</span>
+
+						<div class="xp-bar">
+							<div class="bar-container">
+								<span class="bar-bg-left"><span class="bar-level" data-path=".lastlevel">4</span></span>
+								<span class="bar-bg-mid"></span>
+								<span class="bar-bg-right">
+									<span class="bar-level" data-if="{.nextlevel} ne {.lastlevel}" data-path=".nextlevel">5</span>
+									<span class="bar-level" data-if="{.nextlevel} eq {.lastlevel}">-</span>
+								</span>
+								<div class="bar-filled" data-set-style="width: {.xppercent}%;">
+									<div class="bar-container">
+										<span class="bar-bg-left"></span>
+										<span class="bar-bg-mid"></span>
+										<span class="bar-bg-right"></span>
+									</div>
+								</div>
+								<div class="bar-tick-container">
+									<div class="bar-tick" style="left: 10%;"></div>
+									<div class="bar-tick" style="left: 20%;"></div>
+									<div class="bar-tick" style="left: 30%;"></div>
+									<div class="bar-tick" style="left: 40%;"></div>
+									<div class="bar-tick" style="left: 50%;"></div>
+									<div class="bar-tick" style="left: 60%;"></div>
+									<div class="bar-tick" style="left: 70%;"></div>
+									<div class="bar-tick" style="left: 80%;"></div>
+									<div class="bar-tick" style="left: 90%;"></div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="companion-rewards-block">
+						<h4>Your Companion Has Found:</h4>
+
+						<div class="combat-rewards" data-path=".lastqueuedrewardbag.rewards">
+							<div class="icon-block reward small">
+								<div class="icon-slot {.itemdef.quality}" data-set-data-tt-item="{.itemdef.name}">
+									<img data-set-src="tex/{.itemdef.icon}.png" alt="" />
+									<span class="quantity" data-path=".count" data-if="{.count} gt 1">5</span>
+								</div>
+								<div class="icon-info">
+									<h4 data-path=".itemdef.displaynamemsg.str">Strawberry Kool-Aid</h4>
+								</div>
+							</div>
+						</div>
+						<p class="attention">Note: You will receive these items only after your party successfully leaves the dungeon.</p>
+					</div>
+
+					<div class="input-field button epic">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button onclick="client.scaCombatDone()">OK</button>
+					</div>
+				</div>
+			</div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-bot">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+	</div>
+</div>
+
+

@@ -1,0 +1,416 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// CrypticProtocolConnection
+//
+// This module encapsulates all the basic handshaking and framing needed to
+// handle a Cryptic prototcol connection. This is useful for talking to
+// Cryptic servers.
+//
+// Supports:
+//    PacketVerify
+//    Compress
+//
+// Does NOT support:
+//    CRC
+//    Encrypt
+//
+// Typically, one would create a module for the particular server that you
+// are interested in and use the following to inherit the behavior.
+//
+//     util.inherits(NewClass, CrypticProtocolConnection)
+//
+// Working examples are ASConnection and GSConnection. Copy them freely.
+//
+// Your module will likely want to override:
+//    onConnectionTimeout - Called when connecting takes too long.
+//    onConnected - Called when a connection is made and the handshake is complete.
+//    onDisconnected - Called when the server disconnects
+//    onPacket(pkt) - Called when a complete Cryptic packet is received.
+//
+// Public functions you are likely to use:
+//    connect(destHost, destPort) - Attempts to connect to the given host.
+//    pkt = startPacket(cmd) - Creates a new packet with the given command number
+//    endPacket(pkt) - Finishes and sends off the packet.
+//
+// CrypticProtocolConnections are EventEmitters, supporting the following events:
+//    'connecting' - When the socket is connected, but handshake isn't complete.
+//    'disconnecting' - When the socket is being disconnected (before onDisconnected is called)
+//    'disconnected' - When the socket is disconnected (after onDisconnected is called)
+//    'connected' - When the socket is connected and the handshake is complete.
+//
+
+var net = require('net');        // for net.Socket
+var events = require('events');  // for EventEmitter
+var zlib = require('zlib');
+
+var util = require('./cutils');  // for util.inherits
+var log = require('./log');
+var dbg = require('./dbg');
+var perf = require('./perf');
+
+var Packet = require('./packet');
+var EBuffer = require('./EBuffer');
+
+///////////////////////////////////////////////////////////////////////////
+
+var CrypticProtocolConnection = function CrypticProtocolConnection()
+{
+	dbg.trace();
+	events.EventEmitter.call(this);
+
+	this.sock = new net.Socket();
+	this.ebuf = new EBuffer(); // incoming data buffer
+
+	this.state = 'disconnected';
+	this.verify = false;
+	this.compress = false;
+	this.crc = false;
+
+	this.sock.on('connect', this.onConnect.bind(this));
+	this.sock.on('end',     this.onEnd.bind(this));
+	this.sock.on('timeout', this.onTimeout.bind(this));
+	this.sock.on('drain',   this.onDrain.bind(this));
+	this.sock.on('error',   this.onError.bind(this));
+	this.sock.on('close',   this.onClose.bind(this));
+	this.sock.on('data',    this.onData.bind(this));
+
+	this.writer = this.sock;
+	this.reader = this.sock;
+}
+
+util.inherits(CrypticProtocolConnection, events.EventEmitter);
+
+///////////////////////////////////////////////////////////////////////////
+
+CrypticProtocolConnection.prototype.onConnect = function onConnect()
+{
+	dbg.trace();
+
+	this.state = 'handshaking';
+
+	this.emit('connecting');
+
+	// Send handshake to server
+	dbg('Handshaking...');
+	this.sock.write('Cryptic 2\r\n\r\n');
+};
+
+CrypticProtocolConnection.prototype.onEnd = function onEnd()
+{
+	dbg.trace();
+	// appears to also trigger close
+};
+
+CrypticProtocolConnection.prototype.onTimeout = function onTimeout()
+{
+	dbg.trace();
+
+	if(this.state !== 'connected')
+	{
+		this.onConnectionTimeout();
+		log.error('Timeout trying to contact: '+this.sock.remoteAddress+':'+this.sock.remotePort);
+		this.disconnect();
+	}
+
+	// Does not call close
+};
+
+CrypticProtocolConnection.prototype.onDrain = function onDrain()
+{
+	dbg.trace();
+};
+
+CrypticProtocolConnection.prototype.onError = function onError()
+{
+	dbg.trace(Array.prototype.slice.call(arguments, 0));
+	// appears to also trigger close
+};
+
+CrypticProtocolConnection.prototype.onClose = function onClose(had_error)
+{
+	dbg.trace();
+
+	this.state = 'disconnecting';
+	this.emit('disconnecting');
+
+	this.compress = false;
+	this.reader = this.sock;
+	this.writer = this.sock;
+
+	this.onDisconnected();
+
+	this.state = 'disconnected';
+	this.emit('disconnected');
+};
+
+CrypticProtocolConnection.prototype.onData = function onData(data)
+{
+	dbg.trace();
+
+	if(this.state === 'handshaking')
+	{
+		//dbg('handshaking');
+		//dbg('buffer', data);
+
+		this.collectHandshake(data);
+	}
+	else if(this.state === 'connected')
+	{
+		//dbg('waiting');
+		//dbg('buffer', data);
+
+		this.collectPacket(data);
+	}
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+CrypticProtocolConnection.prototype.collectHandshake = function collectHandshake(data)
+{
+	dbg.trace();
+	this.ebuf.appendBuffer(data);
+
+	var idx = this.ebuf.indexOf('\r\n\r\n');
+	if(idx < 0)
+	{
+		// We're still waiting for the end of the handshake
+	}
+	else
+	{
+		// We've found the end of the handshake!
+		this.processHandshake(this.ebuf.buffer.toString('utf8', 0, idx));
+
+		// Move the buffer to after the handshake.
+		this.ebuf.slice(idx+4);
+	}
+}
+
+CrypticProtocolConnection.prototype.processHandshake = function processHandshake(str)
+{
+	dbg.trace();
+	var a = str.split('\n');
+	var i;
+
+	for(i = 0; i < a.length; i++)
+	{
+		var r = a[i].match(/(\S+)\s(\d+)/);
+		if(r !== null)
+		{
+			r[1] = r[1].toLowerCase();
+			if(r[1] == 'cryptic')
+			{
+				if(r[2] != 2)
+				{
+					log.warn('Unknown Cryptic protocol version: ', r[2]);
+					log.warn('\tAssuming all is well anyway.');
+				}
+			}
+			else if(r[1] == 'packetverify')
+			{
+				this.verify = (r[2] ? true : false);
+			}
+			else if(r[1] == 'compress')
+			{
+				// log.warn('Compressing.');
+				this.compress = (r[2] ? true : false);
+
+				this.reader.removeAllListeners('data');
+
+				if(this.compress)
+				{
+					this.reader = zlib.createInflate();
+					this.writer = zlib.createDeflate({ level: 4 });
+
+					this.writer.pipe(this.sock);
+
+					this.reader.on('data', this.onData.bind(this));
+					this.sock.pipe(this.reader);
+				}
+				else
+				{
+					this.reader = this.sock;
+					this.writer = this.sock;
+				}
+			}
+			else if(r[1] == 'crc')
+			{
+				this.crc = (r[2] ? true : false);
+			}
+			else if(r[1] == 'encrypt')
+			{
+				log.warn('Encrypt is unsupported.');
+				log.warn("\tThis probably not going to work, but I'll try anyway.");
+			}
+			else if(r[1] == 'forceflush')
+			{
+				// log.warn('ForceFlush is always true on the client.');
+			}
+			else if(r[1] == 'crazydebugging')
+			{
+				log.warn("CrazyDebugging is unsupported.");
+				log.warn('\tAssuming all is well anyway.');
+			}
+			else
+			{
+				log.warn('Unknown handshake parameter:['+a[i]+']');
+				log.warn('\tAssuming all is well anyway.');
+			}
+		}
+	}
+
+	this.state = 'connected';
+	this.onConnected();
+	this.emit('connected');
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+CrypticProtocolConnection.prototype.collectPacket = function collectPacket(data)
+{
+	dbg.trace();
+	var ebuf = this.ebuf;
+
+	//
+	// One could make this more efficient by handling the case where
+	//   the data we just got holds an entire packet, by avoiding the copying
+	//   to the temporary buffer.
+	// Ebuffer could also be modified or replaced with a list of Buffers
+	//   rather than appending them together to create a unified buffer. That
+	//   would make the rest of the code less straightforward, though.
+	// For simplicity, though, I'm just going to collect it all into the
+	//   temporary buffer and work out of that.
+	// If we end up being CPU-bound, this is one place that can be improved.
+	//
+	ebuf.appendBuffer(data);
+	perf.count('packet:bytes_recv', data.length);
+	perf.count('packet:packets_recv', 1);
+
+	var start = 0;
+	while(ebuf.length()-start > 4)
+	{
+		// We have enough to read the size of the packet
+
+		var pktlen = ebuf.buffer.readUInt32LE(start);
+		if(ebuf.length() >= start+pktlen)
+		{
+			// We have enough to read the whole packet.
+			this.processPacket(ebuf.getBufferSlice(start, start+pktlen));
+			start += pktlen;
+		}
+		else
+		{
+			// We need to wait for more data
+			break;
+		}
+	}
+
+	// Move the unused data to the front of the buffer.
+	ebuf.slice(start);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+CrypticProtocolConnection.prototype.processPacket = function processPacket(data)
+{
+	dbg.trace();
+
+	var pkt = new Packet(this, data);
+	pkt.skip(4); // skip over packet length
+
+	this.onPacket(pkt);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// connect
+//
+// Connects to the given server
+//
+CrypticProtocolConnection.prototype.connect = function connect(destHost, destPort)
+{
+	dbg.trace();
+	this.state = 'connecting';
+
+	this.sock.setTimeout(5000);
+	this.sock.connect(destPort, destHost);
+}
+
+//
+// disconnect
+//
+// Shuts down the connection
+//
+CrypticProtocolConnection.prototype.disconnect = function disconnect()
+{
+	dbg.trace();
+	this.state = 'disconnecting';
+	this.sock.end();
+}
+
+//
+// createPacket
+//
+// Used to create a packet object to write to.
+//
+CrypticProtocolConnection.prototype.createPacket = function createPacket()
+{
+	dbg.trace();
+	return new Packet(this);
+}
+
+//
+// startPacket
+//
+// Creates a new packet with the given command number.
+//
+CrypticProtocolConnection.prototype.startPacket = function startPacket(cmd)
+{
+	dbg.trace();
+	var pkt = new Packet(this);
+	pkt.startPacket(cmd);
+
+	return pkt;
+}
+
+//
+// endPacket
+//
+// Finalizes and sends off the packet.
+//
+CrypticProtocolConnection.prototype.endPacket = function endPacket(pkt)
+{
+	pkt.endPacket();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// These are typically overridden by the inheritor, especially the onPacket
+// function. If you don't override that, then any packets received will be
+// discarded.
+//
+CrypticProtocolConnection.prototype.onConnectionTimeout = function () {
+	// Called if the connection takes to long to happen.
+}
+
+CrypticProtocolConnection.prototype.onConnected = function () {
+	// Called when a connection is made and the handshake is complete.
+}
+
+CrypticProtocolConnection.prototype.onDisconnected = function () {
+	// Called when the server disconnects
+}
+
+CrypticProtocolConnection.prototype.onPacket = function (pkt) {
+	// Called when a complete Cryptic packet is received.
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = CrypticProtocolConnection;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

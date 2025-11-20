@@ -1,0 +1,31 @@
+<button class="close-button" data-url-silent="closemodal"></button>
+<div class="modal-confirm modal-inventory">
+
+	<h3>Open <span data-path=".itemdef.displaynamemsg.str"></span>?</h3>
+
+	<!-- stolen straight from the inventory stencil -->
+	<div data-set-class="icon-slot small {.rarity}">
+		<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+		<span class="icon-overlay"></span>
+		<span class="quantity" data-if="{.count} gt 1" data-path=".count">9</span>
+		<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+			<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+		</span>
+	</div>
+
+	<p>Are you sure you want to open <span class="vendor-confirm-itemname" data-path=".itemdef.displaynamemsg.str"></span>?</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-set-onclick="client.sendCommand('GatewayInventory_OpenRewardPack', '{.uid}');" data-url-silent="/inventory/item-rewards">Confirm</button>
+	</div>
+</div>

@@ -1,0 +1,11 @@
+{
+#ifdef TRANSGAMING
+	// Transgaming's Cg apparently has no float4 "min" function.
+	%Result%.x = min(%A%.x, %B%.x);
+	%Result%.y = min(%A%.y, %B%.y);
+	%Result%.z = min(%A%.z, %B%.z);
+	%Result%.w = min(%A%.w, %B%.w);
+#else
+	%Result% = min(%A%, %B%);
+#endif
+}

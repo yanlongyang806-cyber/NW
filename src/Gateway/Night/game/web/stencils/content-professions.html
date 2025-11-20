@@ -1,0 +1,100 @@
+<div data-path="ent">
+	<span data-if="{.main.levelui} lt 10">
+		<p class="limited-access-message">You must be at least level 10 to use professions.</p>
+	</span>
+	<div data-if="!({.main.levelui} lt 10)" class="page-professions">
+
+		<div class="box-tabs-block mobileOnly">
+			<div class="tabs-horizontal">
+				<div class="tabs-container">
+					<ul>
+						<li>
+							<a data-url="/professions" class="tab subNav professions-overview">
+								<span class="tab-name">Overview</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/professions-tasks" class="tab subNav professions-tasks">
+								<span class="tab-name">Tasks</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="box-top">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="page-nav tabs-fancy">
+			<h3 class="mobileOnly">Profession Tasks</h3>
+			<ul>
+				<li class="professions-tab">
+					<a data-url="/professions" class="tab subNav overview professions-overview" data-update=".main.itemassignments">
+						<span class="tab-left"></span>
+						<span class="tab-right"></span>
+						<span class="professions-tab-icon">
+							<img src="./tex/Crafting_Profession_Generic.png" alt="" />
+						</span>
+						<span class="professions-tab-name no-bar">Overview</span>
+						<span class="professions-tab-info">
+							<span data-path=".main.itemassignments.complete">X</span> of <span data-path=".main.itemassignments.active">Y</span> tasks complete
+						</span>
+					</a>
+				</li>
+			</ul>
+			<div data-path=".main.itemassignmentcategories.categories" data-update=".main.itemassignmentcategories.categories">
+				<div data-if=".isheader">
+					<h4>Level <span data-path=".currentrank">4</span></h4>
+				</div>
+				<span data-if='!{.isheader}'>
+					<ul>
+						<li class="professions-tab">
+							<a data-set-data-url="/professions-tasks/{.category}" data-set-class="tab subNav professions-{.category} {.category}" data-tt-stencil="tooltip-professionxp" data-set-data-tt-path="{$here()}">
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+								<span class="professions-tab-icon">
+									<img data-set-src="./tex/{.icon}.png" alt="" />
+								</span>
+								<span class="professions-tab-name" data-path=".displayname">Category Name</span>
+								<span data-if="{.isatmaxrank} eq 0">
+									<div class="professions-tab-bar">
+										<div class="bar-container">
+											<span class="bar-bg-left"></span>
+											<span class="bar-bg-mid"></span>
+											<span class="bar-bg-right"></span>
+											<div class="bar-filled bar-yellow" data-set-style="width: {.percentagethroughcurrentlevel.$ifEmptyUse(0)}%;">
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+												</div>
+											</div>
+										</div>
+									</div>
+								</span>
+								<span data-if="{.isatmaxrank} eq 1">
+									<div class="professions-tab-info max-level">
+										Max Level
+									</div>
+								</span>
+							</a>
+						</li>
+					</ul>
+				<span>
+			</div>
+		</div>
+		<div id="content_professions" class="page-professions-main">
+		</div>
+	</div>
+</div>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+	client.professionLoadPrefs();
+</script>

@@ -1,0 +1,33 @@
+OperationDef
+	Name "CameraDist" // Name of the operation
+	Description "Distance from Camera based Effect"
+	Type ADVANCED
+
+	Input
+		Name CameraBegin
+		Description "Color to fade to"
+		Float 1
+		FloatRange 0 1000.0
+		Default
+			Floats 0.0
+		EndDefault
+	EndInput
+
+	Input
+		Name CameraEnd
+		Description "Maximum distance material cares about"
+		Float 1
+		FloatRange 0 5000.0
+		Default
+			Floats 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Depth result"
+		Float 1
+	EndOutput
+
+EndOperationDef
+

@@ -1,0 +1,398 @@
+﻿body {
+	background-color: #003369;
+	font-size: .85em;
+
+	margin: 0;
+}
+
+a {
+	text-decoration: none;
+	color: #773333;
+	text-transform: none;
+	font-weight: none;
+	text-decoration: underline;
+}
+
+ul {
+	margin-left: 20px;
+}
+
+ul.header_weld_list {
+	margin-left: 0;
+	display: inline;
+}
+
+ul.header_weld_list li {
+	display: inline;
+	list-style: none;
+	padding: 3px 0px;
+}
+
+div#navigation_bar {
+	display: inline;
+}
+
+div  {
+	background:#FFFFFF;
+	padding: 2px;
+	margin-bottom: 3px;
+}
+
+div#content
+{
+	padding: 5px;
+	margin-top: 4.25em;
+	background-color: #003369;
+}
+
+/* This is a fix for Flot background borking in IE */
+div#content span div.clearback div {
+	background: none;
+	margin: 0;
+	padding: 0;
+}
+
+
+/* yay for IE hacks */
+.header_weld_bar {
+	/* Fixed positioning */
+	margin: 0;
+	position:fixed;
+	_position:absolute;
+	
+	/* bottom weld
+	bottom:0;
+	_top:expression(document.body.scrollTop+document.body.clientHeight-this.clientHeight);
+	*/
+
+	/* top weld */
+	top:0;
+	_top:expression(eval(document.body.scrollTop));
+
+	width: 100%;
+	text-align: right;
+
+	background: #DDDDDD;
+
+	/* transparency */
+	opacity:.85;
+	filter: alpha(opacity=85);
+	-moz-opacity: 0.85;
+}
+
+.header_weld_bar div {
+	background: none;
+}
+
+#refreshtime {
+	font-size: 0.75em;
+	width: 150px;
+	float: right;
+}
+
+.heading {
+	font-size: .9em;
+	font-weight: bold;
+	text-transform: uppercase;
+	text-align:center;
+}
+
+.structheader
+{
+	font-weight:700;
+	font-size: 1.3em;
+	margin-top:4px;
+	padding: 2px;
+	background:#FFFFFF;
+	border-bottom-style: none;
+	border-top-style: none;
+	border-right-style: none;
+	border-left-style: none;
+	text-decoration: underline;
+}
+.StructInStruct
+{
+	padding-left:10px;
+	background:#FFFFFF;
+	border-top-width: 2px;
+	border-right-width: 2px;
+	border-bottom-width: 2px;
+	border-left-width: 2px;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: dashed;
+	border-left-style: dashed;
+	border-top-color: #999999;
+	border-right-color: #999999;
+	border-bottom-color: #999999;
+	border-left-color: #999999;
+	text-align: left;
+}
+
+.SideBySide
+{
+    float:left;   
+}
+
+.AlertsOverview .StructInStruct .StructInStruct {
+	float: left;
+	border: dashed #999999;
+	margin-right: 10px;
+}
+
+.AlertsOverview .StructInStruct {
+	border: none;
+}
+
+
+table {
+	font-size:12px;
+	text-align:center;
+	background-color: #CCCCCC;
+	border: solid #000000 2px;
+	border-collapse: collapse ;
+	border-spacing: 0;
+}
+
+table td {
+	padding: 2px;
+	border: solid #000000 2px;
+}
+
+.divWarning1 
+{
+	background-color:#f0f0d0;
+}
+
+.divWarning2
+{
+	background-color:#f0d0d0;
+}
+
+.divRed
+{
+	background-color:#e00000;
+}
+
+.divGreen
+{
+	background-color:#00e000;
+}
+
+
+.divPurple
+{
+	background-color:#d000d0;
+}
+
+.divAlertLevelWARNING
+{
+	background-color:#a0a0a0;
+}
+
+.divAlertLevelSEVERE
+{
+	background-color:#d0d0d0;
+}
+
+.divAlertLevelCRITICAL
+{
+	background-color:#f0d0d0;
+}
+
+.divAlertLevelFAILURE
+{
+	background-color:#f0f0d0;
+}
+
+
+.Alerts
+{
+	background-color:#f0d0d0;
+}
+
+.Alerts a {
+	color:#003399;
+	text-decoration: underline;
+	text-transform: none;
+}
+
+.divGameServers {
+	background:#FFFFFF;
+}
+.divCommands {
+	background:#FFFFFF;
+	padding: 2px;
+}
+
+/* Hide command links if we're widgitizing with javascript */
+.commanddiv {
+	display:none;
+}
+
+.svrParam {
+	display: none;
+}
+
+.xmlcommand {
+	display: none;
+}
+
+.editable {
+	background: none;
+	text-decoration: none;
+	border-bottom: dotted 1px #cc0000;
+}
+
+.js-button {
+	text-decoration: none;
+}
+
+.divUniqueServers {
+	background:#FFFFFF;
+}
+.divMachines {
+	background:#FFFFFF;
+}
+
+.divGenericInfo {
+	background:#FFFFFF;
+}
+
+.divmainIP {
+	background:#FFFFFF;
+}
+
+.divpublicIP {
+	background:#FFFFFF;
+}
+
+.divProcesses {
+	background:#FFFFFF;
+}
+
+.divmachineName {
+	background:#FFFFFF;
+}
+
+.divserverType {
+	background:#FFFFFF;
+}
+
+.divID {
+	background:#FFFFFF;
+}
+
+.divCommandCategories {
+	background:#FFFFFF;
+}
+
+.divBrowsableRefDictionaries {
+	background:#FFFFFF;
+}
+
+.divTitle {
+	background:#FFFFFF;
+}
+
+.divListName {
+	background:#FFFFFF;
+}
+
+.divContainerTypes {
+	background:#FFFFFF;
+}
+
+.divLinks {
+	background:#FFFFFF;
+}
+
+.divLabel {
+	background:#FFFFFF;
+}
+
+.divcontainerState {
+	background:#FFFFFF;
+}
+
+.divcontainerOwnerType {
+	background:#FFFFFF;
+}
+
+.divcontainerOwnerID {
+	background:#FFFFFF;
+}
+
+.divNumHandles {
+	background:#FFFFFF;
+}
+
+.divNumActiveConnections {
+	background:#FFFFFF;
+}
+
+.divNumActiveTransactions {
+	background:#FFFFFF;
+}
+
+.divNumCompletedNonSucceededTransactions {
+	background:#FFFFFF;
+}
+
+.divNumSucceededTransactions {
+	background:#FFFFFF;
+}
+
+
+	/* rollover messages */
+.rollover {
+	position: relative;
+}
+.rollover_link {
+	cursor: help;
+	color: #00f;
+}
+.rollover .rollover_message {
+	display: none;
+}
+.rollover:hover .rollover_message {
+	display: block;
+}
+ .rollover_message {
+	color: #000;
+	background: #ff9;
+	border: 1px solid #000000;
+	padding: 0px 10px 10px 15px;
+	position: absolute;
+	text-align: left;
+	top: 100%;
+	width: 500px;
+	z-index: 999;
+	font-size: .9em;
+	font-weight: normal;
+	text-transform: none;
+	text-decoration: none;
+	font-family: @Arial Unicode MS;	
+}
+.rollover_message p {
+	margin: 0 !important;
+	padding: 0 0 10px !important;
+}
+.rollover_message h2 {
+	margin-bottom: 0px;
+}
+
+.rollover_message .critical {
+	background-color: red;
+}
+
+
+.pop_left 
+{
+    left: -500;
+}
+
+.pop_right
+{
+    left: 0;
+}

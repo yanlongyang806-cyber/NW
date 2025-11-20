@@ -1,0 +1,6 @@
+{
+	(%Result%).rga = (%Normal1%).rga + (%Normal2%).rga;
+	(%Result%).rg = clamp((%Result%).rg, -1.0f, 1.0f); // really needs to be clamped to a unit circle, but oh well
+	(%Result%).b = sqrt(1 - saturate(((%Result%).r * (%Result%).r + (%Result%).g * (%Result%).g)));
+	(%Result%).a = 0.5f * (%Result%).a;
+}

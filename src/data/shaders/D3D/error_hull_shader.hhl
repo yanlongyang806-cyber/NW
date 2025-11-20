@@ -1,0 +1,66 @@
+
+cbuffer view_spec : register( b0 )
+{
+	matrix mvp;
+	matrix modelview;
+	matrix projection;
+};
+
+struct VS_OUTPUT
+{
+	float3 c_vPos : WORLDPOS0;
+	float2 c_vTex : TEXCOORD0;
+	float4 c_vColor : COLOR0;
+};
+
+struct HS_CPOut
+{
+	float3 f3ViewPos : WORLDPOS;
+	float3 f3ViewNormal : NORMAL0;
+	float4 c_vColor : COLOR0;
+	float2 f2TexCoord : TEXCOORD0;
+};
+
+struct HS_PatchConstOut
+{
+	float edgeTess[3] : SV_TessFactor;
+	float insideTess  : SV_InsideTessFactor;
+};
+
+float ComputeClipping( float4x4 mtxProj, float3 cp_position )
+{
+	return 0.0;
+}
+
+float ComputeEdgeLOD( float4x4 mtxProj, float3 cp_position, float3 vs_campos )
+{
+	return 4.0;
+}
+
+HS_PatchConstOut HS_FlatTrianglesCrackFreePatchConst( InputPatch< VS_OUTPUT, 3 > I, uint PatchID : SV_PrimitiveID )
+{
+	HS_PatchConstOut output;
+	output.edgeTess[ 0 ] = 3.0;
+	output.edgeTess[ 1 ] = 3.0;
+	output.edgeTess[ 2 ] = 3.0;
+	output.insideTess = 3.0;
+	return output;
+}
+
+
+[domain("tri")]
+[partitioning("fractional_even")]
+[outputtopology("triangle_cw")]
+[outputcontrolpoints(3)]
+[patchconstantfunc("HS_FlatTrianglesCrackFreePatchConst")]
+HS_CPOut error_hullshader( InputPatch< VS_OUTPUT, 3 > I, uint uCPID : SV_OutputControlPointID )
+{
+	HS_CPOut O = (HS_CPOut)0;
+
+	O.f3ViewPos = I[uCPID].c_vPos;
+	O.f3ViewNormal = float3(0,0,1);
+	O.c_vColor = I[uCPID].c_vColor;
+	O.f2TexCoord = I[uCPID].c_vTex;
+
+	return O;
+}

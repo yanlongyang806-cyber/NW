@@ -1,0 +1,32 @@
+'use strict';
+
+//
+// Patch Node's http.OutgoingMessage.prototype to protect against the
+// possibility of an undefined member. It seems like the nodejs guys are
+// dragging their feet on putting this fix in because it treats a symptom
+// rather than initial cause. No one seems to know the initial cause.
+//
+// See https://github.com/joyent/node/pull/4056 for more information.
+//
+// This should work in conjunction with any other evil code which patches.
+// It should just chain.
+//
+var http = require('http');
+var outgoingMessageProto = http.OutgoingMessage.prototype;
+
+if(!outgoingMessageProto._crypticPatched)
+{
+	var destroyOrig = outgoingMessageProto.destroy;
+
+	outgoingMessageProto.destroy = function(error)
+	{
+		if(this.socket)
+		{
+			return destroyOrig.call(this, error);
+		}
+	}
+
+	outgoingMessageProto._crypticPatched = true;
+}
+
+// End of File

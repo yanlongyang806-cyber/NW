@@ -1,0 +1,236 @@
+'use strict';
+//
+// FileCache
+//
+// Caches files of disk.
+//
+var fs = require('fs');
+var path = require('path');
+var LRU = require('lru-cache');
+
+var connect = require('connect');
+var mime = connect.mime;
+var parseUrl = connect.utils.parseUrl;
+
+var dbg = require('cryptic/dbg');
+
+var DEFAULT_MAX_AGE = 7*24*60*60;    // 1 week in seconds
+
+///////
+//
+// new FileCache(directory, options)
+//
+// Creates a new cache, which has a function (serveFile) suitable for use
+// as as a connect handler.
+//
+///////
+//
+// Options can be provided as an object when the cache is created.
+//
+// options = {
+//
+//     // Cache options
+//
+//     maxBytes:         The total size to be used for the cache. If inserting an
+//                       item into the cache will exceed this limit, the least
+//                       recently used item will be evicted.
+//     name:             The name of the cache for debugging and tracking.
+//     cacheMaxAge:      The number of ms to cache items in the LRU.
+//
+//
+//     // HTTP options
+//
+//     maxAge:       The default maxAge for browser caching in seconds. Used
+//                   if one isn't set when generated. Defaults to one day.
+//     etag:         Either a string to be used for all items' ETAGs, or a
+//                   function used to generate ETAGs for a given urls. Defaults
+//                   to a constant string: the application's start time.
+// }
+//
+///////
+//
+// A typical use might look like this:
+//
+// var public = new FileCache(g_config.publicDir, { maxBytes: 100*1024*1024 });
+// var connectApp = connect()
+//     .use(blah)
+//       [...]
+//     .use(public.serveItem)
+//
+//
+var FileCache = function(directory, options)
+{
+	dbg.trace();
+	options = options || {};
+
+	this.root = directory;
+
+	this.name = options.name || 'UnknownCache';
+	this.maxBytes = options.maxBytes || 5*1024*1024;
+	this.cacheMaxAge = options.cacheMaxAge || null;
+
+	this.etag = options.etag || (process.pid().toString() + ':' + Date.now().toString());
+	this.maxAge = options.maxAge || DEFAULT_MAX_AGE;
+
+	this.cache = new LRU({
+			max: this.maxBytes,
+			maxAge: this.cacheMaxAge,
+			length: function(obj) { return (obj && obj.data ? obj.data.length : 0) }
+		});
+
+	this.serveFile = this.serveFileInternal.bind(this);
+}
+
+FileCache.prototype.serveFileInternal = function(req, res, next)
+{
+	dbg.trace();
+	var self = this;
+
+    var path = parseUrl(req).pathname;
+
+	// No item name, use index.html
+	if(!path || path === '/' || path.substr(-10) === 'index.html')
+	{
+		// This file should never be cached, so just send it
+		this.getFileForUrl('index.html', function(error, result) {
+			if(error || !result || !result.data)
+			{
+				dbg.trace('Fatal error trying to get the file from disk.');
+				res.statusCode = 404;
+				res.end();
+			}
+			else
+			{
+				dbg.trace('never cached ' + path);
+				self.sendResult(req, res, next, result, true)
+			}
+		});
+
+		return; // done here.
+	}
+
+	// We got this far, it should be a cacheable file..
+	var etag = '' + (typeof this.etag === 'function' ? this.etag(req) : this.etag);
+		// Make etag a string.
+
+	if(req.headers['if-none-match'] === etag)
+	{
+		// The client already has this version of the item, let them know.
+		dbg.trace('Etag matched');
+
+		res.statusCode = 304;
+		res.end();
+		return;
+	}
+
+	var result = this.cache.get(path);
+	if(result && result.data)
+	{
+		dbg.trace('cached ' + path);
+		this.sendResult(req, res, next, result);
+	}
+	else
+	{
+		// It's not in the memory cache, try the disk.
+		this.getFileForUrl(path, function(error, result) {
+			if(error || !result || !result.data)
+			{
+				dbg.trace('Fatal error trying to get the file from disk.');
+				res.statusCode = 404;
+				res.end();
+			}
+			else
+			{
+				dbg.trace('uncached ' + path);
+				self.cache.set(path, result);
+				self.sendResult(req, res, next, result)
+			}
+		});
+	}
+}
+
+
+FileCache.prototype.sendResult = function(req, res, next, result, noCache)
+{
+	dbg.trace(result);
+
+	var self = this;
+
+	if(!res.getHeader('Content-Type'))
+	{
+		var type = mime.lookup(result.fname);
+		var charset = mime.charsets.lookup(type);
+		res.setHeader('Content-Type', type + (charset ? '; charset=' + charset : ''));
+	}
+
+	if(noCache)
+	{
+		res.setHeader('Cache-Control', 'no-cache');
+	}
+	else
+	{
+		res.setHeader('Cache-Control', 'public, max-age=' + (result.maxAge || this.maxAge));
+		res.setHeader('ETag', (typeof this.etag === 'function' ? this.etag(req) : this.etag));
+	}
+
+	res.setHeader('Content-Length', result.data.length);
+	res.statusCode = 200;
+	res.write(result.data);
+	res.end();
+}
+
+FileCache.prototype.getFileForUrl = function(url, callback)
+{
+	dbg.trace(url);
+	var self = this;
+
+	var fname = urlToFilename(url);
+	if(!fname)
+	{
+		callback(new Error('No filename provided'), undefined);
+		return;
+	}
+
+	fname = path.join(this.root, fname);
+
+	try
+	{
+		fs.readFile(fname, function(e, r) {
+			if(e)
+			{
+				callback(e, undefined);
+			}
+			else
+			{
+				callback(undefined, { fname: fname, data: r });
+			}
+		});
+
+	}
+	catch(e)
+	{
+		callback(e, undefined);
+	}
+}
+
+var reLeadingSlash = /^\//;
+var reWhite = /\s/g;
+var reDoubleDots = /\.\./g;
+var reInvalid = /[<>:"|?*\x00-\x1f]/g;
+function urlToFilename(url)
+{
+	url = url.replace(reLeadingSlash, '');
+	url = url.replace(reWhite, '_');
+	url = url.replace(reDoubleDots, '!');
+	url = url.replace(reInvalid, '@');
+
+	dbg.trace(url);
+
+	return url;
+}
+
+////////////
+
+module.exports = FileCache;
+
+// End of File

@@ -1,0 +1,90 @@
+'use strict';
+
+//
+// GetArgs
+//
+// Given a string and a starting point, create an array of arguments gathered
+//   from the string. Strings and sub-parenthetical expressions are supported.
+//
+// Returns:
+//   An array of the args
+//     and
+//   start: the index of the given starting point in the source string
+//   end: the index of the end of the argument list in the source string
+//   rest: the remainder of the string that is not part of the argument list.
+//
+// Examples:
+//   GetArgs("func(x, y) body", 0) => [ 'x', 'y', start: 0, rest: 'body', end: 10 ]
+//   GetArgs("func((1+2)*q, 'fun()')", 0) => [ '(1+2)*q', '\'fun()\'', start: 0, rest: '', end: 22 ]
+//
+//
+function getArgs(str, idxStart, startChar, endChar)
+{
+	var args = []
+	var depth = 0
+	var start = 0
+	var inquote = false
+	var indquote = false
+	var started = false
+
+	startChar = startChar || '('
+	endChar = endChar || ')'
+
+	args.start = idxStart || 0
+	var pos = args.start
+
+	while(pos < str.length) {
+		if((inquote || indquote) && str[pos] === '\\') {
+			// Skip over the escaped character
+			pos += 1
+		}
+		else if(!inquote && !indquote && str[pos] === startChar) {
+			if(depth === 0) {
+				started = true;
+				start = pos+1
+			}
+			depth += 1
+		}
+		else if(!inquote && !indquote && str[pos] === endChar) {
+			depth -= 1
+			if(depth === 0) {
+				if(pos > start)
+				{
+					args.push(str.slice(start, pos).trim())
+				}
+				break
+			}
+		}
+		else if(!inquote && !indquote && depth === 1 && str[pos] === ',') {
+			args.push(str.slice(start, pos).trim())
+			start = pos+1
+		}
+		else if(!inquote && str[pos] === "\"") {
+			indquote = !indquote
+		}
+		else if(!indquote && str[pos] === "'") {
+			inquote = !inquote
+		}
+
+		pos += 1
+	}
+
+	if(started)
+	{
+		args.rest = str.slice(pos+1).trim()
+		args.end = pos+1
+	}
+	else
+	{
+		// There were no ()s []s or whatever delimiters we were looking
+		//   for.
+		args.rest = str.slice(idxStart)
+		args.end = idxStart
+	}
+
+	return args
+}
+
+module.exports = getArgs;
+
+// End of File

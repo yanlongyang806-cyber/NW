@@ -1,0 +1,62 @@
+OperationDef
+	Name "Oscillator" // Name of the operation
+	Description "Oscillator for texture coordinates or colors or whatever!"
+	Type SIMPLE
+
+	Input
+		Name Amplitude
+		Description "Amplitude"
+		Float 1
+		FloatRange -5 5
+		NotForAssembler 1
+		Default
+			Floats 1.0
+		EndDefault
+	EndInput
+	Input
+		Name Frequency
+		Description "Frequency"
+		Float 1
+		FloatRange 0 10
+		NotForAssembler 1
+		Default
+			Floats 1.0
+		EndDefault
+	EndInput
+	Input
+		Name Phase
+		Description "Phase"
+		Float 1
+		FloatRange -1.57 1.57
+		NotForAssembler 1
+		Default
+			Floats 0
+		EndDefault
+	EndInput
+	Input
+		Name OscillatorValue
+		Description "Internal result of time and above parameters"
+		Float 1
+		Type Oscillator
+		Hidden 1
+	EndInput
+	Input
+		Name AlwaysZero
+		Description "For Alpha calculation"
+		Float 1
+		NotForAssembler 1
+		Hidden 1
+		Default
+			Type Value
+			Floats 0.5
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Description "Oscillated value"
+		Float 1
+		AlphaFrom AlwaysZero
+	EndOutput
+EndOperationDef

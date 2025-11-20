@@ -1,0 +1,30 @@
+// Terrain_0Detail.phl (used with terrain_heightmap.vhl)
+{
+#ifndef DEPTH_ONLY
+	// Tint from map
+	float4 color = sampleTex2D(TexSampler%ColorTexture%, v.texcoords.xy);
+
+#ifdef NO_TERRAIN_COLOR
+	color = float4(0.5,0.5,0.5,1);
+#endif
+
+#ifdef TERRAINNX_COLOR
+	// Allow color value to go through
+#else
+	color.rgb = 0;
+#endif
+
+	%SpecularValueOut% = 0;
+	%SpecularExponentOut% = 0.0625;
+	%NormalOut%.xyz = float3(0,0,1);
+	%ColorOut% = color;
+
+#else
+
+	%ColorOut% = 1;
+
+#endif
+
+	v.color0 = 1;
+}
+

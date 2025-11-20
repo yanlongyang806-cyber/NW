@@ -1,0 +1,324 @@
+#include "vs_inc.hlsl"
+
+#ifdef HAS_SKIN
+	#include "vs_skin_inc.hlsl"
+#elif HAS_BEND
+	#include "vs_bend_inc.hlsl"
+#elif IS_INSTANCED
+	#include "vs_instance_inc.hlsl"
+#elif CYLINDER_TRAIL
+	#include "vs_cylinder_inc.hlsl"
+#else
+	#include "vs_standard_inc.hlsl"
+#endif
+
+#ifndef NOPIXELSHADER
+void do_common(	in VS_INPUT vIn, in float3 position_vs, in float3 position_ws, 
+				#ifndef DEPTH_ONLY
+					in float3 normal_ws, 
+				#endif
+				inout VS_OUTPUT_NORMAL vOut)
+{
+	#ifndef DEPTH_ONLY
+		float4 ambient_color = getAmbientColor(vIn);
+		float3 vertex_lighting = getVertexLighting(vIn);
+	#endif
+
+	vOut.position_vs.xyz = position_vs;
+	#ifdef VERTEX_FOG
+		vOut.position_vs.w = fogVertexFog(length(position_vs));
+	#else
+		vOut.position_vs.w = fogCalculateHeightCoord(position_vs);
+	#endif
+
+	#ifndef NO_NORMAL_NO_TEXCOORD
+		#ifndef VS_TEXCOORD_SPLAT
+			#ifdef WORLD_TEX_COORDS
+				float4 texcoords_in = float4(dot(position_ws.xyz, world_tex_params[0]), dot(position_ws.xyz, world_tex_params[1]), vIn.texcoords.zw);
+			#elif CYLINDER_TRAIL
+				float4 texcoords_in = float4(vIn.angle / 6.2831853071, ConstantFetchTexCoord(vIn.boneidx), 0, 0);
+			#else
+				float4 texcoords_in = vIn.texcoords;
+			#endif
+
+			#ifdef HAS_BEND
+				vOut.texcoords.xy = texcoords_in.xy;
+			#else
+				vOut.texcoords = texcoords_in;
+			#endif
+		#endif
+	#else
+		vOut.texcoords = float4(0, 0, 0, 0);
+	#endif
+
+
+	vOut.color0 = getColor0(vIn);
+	vOut.instanceParam = getInstanceParam(vIn);
+
+	#ifdef ALPHA_FADE_PLANE
+		#ifndef DEPTH_ONLY
+			float distToPlane = dot(position_ws, alpha_fade_plane.xyz) - alpha_fade_plane.w;
+			vOut.normal_vs_and_unused.w = distToPlane;
+		#endif
+	#endif
+
+	#ifdef VS_TEXCOORD_SPLAT
+		#ifdef _PS3
+			float4 projTexCoord = mul(float4(position_ws,1.0), tex_splat_mat);
+		#else
+			float4 projTexCoord = mul(tex_splat_mat, float4(position_ws,1.0));
+		#endif
+
+		// Splats with non-orthographic projections get pretty screwed up here. Perhaps we should move this to the pixel shader?
+		vOut.texcoords = float4(projTexCoord.xy, 0, 0) / projTexCoord.w;
+
+		// Splats were coming out backwards. Flip them back.
+		vOut.texcoords.x = 1.0 - vOut.texcoords.x;
+	#endif
+
+#ifdef WORLD_TEX_COORDS
+	#ifndef DEPTH_ONLY
+		#ifndef NO_NORMALMAP
+			vOut.tangent_vs = rangeCompress(normalize(mul_view_mat(world_tex_params[0]).xyz));
+			vOut.binormal_vs = rangeCompress(normalize(mul_view_mat(world_tex_params[1]).xyz));
+		#endif
+	#endif
+#endif
+
+	#ifndef DEPTH_ONLY
+		doVertexLighting(vOut, normal_ws, ambient_color, vertex_lighting);
+	#endif
+}
+#endif
+
+void normal_vertexshader(in VS_INPUT vIn,
+						 out VS_OUTPUT_NORMAL vOut
+						 )
+{
+	float3 position_vs;
+	float4 position_ws, position_in;
+
+
+#ifndef DEPTH_ONLY
+	float3 normal_ws;
+#endif
+
+#ifdef HAS_WIND
+	float4 per_vertex_wind_params = vIn.vertex_color;
+#endif
+
+#ifdef HAS_MORPH
+	position_in = float4(lerp(vIn.position, vIn.position2, morph_and_vlight.x), 1);
+	#ifndef DEPTH_ONLY
+		float4 normal_in = float4(lerp(vIn.normal, vIn.normal2, morph_and_vlight.x), 0);
+	#endif
+#elif CYLINDER_TRAIL
+	sincos(vIn.angle, position_in.y, position_in.x);
+	position_in.z = 0;
+	position_in.w = 1;
+#else
+	position_in = float4(vIn.position, 1);
+	#ifndef NO_NORMAL_NO_TEXCOORD
+		#ifndef DEPTH_ONLY
+			float4 normal_in = float4(vIn.normal, 0);
+		#endif
+	#else
+		float4 normal_in = float4(0, 0, 1, 0);
+	#endif
+#endif
+
+
+
+#ifdef HAS_SKIN
+
+	#ifdef DEPTH_ONLY
+		do_skinning(vIn.boneidxs, vIn.boneweights, position_in.xyz, position_vs, position_ws);
+	#elif NO_NORMALMAP
+		do_skinning(vIn.boneidxs, vIn.boneweights, position_in.xyz, normal_in.xyz,
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, position_ws);
+	#else
+		do_skinning(vIn.boneidxs, vIn.boneweights, position_in.xyz, normal_in.xyz, vIn.tangent, vIn.binormal, 
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, position_ws);
+	#endif
+
+#elif HAS_BEND
+
+	#ifdef NOPIXELSHADER
+		do_bend(position_in.xyz, position_vs, position_ws);
+	#elif DEPTH_ONLY
+		float2 texcoords_zw;
+		do_bend(position_in.xyz, position_vs, texcoords_zw, position_ws);
+		vOut.texcoords.zw = texcoords_zw;
+	#elif NO_NORMALMAP
+		float2 texcoords_zw;
+		do_bend(position_in.xyz, normal_in.xyz, 
+				position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, texcoords_zw, position_ws);
+		vOut.texcoords.zw = texcoords_zw;
+	#else
+		float2 texcoords_zw;
+		do_bend(position_in.xyz, normal_in.xyz, vIn.tangent, vIn.binormal, 
+				position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, texcoords_zw, position_ws);
+		vOut.texcoords.zw = texcoords_zw;
+	#endif
+
+#elif IS_INSTANCED
+
+	#ifdef DEPTH_ONLY
+		do_instance(position_in, vIn.model_mat_x, vIn.model_mat_y, vIn.model_mat_z, 
+		#ifdef HAS_WIND 
+			float4(vIn.normal, 0),
+		#endif
+		#ifdef HAS_WIND
+			per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+			getInstanceParam(vIn),
+		#endif
+			position_vs, position_ws);
+	#elif NO_NORMALMAP
+		do_instance(position_in, vIn.model_mat_x, vIn.model_mat_y, vIn.model_mat_z, normal_in.xyz, 
+		#ifdef HAS_WIND
+					per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+					getInstanceParam(vIn),
+		#endif
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, position_ws);
+
+	#else
+		do_instance(position_in, vIn.model_mat_x, vIn.model_mat_y, vIn.model_mat_z, normal_in.xyz, vIn.tangent, vIn.binormal, 
+		#ifdef HAS_WIND
+					per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+					getInstanceParam(vIn),
+		#endif
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, position_ws);
+	#endif
+
+#elif CYLINDER_TRAIL
+
+	#ifdef DEPTH_ONLY
+		do_cylinder(vIn.boneidx, position_in, position_vs, position_ws);
+	#elif NO_NORMALMAP
+		do_cylinder(vIn.boneidx, position_in, position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, position_ws);
+	#else
+		do_cylinder(vIn.boneidx, position_in, position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, position_ws);
+	#endif
+
+	#ifdef TIGHTEN_UP
+		float3 vNormalViewPos = normalize(position_vs);
+		position_vs = position_vs + vNormalViewPos * -vIn.tighten_up;
+	#endif
+
+#else
+
+	#ifdef DEPTH_ONLY
+		do_standard(position_in,
+		#ifdef HAS_WIND 
+			vIn.normal,
+		#endif
+		#ifdef HAS_WIND
+			per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+			getInstanceParam(vIn),
+		#endif
+			position_vs, position_ws);
+	#elif NO_NORMALMAP
+		do_standard(position_in, normal_in.xyz, 
+		#ifdef HAS_WIND
+					per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+					getInstanceParam(vIn),
+		#endif
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, position_ws);
+	#else
+		do_standard(position_in, normal_in.xyz, vIn.tangent, vIn.binormal, 
+		#ifdef HAS_WIND
+					per_vertex_wind_params,
+		#endif
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+					getInstanceParam(vIn),
+		#endif
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, position_ws);
+	#endif
+
+	#ifdef TIGHTEN_UP
+		float3 vNormalViewPos = normalize(position_vs);
+		position_vs = position_vs + vNormalViewPos * -vIn.tighten_up;
+	#endif
+
+#endif
+
+// Transform to clip space
+#ifndef TESSELLATION
+	calcClipPosition(vOut.position_clip, position_vs);
+#else
+	vOut.position_clip = float4(position_vs,1);
+#endif
+
+#ifdef FORCE_FAR_DEPTH
+	//vOut.position_clip.xy /= vOut.position_clip.w;
+	//vOut.position_clip.w *= 3000000;
+	vOut.position_clip.z = vOut.position_clip.w * 0.9999960;
+	//vOut.position_clip.xy *= vOut.position_clip.w;
+#endif
+
+
+	#ifndef NOPIXELSHADER
+		#ifndef DEPTH_ONLY
+			vOut.vpos_xyw_and_unused.xyz = vOut.position_clip.xyw;
+		#endif
+		
+		// Zero things to make compiler warnings go away (they are set inside this function, but the compiler complains about passing uninitialized data
+		#ifndef DEPTH_ONLY
+			vOut.hemisphere_dir_vs_and_unused.xyzw = 0;
+			vOut.vpos_xyw_and_unused.w = 0;
+			#ifndef ALPHA_FADE_PLANE
+				vOut.normal_vs_and_unused.w = 0;
+			#endif
+			#ifndef NO_NORMALMAP
+			#elifdef SINGLE_DIRLIGHT
+				#ifdef SM30
+					vOut.sdl_values = 0;
+				#else
+					vOut.diffuse_value = 0;
+				#endif
+			#elifdef VERTEX_ONLY_LIGHTING
+				vOut.diffuse_value = 0;
+			#endif
+		#endif
+
+		do_common(vIn, position_vs, position_ws.xyz, 
+			#ifndef DEPTH_ONLY
+				normal_ws, 
+			#endif
+			vOut);
+
+		#ifdef HAS_WIND || HAS_TRUNK_WIND
+			#ifdef ShowObjectsWithWind
+				vOut.color0.rgb = float3(vOut.instanceParam.w, 0, 1-vOut.instanceParam.w);
+			#endif
+			//we use this in the wind code so dont pass forward the crazy values
+			vOut.instanceParam = float4(1,1,1,1);
+		#endif
+
+
+#ifndef DEPTH_ONLY
+#ifndef NO_NORMALMAP
+#ifdef DetectBadTangents
+			if (length(vIn.tangent)==0 || length(vIn.binormal)==0)
+				vOut.color0 = float4(100, -10, -10, 1);
+#endif
+#endif
+#endif
+
+		#ifdef SCREEN_TEX_COORDS
+			vOut.texcoords.xy = vOut.position_clip.xy/vOut.position_clip.w*float2(0.5,-0.5)+float2(0.5,0.5);
+		#endif
+
+	#endif
+
+}

@@ -1,0 +1,1 @@
+cdb -y %_NT_SYMBOL_PATH% -z %1 -lines -c "!sym prompts;.reload;.logopen %2;||;|;k1000;.logclose;q"

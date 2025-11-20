@@ -1,0 +1,451 @@
+<!-- if(dev) -->
+
+<div class="page-content" data-path="gatewaygamedata" data-update="gatewaygamedata">
+	<div class="page-dungeon-chooseparty">
+
+		<!-- Desktop Party Member Selection -->
+		<div class="chooseparty-container desktopOnly">
+			<h2 class="chooseparty-title">Choose Your Party Members</h2>
+			<a class="chooseparty-back" data-url-silent="/adventures/overworld" onclick="client.scaResetQuest()">Back to Map</a>
+			<a class="chooseparty-next" data-url-silent="/adventures/confirmparty" data-if="{.state} eq 'k_ConfirmParty'">Enter Dungeon</a>
+			<span class="chooseparty-next disabled" data-if="{.state} ne 'k_ConfirmParty'" data-translate-set-data-tt-text="You must choose four companions before continuing.">Enter Dungeon</span>
+			<div class="fancy-box">
+				<div class="fancy-box-top">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-mid">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-content">
+
+						<ul data-path=".companions" data-set-class="pet-count-{.companions.$length}">
+							<li class="party-entry">
+								<!--
+								<button data-set-class="{.valid.$choose(,disabled)} {.selected.$choose(selected,)}" data-set-onclick="client.scaAddPartyMember('{.id}', this)" data-tt-stencil="content-tt-sca-companion" data-set-data-tt-path="$here()" data-tt-pos="vertical">
+								-->
+								<button data-set-class="{.valid.$choose(,disabled)} {.selected.$choose(selected,)}" data-set-onclick="client.scaAddPartyMember('{.id}', this)" >
+									<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+									<h3 class="party-name" data-path=".name">Companion Name</h3>
+
+									<!-- if on cooldown -->
+									<span class="party-cooldown" data-if="{.sleeping}">
+										Available in <span data-set-data-timer=".ready">17h&nbsp;49m</span>
+									</span>
+									<!-- if on cooldown -->
+									<!-- if training -->
+									<span class="party-cooldown" data-if="{.istraining}">
+										Available in <span data-set-data-timer=".trainingendtime">17h&nbsp;49m</span>
+									</span>
+									<!-- if training -->
+
+									<!-- if selected -->
+									<span class="party-checkmark" data-if="{.selected}"></span>
+									<!-- if selected -->
+
+									<!-- hover bars -->
+									<div class="party-bars-hover">
+
+										<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=m]">
+											<div class="dice side smaller magic"></div>
+											<div class="bar-container small">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+
+												<div class="bar-filled" data-set-style="width: {.p}%;">
+													<div class="bar-container">
+														<span class="bar-bg-left"></span>
+														<span class="bar-bg-mid"></span>
+														<span class="bar-bg-right"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=p]">
+											<div class="dice side smaller perception"></div>
+											<div class="bar-container small">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+												<div class="bar-filled" data-set-style="width: {.p}%;">
+													<div class="bar-container">
+														<span class="bar-bg-left"></span>
+														<span class="bar-bg-mid"></span>
+														<span class="bar-bg-right"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=t]">
+											<div class="dice side smaller thievery"></div>
+											<div class="bar-container small">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+												<div class="bar-filled" data-set-style="width: {.p}%;">
+													<div class="bar-container">
+														<span class="bar-bg-left"></span>
+														<span class="bar-bg-mid"></span>
+														<span class="bar-bg-right"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=c]">
+											<div class="dice side smaller combat"></div>
+											<div class="bar-container small">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+												<div class="bar-filled" data-set-style="width: {.p}%;">
+													<div class="bar-container">
+														<span class="bar-bg-left"></span>
+														<span class="bar-bg-mid"></span>
+														<span class="bar-bg-right"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+										<div class="companion-skill-bar" data-if=".pow.$asArray().[sym=w].p" data-path=".pow.$asArray().[sym=w]">
+											<div class="dice side smaller wild"></div>
+											<div class="bar-container small">
+												<span class="bar-bg-left"></span>
+												<span class="bar-bg-mid"></span>
+												<span class="bar-bg-right"></span>
+												<div class="bar-filled bar-purple" data-set-style="width: {.p}%;">
+													<div class="bar-container">
+														<span class="bar-bg-left"></span>
+														<span class="bar-bg-mid"></span>
+														<span class="bar-bg-right"></span>
+													</div>
+												</div>
+											</div>
+										</div>
+
+									</div>
+									<!-- hover bars -->
+
+								</button>
+								<div class="party-dice" data-path=".pile.dice">
+									<!-- remove dice tooltip
+									<span data-set-class="dice tiny d{.count} {.color}" data-if="{.color} ne 'base'" data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-tt-pos="top"></span>
+									-->
+									<span data-set-class="dice tiny d{.count} {.color}" data-if="{.color} ne 'base'"></span>
+								</div>
+							</li>
+						</ul>
+						<a class="big-arrow prev disabled"></a><!-- hook up with pets gt 10 -->
+						<a class="big-arrow next disabled"></a><!-- hook up with pets gt 10 -->
+					</div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-bot">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+			</div>
+		</div>
+		<!-- Desktop Party Member Selection -->
+
+
+		<!-- Mobile Party Member Selection -->
+		<div class="chooseparty-container-mobile mobileOnly">
+			<h2 class="chooseparty-title">Choose Party</h2>
+			<div class="fancy-box">
+				<div class="fancy-box-top">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-mid">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-content">
+						<ul class="bxslider" data-path=".companions">
+							<li>
+								<div class="party-entry slide">
+									<div class="party-entry-block">
+										<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+										<h3 class="party-name" data-path=".name">Companion Name</h3>
+										<h4 class="party-rank">Rank <span data-path=".level">00</span></h4>
+										<div class="party-dice" data-path=".pile.dice">
+											<span data-set-class="dice tiny d{.count} {.color}" data-if="{.color} ne 'base'"></span>
+										</div>
+
+										<!-- if on cooldown -->
+										<span class="party-cooldown" data-if="{.sleeping}">
+											Available in <span data-set-data-timer=".ready">17h&nbsp;49m</span>
+										</span>
+										<!-- if on cooldown -->
+										<!-- if training -->
+										<span class="party-cooldown" data-if="{.istraining}">
+											Available in <span data-set-data-timer=".trainingendtime">17h&nbsp;49m</span>
+										</span>
+										<!-- if training -->
+
+										<!-- if selected -->
+										<span class="party-checkmark" data-if="{.selected}"></span>
+										<!-- if selected -->
+
+										<!-- hover bars -->
+										<div class="party-bars">
+
+											<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=m]">
+												<div class="dice side small magic"></div>
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+
+													<div class="bar-filled" data-set-style="width: {.p}%;">
+														<div class="bar-container">
+															<span class="bar-bg-left"></span>
+															<span class="bar-bg-mid"></span>
+															<span class="bar-bg-right"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=p]">
+												<div class="dice side small perception"></div>
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+													<div class="bar-filled" data-set-style="width: {.p}%;">
+														<div class="bar-container">
+															<span class="bar-bg-left"></span>
+															<span class="bar-bg-mid"></span>
+															<span class="bar-bg-right"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=t]">
+												<div class="dice side small thievery"></div>
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+													<div class="bar-filled" data-set-style="width: {.p}%;">
+														<div class="bar-container">
+															<span class="bar-bg-left"></span>
+															<span class="bar-bg-mid"></span>
+															<span class="bar-bg-right"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="companion-skill-bar" data-path=".pow.$asArray().[sym=c]">
+												<div class="dice side small combat"></div>
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+													<div class="bar-filled" data-set-style="width: {.p}%;">
+														<div class="bar-container">
+															<span class="bar-bg-left"></span>
+															<span class="bar-bg-mid"></span>
+															<span class="bar-bg-right"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+											<div class="companion-skill-bar" data-if=".pow.$asArray().[sym=w].p" data-path=".pow.$asArray().[sym=w]">
+												<div class="dice side small wild"></div>
+												<div class="bar-container">
+													<span class="bar-bg-left"></span>
+													<span class="bar-bg-mid"></span>
+													<span class="bar-bg-right"></span>
+													<div class="bar-filled bar-purple" data-set-style="width: {.p}%;">
+														<div class="bar-container">
+															<span class="bar-bg-left"></span>
+															<span class="bar-bg-mid"></span>
+															<span class="bar-bg-right"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</li>
+						</ul>
+						<script>
+							$(document).ready(function(){
+								$('.bxslider').bxSlider({
+									pager: false
+								});
+							});
+						</script>
+					</div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-bot">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+			</div>
+			<div class="chooseparty-buttons">
+
+				<div class="input-field button light leftarrow">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/overworld" onclick="client.scaResetQuest()">Back</button>
+				</div>
+
+				<div class="input-field button epic">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button>Add to Party</button>
+				</div>
+
+				<div class="input-field button light rightarrow disabled" data-if="{.state} ne 'k_ConfirmParty'">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button disabled>Start</button>
+				</div>
+				<div class="input-field button light rightarrow" data-if="{.state} eq 'k_ConfirmParty'">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-url-silent="/adventures/confirmparty">Start</button>
+				</div>
+
+				<!--
+				<a class="chooseparty-back" data-url-silent="/adventures/overworld" onclick="client.scaResetQuest()">Back to Map</a>
+				<a class="chooseparty-next" data-url-silent="/adventures/confirmparty" data-if="{.state} eq 'k_ConfirmParty'">Enter Dungeon</a>
+				<span class="chooseparty-next disabled" data-if="{.state} ne 'k_ConfirmParty'">Enter Dungeon</span>
+				-->
+			</div>
+		</div>
+		<!-- Mobile Party Member Selection -->
+
+
+		<div class="party-frame">
+			<span class="party-frame-helper mobileOnly"></span>
+			<ul id="party-members" data-path=".party.members">
+				<li class="party-entry" data-if="{.empty}">
+					<span class="party-empty">Empty</span>
+				</li>
+				<li class="party-entry" data-if="{.id}">
+
+					<button data-set-onclick="client.scaRemovePartyMember('{.id}', this)">
+
+						<img class="party-head" data-set-src="/shot/costume/{.costume}.png" alt="" />
+						<h3 class="party-name" data-path=".name">Companion Name</h3>
+
+					</button>
+
+					<div class="party-dice" data-path=".pile.dice">
+						<span data-set-class="dice small d{.count} {.color}" data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-if="{.color} ne 'base'"></span>
+					</div>
+				</li>
+			</ul>
+			<div class="dungeon-health" data-update="gatewaygamedata">
+				<div class="dungeon-health-bar">
+					<div class="bar-container">
+						<span class="bar-bg-left"></span>
+						<span class="bar-bg-mid"></span>
+						<span class="bar-bg-right"></span>
+
+						<span data-if="gatewaygamedata.party.staminatotal gt 0">
+							<div class="bar-filled" data-set-style="width: {gatewaygamedata.party.staminapercent}%;">
+								<div class="bar-container">
+									<span class="bar-bg-left"></span>
+									<span class="bar-bg-mid"></span>
+									<span class="bar-bg-right"></span>
+								</div>
+							</div>
+							<div class="bar-tick-container">
+								<script>
+									function sca_makeTicks(count)
+									{
+										var incr = 100/count;
+										var s = [];
+										var here = 0;
+										for(var i = 0; i < count-1; i++)
+										{
+											here += incr;
+											s.push('<div class="bar-tick" style="left: '+here.toFixed(2)+'%;"></div>');
+										}
+										return s.join('');
+									}
+
+									if(client.dataModel.model.gatewaygamedata.party)
+										$('.bar-tick-container').html(sca_makeTicks(client.dataModel.model.gatewaygamedata.party.staminatotal));
+								</script>
+							</div>
+						</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script>
+		client.startCountdowns();
+	</script>
+</div>
+
+
+<script>
+
+
+
+
+
+
+
+
+(function (window, document, $) {
+    $(function ($) {
+		var $win = $(window);
+
+		var $partyFrameX = 720;
+		var $partyFrameY = 240;
+
+		function update () {
+            var viewportWidth = document.documentElement.clientWidth
+              , viewportHeight = document.documentElement.clientHeight;
+
+			/* set sizes for the upper parchment */
+			if (viewportWidth <= ($partyFrameX / .96))
+			{
+				$('.chooseparty-container-mobile').css( "height", viewportHeight - 35 - (viewportWidth * .96 * ($partyFrameY / $partyFrameX) ) );
+			} else {
+				$('.chooseparty-container-mobile').css( "height", (viewportHeight - 35 - $partyFrameY) );
+			}
+
+
+			/* set sizes for skill bars */
+			$('.chooseparty-container-mobile .companion-skill-bar .bar-container').css( "width",
+				(viewportWidth * .96 * .95)
+				- ( ((5 + 35) * 2) + 30 + 5 )
+			);
+
+
+			/* set sizes for the lower character frame */
+			if (viewportWidth <= ($partyFrameX / .98))
+			{
+				$('.party-frame-helper').css( "height", viewportWidth * .98 * ($partyFrameY / $partyFrameX) );
+				$('.dungeon-health-bar .bar-container').css( "width", (viewportWidth * .98 * .95) - 18);
+			} else {
+				$('.party-frame-helper').css( "height", $partyFrameY );
+				$('.dungeon-health-bar .bar-container').css( "width", ($partyFrameX * .95) - 18);
+			}
+
+			console.log('x: ' + viewportWidth + ', y: ' + viewportHeight);
+
+        }
+        update();
+        $win.on('resize', update);
+    });
+}(this, document, jQuery));
+
+
+
+
+</script>
+
+<!-- endif(dev) -->

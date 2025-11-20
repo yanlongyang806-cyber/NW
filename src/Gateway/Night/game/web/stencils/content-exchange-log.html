@@ -1,0 +1,91 @@
+<!-- if(dev) -->
+<div class="page-content" data-update="exchangeaccountdata">
+	<div data-if="!{exchangeaccountdata}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+		<script type="text/javascript">
+			client.exchangeFetchExchangeAccountData();
+		</script>
+	</div>
+	<div class="page-exchange-log" data-if="exchangeaccountdata">
+		<div class="page-body">
+
+			<h3 class="page-title">Exchange Log</h3>
+
+			<table id="gatewayTableExchangeLog">
+				<thead>
+					<tr>
+						<th class="exchange-log-date"><span>Date</span></th>
+						<th class="exchange-log-id"><span>ID #</span></th>
+						<th class="exchange-log-event"><span>Event</span></th>
+					</tr>
+				</thead>
+				<tbody data-path=".exchangeaccountdata.logentries">
+					<tr>
+						<td data-path=".date.$shortDateTime()">10 Jun 2013</td>
+						<td data-path=".orderid">0</td>
+						
+						<td data-if="{.logtype} eq 'EscrowMTC'">
+							<span data-path=".charactername">Ana Guildleader</span> transferred <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">900</span> from the Personal Balance to the Exchange Balance
+						</td>
+						<td data-if="{.logtype} eq 'EscrowTC'">
+							<span data-path=".charactername">Ana Guildleader</span> transferred <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">900</span> from the Personal Balance to the Exchange Balance
+						</td>
+
+						<td data-if="{.logtype} eq 'CreateOrder' && {.ordertype} eq 'Sell'">
+							<span data-path=".charactername">Ana Guildleader</span> offered to sell <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> for <img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> each.
+						</td>
+						<td data-if="{.logtype} eq 'CreateOrder' && {.ordertype} eq 'Buy'">
+							<span data-path=".charactername">Ana Guildleader</span> offered to buy <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> for <img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> each.
+						</td>
+
+						<td data-if="{.logtype} eq 'FulfillOrder' && {.ordertype} eq 'Sell'">
+							Sold <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> for <img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> each.
+						</td>
+						<td data-if="{.logtype} eq 'FulfillOrder' && {.ordertype} eq 'Buy'">
+							Purchased <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> for <img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> each.
+						</td>
+
+						<td data-if="{.logtype} eq 'WithdrawOrder' && {.ordertype} eq 'Sell'">
+							Sell offer canceled. <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> returned to Exchange Balance.
+						</td>
+						<td data-if="{.logtype} eq 'WithdrawOrder' && {.ordertype} eq 'Buy'">
+							Purchase Offer cannceled. <img class="currency-img" src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> returned to Exchange Balance.
+						</td>
+
+						<td data-if="{.logtype} eq 'ExpireOrder' && {.ordertype} eq 'Sell'">
+							Sell offer expired. <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""> <span data-path=".quantitymtc">100</span> returned to Exchange Balance.
+						</td>
+						<td data-if="{.logtype} eq 'ExpireOrder' && {.ordertype} eq 'Buy'">
+							Purchase Offer expired. <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> returned to Exchange Balance.
+						</td>
+
+						<td data-if="{.logtype} eq 'ExcessTCReturn'">
+							Unused <imgsrc="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> returned to Exchange Balance.
+						</td>
+						<td data-if="{.logtype} eq 'ExcessTC'">
+							Unused <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""><span data-path=".quantitytc">25</span> returned to Exchange Balance.
+						</td>
+
+						<td data-if="{.logtype} eq 'ClaimTC'">
+							<span data-path=".charactername">Ana Guildleader</span> withdrew <imgsrc="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""><span data-path=".quantitytc">25</span> from Exchange Balance.
+						</td>
+
+						<td data-if="{.logtype} eq 'ClaimMTC'">
+							<span data-path=".charactername">Ana Guildleader</span> withdrew <imgsrc="/tex/Currency_Icon_Tiny_Cryptic.png" alt=""><span data-path=".quantitymtc">25</span> from Exchange Balance.
+						</td>
+					</tr>
+				</tbody>
+			</table>
+			<script type="text/javascript">
+				client.exchangeLogDataTable();
+			</script>
+
+		</div>
+	</div>
+</div>
+
+
+<!-- endif(dev) -->

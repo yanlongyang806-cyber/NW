@@ -1,0 +1,29 @@
+<!-- if(dev) -->
+
+<div class="zenstore-nav">
+	<span data-update="cstore">
+		<div data-path="cstore">
+			<span data-path=".topLevel">
+
+				<div class="navGroup">
+					<a data-set-class="navGroupMain button-nav medium nav_{.name}" data-set-data-url="/zenstore/{.name}">
+						<span data-path=".displayname.str"></span>
+					</a>
+					<div data-path=".children" data-set-class="subnav-group hide subNavGroup nav_group_{.name}">
+						<a data-set-class="button-nav small subnav nav_{.name}" data-set-data-url="/zenstore/{.name}">
+							<span data-path=".displayname.str"></span>
+						</a>
+					</div>
+				</div>
+
+			</span>
+		</div>
+	</span>
+</div>
+
+
+<script data-if="!{.cstore.categories}">
+	client.dataModel.fetchCStore();
+</script>
+
+<!-- endif(dev) -->

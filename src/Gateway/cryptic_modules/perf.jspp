@@ -1,0 +1,398 @@
+'use strict';
+
+var perf = module.exports;
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Settings:
+//
+
+// When to update the process window title with data
+perf.UPDATE_TITLE_TIME = 2*1000; // 2 seconds
+
+// When to send the log stats to the server
+perf.UPDATE_SERVER_STATS_TIME = 1*60*1000; // 1 minute
+
+// Report intervals in terms of the pervious interval
+perf.INTERVALS = [
+	10, // 10 minutes
+	6,  // six 10-minute interval = 1 hour
+	24, // 24 hours
+	7,  // week
+	52  // year
+];
+
+perf.MINUTES_TEN = 0;
+perf.HOUR = 1;
+perf.DAY = 2;
+perf.WEEK = 3;
+perf.YEAR = 4;
+
+
+//
+//
+///////////////////////////////////////////////////////////////////////////
+
+var Aggregates = function()
+{
+	this.last = 0;
+	this.min = Number.MAX_VALUE;
+	this.max = 0;
+	this.avg = 0;
+	this.sum = 0;
+	this.count = 0;
+	this.median = 0;
+}
+
+
+var RRD = function(name, counts)
+{
+	if(typeof counts === 'number')
+		this.count = counts;
+	else
+		this.count = counts[0];
+
+	this.name = name + '.' + counts.length;
+	this.values = [];
+	this.agg = new Aggregates();
+
+	if(counts.length > 1)
+	{
+		this.rrd = new RRD(name, counts.slice(1));
+	}
+}
+
+RRD.prototype.update = function update(value)
+{
+	if(this.values.length >= this.count)
+	{
+		if(this.rrd)
+		{
+			this.rrd.update(this.agg);
+		}
+
+		this.values = [];
+	}
+
+	this.values.unshift(value);
+	this.agg = this.calc();
+	this.agg.last = value;
+}
+
+RRD.prototype.calc = function calc()
+{
+	if(!this.values.length)
+		return this.agg;
+
+	if(typeof this.values[0] === 'number')
+	{
+		return this.calcAggregatesFromValues();
+	}
+	else
+	{
+		return this.calcAggregatesFromAggregates();
+	}
+}
+
+RRD.prototype.calcAggregatesFromValues = function calcAggregatesFromValues()
+{
+	var agg = new Aggregates();
+
+	this.values.forEach(function(a) {
+		if(a > agg.max)
+			agg.max = a;
+
+		if(a < agg.min)
+			agg.min = a;
+
+		agg.sum += a;
+		agg.count++;
+
+	});
+
+	var sorted = this.values.sort(function(a, b) { return a - b });
+	var middle = ((this.values.length - 1)/2)>>>0;
+	if(this.values.length & 1 && this.values.length > 1)
+	{
+		var a = sorted[middle];
+		var b = sorted[middle+1];
+		agg.median = (a+b)/2;
+	}
+	else
+	{
+		// There is a perfect median.
+		agg.median = sorted[middle];
+	}
+
+	agg.avg = agg.sum/agg.count;
+
+	return agg;
+}
+
+RRD.prototype.calcAggregatesFromAggregates = function calcAggregatesFromAggregates()
+{
+	var agg = new Aggregates();
+
+	this.values.forEach(function(a) {
+		if(a.max > agg.max)
+			agg.max = a.max;
+
+		if(a.min < agg.min)
+			agg.min = a.min;
+
+		agg.sum += a.sum;
+		agg.count += a.count;
+		agg.median += a.median;
+	});
+
+	agg.avg = agg.sum/agg.count;
+
+	// The median of medians doesn't really mean anything useful.
+	// Neither does the average of medians, but it's easy to calculate.
+	agg.median = agg.median/this.values.length;
+
+	return agg;
+}
+
+
+RRD.prototype.getRRD = function getRRD(index)
+{
+	if(!index)
+		return this;
+	else
+		return this.rrd.getRRD(index-1);
+}
+
+////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+
+var s_stats = { };
+var s_hists = { };
+
+perf.get = function(name)
+{
+	if(!s_stats[name])
+	{
+		s_stats[name] = {
+			rrd: new RRD(name, perf.INTERVALS),
+			value: 0,
+			clear: false,
+			gauge: null
+		}
+	}
+
+	return s_stats[name];
+}
+
+perf.inc = function(name, val)
+{
+	var stat = perf.get(name);
+	stat.value += (+val) || 1;
+}
+
+perf.dec = function(name, val)
+{
+	var stat = perf.get(name);
+	stat.value -= (+val) || 1;
+}
+
+perf.count = function(name, val)
+{
+	var stat = perf.get(name);
+	stat.clear = true;
+	stat.value += (+val) || 1;
+}
+
+perf.gauge = function(name, fn)
+{
+	var stat = perf.get(name);
+	stat.gauge = fn;
+}
+
+perf.histogram = function(name, val)
+{
+	val = +val;
+	if(isNaN(val))
+		return;
+
+	if(!s_hists[name])
+	{
+		s_hists[name] = {
+			values: [],
+			bins: null,
+			min: 0,
+			max: 0,
+			maxVal: 0
+		};
+	}
+
+	s_hists[name].values.push(val);
+
+	if(s_hists[name].values.length > 1000)
+	{
+		s_hists[name].values = s_hists[name].values.slice(2*s_hists[name].values.length/3);
+	}
+}
+
+perf.calcHist = function calcHist(hist)
+{
+	if(hist.values.length > 2)
+	{
+		var vals = hist.values.sort(function(a, b) { return a - b });
+		hist.min = vals[0];
+		hist.max = vals[vals.length - 1];
+
+		var binWidth = hist.max === hist.min ? 1 : (hist.max-hist.min+1)/20 >>> 0;
+
+		hist.bins = [];
+		hist.binVals = [];
+		for(var i = 0; i < 20; i++)
+		{
+			hist.bins.push(0);
+			hist.binVals.push(i * binWidth + hist.min);
+		}
+
+
+		vals.forEach(function(a) {
+			var bin = ((a - hist.min)/binWidth) >>> 0;
+			hist.bins[bin >= hist.bins.length ? hist.bins.length-1 : bin]++;
+		});
+
+		hist.maxVal = 0;
+		hist.bins.forEach(function(a) {
+			if(a > hist.maxVal)
+				hist.maxVal = a;
+		})
+	}
+}
+
+perf.init = function()
+{
+	perf.gauge('mem:workingSet', function() { return process.memoryUsage().rss });
+	perf.gauge('mem:heapTotal', function() { return process.memoryUsage().heapTotal });
+	perf.gauge('mem:heapUsed', function() { return process.memoryUsage().heapUsed });
+
+	setInterval(perf.app.logStats, perf.UPDATE_SERVER_STATS_TIME);
+	setInterval(perf.app.updateTitle, perf.UPDATE_TITLE_TIME);
+
+	setInterval(perf.onEveryMinute, 1*60*1000);
+}
+
+perf.reportTextParser = function()
+{
+	var arr = [];
+	arr.push('{');
+
+	for(var name in s_stats)
+	{
+		var stat = s_stats[name];
+		if(stat.clear)
+		{
+			arr.push('\tcounter "' + name + '" ' + (s_stats[name].rrd.getRRD(perf.MINUTES_TEN).agg.last >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.MINUTES_TEN).agg.sum >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.HOUR).agg.sum >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.DAY).agg.sum >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.WEEK).agg.sum >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.YEAR).agg.sum >>> 0));
+		}
+		else
+		{
+			arr.push('\tcounter "' + name + '" ' + (s_stats[name].rrd.getRRD(perf.MINUTES_TEN).agg.last >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.MINUTES_TEN).agg.avg >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.HOUR).agg.avg >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.DAY).agg.avg >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.WEEK).agg.avg >>> 0)
+				+ ' ' + (s_stats[name].rrd.getRRD(perf.YEAR).agg.avg >>> 0));
+		}
+	}
+
+	for(name in s_hists)
+	{
+		var hist = s_hists[name];
+		perf.calcHist(hist);
+
+		if(hist.bins)
+		{
+			var scale = 100 / hist.maxVal;
+			if(scale > 1)
+				scale = 1;
+
+			arr.push('\thistogram "' + name + '" ' + hist.min + ' ' + hist.max + ' ' + hist.maxVal)
+			arr.push('\t{');
+			arr.push('\t\tbinstarts ' + hist.binVals.join(', '));
+			hist.bins.map(function(a) {
+				var s = '"';
+				while(s.length < a*scale)
+					s+='*';
+				s += '"';
+				arr.push('\t\tbars ' + s);
+			});
+			arr.push('\t\tcounts ' + hist.bins.join(', '));
+			arr.push('\t}');
+		}
+	}
+
+	arr.push('}');
+
+	return arr;
+}
+
+perf.onEveryMinute = function()
+{
+	for(var name in s_stats)
+	{
+		var stat = s_stats[name];
+		if(typeof stat.gauge === 'function')
+		{
+			stat.value = stat.gauge(Date.now());
+		}
+
+		stat.rrd.update(stat.value);
+
+		if(stat.clear)
+		{
+			stat.value = 0;
+		}
+	}
+
+	perf.histogram('mem', process.memoryUsage().heapUsed);
+
+}
+
+perf.app = {};
+
+var format = require('cryptic/format');
+var log = require('cryptic/log');
+
+perf.app.updateTitle = function()
+{
+	var str = '['+ process.pid +'] ' + process.appName;
+	if(s_stats['players'])
+		str += ' - PLAYERS (cur:' + s_stats['players'].value + ' max:' + s_stats['players'].rrd.agg.max + ')';
+
+	if(s_stats['mem:heapTotal'])
+		str += ' - MEM (ws:' + format.humanize(s_stats['mem:workingSet'].value)
+			+ ' heap:' + format.humanize(s_stats['mem:heapTotal'].value)
+			+ ' used:' + format.humanize(s_stats['mem:heapUsed'].value) + ')';
+
+	process.title = str;
+}
+
+perf.app.logStats = function()
+{
+	var str = 'PeriodicStats: ';
+	if(s_stats['players'])
+		str += 'players.cur ' + s_stats['players'].value + ', players.max ' + s_stats['players'].rrd.agg.max + ', ';
+
+	if(s_stats['mem:heapTotal'])
+		str += 'mem.workingSet ' + format.humanize(s_stats['mem:workingSet'].value)
+			+ ', mem.heapTotal ' + format.humanize(s_stats['mem:heapTotal'].value)
+			+ ', mem.heapUsed ' + format.humanize(s_stats['mem:heapUsed'].value);
+
+	log.log(str);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

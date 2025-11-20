@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<title data-no-translation>Neverwinter</title>
+		<meta charset="utf-8">
+		<meta name="description" content="">
+		<meta name="author" content="">
+
+		<!-- MOBILE META TAGS -->
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="viewport" content = "width = device-width, initial-scale = 1, minimum-scale = 1, maximum-scale = 1" />
+
+		<!-- LOGIN STYLES -->
+		<link href="./css/login-support.css?cb={$cachebuster()}" rel="stylesheet">
+		<link href="./css/style.css?cb={$cachebuster()}" rel="stylesheet" id="stylesheet">
+
+		<!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+			<script src="//html5shim.googlecode.com/svn/trunk/html5.js"></script>
+			<link href="./css/style-ie8.css?cb={$cachebuster()}" rel="stylesheet" id="stylesheet">
+		<![endif]-->
+
+		<!-- FAVICONS AND OTHER ICONS -->
+		<link rel="shortcut icon" href="/img/favicon.ico">
+		<link rel="apple-touch-startup-image" href="/img/mobile_splash.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/img/apple-touch-icon-144.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/img/apple-touch-icon-114.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/img/apple-touch-icon-72.png">
+		<link rel="apple-touch-icon" href="/img/apple-touch-icon-57.png">
+
+		<!-- GOOGLE ANALYTICS -->
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-992936-18']);
+			_gaq.push(['_setDomainName', 'playneverwinter.com']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+
+	</head>
+
+	<body class="module1">
+
+		<!-- NO JAVASCRIPT -->
+		<noscript>
+			<div class="errorpage">
+				<div class="login-logo"></div>
+				<p>You have JavaScript disabled. It is required to view this web page.</p>
+				<p>Please enable JavaScript in your browser settings and refresh this page.</p>
+			</div>
+			<style type="text/css">
+				#content { display: none; }
+			</style>
+		</noscript>
+
+		<!-- NO COOKIES OR UNSUPPORTED BROWSER -->
+		<div id="nocontent" class="errorpage">
+			<div class="login-logo"></div>
+			<div id="nocookies">
+				<p>Cookies need to be enabled for this site to work.</p>
+				<p>Please enable cookies in your browser settings and refresh this page.</p>
+			</div>
+			<div id="unsupportedbrowser">
+				<p>You are using an unsupported browser.</p>
+			</div>
+		</div>
+
+		<!-- CONTENT -->
+		<div id="content">
+
+
+			<!-- LOGIN PAGE -->
+			<div class="wrapper login">
+				<div class="login-background"></div>
+
+				<div class="login-header">
+					<a href="http://nw.perfectworld.com" target="_blank"><span class="arrow"></span> Back to the Neverwinter Website</a>
+					<span class="header-bg"></span>
+				</div>
+
+
+
+
+				<div class="login-page">
+					<!--
+					<div class="login-concept"></div>
+					-->
+					<div class="login-logo"></div>
+					<div class="login-tagline">
+						Access Neverwinter From Your Web Browser
+					</div>
+					<div id="content_box" class="login">
+						<div class="box-title">
+							<div class="box-top">
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+
+							<div class="box-mid">
+								<div class="box-content" id="content_title">
+									Test Header
+								</div>
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+							<div class="box-bot">
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+							<div class="deco-left"></div>
+							<div class="deco-right"></div>
+						</div>
+
+						<div class="box-body">
+							<div class="box-top">
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+							<div id="content_frame_mid" class="box-mid">
+								<div class="box-content" id="content_login">
+
+									<!-- LOGIN FORM -->
+									<div id="form">
+										<p class="intro">Please log in with your User Name or Email:</p>
+
+										<form method="POST" onsubmit="return false;">
+
+											<input id="user" name="user" type="text" placeholder="Username" />
+											<input id="pass" name="pass" type="password" placeholder="Password" />
+											<div id="login" class="input-field button epic">
+												<div class="input-bg-left"></div>
+												<div class="input-bg-mid"></div>
+												<div class="input-bg-right"></div>
+												<input type="submit" name="button" value="Login" onclick="require('/StarTrek/login/client/client-login.js').submitForm(this.form);" />
+											</div>
+
+											<p class="error">Error messages goes here.</p>
+
+											<div id="loading">
+												<img src="../img_nw/loading.gif" alt="" />
+											</div>
+
+										</form>
+
+										<p class="faq_link">
+											<a href="https://support.perfectworld.com/" target="_blank">Account Help</a><br />
+											<a href="/faq.html">Frequently Asked Questions</a>
+										</p>
+									</div>
+									<div id="linktocryptic" class="login-message-large hidden">
+										<h3>This Account is Not Linked</h3>
+										<p data-translation-html>This account is not linked to a Cryptic account. <a href="http://nw.perfectworld.com" target="_blank">Click here to link your account</a>. It will walk you through the linking process.</p>
+
+										<p><span id="login-try-again" class="link">Click here to login again with a different account</span></p>
+									</div>
+									<div id="linktopw" class="login-message-large hidden">
+										<h3>This Account is Not Linked</h3>
+										<p data-translation-html>This account is not linked to a Perfect World account. <a id="linkurl" href="" target="_blank">Click here to link your account</a>. It will walk you through the linking process.</p>
+
+										<p><span id="login-try-again" class="link">Click here to login again with a different account</span></p>
+									</div>
+
+									<ol id="loginerrors" class="hidden">
+										<li id="loginerror">Unable to log in at this time. Please try again later.</li>
+										<li id="loginerror-2" data-translation-id="LoginStatus_Account_Failure_NotFound">Invalid username or password.</li>
+										<li id="loginerror-3" data-translation-id="LoginStatus_Account_Failure_NotFound">Invalid username or password.</li>
+										<li id="loginerror-4" data-translation-id="LoginStatus_Account_Failure_RateLimit">Too many attempts; please try again later.</li>
+										<li id="loginerror-5" data-translation-id="LoginFailureCode_Disabled">This account has been disabled.</li>
+										<li id="loginerror-8" data-translation-id="LoginFailureCode_DisabledLinked">Please log in using your Perfect World account name.</li>
+										<li id="loginerror-10" data-translation-id="LoginFailureCode_Banned">Your account has been banned. Please contact customer support.</li>
+										<li id="loginerror-101">Your session has timed out. Please try again.</li>
+										<li id="loginerror-102">Neverwinter Gateway is currently undergoing maintenance. Please try again later.</li>
+									</ol>
+									<!-- LOGIN FORM -->
+								</div>
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+							<div class="box-bot">
+								<div class="box-left"></div>
+								<div class="box-right"></div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="sticky-footer">
+					<span class="footer-bg"></span>
+					<div class="footer-links">
+						<ul>
+							<li><a href="http://www.pwe-inc.com/about" target="_blank">About Us</a></li>
+							<li><a href="http://www.perfectworld.com/about/terms" target="_blank">Terms of Service</a></li>
+							<li><a href="http://www.perfectworld.com/about/privacy" target="_blank">Privacy Policy</a></li>
+							<li><a href="http://www.pwe-inc.com/contact" target="_blank">Contact Us</a></li>
+							<li><a href="http://www.pwe-inc.com/career" target="_blank">Career</a></li>
+						</ul>
+						<p class="copyright">Copyright &copy; 2013. Perfect World Entertainment Inc, All Rights Reserved</p>
+					</div>
+					<div class="footer-brands">
+						<ul>
+							<li class="brand pw"><a href="http://www.pwe-inc.com/" target="_blank"><span>Perfect World</span></a></li>
+							<li class="brand cryptic"><a href="http://www.crypticstudios.com/" target="_blank"><span>Cryptic Studios</span></a></li>
+							<li class="brand hasbro"><a href="http://www.hasbro.com/" target="_blank"><span>Hasbro</span></a></li>
+							<li class="brand wotc"><a href="http://www.wizards.com/" target="_blank"><span>Wizards of the Coast</span></a></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<!-- LOGIN PAGE -->
+
+		</div>
+
+		<!-- THE JAVASCRIPT -->
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="./lang.js?cb={$cachebuster()}"></script>
+
+		<!-- LOGIN STUFF -->
+		<script src="./js/login-support.js?cb={$cachebuster()}"></script>
+		<script src="./js/client-login.js?cb={$cachebuster()}"></script>
+
+		<script>
+			$(document).ready(function() {
+				$('input, textarea').placeholder();
+				$('input#user').focus();
+			});
+		</script>
+
+		<script>
+			// NOTE: IE WILL NOT SET COOKIES is there is an underscore in the domain name.
+			// ex: http://qa_nw3/  <- Never setting cookies in IE.
+			document.cookie = "testing=cookies_enabled; path=/";
+		    if(document.cookie.indexOf("testing=cookies_enabled") < 0)
+			{
+				$('#content').hide();
+				$('#nocontent').show();
+				$('#nocookies').show();
+			}
+			// Delete the cookie:
+			document.cookie = "testing=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/"
+		</script>
+
+	</body>
+</html>
+
+

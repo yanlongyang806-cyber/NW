@@ -1,0 +1,27 @@
+OperationDef
+	Name "SpecularExpRange" // Name of the operation
+	Description "A transform from 0-1 to the desired specular exponent range."
+	Type SIMPLE
+
+	Input
+		Name SpecExpIn
+		Description "Specular exponent in 0 to 1 range.  Will be transformed into the correct output range."
+		Float 1
+	EndInput
+	
+	Input
+		Name SpecExpRange
+		Description "Min and max specular exponent in 0.25 to 128 range."
+		NoAutoConnect 1
+		NoManualConnect 1
+		Type SpecularExponentRange
+		Float 2
+		FloatRange 0.25 128
+	EndInput
+
+	Output
+		Name Result
+		Description "Value for the specular exponent sink."
+		Float 1
+	EndOutput
+EndOperationDef

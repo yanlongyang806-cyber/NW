@@ -1,0 +1,15 @@
+OperationDef
+	Name "ForceHDROutput" // Name of the operation
+	Description "Force the HDR output to a known color"
+	Type CUSTOM
+
+    Input: ColorNormal, "Normal color"
+    Input: ColorHDR, "HDR Color"
+    
+	Output
+		Name Color
+		Description "The normal color"
+        Float 4
+	EndOutput
+
+EndOperationDef

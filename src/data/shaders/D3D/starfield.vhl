@@ -1,0 +1,65 @@
+#define STARFIELD
+#include "vs_inc.hlsl"
+
+void starfield_vertexshader(in VS_INPUT_STARFIELD vIn,
+							out VS_OUTPUT_NORMAL vOut
+							)
+{
+	float3 position_vs;
+	
+	float scale = sin(vIn.boneweights.a * star_params.x); // vIn.boneweights.a = star->size, star_params.x = 0.01f * RAD(fov)
+
+    #ifdef CAMERA_FACING
+		position_vs = mul_modelview_mat(float4(vIn.position,1), modelview_mat).xyz;
+		position_vs.xy += scale * vIn.normal.xy;
+	#else
+		float4 position_ms = float4(vIn.position,1);
+		position_ms.xyz += scale * vIn.normal.xyz;
+		position_vs = mul_modelview_mat(position_ms, modelview_mat).xyz;
+	#endif
+
+	vOut.normal_vs_and_unused.xyz = float3(0, 0, 1);
+	#ifndef NO_NORMALMAP
+		vOut.tangent_vs = float3(1, 0, 0);
+		vOut.binormal_vs = float3(0, 1, 0);
+	#endif
+
+	// Transform to clip space
+	calcClipPosition(vOut.position_clip, position_vs);
+
+	#ifdef VERTEX_ONLY_LIGHTING
+		#ifdef NO_NORMALMAP
+			vOut.diffuse_value = getAmbientColorNoVertex();
+		#endif
+	#else
+		vOut.vertex_lighting = getAmbientColorNoVertex();
+	#endif
+
+	#ifndef NOPIXELSHADER
+		#ifndef DEPTH_ONLY
+			vOut.vpos_xyw_and_unused.xyz = vOut.position_clip.xyw;
+		#endif
+
+		
+		vOut.position_vs.xyz = position_vs;
+		vOut.position_vs.w = 0;
+
+		vOut.texcoords = vIn.texcoords;
+
+		vOut.color0.rgb = vIn.boneweights.rgb * color0.rgb;
+		vOut.color0.a = color0.a;
+		vOut.instanceParam = 1;
+		
+		#ifdef VERTEX_FOG
+			vOut.position_vs.w = fogVertexFog(length(vOut.position_vs.xyz));
+		#endif
+	#endif
+
+	#ifndef DEPTH_ONLY
+		vOut.hemisphere_dir_vs_and_unused = float4( 0, 0, 1, 0);
+		vOut.vpos_xyw_and_unused.w = 0;
+		#ifndef ALPHA_FADE_PLANE
+			vOut.normal_vs_and_unused.w = 0;
+		#endif
+	#endif 
+}

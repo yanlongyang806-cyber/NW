@@ -1,0 +1,23 @@
+OperationDef
+	Name "FresnelTerm" // Name of the operation
+	Description "Fresnel Term"
+	Type ADVANCED
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0 0.0
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Output of (1 - N * E) ^ 2"
+		Float 1
+	EndOutput
+
+EndOperationDef

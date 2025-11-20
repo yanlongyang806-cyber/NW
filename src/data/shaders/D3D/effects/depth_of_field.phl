@@ -1,0 +1,182 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+#include "rgb_hsv_inc.hlsl"
+
+SAMPLER_DECL(blurred_color_sampler, 0);
+SAMPLER_DECL(depth_sampler, 1);
+SAMPLER_DECL(ldr_color_sampler, 2);
+SAMPLER_DECL(hdr_color_sampler, 3);
+#ifdef GRIME
+SAMPLER_DECL(grime_color_sampler, 4);
+#endif
+
+
+// -----------------------------------------------------------------------
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 ppTexScale	: PS_CONSTANT_MATERIAL_PARAM0() ;
+
+// [0] Focus depth, [1] focus value at depth, [2] focus change rate towards near focus, 
+// [3] focus change rate towards far focus
+uniform float4 dofParams	: PS_CONSTANT_MATERIAL_PARAM1() ;
+
+// [0] -(sky depth start)/(sky depth fade len), [1] 1/(sky depth fade len), [2] sky blur value,
+// [3] local contrast scale
+uniform float4 dofParams2	: PS_CONSTANT_MATERIAL_PARAM2() ;
+
+
+#ifdef DOF_EDGES
+	// [0]-[2] border color
+	// [3] border ramp
+	uniform float4 dofParams3	: PS_CONSTANT_MATERIAL_PARAM3() ;
+
+	// [0] border blur ammount
+#endif
+	// [1] random value - for GRIME test, can be removed/replaced
+	// [2] unsharp_amount
+	// [3] unsharp_theshold
+	uniform float4 dofParams4	: PS_CONSTANT_MATERIAL_PARAM4() ;
+
+#ifdef DEPTH_HSV
+	// [0]-[1] foreground saturation and value scales
+	// [2]-[3] background saturation and value scales
+	uniform float4 dofParams5	: PS_CONSTANT_MATERIAL_PARAM5() ;
+	// [0]-[1] sky saturation and value scales
+	// [2] fade distance
+	// [3] fade falloff scale
+	uniform float4 dofParams6	: PS_CONSTANT_MATERIAL_PARAM6() ;
+#endif
+
+#ifdef GRIME
+	// camera focus for testing
+	uniform float4 dofParams7	: PS_CONSTANT_MATERIAL_PARAM7() ;
+#endif
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+
+#ifndef _XBOX
+#undef MRT2
+#endif
+
+struct PS_OUTPUT
+{
+	#ifdef MRT2
+		float4 color[2] : SEM_COLOR(0);
+	#else
+		float4 color[1] : SEM_COLOR(0);
+	#endif
+	
+	#ifdef WRITE_DEPTH
+ 		float depth		: DEPTH;
+ 	#else
+ 	#endif
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+    float2 texcoord;
+    texcoord.xy = fragment.texcoord.xy;
+
+	float depth = sampleTexDepth(depth_sampler, texcoord.xy);
+	float zdepth = viewSpaceDepth(depth);
+	float4 ldr_color = sampleTex2D(ldr_color_sampler, texcoord);
+	float4 blurred_color = sampleTex2D( blurred_color_sampler, texcoord );
+	#ifdef MRT2
+		output.color[1] = sampleTex2D(hdr_color_sampler, texcoord);
+	#endif
+
+
+    float scale;
+#ifdef DOF_SCALE
+	scale = fragment.texcoord.z > 0;
+#else
+    scale = 1;
+#endif
+
+	#ifdef DOF_EDGES
+		// This code is replicated in smart_blur.phl
+		float border_ramp = dofParams3.w; // 2
+		float border_blur = dofParams4.x; // 1
+		float3 border_color = dofParams3.xyz; // 0.08, 0.08, 0.10
+		float border = max(0, -(border_ramp-1) + border_ramp*4*((texcoord.x - 0.5)*(texcoord.x - 0.5) + (texcoord.y - 0.5)*(texcoord.y - 0.5)));
+		//float border = smoothstep(0, 0.4, (texcoord.x - 0.5)*(texcoord.x - 0.5) + (texcoord.y - 0.5)*(texcoord.y - 0.5));
+		float eff_border_blur = border_blur*border;
+	#else
+		float eff_border_blur = 0;
+	#endif
+
+	float sky_amount;
+	float blur_amount = calculateDepthOfField(zdepth, scale, dofParams, dofParams2.xyz, eff_border_blur, sky_amount);
+
+	output.color[0] = lerp(ldr_color, blurred_color, blur_amount);
+
+	float unsharp_amount = dofParams4.z; // 1.5;
+	float unsharp_threshold = dofParams4.w; // 0.05;
+	float local_scale=dofParams2.w;
+	//output.color[0].rgb = (output.color[0].rgb - blurred_color)*2.5; // Neon lights!
+	output.color[0].rgb = applyLocalContrast(output.color[0].rgb, blurred_color.xyz, local_scale, unsharp_amount, unsharp_threshold);
+
+	#ifdef DOF_EDGES
+		output.color[0].rgb += border*border_color;
+		#ifdef ShowBlurBorder
+			output.color[0].rgb = border;
+		#endif
+	#endif
+
+	#ifdef DEPTH_HSV
+	{
+		float2 depth_sv_scale_fg = dofParams5.xy;
+		float2 depth_sv_scale_bg = dofParams5.zw;
+		float2 depth_sv_scale_sky = dofParams6.xy;
+		float2 fade_params = dofParams6.zw;
+		float2 sv_scale = lerp(depth_sv_scale_fg, depth_sv_scale_bg, saturate((zdepth-fade_params.x)*fade_params.y));
+		sv_scale = lerp(sv_scale, depth_sv_scale_sky, sky_amount);
+		float3 texcolor = output.color[0].rgb;
+		texcolor = lerp(texcolor, getIntensity(texcolor), 1-sv_scale.r);
+		texcolor *= sv_scale.g;
+		output.color[0].rgb = texcolor;
+	}
+	#endif
+
+
+	#ifdef GRIME
+		float3 position_vs = extractPositionUncompressedWithCorrection(zdepth, texcoord);
+		float3 position_ws = mul( float4( position_vs.xyz, 1 ), invview_mat );
+		float2 texcoords_world = (position_ws*0.1).yz;
+		float2 texcoords_world_random = (position_ws*0.1).yz + dofParams4.y;
+		float3 view_ws = mul( float4( position_vs.xyz, 1 ), invview_mat) - dofParams5.xyz; //  invview_mat[3]; // not a normalized vector - has distance!
+		float2 texcoords_view = view_ws.yz*0.1;
+		float len_view_ws = length(view_ws);
+		float2 texcoords_cube = sampleTexCubeNoMips(cubemap_lookup_texture, view_ws)*20;
+		float2 texcoords_cube_distort = sampleTexCubeNoMips(cubemap_lookup_texture, view_ws)*len_view_ws*0.5;
+
+		//output.color[0].rgb = 1;
+
+		float4 grime = sampleTex2D(grime_color_sampler, texcoords_world);
+// 		grime = 0.3333*(sampleTex2D(grime_color_sampler, (position_ws*0.1).yz) + 
+// 			sampleTex2D(grime_color_sampler, (position_ws*0.1).xy) +
+// 			sampleTex2D(grime_color_sampler, (position_ws*0.1).xz));
+		grime = saturate(grime*4-3);
+		grime = lerp(1, grime, saturate(blur_amount));
+		output.color[0].rgb *= grime;
+
+		//output.color[0].rgb = float3(texcoords_cube*0.01, 0); // ldr_color; // saturate(position_ws*0.000001);
+
+	#endif
+
+
+	#ifdef ShowDOFAmount
+		output.color[0].rgb = blur_amount;
+	#endif
+
+	#ifdef WRITE_DEPTH
+ 		output.depth = depth;
+ 	#endif
+
+	return output;
+}
+
+
+

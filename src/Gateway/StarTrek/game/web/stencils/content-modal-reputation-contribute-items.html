@@ -1,0 +1,67 @@
+<div class="modal-top-outer">
+	<div class="modal-top-inner">
+		<a class="close-button" data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/{$root().queryParams.taskslotnum}"><span class="back-arrow mobileOnly"></span></a>
+	</div>
+</div>
+<div class="modal-body-outer">
+	<div class="modal-body-inner">
+
+		<div class="holdings-contributions-submit">
+			<h2 class="modal-title" data-path=".requireditemdisplayname.str">Contribute [ITEM NAME CATEGORY]</h2>
+			<form>
+				<input type="hidden" data-set-value="{.rewardmultiplier}" name="invisible" id="contribution-rewardmultiplier" />
+				<div class="contribution-item-list list-box large-list-entries">
+					<div class="list-group">
+						<ul class="list-entries" data-path=".availableitems">
+
+							<li class="selectable-entry" data-set-data-value="{.itemname},{.bagid},{.slot},{.count},">
+
+								<span class="cap"></span>
+								<span class="entry">
+									<img data-set-src="../tex/{.hdef.icon}.png" />
+									<h4 data-path=".hdef.displaynamemsg.str">Item Name Goes Here</h4>
+								</span>
+							</li>
+
+						</ul>
+					</div>
+				</div>
+				<div class="contribution-item-earns">
+					<h3>For this contribution you will earn:</h3>
+					<div class="contribution-block">
+						<div class="item-icon medium">
+							<img alt="" data-set-src="/tex/{.rewarditem.icon}.png">
+						</div>
+						<span class="contribution-amount"><input class="readonly" type="text" id="return" value="0" readonly /></span>
+						<span class="contribution-name" data-path=".rewarditem.displaynamemsg.str">Fleet Credits</span>
+					</div>
+				</div>
+				<span class="contribution-fineprint">
+					Note: If your contribution is not needed due to the goal already being fulfilled, your <span data-path=".requireditemdisplayname.str">Item Name</span> will remain in your roster and will not be removed. Your contributions will be added in the order they are selected.
+				</span>
+				<div class="contribution-submit-buttons">
+					<input type="button" value="Accept" data-set-onclick="client.playerProjectDonateItems('Personal_Possession_'+'{$root().queryParams.projectname}',{$root().queryParams.taskslotnum},'{$root().queryParams.taskname}','{$root().queryParams.bucketname}')"
+					data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/{$root().queryParams.taskslotnum}" />
+					<input type="reset" value="Cancel" data-set-data-url-silent="/reputation/{$root().queryParams.projectname}/{$root().queryParams.taskslotnum}" />
+				</div>
+			</form>
+		</div>
+
+	</div>
+</div>
+<script>
+	client.projectDonatePageInit()
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- endif(dev) -->

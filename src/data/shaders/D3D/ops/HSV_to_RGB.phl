@@ -1,0 +1,5 @@
+// HSV_to_RGB.phl
+{
+	%Result%.xyz = HSVtoRGB( float3(%A%.x * 6, %A%.yz) );
+	%Result%.w = %A%.w;
+}

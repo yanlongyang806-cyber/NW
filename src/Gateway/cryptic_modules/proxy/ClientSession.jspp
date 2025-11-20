@@ -1,0 +1,576 @@
+'use strict';
+
+///////////////////////////////////////////////////////////////////////////
+//
+// ClientSession
+//
+// Tracks a session with a client
+//
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var locale = require('cryptic/locale');
+var perf = require('cryptic/perf');
+
+var proxy = require('./ProxyStartup');
+var GSSession = require('./GSSession');
+
+var ClientSession = function ClientSession(mgr, sid, magic, sockClient, loginInfo)
+{
+	dbg.trace(loginInfo.idAccount, sid, magic, loginInfo.publicaccountname);
+
+	this.mgr = mgr;
+	this.sessionid = sid;
+	this.magic = magic;
+	this.loginInfo = loginInfo;
+	this.idAccount = loginInfo.idAccount;
+	this.timeCreated = Date.now();
+
+	this.locale = sockClient.handshake.locale || locale.defaultLocale;
+
+	// This will be the current GSSession this client is using.
+	this.gsSession = null;
+
+	// Although one needs a socket to initially create a Session, a socket
+	//   can disconnect and a new socket take its place when the client
+	//   reconnects.
+	this.sockClient = null;
+	this.address = null;
+	this.setClientSocket(sockClient);
+	this.analytics = {};
+
+	log.log('CreateClientSession: account ' + this.idAccount
+		+ ', addr ' + this.address
+		+ ', magic ' + this.magic
+		+ ', sid ' + this.sessionid);
+	this.mgr.trackClientSession(this);
+}
+
+ClientSession.prototype.setClientSocket = function setClientSocket(sockClient)
+{
+	if(this.sockClient === sockClient)
+		return;
+
+	// The server-side socket might not be closed even if the client one
+	//   was reset. This is because socket.io can emulate a connection
+	//   with long polling. We might be in the time where the client
+	//   disconnected (like by refreshing the page) and before the timeout
+	//   happens on the server side to close the socket.
+	// So, we forcibly disconnect the old socket here.
+	if(this.sockClient)
+	{
+		dbg.trace('Disconnecting old client socket.');
+		this.sockClient.clientSession = null;
+			// This keeps _onClientDisconnect from destroying the ClientSession.
+		try
+		{
+			this.sockClient.disconnect();
+		}
+		catch(e)
+		{
+			// This can throw if there's something still in the queue. We
+			// don't care. Let it die.
+		}
+	}
+
+	this.sockClient = sockClient;
+	this.address = sockClient.handshake.real_address.address;
+
+	sockClient.clientSession = this;
+		// Be careful with this, this is a circular dependency.
+		// Make sure you null out session.sockClient and sockClient.clientSession.
+
+	sockClient.on('disconnect', function () { _onClientDisconnect(sockClient) });
+
+	//
+	// _onClientDisconnect
+	//
+	function _onClientDisconnect(socket)
+	{
+		dbg.trace();
+		var session = socket.clientSession;
+
+		if(session)
+		{
+			session.sockClient = null;
+				// This socket has already been disconnected, keep destroy from
+				//   disconnecting it again.
+			socket.clientSession = null;
+				// Clear out the circular dependency.
+
+			session.destroy();
+		}
+
+		if(socket.timeoutID)
+		{
+			clearTimeout(socket.timeoutID);
+		}
+	}
+}
+
+ClientSession.prototype.destroy = function destroy(message)
+{
+	dbg.trace();
+
+	// Let any add-ons do clean up (for example, store something on the server)
+	var self = this;
+	ClientSession.destroySessionHandlers.forEach(function (handler) {
+			handler.call(self);
+	});
+
+	// Remove from the manager
+	this.mgr.untrackClientSession(this);
+	this.mgr = null;
+
+	// Forcibly disconnect from the client
+	var sock = this.sockClient;
+	if(sock)
+	{
+		this.sockClient = null;
+			// We're done with the socket at this point. Get rid of the
+			//   circular dependency.
+
+		sock.clientSession = null;
+			// We're about to be destroyed, so take us off the socket or it
+			//   will try to destroy us again.
+
+		// This requests the client to disconnect with us. When it does, it
+		//   will hit _onClientDisconnect above.
+		// If it doesn't respond in a couple seconds, a timeout
+		//   in disconnectWithMessage will take over and forcibly shut it down.
+		sock.disconnectWithMessage(message);
+	}
+
+	if(this.gsSession)
+	{
+		this.gsSession.destroy();
+		this.gsSession = null;
+	}
+
+	var secsOnline = Math.round((Date.now() - this.timeCreated) / 1000);
+
+	var baseLog = 'account ' + this.idAccount
+		+ ', addr ' + this.address
+		+ ', magic ' + this.magic
+		+ ', sid ' + this.sessionid
+		+ ', duration ' + secsOnline + 's';
+
+	var statLog = pushAnalytics(this.analytics);
+
+	log.log('ClientSessionStats: ' + baseLog + ', ' + statLog);
+	log.log('DestroyClientSession: ' + baseLog);
+
+}
+
+ClientSession.destroySessionHandlers = [];
+ClientSession.addDestroyHandler = function (onDestroy)
+{
+	ClientSession.destroySessionHandlers.push(onDestroy);
+}
+
+ClientSession.prototype.requestLoginEntity = function requestLoginEntity(name)
+{
+	dbg.trace(name);
+
+	var self = this;
+
+	proxy.gsMaster.containerInfoForName(name, function _requestLoginEntity_containerInfoForName_cb(error, char) {
+
+		if(!self.sockClient)
+			return;
+
+		if(error)
+		{
+			self.sockClient.emit('Proxy_LoginEntity', { id: name, status: 'notfound' });
+		}
+		else
+		{
+			self.getSessionForShard(char.shardname, function(error, gsSession) {
+				if(gsSession)
+				{
+					gsSession.requestLoginEntityByInfo(char);
+				}
+				else
+				{
+					dbg.log('Asking for a login entity without a GatewayServer connection. You get nothing.');
+					self.sockClient.emit('Proxy_LoginEntity', { id: name, status: 'notfound' });
+				}
+			});
+		}
+	});
+}
+
+ClientSession.prototype.requestEntity = function requestEntity(name)
+{
+	dbg.trace(name);
+
+	var self = this;
+
+	proxy.gsMaster.containerInfoForName(name, function _requestEntity_containerInfoForName_cb(error, char) {
+		if(!self.sockClient)
+			return;
+
+		if(error)
+		{
+			self.sockClient.emit('Proxy_Entity', { id: name, status: 'notfound' });
+		}
+		else
+		{
+			self.getSessionForShard(char.shardname, function(error, gsSession) {
+				if(gsSession)
+				{
+					gsSession.requestEntityByInfo(char);
+				}
+				else
+				{
+					dbg.log('Asking for an entity without a GatewayServer connection. You get nothing.');
+					self.sockClient.emit('Proxy_Entity', { id: name, status: 'notfound' });
+				}
+			});
+		}
+	});
+}
+
+ClientSession.prototype.requestPet = function requestPet(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestPet(id);
+	}
+	else
+	{
+		dbg.log('Asking for pets without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestGuild = function requestGuild(name)
+{
+	dbg.trace(name);
+
+	var self = this;
+	proxy.gsMaster.guildInfoForName(name, function(error, guild) {
+		dbg.trace(name, guild);
+
+		if(!self.sockClient)
+			return;
+
+		if(error)
+		{
+			self.sockClient.emit('Proxy_Guild', { id: name, status: 'notfound' });
+		}
+		else
+		{
+			dbg.trace(guild);
+
+			self.getSessionForShard(guild.shard, function(error, gsSession) {
+				if(gsSession)
+				{
+					gsSession.requestGuild(guild.id);
+				}
+				else
+				{
+					dbg.log('Asking for a guild without a GatewayServer connection. You get nothing.');
+					self.sockClient.emit('Proxy_Guild', { id: name, status: 'notfound' });
+				}
+			});
+		}
+	});
+}
+
+ClientSession.prototype.requestGroupProject = function requestGroupProject(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestGroupProject(id);
+	}
+	else
+	{
+		dbg.log('Asking for group projects without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestPersonalProject = function requestPersonalProject(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestPersonalProject(id);
+	}
+	else
+	{
+		dbg.log('Asking for group projects without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestAuctionSearch = function requestAuctionSearch(id, params)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		params.Search = params.Search.slice(0, 127);
+		params.Category = params.Category.slice(0, 127);
+		this.gsSession.requestAuctionSearch(id, params);
+	}
+	else
+	{
+		dbg.log('Asking for auction search without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestCraftingList = function requestCraftingList(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestCraftingList(id);
+	}
+	else
+	{
+		dbg.log('Asking for crafting lists without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestCraftingDetail = function requestCraftingDetail(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestCraftingDetail(id);
+	}
+	else
+	{
+		dbg.log('Asking for crafting detail without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestExchangeAccountData = function requestExchangeAccountData(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestExchangeAccountData(id);
+	}
+	else
+	{
+		dbg.log('Asking for exchange account data without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestGatewayGameData = function requestGatewayGameData(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestGatewayGameData(id);
+	}
+	else
+	{
+		dbg.log('Asking for gateway game data without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestMailList = function requestMailList(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestMailList(id);
+	}
+	else
+	{
+		dbg.log('Asking for mail list without a GatewayServer connection. You get nothing.');
+	}
+}
+
+
+ClientSession.prototype.requestMailDetail = function requestMailDetail(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestMailDetail(id);
+	}
+	else
+	{
+		dbg.log('Asking for mail detail without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestItemTooltip = function requestItemTooltip(id)
+{
+	dbg.trace(id);
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestItemTooltip(id);
+	}
+	else
+	{
+		dbg.log('Asking for an item tooltip without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestCStore = function requestCStore(id)
+{
+	dbg.trace();
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestCStore(id);
+	}
+	else
+	{
+		dbg.log('Asking for an CStore without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.requestVendor = function requestVendor(id)
+{
+	dbg.trace();
+
+	if(this.gsSession)
+	{
+		this.gsSession.requestVendor(id);
+	}
+	else
+	{
+		dbg.log('Asking for an Vendor without a GatewayServer connection. You get nothing.');
+	}
+}
+
+ClientSession.prototype.sendCommand = function sendCommand(cmd)
+{
+	dbg.trace(cmd);
+
+	if(this.gsSession)
+	{
+		this.gsSession.sendCommand(cmd);
+	}
+	else
+	{
+		dbg.log('Asking to send a command without a GatewayServer connection. You get nothing.');
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ClientSession.prototype.releaseCraftingList = function releaseCraftingList(id)
+{
+	dbg.trace();
+
+	if(this.gsSession)
+	{
+		this.gsSession.releaseCraftingList(id);
+	}
+	else
+	{
+		dbg.log('Release CraftingList without a GatewayServer connection. You care not.');
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ClientSession.prototype.purchaseMicrotransaction = function purchaseMicrotransaction(productid, price)
+{
+	dbg.trace(productid, price);
+
+	if(this.gsSession)
+	{
+		this.gsSession.purchaseMicrotransaction(productid, price);
+	}
+	else
+	{
+		dbg.log('Asking to purchaseMicrotransaction without a GatewayServer connection. You get nothing.');
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ClientSession.prototype.getSessionForShard = function getSessionForShard(shardname, callback)
+{
+	dbg.trace();
+
+	var conn = proxy.gsMaster.findConnectionForShard(shardname);
+
+	if(!conn)
+	{
+		log.error('Unable to find connection for shard ' + shardname +'.');
+		callback(new Error('Unable to find connection for shard ' + shardname +'.'), undefined);
+		return;
+	}
+
+	if(this.gsSession && this.gsSession.conn !== conn)
+	{
+		dbg.trace('Switching GatewayServers.');
+		this.gsSession.destroy();
+		this.gsSession = null;
+	}
+
+	if(!this.gsSession)
+	{
+		this.gsSession = new GSSession(this, conn, function(sess) {
+			dbg.trace('Session made');
+			callback(undefined, sess);
+		});
+	}
+	else
+	{
+		dbg.trace('Reusing session');
+		callback(undefined, this.gsSession);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// Count up analytics on the session
+ClientSession.prototype.analyticTick = function(bucket, count)
+{
+	dbg.trace(bucket, count);
+
+	// Add to the counter
+	perf.count(bucket, count);
+
+	// Save up for the session histogram
+	if(this.analytics[bucket])
+	{
+		this.analytics[bucket] += count;
+	}
+	else
+	{
+		this.analytics[bucket] = count;
+	}
+}
+
+// Push counts to the histogram for this user session.
+function pushAnalytics(stats)
+{
+	dbg.trace(stats);
+	var log = [];
+
+	for(var x in stats)
+	{
+		perf.histogram(x, stats[x]);
+
+		var stat = x.replace('User:', '');
+		log.push(stat + ' ' + stats[x]);
+	}
+
+	return log.join(', ');
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ClientSession;
+
+// End of File

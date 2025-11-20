@@ -1,0 +1,1367 @@
+'use strict';
+
+var clientRender = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+var dbg = require('cryptic/dbg');
+var format = require('cryptic/format');
+var contentHelpers = require('cryptic/client/contentHelpers');
+var buildCommand = require('cryptic/commands/buildCommand');
+
+//
+// Put Javascript used by the HTML in here.
+//
+// For example, stuff to support a data table (like the fleet roster) or
+// setting a theme, if you have one.
+//
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Override setTheme
+//
+// section: char, fleet
+// arg: anything useful.  For char, its metaEnt.
+clientRender.setTheme = function(section, arg)
+{
+	// no op
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Override onAfterSetStencil
+//
+clientRender.onAfterSetStencil = function(callback)
+{
+	setContentHeight();
+
+	if(callback)
+		callback();
+}
+
+/////////////////////////////////
+//
+// Helpers for onAfterSetStencil
+//
+var s_contentHeight = 0;
+function setContentHeight() {
+	$('#content_frame_mid').delay(50).promise().done(function() {
+		var windowHeight = $("#content_login").outerHeight();
+		if(s_contentHeight === windowHeight)
+		{
+			return; // early out if we have the same values.
+		}
+		else
+		{
+			s_contentHeight = windowHeight;
+			if (windowHeight <= 440)
+			{
+				$('#content_frame_mid').animate({'height': 440}, 250);
+			}
+			else
+			{
+				$('#content_frame_mid').animate({'height': windowHeight}, 250);
+			}
+		}
+	});
+}
+
+
+clientRender.commonWidgets = function()
+{
+	/* STANDARD: TOP TABS */
+	$(document).on('click','.tabTop', function() {
+		$(".tabTop").removeClass('selected');
+		$(this).addClass('selected');
+	});
+
+	/* STANDARD: SIDE TABS */
+	$(document).on('click', '.tabSide', function() {
+		$(".tabSide").removeClass('selected');
+		$(".subtabSide").removeClass('selected');
+		$(this).addClass('selected');
+
+		$(".tabSideContent").hide();
+		$("#" + $(this).attr('data-tabid')).css('display', 'block');
+	});
+	$(document).on('click', '.subtabSide', function() {
+		$(".subtabSide").removeClass('selected');
+		$(this).addClass('selected');
+	});
+
+	///////////////////////////////////////////////////////////////////////
+	// For all the facny radio buttons out there. Check it.
+	// Example expected HTML :
+	// <label class="radio" name="sort_level">
+	//     <span class="input-img"></span>
+	//     <input name="sort_level" type="radio" value="desc">Sort by Highest First
+	// </label>
+	//
+	// STANDARD: FAKED RADIO BUTTON
+	$(document).on('click','label.radio', function() {
+		if(!$(this).hasClass('disabled'))
+		{
+			var radio = $(this).children('input');
+
+			if(!radio.is(':checked'))
+			{
+				var name = $(this).attr('name');
+				if(name)
+					name = '[name=' + name + ']'; // If the elem has a name, uncheck everyone else.
+				else
+					name = '.radio'; // no name, which is odd, but run with it
+
+				$('label'+name).removeClass('checked');
+				$(name).prop('checked', false);
+
+				$(this).addClass('checked');
+				radio.prop('checked', true);
+
+			}
+
+			// You need to define/redefine this function in your stencil
+			// to handle YOUR checkboxes.
+			client.handleRadioButton(radio);
+		}
+
+		return false;
+	});
+
+	// default noop for radio buttons
+	clientRender.handleRadioButton = function() {}
+
+	///////////////////////////////////////////////////////////////////////
+
+
+	///////////////////////////////////////////////////////////////////////
+	// For all the facny checkboxes out there. Check it.
+	// Example expected HTML :
+	// <label class="checkbox">
+	//     <span class="input-img"></span>
+	//     <input type="checkbox">Words and more words etc.
+	// </label>
+	//
+	// STANDARD: FAKED CHECK BOX
+	$(document).on('click','label.checkbox', function() {
+
+		if(!$(this).hasClass('disabled'))
+		{
+			var cbox = $(this).children('input');
+
+			if(cbox.is(':checked'))
+			{
+				$(this).removeClass('checked');
+				cbox.prop('checked', false);
+			}
+			else
+			{
+				$(this).addClass('checked');
+				cbox.prop('checked', true);
+			}
+
+			// You need to define/redefine this function in your stencil
+			// to handle YOUR checkboxes.
+			client.handleCheckBox(cbox);
+
+		}
+
+		return false;
+	});
+
+	// default noop for checkboxes
+	clientRender.handleCheckBox = function() {}
+
+	///////////////////////////////////////////////////////////////////////
+
+
+	/* STANDARD: REPOSITION VIEW WHEN CLICKING ON DESIGNATED BUTTONS */
+	$(document).on('click', '.resetWindow', function() {
+		$('html, body').animate({ scrollTop: 165 }, 200);
+	});
+
+	/* CHAR SHEET: SWITCH EQUIPMENT/FASHION BUTTON */
+	$(document).on('click', '#buttonEquipment', function() {
+		if($('#buttonEquipment').hasClass('selected'))
+		{
+			// do nothing
+		}
+		else
+		{
+			$('.outfitFashion').hide();
+			$('.outfitEquipment').delay(100).fadeIn(500);
+			$('#buttonFashion').removeClass('selected');
+			$('#buttonEquipment').addClass('selected');
+		}
+
+	});
+
+	$(document).on('click', '#buttonFashion', function() {
+		if($('#buttonFashion').hasClass('selected'))
+		{
+			// do nothing
+		}
+		else
+		{
+			$('.outfitEquipment').hide();
+			$('.outfitFashion').delay(100).fadeIn(300);
+			$('#buttonEquipment').removeClass('selected');
+			$('#buttonFashion').addClass('selected');
+		}
+	});
+
+	///////////////////////////////////////////////////////////////////////
+	//
+	// Auction House
+	//
+
+	$(document).on('click','.page-auction .dataTables_paginate a, .page-auction th.sorting, .page-auction th.sorting_asc, .page-auction th.sorting_desc',function() {
+		client.clearAuctionSelection();
+	});
+
+	// Show on focus
+	$(document).on('blur', '.fake-dropdown', function(event) {
+		$(this).find('.fake-options').hide();
+	});
+
+	// Hide on blur
+	$(document).on('focus', '.fake-dropdown', function(event) {
+		$(this).find('.fake-options').show();
+	});
+
+	// For touch devices
+	$(document).on('click', '.fake-dropdown', function(event) {
+		$(this).find('.fake-options').toggle();
+	});
+
+	///////////////////////////////////////////////////////////////////////
+	//
+	// Advanced Auction Search
+	//
+	$(document).on('click', '.showAdvancedSearchButton', function() {
+		$('.showAdvancedSearchButton').hide();
+		$('.hideAdvancedSearchButton, .auctionAdvancedOptions').show().promise().done(function() {
+			setContentHeight();
+		});
+	});
+
+	$(document).on('click', '.hideAdvancedSearchButton', function() {
+		$('.showAdvancedSearchButton').show();
+		$('.hideAdvancedSearchButton, .auctionAdvancedOptions').hide().promise().done(function() {
+			setContentHeight();
+		});
+	});
+
+	///////////////////////////////////////////////////////////////////////
+	//
+	// Calendar
+	//
+
+	$(document).on('click', '.calendar-events li', function() {
+		var eventId = parseInt($(this).attr('event-id'), 10);
+		// open event info pop-up
+	});
+
+	$(document).on('click', '.calendar-more li', function() {
+		var date = $(this).attr('date');
+		// open pop-up with list of events for this day
+	});
+
+	$(document).on('click', '.calendar-title .prev', function() {
+		// Do nothing if already on the first page.
+		if($(this).hasClass('disabled')) return;
+
+		// Calculate which page is being shown, then show the previous page.
+		var pageNum = $('.calendar-body tr:visible').first().index() / 5;
+		client.guildCalendarShowPage(pageNum - 1);
+
+		// Disable this button if we're at the beginning of the calendar.
+		if(pageNum <= 1) $(this).addClass('disabled');
+
+		// Enable the other button.
+		$('.calendar-title .next').removeClass('disabled');
+	});
+
+	$(document).on('click', '.calendar-title .next', function() {
+		// Do nothing if already on the last page.
+		if($(this).hasClass('disabled')) return;
+
+		// Calculate which page is being shown, then show the next page.
+		var pageNum = $('.calendar-body tr:visible').first().index() / 5;
+		client.guildCalendarShowPage(pageNum + 1);
+
+		// Disable this button if we're at the end of the calendar.
+		var lastPage = $('.calendar-body tr').length / 5 - 1;
+		if(pageNum + 1 >= lastPage) $(this).addClass('disabled');
+
+		// Enable the other button.
+		$('.calendar-title .prev').removeClass('disabled');
+	});
+
+
+	///////////////////////////////////////////////////////////////////////
+	//
+	// Tooltips
+	//
+
+	$(document).on('mouseenter', '[data-tt-item]', function(event) {
+		if(client.isDesktop() && !s_tooltip['menu'])
+		{
+			tooltipShowItem($(this).attr('data-tt-item'), $(this));
+		}
+	});
+
+	$(document).on('mouseenter', '[data-tt-stencil]', function(event) {
+		if(client.isDesktop() && !s_tooltip['menu'])
+		{
+			//tooltipShowCustom($(this).attr('data-tt-stencil'), tooltipPosition($(this)), $(this).attr('data-tt-path'));
+			tooltipShowCustom($(this));
+		}
+	});
+
+	$(document).on('mouseenter', '[data-tt-text]', function(event) {
+		if(client.isDesktop())
+		{
+			tooltipShowText($(this).attr('data-tt-text'), $(this));
+		}
+	});
+
+	$(document).on('click', '[data-tt-item]', function(event) {
+		// If we are not showing the menu, show something
+		// tooltipShowItem will determine weather or not to display a menu
+		if(!s_tooltip['menu'])
+		{
+			// show he tooltip, or menu.  this function determines which
+			tooltipShowItem($(this).attr('data-tt-item'), $(this), $(this).attr('data-tt-menu'));
+		}
+	});
+
+	// Close the menu if you click anywhere
+	$(document).on('click', function() {
+		if(s_tooltip['menu'])
+		{
+			tooltipHide();
+		}
+
+		return true; // just in case this could intercept a click
+	});
+
+	$(document).on('mouseleave', '[data-tt-item], [data-tt-text], [data-tt-stencil]', function(event) {
+		if(client.isDesktop() && !s_tooltip['menu'])
+		{
+			tooltipHide();
+		}
+	});
+
+	$(document).on('mouseleave', '.tooltip', function(event) {
+		if(client.isDesktop() && s_tooltip['menu'])
+		{
+			tooltipHide();
+		}
+	});
+
+
+	///////////////////////////////////////////////////////////////////////
+	//
+	// window rezise tracker
+	//
+	$(window).resize(client.checkWindowSize);
+
+	$(window).scroll(function() {
+		s_didScroll = true;
+	});
+}
+
+/* PULSING BUTTONS */
+clientRender.buttonPulse = function(selector)
+{
+	$(document).ready (function() {
+		$(selector).pulse(
+			{
+				opacity: '1'
+			},
+			{
+				duration: 1800,
+				interval: 400,
+				returnDelay: 300,
+				pulses: -1
+			}
+		)
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////////////
+//
+// Tooltips
+//
+//
+// data-tt-text:
+//   Text Only Tooltip
+//   Default Stencil: tooltip-text
+//
+// data-tt-item:
+//   Item tooltip
+//   Default Stencil: tooltip-item
+//   Optional 'data-tt-menu' with path to item (ex: $here()) to allow context menu
+//
+// Specific Tooltip Stencil with given rootpath:
+//   data-tt-stencil: The stencil to be rendered in the tooltip
+//   data-tt-path: The rootpath for the given stencil.
+//
+
+var s_tooltip = {
+	'id': 0,
+	'menu': false,
+	'item': '',
+	'open': false
+}
+function tooltipShowItem(itemNameOrId, jqElem, pathToItem)
+{
+	if(itemNameOrId)
+	{
+		var id = ++s_tooltip['id'];
+
+		$('body').addClass('body-tooltip');
+		$('#tooltip').css(tooltipPosition(jqElem));
+
+		// Desktop toggles between menu, and tooltip info
+		if(client.isDesktop())
+		{
+			// if tooltip is not already open, be sure to show the normal tooltip
+			// Otherwise, if a menu is to be displayed it will be.
+			if(s_tooltip['item'] !== itemNameOrId)
+			{
+				pathToItem = undefined;
+			}
+		}
+		s_tooltip['open'] = id;
+		s_tooltip['item'] = itemNameOrId;
+
+		contentHelpers.setFromStencil('#tooltip', 'tooltip-item', pathToItem, function() {
+
+			if(id === s_tooltip['id'])
+			{
+				if(s_tooltip['open'])
+				{
+					// Not showing info on desktop when clicked, just context menu
+					if(client.isDesktop() && pathToItem)
+					{
+						s_tooltip['menu'] = true;
+						$('#tooltip-content').hide();
+					}
+					else
+					{
+						s_tooltip['menu'] = false;
+						client.dataModel.cmgr.requestItemTooltip(itemNameOrId, {}, function(e, info) {
+
+							if(id === s_tooltip['id'])
+							{
+								if(info && s_tooltip['open'])
+								{
+									if(!info.cleaned)
+									{
+										info.tip = cleanUpTooltip(info.tip);
+										info.cleaned = true;
+									}
+
+									contentHelpers.setFromStencil('#tooltip-content', 'tooltip', info, function() {
+										tooltipCustomPosition(jqElem);
+									});
+								}
+								else
+								{
+									tooltipHide();
+								}
+							}
+						});
+					}
+				}
+				else
+				{
+					tooltipHide();
+				}
+			}
+		});
+	}
+}
+
+function tooltipShowText(text, jqElem)
+{
+	var id = ++s_tooltip['id'];
+
+	if(text)
+	{
+		var tooltip = {
+			tip: text
+		};
+
+		$('body').addClass('body-tooltip');
+		$('#tooltip').css(tooltipPosition(jqElem));
+
+		contentHelpers.setFromStencil('#tooltip', 'tooltip-text', undefined, function() {
+			contentHelpers.setFromStencil('#tooltip-content', 'tooltip', tooltip, function() {
+				tooltipCustomPosition(jqElem);
+			});
+		});
+	}
+}
+
+function tooltipShowCustom(jqElem)
+{
+	var stencil = jqElem.attr('data-tt-stencil');
+	if(stencil)
+	{
+		var path = jqElem.attr('data-tt-path');
+		var id = ++s_tooltip['id'];
+
+		$('body').addClass('body-tooltip');
+		$('#tooltip').css(tooltipPosition(jqElem));
+
+		contentHelpers.setFromStencil('#tooltip', stencil, path, function() {
+			tooltipCustomPosition(jqElem);
+		});
+	}
+}
+
+function tooltipPosition(jqElem)
+{
+	var pos = jqElem.offset();
+	var height = $(window).height();
+	var width = $(window).width();
+
+	var ret = {}
+
+	// Horizontal padding to space the tooltip away from the element
+	var h_pad = 5;
+
+	// Is the element on the top half of the window, or the bottom half?
+	if(((pos.top + jqElem.outerHeight()) - window.pageYOffset) > (height / 2))
+	{
+		// Tooltip aligned bottom
+		ret['bottom'] = height - pos.top - jqElem.outerHeight();
+	}
+	else
+	{
+		// Tooltip aligned top
+		ret['top'] = pos.top;
+	}
+
+	// Is the element on the left half of the window, or the right?
+	if((pos.left + jqElem.outerWidth(true)) > (width / 2))
+	{
+		// Tooltip left of the element
+		ret['right'] = width - pos.left + h_pad;
+	}
+	else
+	{
+		// Tooltip right of the element
+		ret['left'] = pos.left + jqElem.outerWidth(true) + h_pad;
+	}
+
+	return ret;
+}
+
+function tooltipReposition(position)
+{
+	var winHeight = $(window).height()
+	var ttHeight = $('#tooltip').outerHeight();
+
+	if(('bottom' in position) && (position.bottom > (winHeight - ttHeight)))
+	{
+		// Also  window.pageYOffset in here somewhere!
+		$('#tooltip').css('bottom', winHeight - ttHeight - 10); // 10px padding
+	}
+
+}
+
+function tooltipCustomPosition(jqElem)
+{
+	var tt = $('#tooltip');
+
+	var newPos = {
+		'top': 0,
+		'left': 0
+	}
+
+	var elemPos = jqElem.offset();
+
+	switch(jqElem.attr('data-tt-pos'))
+	{
+		case 'bottom':
+			// Below Element tooltip, centered on jqElem
+			newPos['left'] = (elemPos['left'] + (jqElem.outerWidth() / 2)) - (tt.outerWidth() / 2);
+			newPos['top'] = elemPos['top'] + jqElem.outerHeight() + 10; // 10px padding
+			break;
+
+		case 'top':
+			// Above Element tooltip, centered on jqElem
+			newPos['left'] = (elemPos['left'] + (jqElem.outerWidth() / 2)) - (tt.outerWidth() / 2);
+			newPos['top'] = elemPos['top'] - tt.outerHeight() - 10; // 10px padding
+			break;
+
+		case 'vertical':
+			var winHeight = $(window).height();
+			if(elemPos['top'] > (winHeight / 2))
+			{
+				// Bottom
+				newPos['left'] = (elemPos['left'] + (jqElem.outerWidth() / 2)) - (tt.outerWidth() / 2);
+				newPos['top'] = elemPos['top'] + jqElem.outerHeight() + 10; // 10px padding
+			}
+			else
+			{
+				// Top
+				newPos['left'] = (elemPos['left'] + (jqElem.outerWidth() / 2)) - (tt.outerWidth() / 2);
+				newPos['top'] = elemPos['top'] - tt.outerHeight() - 10; // 10px padding
+			}
+			break;
+
+		case 'left':
+			newPos['left'] = elemPos['left'] - tt.outerWidth() - 10; // 10px padding
+			newPos['top'] = (elemPos['top'] + (jqElem.outerHeight() / 2)) - (tt.outerHeight() / 2);
+			break;
+
+		case 'right':
+			newPos['left'] = elemPos['left'] + jqElem.outerWidth() + 10; // 10px padding
+			newPos['top'] = (elemPos['top'] + (jqElem.outerHeight() / 2)) - (tt.outerHeight() / 2);
+			break;
+
+		default:
+			tooltipReposition(tooltipPosition(jqElem));
+			return;
+	}
+
+	$('#tooltip').removeAttr('style').css(newPos);
+}
+
+
+function tooltipHide()
+{
+	$('#tooltip')
+		.empty()
+		.css({
+			'top': '',
+			'left': '',
+			'bottom': '',
+			'right': ''
+		});
+	$('body').removeClass('body-tooltip');
+	s_tooltip['menu'] = false;
+	s_tooltip['item'] = '';
+	s_tooltip['open'] = false;
+}
+
+function cleanUpTooltip(tip)
+{
+	tip = format.cleanUpSMF(tip);
+
+	// The first table
+	var reTable1 = /<table>/i;
+	tip = tip.replace(reTable1, '<table class="tooltipTable">');
+
+	// The second table is for gem slots.
+	tip = tip.replace('<table>', '<table class="gemslots">');
+
+	// border=4
+	//    to
+	// class="tableSets"
+	tip = tip.replace(/border=4/gi, 'class="tableSets"');
+
+	// Remove extraneous width=100% attribs
+	tip = tip.replace(/width=100%/gi, '');
+
+	return tip;
+}
+
+clientRender.tooltipClear = function()
+{
+	tooltipHide();
+}
+
+///////////////////////////////////////////////////////////////////////////
+// onResize
+//
+// Use this to add anything that needs to happen when the Gateway snaps to a new size.
+// Most commonly used for resizing dataTables used throughout the site.
+clientRender.onResize = function(sizeNow)
+{
+	// Trigger size event, and set window size if given
+	if(sizeNow)
+	{
+		this.WINDOW_SIZE = sizeNow;
+	}
+	else
+	{
+		// If not given, use the current known size.
+		sizeNow = this.WINDOW_SIZE;
+	}
+
+	dbg.trace('Window Size: ' + sizeNow);
+
+	this.onWindowResize(sizeNow);
+}
+
+// Default no-op function.
+clientRender.onWindowResize = function(sizeNow)
+{
+	// Only on desktop version
+	if (sizeNow === 2)
+	{
+		setContentHeight();
+	}
+
+	tooltipHide();
+
+	client.dataTableOnWindowResize(sizeNow);
+
+	return;
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Window Resizamabob
+//
+// Watches window resizing, and sets a size value in client.
+// Also triggers onResize() when sizes change.
+clientRender.WINDOW_SIZE = 0; // Keeping track of this
+clientRender.checkWindowSize = function()
+{
+	var sizeNow = 0;
+	if(matchMedia('(max-width: 900px)').matches)
+	{
+		sizeNow = 1;
+	}
+	else
+	{
+		sizeNow = 2;
+	}
+
+
+	if(sizeNow != client.WINDOW_SIZE)
+	{
+		client.onResize(sizeNow);
+	}
+}
+
+// Returns true if we expect to see the desktop version currently.
+// Added verify in case checks are needed early in the client setup
+// before WINDOW_SIZE may be set.
+clientRender.isDesktop = function(verify)
+{
+	if(verify)
+	{
+		return matchMedia('(min-width:900px)').matches;
+	}
+	else
+	{
+		return (this.WINDOW_SIZE > 1)
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+//     ######  ######## ####### ##     ##   ######   ######  ##
+//    ##    ##    ##    ##      ###    ##  ##    ##    ##    ##
+//    ##          ##    ##      ## #   ##  ##          ##    ##
+//     ######     ##    #####   ##  #  ##  ##          ##    ##
+//          ##    ##    ##      ##   # ##  ##          ##    ##
+//    ##    ##    ##    ##      ##    ###  ##    ##    ##    ##
+//     ######     ##    ####### ##     ##   ######   ######  #######
+//
+//                   Stencil Specific Code below.
+//
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// guild calendar
+//
+
+clientRender.guildCalendarShowPage = function(pageNum)
+{
+	var weeks = $('.calendar-body tr').slice(pageNum * 5, (pageNum + 1) * 5);
+
+	// Calculate and set the title at the top.
+	var firstDay = weeks.first().find('td:first');
+	var lastDay  = weeks.last().find('td:last');
+	var title = firstDay.data('month') + '-' + lastDay.data('month') + ' ' + lastDay.data('year');
+	$('.calendar-title h3').text(title);
+
+	// Only show the month abbreviation for the first day of page, and the first of each month.
+	weeks.find('td h4 span.month').hide();
+	firstDay.find('h4 span.month').show();
+
+	// Hide the old, and show the new week rows.
+	$('.calendar-body tr').hide();
+	weeks.show();
+}
+
+clientRender.guildActivityDataTable = function()
+{
+	// GUILD ACTIVITY TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableGuildActivity').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 15,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null,
+				null,
+				null
+			],
+			'aaSorting': [[0, 'desc']]
+		});
+	});
+}
+
+var s_guildSearch = '', s_guildSort = [[0, 'asc']], s_guildSearchHasFocus = false;
+clientRender.guildRosterDataTable = function()
+{
+	// GUILD ROSTER TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableGuildRoster').dataTable({
+			'bStateSave': true,
+			'fnStateSave': function(oSettings, oData) {
+				s_guildSort = oData.aaSorting;
+				s_guildSearch = oData.oSearch.sSearch;
+			},
+			'fnDrawCallback': client.dataTableInfinateScrollDrawCallback,
+			'bLengthChange': false,
+			'iDisplayLength': (client.WINDOW_SIZE < 2)?20:15,
+			'gatewayUsesInfinateScroll': true,
+			'gatewayDesktopLength': 15,
+			'gatewayMobileLength': 20,
+			'aoColumns': [
+				null, // Name
+				null, // Guild Rank
+				null, // Class
+				{ 'bVisible': false, 'bSearchable': false }, // sortable class
+				null, // Level
+				null, // location
+				null, // lft
+				{ 'bVisible': false, 'bSearchable': false }, // lft sortable
+				null, // last online
+				{ 'bVisible': false, 'bSearchable': false }, // last online sortable
+				null // Comments
+			],
+			'aoColumnDefs': [
+				{ "iDataSort": 3, "aTargets": [ 2 ] },
+				{ "iDataSort": 7, "aTargets": [ 6 ] },
+				{ "iDataSort": 9, "aTargets": [ 8 ] }
+			],
+			'oLanguage': client.dataTableLanguage,
+			'aaSorting': s_guildSort,
+			'oSearch': { 'sSearch': s_guildSearch },
+			'fnInitComplete': function() {
+
+				$('div.dataTables_filter input')
+					.on('focus', function() {
+						s_guildSearchHasFocus = true;
+					});
+
+				$('div.dataTables_filter input')
+					.on('blur', function() {
+						s_guildSearchHasFocus = false;
+					});
+
+				if(s_guildSearchHasFocus)
+				{
+					$('div.dataTables_filter input').focus();
+				}
+
+				// if we're in mobile, do the infinate scroll thing
+				if(client.WINDOW_SIZE < 2)
+				{
+					client.dataTableInfinateScrollCheck();
+				}
+			}
+		});
+
+	});
+}
+
+clientRender.guildRosterDataTableOther = function()
+{
+	// GUILD ROSTER TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableGuildProfileRoster').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 5,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null, // Name
+				null, // Guild Rank
+				null, // Class
+				{ 'bVisible': false, 'bSearchable': false }, // sortable class
+				null // Level
+			],
+			'aoColumnDefs': [
+				{ "iDataSort": 3, "aTargets": [ 2 ] }
+			],
+			'aaSorting': [[0, 'asc']]
+		});
+	});
+}
+
+clientRender.guildRosterRefresh = function()
+{
+	contentHelpers.setFromStencil('#content_guild','content-guild-roster',undefined, function() {
+		setContentHeight();
+	});
+}
+
+var s_lastUpdate = 0;
+clientRender.getNewsAndEBS = function(callback)
+{
+	if(Date.now() - s_lastUpdate > 5 * 60 * 1000)
+	{
+		s_lastUpdate = Date.now();
+
+		$.ajax({
+			url: '/news?game=nw',
+			type: 'GET',
+			dataType: 'json',
+
+			success: function(response) {
+				client.dataModel.model.news = { items: response };
+				client.dataModel.renderUpdates('create *', 'news')
+				if(callback)
+					callback(undefined, response);
+			},
+
+			error: function(xhr, status, error) {
+				if(callback)
+					callback(error, undefined);
+				// Something broke
+			}
+		});
+
+		$.ajax({
+			url: '/ebs?game=nw',
+			type: 'GET',
+			dataType: 'json',
+
+			success: function(response) {
+				client.dataModel.model.ebs = response;
+				client.dataModel.renderUpdates('create *', 'ebs');
+				if(callback)
+					callback(undefined, response);
+			},
+
+			error: function(xhr, status, error) {
+				if(callback)
+					callback(error, undefined);
+				// Something broke
+			}
+		});
+	}
+}
+
+// Sell inentory items to a vendor
+var s_processingPleaseWait = false;
+clientRender.inventorySellItem = function(uid)
+{
+	// To stop double clicks, and accidental sell spam
+	if(!s_processingPleaseWait)
+	{
+		s_processingPleaseWait = true;
+
+		var cnt = +($('input[name="inventorySellQty"]').val());
+		var cmd = buildCommand('GatewayVendor_SellItemToVendor', {
+			vendor: 'Nw_Gateway_Professions_Merchant',
+			id: uid,
+			count: cnt
+		});
+
+		if(cmd)
+		{
+			client.analyticTick('User:SellItem', cnt);
+			client.sendCommand(cmd);
+		}
+
+		setTimeout(function() {
+			s_processingPleaseWait = false;
+		}, 750);
+	}
+}
+
+// Buy items from a vendor
+clientRender.inventoryBuyItem = function(vendor, store, idx)
+{
+	// To stop double clicks, and accidental sell spam
+	if(!s_processingPleaseWait)
+	{
+		s_processingPleaseWait = true;
+
+		var cnt = +($('input[name="inventoryBuyQty"]').val());
+		var cmd = buildCommand('GatewayVendor_PurchaseVendorItem', {
+			vendor: vendor,
+			store: store,
+			idx: idx,
+			count: cnt
+		});
+
+		if(cmd)
+		{
+			client.analyticTick('User:BuyItem', cnt);
+			client.sendCommand(cmd);
+		}
+
+		setTimeout(function() {
+			s_processingPleaseWait = false;
+		}, 750);
+	}
+}
+
+// When the buy from vendor qty is changed, this happens.
+// - Make sure its between 1 and 20
+// - update the cost being displayed.
+clientRender.inventoryBuyUpdateCost = function(elem)
+{
+	var val = parseInt(elem.value, 10);
+
+	if(val < 1)
+	{
+		elem.value = 1;
+		val = 1;
+	}
+
+	if(val > 20)
+	{
+		elem.value = 20;
+		val = 20;
+	}
+
+	val = val * $('#baseCost').val();
+	val = format.displayAsCoins(val);
+
+	$('#cost').html(val);
+}
+
+clientRender.inventoryDiscardItem = function(uid, max)
+{
+	// To stop double clicks, and accidental sell spam
+	if(!s_processingPleaseWait)
+	{
+		s_processingPleaseWait = true;
+
+		var qty = $('input[name="inventoryDiscardQty"]').val();
+		if(qty < 1)
+		{
+			qty = 1;
+		}
+		if(qty > max)
+		{
+			qty = max;
+		}
+
+		var cmd = buildCommand('GatewayInventory_DiscardItem', {
+			id: uid,
+			count: qty
+		});
+
+		if(cmd)
+		{
+			client.analyticTick('User:DiscardItem', qty);
+			client.sendCommand(cmd);
+		}
+
+		setTimeout(function() {
+			s_processingPleaseWait = false;
+		}, 750);
+	}
+}
+
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// DataTables helper functions
+//
+
+// Infinate scrolling table for mobile.
+// This function relies on only 1 dataTable ever being up at a time.
+var s_infinateScrollInterval;
+clientRender.dataTableInfinateScrollCheck = function()
+{
+	// In case this is called multiple times, be sure to only tick once
+	// Which also means, we should only ever have one of these tables
+	// on the screen at once.  Which is intended.
+	if(s_infinateScrollInterval)
+	{
+		clearTimeout(s_infinateScrollInterval);
+		s_infinateScrollInterval = false;
+	}
+	var table = $.fn.dataTable.fnTables(true);
+	if ( table.length > 0 )
+	{
+		s_infinateScrollInterval = setTimeout(function() {
+			// Is this the mobile version? Because its kind of the point.
+			if(client.WINDOW_SIZE < 2)
+			{
+				if((client.didScroll(true))
+					&& ($(window).innerHeight() + $(window).scrollTop()) >= ($("body").height() - 10))
+				{
+					// They scrolled, and we are at the bottom of the page.
+					$('.pagination-loader.loading-image').show();
+					// oTable.fnSettings().fnRecordsTotal()   - Total without filtering
+					// oTable.fnSettings().fnRecordsDisplay() - Total with filtering
+					table = $(table[0]).dataTable();
+					var settings = table.fnSettings();
+					if((settings.oInit.gatewayUsesInfinateScroll) && (settings.fnRecordsDisplay() > settings._iDisplayLength))
+					{
+						// Show the loading spinner
+						settings._iDisplayLength += settings.oInit.gatewayMobileLength;
+						table.fnDraw();
+
+						// And keep checking
+						client.dataTableInfinateScrollCheck();
+					}
+					else
+					{
+						// Stop checking, we're at the bottom.
+						$('.pagination-loader.loading-image').hide();
+					}
+				}
+				else
+				{
+					// Keep checking
+					client.dataTableInfinateScrollCheck();
+				}
+			}
+		}, 250);
+	}
+}
+
+// Just always make sure this is hidden after a draw.
+// We show it when showing more rows in mobile.
+// The draw event occurs when its actually done showing the rows.
+clientRender.dataTableInfinateScrollDrawCallback = function(oSettings)
+{
+	if(client.WINDOW_SIZE < 2)
+	{
+		if(oSettings.fnRecordsDisplay() > oSettings._iDisplayLength)
+		{
+			$('.pagination-loader.loading-image').show();
+		}
+		else
+		{
+			$('.pagination-loader.loading-image').hide();
+		}
+	}
+}
+
+clientRender.dataTableOnWindowResize = function(sizeNow)
+{
+	// Switch the table back to its appropriate length.
+	var table = $.fn.dataTable.fnTables(true);
+	if (table.length > 0)
+	{
+		table = $(table[0]).dataTable();
+		var settings = table.fnSettings();
+
+		settings._iDisplayLength = ((sizeNow < 2)?settings.oInit.gatewayMobileLength:settings.oInit.gatewayDesktopLength);
+		table.fnDraw();
+	}
+
+	// If we just switched to mobile, start the infinate scroll thing
+	if(sizeNow < 2)
+	{
+		client.dataTableInfinateScrollCheck();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Notifications
+//
+var types = {
+	'info':		{ sel: '#notify', cls: 'info', fade: true },
+	'error':	{ sel: '#notify', cls: 'error', fade: false },
+	'success':	{ sel: '#notify', cls: 'success', fade: false },
+
+	0: { sel: '#notify', cls: 'info', fade: true },
+		// 33: kNotifyType_ItemAssignmentFeedback
+		// 37: kNotifyType_MailReceived
+		// 145: kNotifyType_AuctionSuccess
+		// 209:  kNotifyType_GroupProjectCollectionFeedback
+	34: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_ItemAssignmentFeedbackFailed
+	38: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_MailSendFailed
+	144: { sel: '#notify', cls: 'error', fade: false },	// kNotifyType_AuctionFailed
+	208: { sel: '#notify', cls: 'error', fade: false }	// kNotifyType_GroupProjectDonationFailed
+};
+
+clientRender.addNotification = function(displayObj)
+{
+	this.addNotificationHTML(format.escapeForHTML(displayObj.string), displayObj && displayObj.id ? displayObj.id : 'info');
+}
+
+clientRender.addNotificationMessageKey = function(key, type)
+{
+	this.dataModel.translate(key, function(error, str) {
+		client.addNotificationString(str, type);
+	});
+}
+
+clientRender.addNotificationString = function(string, type)
+{
+	this.addNotificationHTML(format.escapeForHTML(string), type);
+}
+
+clientRender.addNotificationSMF = function(smf, type)
+{
+	this.addNotificationHTML(format.cleanUpSMF(smf), type);
+}
+
+
+clientRender.addNotificationHTML = function(html, type)
+{
+	$('.notification').show();
+
+	var info = type ? types[type] || types[0] : types[0];
+
+	var elem = $('<li class="' + info.cls + '">'+html+'</li>').appendTo($(info.sel));
+
+	if(info.fade)
+	{
+		$(elem).delay(10000).fadeOut(250).promise().done(function() {
+			$(elem).remove();
+			hideIfNoMessages();
+		});
+	}
+
+	function hideIfNoMessages()
+	{
+		if($('#notify li').length === 0)
+		{
+			$('.notification').hide();
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Returns weather or not the user scrolled since the last reset.
+
+var s_didScroll = false;
+clientRender.didScroll = function(reset)
+{
+	var ret = s_didScroll;
+
+	if(reset)
+	{
+		s_didScroll = false;
+	}
+
+	return ret;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+// Astral Diamond Exchange Data Tables
+
+clientRender.buyZenDataTable = function()
+{
+	// BUY ZEN TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableBuyZen').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 5,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null, // Available Quantity
+				{ 'bVisible': false, 'bSearchable': false }, // sortable available quantity
+				null, // Unit Price
+				{ 'bVisible': false, 'bSearchable': false } // sortable unit price
+			],
+			'aoColumnDefs': [
+				{ "iDataSort": 1, "aTargets": [ 0 ] },
+				{ "iDataSort": 3, "aTargets": [ 2 ] }
+			],
+			'aaSorting': [[2, 'asc']],
+			"bPaginate": false,
+			"bInfo": false,
+			"bFilter": false
+		});
+	});
+}
+clientRender.sellZenDataTable = function()
+{
+	// SELL ZEN TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableSellZen').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 5,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null, // Requested Quantity
+				{ 'bVisible': false, 'bSearchable': false }, // sortable requested quantity
+				null, // Offered Unit Price
+				{ 'bVisible': false, 'bSearchable': false } // sortable offered unit price
+			],
+			'aoColumnDefs': [
+				{ "iDataSort": 1, "aTargets": [ 0 ] },
+				{ "iDataSort": 3, "aTargets": [ 2 ] }
+			],
+			'aaSorting': [[2, 'asc']],
+			"bPaginate": false,
+			"bInfo": false,
+			"bFilter": false
+		});
+	});
+}
+clientRender.exchangeListingsDataTable = function()
+{
+	// EXCHANGE LISTINGS TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableExchangeListings').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 15,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null, // Requested Quantity
+				null, // Original Quantity
+				{ 'bVisible': false, 'bSearchable': false }, // sortable requested / original quantity
+				null, // Remaining Quantity
+				{ 'bVisible': false, 'bSearchable': false }, // sortable remaining quantity
+				null // Remove Listing?
+			],
+			'aoColumnDefs': [
+				{ "iDataSort": 2, "aTargets": [ 0, 1 ] },
+				{ "iDataSort": 4, "aTargets": [ 3 ] }
+			],
+			'aaSorting': [[0, 'asc']]
+		});
+	});
+}
+clientRender.exchangeLogDataTable = function()
+{
+	// EXCHANGE LOG TABLE
+	$('document').ready(function() {
+		$('table#gatewayTableExchangeLog').dataTable({
+			'bLengthChange': false,
+			'iDisplayLength': 15,
+			'oLanguage': client.dataTableLanguage,
+			'aoColumns': [
+				null, // Date
+				null, // ID #
+				null // Event
+			],
+			'aaSorting': [[0, 'desc']]
+		});
+	});
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File
+

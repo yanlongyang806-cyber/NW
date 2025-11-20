@@ -1,0 +1,34 @@
+<div data-path="loginInfo">
+	<div class="charselect-logout desktopOnly">
+		<a href="/logout">Log out</a>
+	</div>
+	<div class="charselect-welcome">
+		<h1>
+			<span class="desktopOnly">Secure Access Granted</span>
+			<span class="mobileOnly">Access Granted</span>
+		</h1>
+		<h2>
+			<span class="desktopOnly">Please identify your active command:</span>
+			<span class="mobileOnly">Select Your Captain:</span>
+		</h2>
+	</div>
+	<div class="charselect-list">
+		<div class="list-box xlarge-list-entries">
+			<ul data-path=".choices[virtualshardid ne 1]">
+				<li data-set-class="{.extradata1.$map(factionFromClass)}" data-set-onclick="client.characterSelect('{.name.$escapeForString()}@{loginInfo.publicaccountname}');">
+					<span class="cap"></span>
+					<span class="entry">
+						<div data-set-class="icon-class-player-large {.extradata1.$map(classTypeIcons)}"></div>
+						<h4 class="char-list-name" data-path=".name">Stephen Hawking</h4>
+						<h5 class="char-list-class" data-path=".extradata1.$getResource(CharacterClass).displayname.str">Starfleet Science Officer</h5>
+						<h5 class="char-list-race" data-path=".extradata3.$getResource(SpeciesDef).displaynamemsg.str">Male Liberated Borg Human</h5>
+						<span data-set-class="icon-rank-large {.info[key=Rank].value.$map(rankIcons)}"></span>
+					</span>
+				</li>
+			</ul>
+		</div>
+	</div>
+	<span class="mobile-login mobileOnly">
+		<a class="button-entry" href="/logout">Log Out</a>
+	</span>
+</div>

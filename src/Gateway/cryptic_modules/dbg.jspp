@@ -1,0 +1,212 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// Dbg
+//
+// Works in conjunction with a macro than embeds trace lines into the code.
+// Has an overall Debugging level setting.
+//
+// Supports showing and hiding message from certain files.
+//
+var browser = process && process.title === 'browser';
+var util;
+if(!browser)
+{
+	util = require('util');
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+var Dbg = { };
+
+///////////////////////////////////////////////////////////////////////////
+
+Dbg.ERROR =  1;
+Dbg.WARN  =  3;
+Dbg.LOG   =  5;
+Dbg.INFO  =  8;
+Dbg.DEBUG = 10;
+
+Dbg.level = Dbg.LOG;
+
+Dbg.filesEnabled = {};
+Dbg.filesDisabled = {};
+
+Dbg.use_colors = !browser;
+
+Dbg.depth = 4;
+
+//
+// Dbg.setLevel
+//
+// Sets the current Dbg level. Any Dbg with a level equal to or less than
+// this value will be displayed.
+//
+Dbg.setLevel = function setLevel(level)
+{
+	level = level || Dbg.level;
+
+	var old = Dbg.level;
+	Dbg.level = level;
+
+	return old;
+}
+
+//
+// Dbg.enableFile
+//
+// Forces Dbgs in the given file(s) to be enabled, unless disabled by
+// level.
+//
+Dbg.enableFile = function enableFile(/* one or more file rootnames */)
+{
+	for(var i=0; i<arguments.length; i++)
+	{
+		var p = arguments[i].toLowerCase();
+		Dbg.filesEnabled[p] = true;
+
+		if(Dbg.filesDisabled[p]) delete Dbg.filesDisabled[p];
+	}
+}
+
+//
+// Dbg.disableFile
+//
+// Forces Dbgs in the given file(s) to be disabled, regardless of level enabling.
+//
+Dbg.disableFile = function disableFile(/* one or more rootnames */)
+{
+	for(var i=0; i<arguments.length; i++)
+	{
+		var p = arguments[i].toLowerCase();
+		Dbg.filesDisabled[p] = true;
+
+		if(Dbg.filesEnabled[p]) delete Dbg.filesEnabled[p];
+	}
+}
+
+//
+// Dbg.clearFile
+//
+// Shuts off file-level overrides for the given file(s).
+//
+Dbg.clearFile = function clearFile(/* one or more rootnames */)
+{
+	for(var i=0; i<arguments.length; i++)
+	{
+		var p = arguments[i].toLowerCase();
+		if(Dbg.filesEnabled[p]) delete Dbg.filesEnabled[p];
+		if(Dbg.filesDisabled[p]) delete Dbg.filesDisabled[p];
+	}
+}
+
+//
+// isEnabled
+//
+// Given a level, determine if the Dbg is enabled.
+//
+Dbg.isEnabled = function isEnabled(level, filename)
+{
+	filename = filename.toLowerCase();
+	var slot;
+
+	var levelOK = Dbg.level >= level;
+
+	var hasFiles = false;
+	for(slot in Dbg.filesEnabled) { hasFiles=true; break; }
+	var fileOK = Dbg.filesEnabled[filename]
+		|| ((Dbg.filesEnabled['all'] || Dbg.filesEnabled['*'] || !hasFiles)
+			&& !(Dbg.filesDisabled[filename] || Dbg.filesDisabled['all'] || Dbg.filesDisabled['*']));
+
+	return levelOK && fileOK;
+}
+
+//
+// inspect
+//
+// Either makes a nicely formatted string if console doesn't support fancy,
+// Dbg display or the argument array if it does.
+//
+Dbg.inspect = function inspect(args)
+{
+	if(args.length > 0)
+	{
+		if(typeof args[0] === 'string')
+		{
+			var str = args.shift();
+			if(args.length > 0)
+			{
+				return Dbg.inspectAt(str, args);
+			}
+			else
+			{
+				return [ str ];
+			}
+		}
+		else
+		{
+			if(util)
+			{
+				var s = util.inspect(args, false, Dbg.depth, Dbg.use_colors);
+				return [ s ];
+			}
+			else
+			{
+				return [ args ];
+			}
+		}
+	}
+}
+
+//
+// inspectAt
+//
+// Either makes a nicely formatted string if console doesn't support fancy,
+// Dbg display or the argument array if it does.
+//
+Dbg.inspectAt = function inspectAt(location, args)
+{
+	if(util)
+	{
+		var s = location+' ';
+		s += util.inspect(args, false, Dbg.depth, Dbg.use_colors);
+		return [ s ];
+	}
+	else
+	{
+		var a = [];
+		a.push(location);
+		a.push(args);
+		return a;
+	}
+}
+
+function nop() {}
+
+if(!browser || (window.console && window.console.log && window.console.log.call))
+{
+	Dbg.consolelog = console.log;
+}
+else
+{
+	if(!window.console)
+	{
+		window.console = {
+			log: nop,
+			info: nop,
+			error: nop,
+			warn: nop,
+			dir: nop
+		}
+	}
+
+	Dbg.consolelog = function()	{
+		Function.apply.call(window.console.log, window.console, arguments);
+	};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = Dbg;
+
+// End of File

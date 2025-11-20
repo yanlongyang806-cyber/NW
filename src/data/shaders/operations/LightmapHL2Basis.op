@@ -1,0 +1,30 @@
+OperationDef
+	Name "LightMapHL2Basis" // Name of the operation
+	Category "Advanced"
+	Description "Lightmapping using the HL2 basis"
+	Type ADVANCED
+
+	Input: R, "First parameter"
+	Input: G, "Second parameter"
+	Input: B, "Third parameter"
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 3
+		Type Normal
+		Default
+			Type Value
+			Floats 0.0 0.0 1.0
+		EndDefault
+	EndInput
+
+	Output
+		Name LightMap
+		Description "Output of lightmapping"
+		Float 3
+		AlphaFrom R
+	EndOutput
+
+EndOperationDef
+

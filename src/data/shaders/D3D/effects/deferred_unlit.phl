@@ -1,0 +1,123 @@
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+#ifndef UNLIT
+#include "light_inc.hlsl"
+#endif
+
+#define DEFERRED_OUTPUTS_DEPTH
+
+struct PS_OUTPUT
+{
+	float4 color[2]		: COLOR;
+#ifdef DEFERRED_OUTPUTS_DEPTH
+ 	float depth		: DEPTH;
+#endif
+};
+
+SAMPLER_DECL(mrt0_sampler, 0);
+SAMPLER_DECL(mrt1_sampler, 1);
+SAMPLER_DECL(mrt2_sampler, 2);
+SAMPLER_DECL(mrt3_sampler, 3);
+#ifndef DEFERRED_USE_MRT_ENCODED_DEPTH
+SAMPLER_DECL(depth_sampler, 4);
+#endif
+
+// TODO share this macro in ps_inc.hlsl or Standard.LightingModel
+#macro DIFFUSE_WARP_SAMPLER_CALL
+#ifdef HasDiffuseWarp
+, TexSampler%DiffuseWarp%, samTexSampler%DiffuseWarp%, diffuse_warp_y
+#else
+#endif
+#endmacro
+
+// TODO add transform to world Z/fog space Z
+float fogCalculateHeightCoord(float3 position_vs)
+{
+	return position_vs.z;
+}
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+	float2 texcoord = fragment.texcoord.xy / fragment.texcoord.w;
+	float4 mrt0 = sampleTex2D(mrt0_sampler, texcoord.xy);
+	float4 mrt1 = sampleTex2D(mrt1_sampler, texcoord.xy);
+	float4 mrt2 = sampleTex2D(mrt2_sampler, texcoord.xy);
+	float4 mrt3 = sampleTex2D(mrt3_sampler, texcoord.xy);
+#ifdef DEFERRED_USE_MRT_ENCODED_DEPTH
+	float depthValue = mrt3.x;
+#else
+	float depthValue = sampleTexDepth(depth_sampler, texcoord.xy).x;
+#endif
+	// TODO figure out if we need clipping by depths near 1 
+	clip(1 - depthValue - 0.0001f);
+
+	float gloss = saturate(abs(mrt2.w) - 0.001f);
+
+	float3 outColor = mrt3.xyz;
+#ifdef DEFERRED_USE_MRT_ENCODED_DEPTH
+	float3 position_vs = extractPositionWithCorrection(depthValue, texcoord.xy);
+#else
+	float3 position_vs = extractPositionUncompressedWithCorrection(viewSpaceDepth(depthValue), texcoord.xy);
+#endif
+	float3 N_vs = rangeExpand(mrt1.xyz);
+	float3 view_vs = normalize(-position_vs); // view vector
+
+	float4 spec_params = float4(mrt2);
+	spec_params.xyz *= gloss;
+
+	// compute some commonly used values, they should get optimized out if unused
+	float one_over_distance_to_camera = 1 / length(position_vs.xyz);			// CD: hopefully the compiler turns this into rsqrt of dp3 instead if rcp of rcp of rsqrt of dp3
+	float distance_to_camera = 1 / one_over_distance_to_camera; // this variable name must match Output.phl init code and directional_light.Light shadow calculation code
+
+#ifndef UNLIT
+// lighting model
+
+// I believe this must match the lighting model declarations.
+// See Standard.LightingModel Text section for lighting code preamble; maybe we need 
+// to make this shader include %LIGHTING_MODEL%, like ouput.phl?
+	float3 diffuseComponent = 0, specularComponent = 0;
+	float3 diffuseLightingValue = float3(0, 0, 0);
+	float3 bitangent = 0;
+	float ambient_occlusion = 0.0;
+	#ifdef HasDiffuseWarp
+		float diffuse_warp_y = mrt3.w;
+	#endif
+
+	float3 reflect_vs = -reflect(view_vs, N_vs);
+	float3 spec_color = spec_params.xyz;
+	float spec_exponent = spec_params.w * 128;
+	float3 shadow_term = 1.0;
+	float3 albedo = mrt0.xyz;
+	float2 light_bleed = float2(0, 1);
+
+$PerLight$
+
+	outColor += albedo * diffuseComponent + spec_color * specularComponent;
+
+// end lighting model
+#endif
+
+	// fog
+	fogApply(outColor, fogMatrix, float4(position_vs.xyz, fogCalculateHeightCoord(position_vs)), distance_to_camera);
+
+	output.color[0].rgb = ToneMapLDR(outColor.rgb);
+	output.color[0].a = 1;
+	output.color[1].rgb = ToneMapHDR(outColor.rgb);
+	output.color[1].a = 1;
+
+	// TODO figure out if we need to be able to emit depth from the unlit pass
+#ifdef DEFERRED_OUTPUTS_DEPTH
+ 	output.depth = depthValue;
+#endif
+
+	// DEBUG visualize parts of MRT and light area of effect
+	//output.color[0].rgb = mrt0.xyz;
+	//output.color[0].rgb = ToneMapLDR(LightParam01.xyz);
+	//output.color[0].rgb = pow( saturate(depthValue), 64 );
+
+	return output;
+}
+
+

@@ -1,0 +1,21 @@
+OperationDef
+	Name "HSV_to_RGB" // Name of the operation
+	Description "Converts a HSV value to an RGB one."
+	Type ADVANCED
+
+	Input
+		Name A
+		Description "HSVA value"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "RGBA output"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

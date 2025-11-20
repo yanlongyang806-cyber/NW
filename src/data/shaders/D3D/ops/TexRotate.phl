@@ -1,0 +1,6 @@
+{
+	float2 tc = %TexCoord%.xy; //  + Translation.xy;
+	%Result%.xy = float2(dot(tc, %RotationMatrix%.xy),
+		dot(tc, %RotationMatrix%.zw));
+	%Result%.zw = 0.0;
+}

@@ -1,0 +1,474 @@
+
+
+.setRoomTiles(@x, @y) {
+	&,
+	&:nth-child(1n) {	background-position: (-25px + @x) (-25px + @y);	}
+	&:nth-child(2n) {	background-position: (-25px + @x) (-50px + @y);	}
+	&:nth-child(3n) {	background-position: (-25px + @x) (-75px + @y);	}
+	&:nth-child(4n) {	background-position: (-50px + @x) (-25px + @y);	}
+	&:nth-child(5n) {	background-position: (-50px + @x) (-50px + @y);	}
+	&:nth-child(6n) {	background-position: (-50px + @x) (-75px + @y);	}
+	&:nth-child(7n) {	background-position: (-75px + @x) (-25px + @y);	}
+	&:nth-child(8n) {	background-position: (-75px + @x) (-50px + @y);	}
+	&:nth-child(9n) {	background-position: (-75px + @x) (-75px + @y);	}
+
+	&.wall-n {
+		&,
+		&:nth-child(1n) {	background-position: (-25px + @x) (0 + @y);	}
+		&:nth-child(2n) {	background-position: (-50px + @x) (0 + @y);	}
+		&:nth-child(3n) {	background-position: (-75px + @x) (0 + @y);	}
+	}
+	&.wall-s {
+		&,
+		&:nth-child(1n) {	background-position: (-25px + @x) (-100px + @y);	}
+		&:nth-child(2n) {	background-position: (-50px + @x) (-100px + @y);	}
+		&:nth-child(3n) {	background-position: (-75px + @x) (-100px + @y);	}
+	}
+	&.wall-w {
+		&,
+		&:nth-child(1n) {	background-position: (0 + @x) (-25px + @y);	}
+		&:nth-child(2n) {	background-position: (0 + @x) (-50px + @y);	}
+		&:nth-child(3n) {	background-position: (0 + @x) (-75px + @y);	}
+	}
+	&.wall-e {
+		&,
+		&:nth-child(1n) {	background-position: (-100px + @x) (-25px + @y);	}
+		&:nth-child(2n) {	background-position: (-100px + @x) (-50px + @y);	}
+		&:nth-child(3n) {	background-position: (-100px + @x) (-75px + @y);	}
+	}
+
+	&.wall-n.wall-w {	background-position: (0 + @x) (0 + @y);			}
+	&.wall-n.wall-e {	background-position: (-100px + @x) (0 + @y);		}
+	&.wall-s.wall-e {	background-position: (-100px + @x) (-100px + @y);	}
+	&.wall-s.wall-w {	background-position: (0 + @x) (-100px + @y);		}
+
+	&.wall-n.wall-s {
+		&,
+		&:nth-child(1n) {	background-position: (-25px + @x) (-125px + @y);	}
+		&:nth-child(2n) {	background-position: (-50px + @x) (-125px + @y);	}
+		&:nth-child(3n) {	background-position: (-75px + @x) (-125px + @y);	}
+	}
+	&.wall-w.wall-e {
+		&,
+		&:nth-child(1n) {	background-position: (-125px + @x) (-25px + @y);	}
+		&:nth-child(2n) {	background-position: (-125px + @x) (-50px + @y);	}
+		&:nth-child(3n) {	background-position: (-125px + @x) (-75px + @y);	}
+	}
+
+	&.wall-n.wall-w.wall-e {	background-position: (-125px + @x) (0 + @y); }
+	&.wall-s.wall-w.wall-e {	background-position: (-125px + @x) (-100px + @y); }
+	&.wall-n.wall-s.wall-w {	background-position: (0 + @x) (-125px + @y); }
+	&.wall-n.wall-s.wall-e {	background-position: (-100px + @x) (-125px + @y); }
+
+	&.wall-n.wall-s.wall-w.wall-e {	background-position: (-125px + @x) (-125px + @y);	}
+}
+.setHallTiles(@x, @y) {
+	& {		background-position: -200px -25px;	}
+
+	&.wall-n { background-position: -200px 0;		}
+	&.wall-s { background-position: -200px -50px;	}
+	&.wall-w { background-position: -175px -25px;	}
+	&.wall-e { background-position: -225px -25px;	}
+
+	&.wall-n.wall-w { background-position: -175px 0;		}
+	&.wall-n.wall-e { background-position: -225px 0;		}
+	&.wall-s.wall-e { background-position: -225px -50px;	}
+	&.wall-s.wall-w { background-position: -175px -50px;	}
+
+	&.wall-n.wall-s {
+		&,
+		&:nth-child(1n) {	background-position: -200px -125px;	}
+		&:nth-child(2n) {	background-position: -225px -125px;	}
+		&:nth-child(3n) {	background-position: -250px -125px;	}
+	}
+	&.wall-w.wall-e {
+		&,
+		&:nth-child(1n) {	background-position: -150px -25px;	}
+		&:nth-child(2n) {	background-position: -150px -50px;	}
+		&:nth-child(3n) {	background-position: -150px -75px;	}
+	}
+
+	&.wall-n.wall-w.wall-e { background-position: -150px 0;			}
+	&.wall-s.wall-w.wall-e { background-position: -150px -100px;	}
+	&.wall-n.wall-s.wall-w { background-position: -175px -125px;	}
+	&.wall-n.wall-s.wall-e { background-position: -275px -125px;		}
+
+
+	&.wall-n.wall-s.wall-w.wall-e {		background-position: -150px -125px;	}
+}
+
+
+.dungeon-map {
+
+	@tile: 25px;
+	@over: 5px;
+
+	.column {
+		margin: 0 auto;
+		padding-top: 25px;
+		width: 475px;
+	}
+	.clear {
+		clear: both;
+	}
+	.tile {
+		width: 15px;
+		height: 15px;
+		float: left;
+		/*
+		background-color: #b59b60;
+		border: 1px solid #9e7f3f;
+		margin: -1px;
+		*/
+		position: relative;
+		text-align: center;
+		font-family: sans-serif;
+		font-size: 10px;
+		margin: 5px;
+	}
+
+	.overlay {
+		width: 15px;
+		height: 15px;
+		position: absolute;
+		z-index: 2;
+	}
+
+	/* ----------------------------------------------------- */
+	/* Tooltips */
+
+	.tooltip {
+		position: absolute;
+		display: none;
+		font-family: Arial, Helvetica, sans-serif;
+		border: 1px solid #000;
+		background: #ffc;
+		border-radius: 3px;
+		font-size: 11px;
+		padding: 5px;
+		width: 200px;
+		z-index: 9999;
+	}
+
+	/* ----------------------------------------------------- */
+
+
+
+
+
+	/* TILESET BELOW */
+	.tile {
+		width: @tile;
+		height: @tile;
+		margin: 0;
+	}
+	.room,
+	.hall,
+	.overlay {
+		width: @tile;
+		height: @tile;
+		background-position: 999px 999px;
+		background-repeat: no-repeat;
+		border: 0;
+		margin: 0;
+	}
+	&.parchment-01 {
+		background-image: url(/img_nw/parchment_map_01.png);
+	}
+	&.parchment-02 {
+		background-image: url(/img_nw/parchment_map_02b.png);
+	}
+	&.dungeon {
+		.room,
+		.hall,
+		.overlay {
+			background-image: url('/img_nw/dungeon_tileset_01a.png');
+		}
+	}
+	&.forest {
+		.tile,
+		.room,
+		.hall,
+		.overlay {
+			background-image: url('/img_nw/dungeon_tileset_02c.png');
+		}
+	}
+	.tile {
+		&:nth-child(1n) {	background-position: 0 -175px;	}
+		&:nth-child(2n) {	background-position: -25px -175px;	}
+		&:nth-child(3n) {	background-position: -50px -175px;	}
+		&:nth-child(4n) {	background-position: -75px -175px;	}
+		&:nth-child(5n) {	background-position: 0 -200px;	}
+		&:nth-child(6n) {	background-position: -25px -200px;	}
+		&:nth-child(7n) {	background-position: -50px -200px;	}
+		&:nth-child(8n) {	background-position: -75px -200px;	}
+		&:nth-child(9n) {	background-position: 0 -225px;	}
+		&:nth-child(10n) {	background-position: -25px -225px;	}
+		&:nth-child(11n) {	background-position: -50px -225px;	}
+		&:nth-child(12n) {	background-position: -75px -225px;	}
+		&:nth-child(13n) {	background-position: 0 -250px;	}
+		&:nth-child(14n) {	background-position: -25px -250px;	}
+		&:nth-child(15n) {	background-position: -50px -250px;	}
+		&:nth-child(16n) {	background-position: -75px -250px;	}
+	}
+	.tile.room {
+		.setRoomTiles(0,0);
+	}
+	.tile.hall {
+		.setHallTiles(0,0);
+	}
+	.room {
+		/* room openings */
+		&.open-n {		margin-top: @over;		}
+		&.open-s {		margin-bottom: @over;	}
+		&.open-w {		margin-left: @over;		}
+		&.open-e {		margin-right: @over;	}
+
+		&.open-n, &.open-s {	height: @tile - @over;	}
+		&.open-e, &.open-w {	width: @tile - @over;	}
+
+		&.open-n.open-w,
+		&.open-n.open-e,
+		&.open-s.open-e,
+		&.open-s.open-w {		width: @tile - @over;
+								height: @tile - @over;		}
+
+		&.open-n.open-s {		height: @tile - (@over * 2);	}
+		&.open-w.open-e {		width: @tile - (@over * 2);		}
+
+		&.open-n.open-s.open-w.open-e {
+			background-position: -300px 0;
+			margin: 0;
+			height: @tile;
+			width: @tile;
+			.overlay {
+				&.open-n, &.open-s, &.open-w, &.open-e {
+					display: none;
+				}
+			}
+		}
+
+		&.open-n {			.setRoomTiles(0, -@over);		}
+		&.open-w {			.setRoomTiles(-@over, 0);		}
+		&.open-n.open-w {	.setRoomTiles(-@over, -@over);	}
+
+		/* overlay settings */
+		.overlay.open-n,
+		.overlay.open-s {
+			height: @over;
+			width: @tile;
+		}
+		.overlay.open-e,
+		.overlay.open-w {
+			width: @over;
+			height: @tile;
+		}
+
+		.overlay.open-n {
+			top: -(@over);
+			bottom: auto;
+		}
+		.overlay.open-s {
+			top: auto;
+			bottom: -(@over);
+		}
+		.overlay.open-w {
+			left: -(@over);
+			right: auto;
+		}
+		.overlay.open-e {
+			left: auto;
+			right: -(@over);
+		}
+		&.open-n {
+			.overlay.open-w, .overlay.open-e {		top: -(@over);		}
+		}
+		&.open-w {
+			.overlay.open-n, .overlay.open-s {		left: -(@over);		}
+		}
+
+		/* overlay north */
+		& {
+			.overlay.open-n {		background-position: -275px -50px;	}
+		}
+		&.wall-w, &.open-w {
+			.overlay.open-n {		background-position: -250px 0;	}
+		}
+		&.wall-e, &.open-e {
+			.overlay.open-n {		background-position: -275px 0;	}
+		}
+		&.wall-e.wall-w,
+		&.wall-e.open-w,
+		&.open-e.wall-w,
+		&.open-e.open-w {
+			.overlay.open-n {		background-position: -300px 0;	}
+		}
+
+		/* overlay west */
+		& {
+			.overlay.open-w {		background-position: -300px -25px;	}
+		}
+		&.wall-n, &.open-n {
+			.overlay.open-w {		background-position: -250px 0;	}
+		}
+		&.wall-s, &.open-s {
+			.overlay.open-w {		background-position: -250px -25px;	}
+		}
+		&.wall-s.wall-n,
+		&.wall-s.open-n,
+		&.open-s.wall-n,
+		&.open-s.open-n {
+			.overlay.open-w {		background-position: -300px 0;	}
+		}
+
+		/* overlay south */
+		& {
+			.overlay.open-s {		background-position: -275px (-50px - (@tile - @over));	}
+		}
+		&.wall-w, &.open-w {
+			.overlay.open-s {		background-position: -250px (-25px - (@tile - @over));	}
+		}
+		&.wall-e, &.open-e {
+			.overlay.open-s {		background-position: -275px (-25px - (@tile - @over));	}
+		}
+		&.wall-e.wall-w,
+		&.wall-e.open-w,
+		&.open-e.wall-w,
+		&.open-e.open-w {
+			.overlay.open-s {		background-position: -300px (0 - (@tile - @over));	}
+		}
+
+		/* overlay east */
+		& {
+			.overlay.open-e {		background-position: (-300px - (@tile - @over)) -25px;	}
+		}
+		&.wall-n, &.open-n {
+			.overlay.open-e {		background-position: (-275px - (@tile - @over)) 0;	}
+		}
+		&.wall-s, &.open-s {
+			.overlay.open-e {		background-position: (-275px - (@tile - @over)) -25px;	}
+		}
+		&.wall-s.wall-n,
+		&.wall-s.open-n,
+		&.open-s.wall-n,
+		&.open-s.open-n {
+			.overlay.open-e {		background-position: (-300px - (@tile - @over)) 0;	}
+		}
+		.overlay.corner {
+			width: @over;
+			height: @over;
+
+			&.corner-nw, &.corner-ne {	top: 0;		}
+			&.corner-se, &.corner-sw {	bottom: 0;	}
+			&.corner-nw, &.corner-sw {	left: 0;	}
+			&.corner-ne, &.corner-se {	right: 0;	}
+
+			&.corner-nw {	background-position: -300px -50px;	}
+			&.corner-ne {	background-position: (-300px - (@tile - @over)) -50px;	}
+			&.corner-se {	background-position: (-300px - (@tile - @over)) (-50px - (@tile - @over));	}
+			&.corner-sw {	background-position: -300px (-50px - (@tile - @over));	}
+		}
+
+		&.open-n {
+			.overlay.corner {
+				&.corner-nw, &.corner-ne {	top: -(@over);	}
+			}
+		}
+		&.open-w {
+			.overlay.corner {
+				&.corner-nw, &.corner-sw {	left: -(@over);	}
+			}
+		}
+		&.open-s {
+			.overlay.corner {
+				&.corner-se, &.corner-sw {	bottom: -(@over);	}
+			}
+		}
+		&.open-3 {
+			.overlay.corner {
+				&.corner-ne, &.corner-se {	right: -(@over);	}
+			}
+		}
+	}
+
+	.overlay {
+		&.button {
+			background-image: url('/img_nw/sprites_map_icons.png');
+			top: -12px;
+			left: -12px;
+			height: 50px;
+			width: 50px;
+			z-index: 9001;
+			cursor: pointer;
+			&.complete {
+				cursor: default;
+			}
+		}
+		&.button,
+		&.encounter,
+		&.scenario {
+			& {					background-position: 0 0;					}
+			&:hover {			background-position: 0 -60px;				}
+			&:active {			background-position: 0 -120px;				}
+			&.complete {		background-position: 0 -180px !important;	}
+		}
+		&.exit {
+			& {					background-position: -120px 0;					}
+			&:hover {			background-position: -120px -60px;				}
+			&:active {			background-position: -120px -120px;				}
+			&.complete {		background-position: -120px -180px !important;	}
+		}
+		&.treasure {
+			& {					background-position: -180px 0;					}
+			&:hover {			background-position: -180px -60px;				}
+			&:active {			background-position: -180px -120px;				}
+			&.complete {		background-position: -180px -180px !important;	}
+		}
+		&.critter {
+			& {					background-position: -300px 0;					}
+			&:hover {			background-position: -300px -60px;				}
+			&:active {			background-position: -300px -120px;				}
+			&.complete {		background-position: -300px -180px !important;	}
+		}
+		&.door {
+			& {					background-position: -420px 0;					}
+			&:hover {			background-position: -420px -60px;				}
+			&:active {			background-position: -420px -120px;				}
+			&.complete {		background-position: -420px -180px !important;	}
+		}
+		&.portal {
+			& {					background-position: -540px 0;					}
+			&:hover {			background-position: -540px -60px;				}
+			&:active {			background-position: -540px -120px;				}
+			&.complete {		background-position: -540px -180px !important;	}
+		}
+		&.boss,
+		&.end {
+			& {					background-position: -720px 0;					}
+			&:hover {			background-position: -720px -60px;				}
+			&:active {			background-position: -720px -120px;				}
+			&.complete {		background-position: -720px -180px !important;	}
+		}
+		&.trap {
+			& {					background-position: -780px 0;			}
+			&:hover {			background-position: -780px -60px;		}
+			&:active {			background-position: -780px -120px;		}
+			&.complete {		background-position: -780px -180px !important;	}
+		}
+		&.stairs-up {
+			& {					background-position: -900px 0;			}
+			&:hover {			background-position: -900px -60px;		}
+			&:active {			background-position: -900px -120px;		}
+			&.complete {		background-position: -900px -180px !important;	}
+		}
+		&.stairs-down {
+			& {					background-position: -960px 0;			}
+			&:hover {			background-position: -960px -60px;		}
+			&:active {			background-position: -960px -120px;		}
+			&.complete {		background-position: -960px -180px !important;	}
+		}
+	}
+}
+
+
+

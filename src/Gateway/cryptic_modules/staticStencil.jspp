@@ -1,0 +1,172 @@
+'use strict';
+//
+// StaticStencil
+//
+// Generates HTML files from stencils. This is used by servers to translate
+// their files into each locale. Though it takes any stencil, it doesn't
+// resolve anything but messages. (i.e. no resources)
+//
+//
+// Usage:
+//
+// var staticStencil = require('cryptic/staticStencil');
+// staticStencil.locale(require('cryptic/locale'))
+//    .outDir(path.resolve(g_config.publicDir, 'locale'))
+//    .makeHTMLForFile(path.resolve(g_config.publicDir, 'stencils.js'))
+//
+
+var fs = require('fs');
+var path = require('path');
+var mkdirsSync = require('cryptic/mkdirsSync');
+
+function StaticStencil(localeObj, outDirectory)
+{
+	this.outDirectory = outDirectory;
+	this.localeObj = localeObj;
+	this.cacheBusterID = Date.now();
+}
+
+
+StaticStencil.staticStencil = function(localeObj, outDirectory)
+{
+	return new StaticStencil(localeObj, outDirectory);
+}
+
+StaticStencil.prototype.locale = function(localeObj)
+{
+	this.localeObj = localeObj;
+	return this;
+}
+
+StaticStencil.prototype.outDir = function(outDirectory)
+{
+	this.outDirectory = outDirectory;
+	return this;
+}
+
+StaticStencil.prototype.cacheBuster = function(val)
+{
+	this.cacheBusterID = val;
+	return this;
+}
+
+StaticStencil.prototype.makeHTMLForDirectory = function(dir)
+{
+	function makeHTMLRecursive(self, fullpath)
+	{
+		//
+		// This should be called after all of the translation key/value pairs
+		// have been fetched and stuck in /locale/[xx].js
+		//
+		var files = fs.readdirSync(fullpath);
+		files.forEach(function (file) {
+			file = path.resolve(fullpath, file);
+			var stat = fs.statSync(file);
+			if(stat.isDirectory())
+			{
+				self.makeAll(file);
+			}
+			else
+			{
+				self.makeHTMLForFile(file);
+			}
+		});
+	}
+
+	makeHTMLRecursive(this, dir);
+	return this;
+}
+
+StaticStencil.prototype.makeHTMLForFile = function(file, lang)
+{
+	var stencils = require(file);
+	this.makeHTMLForStencils(stencils, lang);
+	return this;
+}
+
+
+var reCB = /\{\$cachebuster\(\)\}/ig;
+
+StaticStencil.prototype.makeHTMLForStencils = function(stencils, lang)
+{
+	var self = this;
+	if(!lang)
+	{
+		// For every language, grab the translations and run through all the
+		// stencils with them.
+		for(var i = 0; i < this.localeObj.allLocales.length; i++)
+		{
+			makeHTMLForLang(this.localeObj.allLocales[i]);
+		}
+	}
+	else
+	{
+		makeHTMLForLang(lang, true);
+	}
+
+	function makeHTMLForLang(lang, ignoreLangDir)
+	{
+		if(!lang.supported || !lang.filename)
+			return;
+
+		var table = require(lang.filename);
+
+		for(var stencil in stencils)
+		{
+			if(stencil === 'render')
+				continue;
+
+			/*jshint loopfunc:true */
+			(function(s) {
+				renderStencil(s, table.msgs, function(error, val) {
+					var filename = path.resolve(self.outDirectory,
+						ignoreLangDir ? '' : lang.httpLanguage,
+						stencil + '.html');
+					mkdirsSync(path.dirname(filename));
+					try { fs.chmodSync(filename, '777'); } catch (e) { /* just keep going */ }
+					fs.writeFileSync(filename, val.join('\n'));
+				});
+			})(stencil);
+			/*jshint loopfunc:false */
+		}
+	}
+
+	function renderStencil(stencilName, msgs, callback)
+	{
+		stencils.render(stencilName, resolveArrayWithMessages, msgs, callback);
+	}
+
+	function resolveArrayWithMessages(name, ctx, html, arr, execDone)
+	{
+		arr.forEach(function(item) {
+			if(item.s)
+			{
+				// This is a giant hack to inject a cache-busting value into
+				// places marked {$cachebuster()}.
+				var s = item.s.replace(reCB, self.cacheBusterID);
+				html.push('' + s);
+			}
+			else if(item.t)
+			{
+				var str = ctx[item.t];
+				if(str)
+					html.push('' + str);
+				else
+					html.push('' + item.t);
+			}
+			else if(item.c)
+			{
+				resolveArrayWithMessages(ctx, html, item.c, function(){});
+			}
+		});
+
+		if(execDone)
+			execDone();
+	}
+
+	return this;
+}
+
+module.exports = StaticStencil.staticStencil;
+
+// End of File

@@ -1,0 +1,217 @@
+<!-- if(dev) -->
+
+<div class="page-content" data-path="gatewaygamedata" data-update="gatewaygamedata">
+	<div class="page-dungeon-combat">
+		<div class="challenge-container">
+			<div class="fancy-box">
+				<div class="fancy-box-top">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-mid">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-content">
+
+						<div class="combatDiceBox"></div>
+
+						<div class="combatContent" data-path=".quest.encounter">
+							<div class="challenge-bg" data-set-style="background-image: url(/img_sca/{.background});"></div>
+							<div class="challenge-fg" data-set-style="background-image: url(/img_sca/{.image});"></div>
+							<div class="challenge-title">
+								<h2 data-path=".challenge.def.name">Kobold Shapechanger</h2>
+							</div>
+							<div data-set-class="challenge-trials current-trial-{.challenge.currentTrial}">
+								<div class="challenge-trials-inner" data-path=".challenge.trials.$asArray()">
+									<div data-set-class="trial trial-{$hereIndex()} {.complete.$choose(done,)} {.active.$choose(active,next)}">
+										<h6 data-path="$hereIndex().$map(0:I, 1:II, 2:III, 3:IV)">I</h6>
+										<span data-path=".needs.$asArray()">
+
+											<span data-if="{.requires} eq {.count}" data-set-class="rune full requires-{.requires} count-{.count} {.symbol.$map(nw_sides)} {.">
+												<span data-if="!{.complete}" class="num" data-path=".requires">1</span>
+												<span data-if="{.complete}" class="num" data-path=".count">1</span>
+											</span>
+
+											<span data-if="{.requires} lt {.count} && {.requires} gt 0" data-set-class="rune damaged requires-{.requires} count-{.count} {.symbol.$map(nw_sides)} {.">
+												<span data-if="!{.complete}" class="num" data-path=".requires">1</span>
+												<span data-if="{.complete}" class="num" data-path=".count">1</span>
+											</span>
+
+											<span data-if="{.requires} eq 0" data-set-class="rune dead requires-{.requires} count-{.count} {.symbol.$map(nw_sides)} {.">
+												<span data-if="!{.complete}" class="num" data-path=".requires">1</span>
+												<span data-if="{.complete}" class="num" data-path=".count">1</span>
+											</span>
+										</span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<!-- DEV ANIMATE -->
+						<!--
+						<span style="position: absolute; bottom: 30px; left: 10px;">
+							<div class="input-field button light">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button class="tabletStart">Animate!</button>
+							</div>
+							<div class="input-field button light">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button class="tabletNext">Next</button>
+							</div>
+							<div class="input-field button light">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button class="tabletReset">Reset</button>
+							</div>
+						</span>
+
+						<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+						<script type="text/javascript">
+
+							var trIn = 600;
+							var trInDe = 50;
+
+							var trNx = 350;
+							var trNxDe = 100;
+
+							$(document).on('click','.tabletStart', function() {
+								console.log('clicked tabletStart');
+
+								$(".trial-1").animate({'right': 0}, trIn, 'easeOutExpo');
+								$(".trial-2").delay(trInDe * 1).animate({'right': 0}, trIn, 'easeOutExpo');
+								$(".trial-3").delay(trInDe * 2).animate({'right': 0}, trIn, 'easeOutExpo');
+								$(".trial-4").delay(trInDe * 3).animate({'right': 0}, trIn, 'easeOutExpo').promise().done(function() {
+
+									$('.trial-1')
+										.delay(trNxDe)
+										.addClass('active')
+										.animate({'border-spacing': 1 }, {
+											step: function(now,fx) {
+												$(this).css('-webkit-transform','scale('+now+')');
+												$(this).css('-ms-transform','scale('+now+')');
+												$(this).css('transform','scale('+now+')');
+											},
+											duration: trNx
+										}, 'easeInOutExpo');
+									$('.trial-2, .trial-3, .trial-4')
+										.delay(trNxDe)
+										.animate({'top': ('+=' + 30 + 'px')}, trNx, 'easeInOutExpo');
+								});
+							});
+
+							$(document).on('click','.tabletReset', function() {
+								console.log('clicked tabletReset');
+
+								$(".trial").css({'right': '800px'});
+
+								$(".trial").css('-webkit-transform','scale('+.72+')');
+								$(".trial").css('-ms-transform','scale('+.72+')');
+								$(".trial").css('transform','scale('+.72+')');
+								$(".trial").css('border-spacing','0.72px');
+								$(".trial").removeClass('active');
+
+								$(".trial-1").css({'top': '0px'});
+								$(".trial-2").css({'top': '90px'});
+								$(".trial-3").css({'top': '180px'});
+								$(".trial-4").css({'top': '270px'});
+
+							});
+
+						</script>
+						-->
+						<!-- DEV ANIMATE -->
+
+					</div>
+					<div class="fancy-box-right"></div>
+				</div>
+				<div class="fancy-box-bot">
+					<div class="fancy-box-left"></div>
+					<div class="fancy-box-right"></div>
+				</div>
+			</div>
+		</div>
+		<div class="dice-tray">
+			<div class="party-entry">
+				<img class="party-head" data-set-src="/shot/costume/{.quest.roller.costume}.png" alt="" />
+
+				<span data-if="{gatewaygamedata.state} eq 'k_Combat'">
+					<div class="input-field button epic">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<div class="button-glow buttonPulse">
+							<div class="input-bg-left"></div>
+							<div class="input-bg-mid"></div>
+							<div class="input-bg-right"></div>
+						</div>
+						<button onclick="client.scaRollDice()"><span>Roll Dice</span></button>
+					</div>
+					<script>
+						client.buttonPulse('.buttonPulse');
+					</script>
+				</span>
+
+				<span data-if="{gatewaygamedata.state} ne 'k_Combat'">
+					<div class="input-field button epic disabled">
+						<div class="input-bg-left"></div>
+						<div class="input-bg-mid"></div>
+						<div class="input-bg-right"></div>
+						<button disabled><span>Roll Dice</span></button>
+					</div>
+				</span>
+				<!--
+				<div class="input-field button epic">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button onclick="client.scaRollDice()"><span>Roll Dice</span></button>
+				</div>
+				-->
+			</div>
+			<div class="dice-rolls" data-path=".quest.roller.pile.dice" data-if="{gatewaygamedata.state} ne 'k_Discard'">
+				<button
+						data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()" data-tt-pos="top"
+						data-set-class="dice slot-{.id} large d{.count} {.color} {.roll.symbol.$map(nw_sides)} {.valid.$choose(usable,disabled)} {.used.$choose(used,)}"
+						data-set-onclick="{.used.$choose(,client.scaChooseDie,}('{.id}')">
+					<span class="rune"></span>
+					<span data-if="{.roll.count} gt 1" class="num" data-path=".roll.count">2</span>
+				</button>
+			</div>
+			<div class="dice-rolls" data-path=".quest.roller.pile.dice" data-if="{gatewaygamedata.state} eq 'k_Discard'">
+				<button
+						data-tt-stencil="content-tt-sca-dice" data-set-data-tt-path="$here()"
+						data-set-class="dice slot-{.id} large d{.count} {.color} {.roll.symbol.$map(nw_sides)} {.used.$choose(used,)} {.used.$choose(disabled,discardable)}"
+						data-set-onclick="{.used.$choose(,client.scaChooseDie,}('{.id}')">
+					<span class="rune"></span>
+					<span data-if="{.roll.count} gt 1" class="num" data-path=".roll.count">2</span>
+					<div class="discardable-bg"></div>
+				</button>
+			</div>
+
+			<div class="dice-rolls-spin">
+			</div>
+
+		</div>
+	</div>
+
+	<script>
+		client.scaKeepRolling();
+	</script>
+</div>
+
+
+<div class="rolldice">
+	<div class="rolldice-bg"></div>
+	<div class="dicebox">
+		<div id="dicebox"></div>
+<!-- 		<div class="playDiceAnimation">
+			<p style="font-size: 32px; text-align: center; margin-top: 150px; font-family: 'Sava';">Playing Dice Animation...</p>
+		</div> -->
+	</div>
+</div>
+
+<!-- endif(dev) -->

@@ -1,0 +1,39 @@
+<!-- if(dev) -->
+<div class="modal-top-outer">
+	<div class="modal-top-inner">
+		<a class="close-button" data-url-silent="closemodal"><span class="back-arrow mobileOnly"></span></a>
+	</div>
+</div>
+<div class="modal-body-outer">
+	<div class="modal-body-inner">
+
+		<div class="modal-zenstore-screenshots">
+			<h2 data-path=".hdef.displaynamemesg.str" class="modal-title"></h2>
+
+			<div class="screenshots-container">
+				<img class="screenshots-image screenshot_1" data-set-src="tex/{.hdef.largeicon}.png" alt="" />
+
+				<img data-if="{.hdef.largeiconsecond}" class="screenshots-image screenshot_2 hide" data-set-src="tex/{.hdef.largeiconsecond}.png" alt="" />
+
+				<img data-if="{.hdef.largeiconthird}" class="screenshots-image screenshot_3 hide" data-set-src="tex/{.hdef.largeiconthird}.png" alt="" />
+			</div>
+
+			<div data-if="{.hdef.largeiconsecond} || {.hdef.largeiconthird}" class="screenshots-navigator">
+				<a class="screenshots-button selected" id="screenshot_1"></a>
+				<a data-if="{.hdef.largeiconsecond}" class="screenshots-button" id="screenshot_2"></a>
+				<a data-if="{.hdef.largeiconthird}" class="screenshots-button" id="screenshot_3"></a>
+			</div>
+
+			<div class="modal-confirm-buttons">
+				<a class="button-standard rounded" data-url="back">Back to Item Info</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	client.screenshotNav();
+</script>
+
+
+<!-- endif(dev) -->

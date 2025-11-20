@@ -1,0 +1,36 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+//dbg.setLevel(dbg.DEBUG);
+dbg.disableFile('Resolver');
+dbg.disableFile('Shifter');
+dbg.disableFile('transition');
+dbg.disableFile('contentHelpers');
+
+////////////
+//
+// Force inclusion for bundling
+//
+
+var shifterInfo =
+{
+	'default': {
+		urls: require('../web/shifter/urls.js'),
+		transitions: require('../web/shifter/transition.js')
+	}
+};
+
+//
+// End of bundle list
+//
+////////////
+
+var client = require('cryptic/client/clientStubCommon');
+
+$(document).ready(client.onReady);
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = client;
+
+// End of File

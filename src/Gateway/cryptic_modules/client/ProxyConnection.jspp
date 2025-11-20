@@ -1,0 +1,421 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var format = require('cryptic/format');
+
+var dataModel = require('./DataModel');
+var contentHelpers = require('./contentHelpers');
+
+//////////////////////////////////////////////////////////////////////////
+
+var ProxyConnection = { };
+
+
+// The socket used to talk to the proxy.
+var sockProxy;
+
+ProxyConnection.client = null;
+ProxyConnection.sockProxy = null;
+
+//////////////////////////////////////////////////////////////////////////
+
+function connectToProxy()
+{
+	dbg.trace();
+
+	// Connect to the proxy
+	sockProxy = io.connect('', { 'reconnect': false, 'force new connection': 1 });
+
+	// Basic socket hygeine
+	sockProxy.on('connect',    onConnect);
+	sockProxy.on('disconnect', onDisconnect);
+	sockProxy.on('error',      onError);
+
+	// System
+	sockProxy.on('Proxy_Message', onProxy_Message);
+	sockProxy.on('Proxy_DisconnectWithMessage', onProxy_DisconnectWithMessage);
+	sockProxy.on('Proxy_ForceReload', onProxy_ForceReload);
+
+	// Login
+	sockProxy.on('Proxy_LoginSuccess',             onProxy_LoginSuccess);
+	sockProxy.on('Proxy_LoginFailed',              onProxy_LoginFailed);
+	sockProxy.on('Proxy_RequestOneTimeCode',       onProxy_RequestOneTimeCode);
+	sockProxy.on('Proxy_CharactersForAccountName', onProxy_CharactersForAccountName);
+
+	// Auctions
+	sockProxy.on('Server_CC_gclAuctionPostComplete',  onServer_AuctionPostComplete);
+	sockProxy.on('Server_CC_NotifySend',              onServer_Notify);
+
+	sockProxy.on('Server_Update_PostingFee', onServer_Update_PostingFee);
+	sockProxy.on('Server_Update_SaleFee',    onServer_Update_SalesFee);
+
+	// Microtransactions
+	sockProxy.on('Proxy_PurchaseMicrotransaction',	onProxy_PurchaseMicrotransaction);
+
+	// Vendor
+	sockProxy.on('Proxy_PurchaseVendorItem', onProxy_PurchaseVendorItem);
+	sockProxy.on('Proxy_SellItemToVendor', onProxy_SellItemToVendor);
+
+	// Inventory
+	sockProxy.on('Server_CC_gclReceiveRewardPackData', onProxy_RecieveRewardPackData);
+
+	// Just logging these events
+	sockProxy.on('connecting',       mkOn('connecting'));
+	sockProxy.on('connect_failed',   mkOn('connect_failed'));
+	sockProxy.on('error',            mkOn('error'));
+	sockProxy.on('message',          mkOn('message'));
+	sockProxy.on('reconnect_failed', mkOn('reconnect_failed'));
+	sockProxy.on('reconnect',        mkOn('reconnect'));
+	sockProxy.on('reconnecting',     mkOn('reconnecting'));
+
+	ProxyConnection.sockProxy = sockProxy;
+
+	/////////////////////////
+
+	function mkOn(str)
+	{
+		return function() {
+			dbg('socket event: '+str, arguments);
+		};
+	}
+}
+
+function onConnect()
+{
+	dbg.trace();
+
+	dataModel.connect(sockProxy);
+}
+
+var disconnectInfo = {
+	title: 'Disconnected from Gateway',
+	message: 'You have been disconnected.',
+	label: 'disconnected'
+};
+
+var defaultDisconnectMessage = 'You have been disconnected.';
+
+function onProxy_ForceReload()
+{
+	window.location.reload();
+}
+
+function onProxy_DisconnectWithMessage(data)
+{
+	if(data.msg)
+	{
+		disconnectInfo.message = data.msg;
+	}
+
+	onDisconnect();
+}
+
+function onDisconnect()
+{
+	dbg.trace();
+
+	dataModel.disconnect();
+	sockProxy.disconnect();
+
+	window.setTimeout(function() {
+		ProxyConnection.client.shifter.clearInterval();
+		ProxyConnection.client.shifter.shift('#/disconnected?m=' + disconnectInfo.message + '&t=' + disconnectInfo.title, true, true);
+	}, 250);
+}
+
+function onError()
+{
+	dbg.trace(arguments);
+	onDisconnect();
+}
+
+///////////////////////////////////////////////////////////////////////////
+//
+// System
+//
+
+function onProxy_Message(data)
+{
+	dbg.trace(data);
+
+	contentHelpers.setBroadcastMessage(data.string);
+}
+
+//
+// End System
+//
+//////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Login
+//
+
+function onProxy_LoginSuccess(loginInfo)
+{
+	dbg.trace(loginInfo);
+
+	dataModel.model.loginInfo = loginInfo;
+	dataModel.renderUpdates('create *', 'loginInfo');
+}
+
+function onProxy_LoginFailed(msg)
+{
+	dbg.trace(msg);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+function onProxy_RequestOneTimeCode()
+{
+	dbg.trace();
+
+	// We will have a timeout set for the character select page.
+	// Since we arent going there anymore, clear the timeout.
+	ProxyConnection.client.shifter.clearInterval();
+
+	// Display account guard form.
+	ProxyConnection.client.shifter.shift('#/accountguard', true, true);
+}
+
+function sendOneTimeCode(vals)
+{
+	dbg.trace(vals);
+
+	// Send name as an empty string if the user doesnt want to save this machine
+	// If there is no one time code, then ignore this request.
+	if(vals.code.length)
+	{
+		sockProxy.emit('Client_OneTimeCode',{ code: vals.code, name: (vals.save ? vals.name : '') });
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+function onProxy_CharactersForAccountName(data)
+{
+	dbg.trace();
+
+	// TODO: Implement this!
+
+	dbg.log(data);
+}
+
+//
+// End Login
+//
+///////////////////////////////////////////////////////////////////////////
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Auction
+//
+
+// Auction handlers
+
+function onServer_AuctionPostComplete(args)
+{
+	dbg.trace(args);
+
+	var displayObj = {
+		title : parseInt(args[1], 8) === 0 ? "Error" : "Bid Complete",
+		string : args[0]
+	};
+
+	displayNotifyModal(displayObj);
+}
+
+function onServer_Update_PostingFee(iPostingFee)
+{
+	client.auctionUpdatePostingFeeDisplay(iPostingFee.toString());
+}
+
+function onServer_Update_SalesFee(iSaleFee)
+{
+	client.auctionUpdateSalesFeeDisplay(iSaleFee.toString());
+}
+
+//
+// End Auction
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Inventory
+//
+var s_rewardpack_counter = 0;
+function onProxy_RecieveRewardPackData(args)
+{
+	// var id = 'success-orp-' + (s_rewardpack_counter++);
+
+	// var str = ' <span id="' + id + '"></span>';
+	// client.addNotificationHTML(str, 'success');
+	contentHelpers.setFromStencil('#modal_content', 'content-modal-inventory-item-reward', args[0]);
+}
+//
+// End Inventory
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Microtransactions
+//
+
+var s_counter = 0;
+function onProxy_PurchaseMicrotransaction(data)
+{
+	dbg.trace();
+
+	// success
+	// productid
+	// error
+
+	if(client.pendingMT)
+	{
+		if(client.pendingMT.idProduct !== data.productid)
+		{
+			dbg.trace('This is weird. got a notification about an MT that is not pending.');
+		}
+
+		client.pendingMT = false;
+	}
+	else
+	{
+		dbg.trace('This is weird. No pendingMT, but got a notification.');
+	}
+
+
+	$('#p-'+client.idPurchase).remove();
+	if(!data.success)
+	{
+		client.addNotificationSMF(data.error, 'error');
+	}
+	else
+	{
+		if(dataModel.model.cstore && dataModel.model.cstore.productsByID && dataModel.model.cstore.productsByID[data.productid])
+		{
+			var prod = dataModel.model.cstore.productsByID[data.productid];
+			var id = 'success-mt-' + (s_counter++);
+
+			var str = ' <span id="' + id + '"></span>';
+			client.addNotificationHTML(str, 'success');
+			contentHelpers.setFromStencil('#'+id, 'notify-zenmarket-success', prod);
+		}
+		else
+		{
+			client.addNotificationMessageKey('MicroTrans_Purchase_Success', 'success');
+		}
+	}
+}
+
+//
+// End Microtransactions
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Vendor
+//
+
+function onProxy_PurchaseVendorItem(data)
+{
+	dbg.trace();
+
+	// success
+	// contact
+	// store
+	// hdef
+	// count
+	if(!data.success)
+	{
+		dataModel.translate('Store.SellFailed', function(error, str) {
+			client.addNotificationString(str, 'error');
+		});
+	}
+	else
+	{
+		var id = 'success-mt-' + (s_counter++);
+		var str = ' <span id="' + id + '"></span>';
+		client.addNotificationHTML(str, 'success');
+		contentHelpers.setFromStencil('#'+id, 'notify-vendor-success', data);
+	}
+}
+
+function onProxy_SellItemToVendor(data)
+{
+	dbg.trace();
+
+	// success
+	// contact
+	// store
+	// hdef
+	// count
+	if(!data.success)
+	{
+		dataModel.translate('Store.SellFailed', function(error, str) {
+			client.addNotificationString(str, 'error');
+		});
+	}
+	else
+	{
+		var id = 'success-mt-' + (s_counter++);
+		var str = ' <span id="' + id + '"></span>';
+		client.addNotificationHTML(str, 'success');
+		contentHelpers.setFromStencil('#'+id, 'notify-vendor-sold', data);
+	}
+}
+
+//
+// End Vendor
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Notifications
+//
+
+function displayNotifyModal(data)
+{
+	client.addNotification(data);
+}
+
+function onServer_Notify(args)
+{
+//	console.log(args)
+//	console.log(arguments)
+
+	var displayObj = {
+		title : "Notice",
+		id : args[0],
+		string : args[1]
+	};
+
+	displayNotifyModal(displayObj);
+}
+
+//
+// End Notifications
+//
+///////////////////////////////////////////////////////////////////////////
+
+function onReady(client)
+{
+	dbg.trace();
+
+	ProxyConnection.client = client;
+
+	connectToProxy();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ProxyConnection.sendOneTimeCode = sendOneTimeCode;
+ProxyConnection.onReady = onReady;
+
+module.exports = ProxyConnection;
+
+// End of File

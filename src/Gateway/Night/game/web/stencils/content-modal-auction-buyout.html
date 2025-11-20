@@ -1,0 +1,32 @@
+<button class="close-button" data-url-silent="/auctionhouse"></button>
+<div class="mobileOnly sticky-mobile-back-button">
+	<div class="main-buttons">
+		<a class="nav-button mobile-back-button" data-url-silent="/auctionhouse">
+			<span class="cap-left"></span>
+			<span class="cap-right"></span>
+			<span class="nav-icon"></span>
+		</a>
+	</div>
+	<hr />
+</div>
+
+<div class="modal-confirm">
+	<h3>Buy Out</h3>
+	<p>Are you sure you want to make this purchase?</p>
+
+	<p><span class="item-name-highlight"><span data-path=".slots[0].itemdef.displaynamemsg.str">[Item Name Goes Here]:</span> <span class="currency-icon astral"></span> <span data-path=".price"></span></span></p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="/auctionhouse">Cancel</button>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-set-onclick="client.auctionSendBuyout('{$root.queryParams.list}','{.containerid}')" data-url-silent="/auctionhouse">OK</button>
+	</div>
+
+</div>

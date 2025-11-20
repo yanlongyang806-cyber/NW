@@ -1,0 +1,87 @@
+<!-- if(dev) -->
+<div class="page-exchange">
+	<div class="box-tabs-block">
+		<div class="tabs-horizontal">
+			<div class="tabs-container">
+				<ul>
+					<li>
+						<a data-url="/exchange" class="tab subNav exchange-buyzen">
+							<span class="tab-name desktopOnly">Buy ZEN</span>
+							<span class="tab-name mobileOnly">Buy</span>
+							<span class="tab-left"></span>
+							<span class="tab-right"></span>
+						</a>
+					</li>
+					<li>
+						<a data-url="/exchange-sellzen" class="tab subNav exchange-sellzen">
+							<span class="tab-name desktopOnly">Sell ZEN</span>
+							<span class="tab-name mobileOnly">Sell</span>
+							<span class="tab-left"></span>
+							<span class="tab-right"></span>
+						</a>
+					</li>
+					<li>
+						<a data-url="/exchange-listings" class="tab subNav exchange-listings">
+							<span class="tab-name">Listings</span>
+							<span class="tab-left"></span>
+							<span class="tab-right"></span>
+						</a>
+					</li>
+					<li>
+						<a data-url="/exchange-log" class="tab subNav exchange-log">
+							<span class="tab-name desktopOnly">Exchange Log</span>
+							<span class="tab-name mobileOnly">Log</span>
+							<span class="tab-left"></span>
+							<span class="tab-right"></span>
+						</a>
+					</li>
+				</ul>
+			</div>
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+		</div>
+	</div>
+	<div id="content_exchange" class="innerContent">
+	</div>
+	<div class="box-footer-block footer-exchange">
+		<div class="box-footer">
+			<div class="box-top">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-mid">
+				<div class="box-content">
+					<div class="page-footer">
+
+						<hr class="mobileOnly">
+
+						<div class="current-money" data-update="loginInfo.loginentity.zen">
+
+							<h4 class="mobileOnly">Current Astral Diamonds:</h4>
+							<img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt=""> <span data-path="ent.main.currencies.diamonds.$commify()">99,999</span>
+
+							<h4 class="mobileOnly">Current Zen:</h4>
+							<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /><span data-path="loginInfo.loginentity.zen.$commify()">99,999,999</span>
+						</div>
+
+					</div>
+				</div>
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="box-bot">
+				<div class="box-left"></div>
+				<div class="box-right"></div>
+			</div>
+			<div class="deco-left"></div>
+			<div class="deco-right"></div>
+		</div>
+	</div>
+
+</div>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>
+<!-- endif(dev) -->

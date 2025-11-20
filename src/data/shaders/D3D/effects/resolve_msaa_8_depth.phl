@@ -1,0 +1,54 @@
+#include "ps_inc.hlsl"
+
+struct PS_INPUT_SPRITE_POSTPROCESSING
+{
+	float4 position_screen				: SV_POSITION;
+	float4 texcoord						: TEXCOORD0;
+	float4 position_vs					: TEXCOORD1;	// view space position, world space fog height interpolator fog_value if VERTEX_FOG
+};
+
+Texture2DMS<float,8> depth_texture : register(t0);
+
+struct PS_OUTPUT
+{
+#ifdef DEPTH_AS_COLOR
+	float4 color0 : SV_Target;
+#else
+	float depth : DEPTH;
+#endif
+};
+
+#ifdef DEPTH_AS_COLOR
+PS_CONSTANT_MATERIAL_BUFFER_START()
+	uniform float3 color_depth_range : PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+#endif
+
+PS_OUTPUT main_output(PS_INPUT_SPRITE_POSTPROCESSING fragment)
+{
+	PS_OUTPUT output;
+
+	int2 sample_pos = int2( fragment.position_screen.x, fragment.position_screen.y );
+    float depth0 = depth_texture.Load( sample_pos, 0 ).x;
+    float depth1 = depth_texture.Load( sample_pos, 1 ).x;
+    float depth2 = depth_texture.Load( sample_pos, 2 ).x;
+    float depth3 = depth_texture.Load( sample_pos, 3 ).x;
+	float depth = min( min(depth0, depth1), min(depth2, depth3));
+
+    depth0 = depth_texture.Load( sample_pos, 4 ).x;
+    depth1 = depth_texture.Load( sample_pos, 5 ).x;
+    depth2 = depth_texture.Load( sample_pos, 6 ).x;
+    depth3 = depth_texture.Load( sample_pos, 7 ).x;
+	depth0 = min( min(depth0, depth1), min(depth2, depth3));
+	depth = min(depth, depth0);
+
+#ifdef DEPTH_AS_COLOR
+	depth = saturate( (depth - color_depth_range[0]) / (color_depth_range[1] - color_depth_range[0]) );
+	depth = pow(depth, color_depth_range[2]);
+	output.color0 = float4( depth.xxx, 1.0 );
+#else
+	output.depth = depth;
+#endif
+
+	return output;
+};

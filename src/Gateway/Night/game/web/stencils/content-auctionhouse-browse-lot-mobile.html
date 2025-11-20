@@ -1,0 +1,43 @@
+<div data-set-onclick="client.auctionSearchItemSelected({.minimumbid},{.price},{.index},'/tex/{.slots[0].itemdef.icon}.png','{.slots[0].itemdef.displaynamemsg.str.$escapeForString()}',{.slots[0].count},'{.ownername.$escapeForString()}','search')" class="single-row-button">
+
+<span class="single-cell auction-browse-item">
+	<span data-path=".slots">
+		<div class="auction-img">
+			<div data-set-class="icon-slot simple tiny {.itemdef.quality}">
+				<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+				<span data-if=".count ge 2" data-path='.count.$commify()' class="quantity">9</span>
+			</div>
+		</div>
+		<div class="auction-entry-name">
+			<span data-set-class="{.itemdef.quality}" data-path='.itemdef.displaynamemsg.str'>Item Name</span>
+		</div>
+	</span>
+</span>
+
+<span class="single-cell auction-browse-expires">
+	<span data-set-data-timer=".expiretime" data-timer-length="2">2 Days Remaining</span>
+</span>
+
+<span class="single-cell auction-browse-bid">
+	<span data-if=".canbid">
+		<span class="currency-icon astral"></span>
+		<span data-path=".currentbid.$commify()">999</span>
+	</span>
+	<span data-if="!{.canbid}">N/A</span>
+	<h6>Ends: <span data-set-data-timer=".expiretime" data-timer-length="2">2d 6h</span></h6>
+	<div data-if=".winning">
+		<span class="alert-green">You're winning!</span>
+	</div>
+</span>
+
+<span class="single-cell auction-browse-buyout">
+	<span data-if=".price">
+		<span class="currency-icon astral"></span>
+		<span data-path='.price.$commify()'>999</span>
+	</span>
+	<span data-if="!{.price}">N/A</span>
+</span>
+
+
+<div class="clear"></div>
+</div>

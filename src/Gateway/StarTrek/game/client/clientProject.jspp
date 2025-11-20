@@ -1,0 +1,108 @@
+'use strict';
+
+var clientProject = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+var dbg = require('cryptic/dbg');
+
+///////////////////////////////////////////////////////////////////////////
+// Setup things for the guild project dontation page
+// Used in: content-modal-fleet-contribute-items.html
+clientProject.projectDonatePageInit = function()
+{
+	$(document).ready(function() {
+
+		$('.selectable-entry').on('click', function() {
+			if($(this).hasClass('selected'))
+			{
+				$(this).removeClass('selected');
+			}
+			else
+			{
+				$(this).addClass('selected');
+			}
+
+			updateRewards();
+		});
+	});
+}
+
+function updateRewards()
+{
+	var size = $('.list-entries .selected').length;
+	var rewardmultiplier = $('#contribution-rewardmultiplier').val();
+	$('#return').val(size * rewardmultiplier);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Select the next fleet project.
+// Used in: content-fleet-holdings-project-next.html
+clientProject.guildProjectSelectNextTask = function(guildID, projectName, taskSlotNum, taskName)
+{
+	client.sendCommand('GuildProject_SetNextTask', guildID, 'Fleet_Possession_' + projectName, taskSlotNum, taskName);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Select the next reputation project.
+// Used in: content-reputation-holdings-project-next.html
+clientProject.playerProjectSelectNextTask = function(projectName, taskSlotNum, taskName)
+{
+	client.sendCommand('PlayerProject_SetNextTask', 'Personal_Possession_' + projectName, taskSlotNum, taskName);
+}
+
+// Used in: content-modal-fleet-contribute-items.html
+clientProject.guildProjectDonateItems = function(guildid, projectname, taskslotnum, taskname, bucketname)
+{
+	var params = [];
+	$('.list-entries .selected').each(function() {
+		params.push($(this).attr('data-value'));
+	});
+	params = params.join(',');
+
+	client.sendCommand('GuildProject_DonateExpressionItemList', guildid, projectname, taskslotnum, taskname, bucketname, params);
+	client.shifter.closeModal();
+}
+
+// Used in: content-modal-reputation-contribute-items.html
+clientProject.playerProjectDonateItems = function(projectname, taskslotnum, taskname, bucketname)
+{
+	var params = [];
+	$('.list-entries .selected').each(function() {
+		params.push($(this).attr('data-value'));
+	});
+	params = params.join(',');
+
+	client.sendCommand('PlayerProject_DonateExpressionItemList', projectname, taskslotnum, taskname, bucketname, params);
+	client.shifter.closeModal();
+}
+
+// Used in: content-modal-fleet-contribute-numerics.html
+clientProject.guildProjectDonateSimpleItems = function(guildid, projectname, slotnumber, bucketname, itemname)
+{
+	var playerquantity = $( "#amount" ).val();
+	client.sendCommand('GuildProject_DonateSimpleItems', guildid, projectname, slotnumber, bucketname, itemname, playerquantity);
+}
+
+// Used in: content-modal-reputation-contribute-numerics.html
+clientProject.playerProjectDonateSimpleItems = function(projectname, slotnumber, bucketname, itemname)
+{
+	var playerquantity = $( "#amount" ).val();
+	client.sendCommand('PlayerProject_DonateSimpleItems', projectname, slotnumber, bucketname, itemname, playerquantity);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

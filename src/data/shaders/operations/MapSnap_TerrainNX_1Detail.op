@@ -1,0 +1,87 @@
+OperationDef
+	Name "MapSnap_TerrainNX_1Detail" // Name of the operation
+	Description "Special-case terrain operation (1 detail texture)"
+	Type CUSTOM
+
+	Input
+		Name UVScale1
+		Description "Amount to scale UVs of detail textures 1 & 2"
+		FloatRange 0 50
+		Float 4
+		Default
+			Floats 16.0 16.0 16.0 16.0
+		EndDefault
+	EndInput
+	
+	Input
+		Name SpecularValueIn
+		Description "Specular values for the detail textures"
+		FloatRange 0 1
+		Float 4
+		Default
+			Floats 0 0 0 0
+		EndDefault
+	EndInput
+	
+	Input
+		Name SpecularExponentIn
+		Description "Specular exponents for the detail textures"
+		FloatRange 0.01 1
+		Float 4
+		Default
+			Floats 0.0625 0.0625 0.0625 0.0625
+		EndDefault
+	EndInput
+	
+	Input
+		Name DetailTexture1 // String input in editor, integer texture unit number output to shader
+		Description "First detail texture name"
+		Type Texture
+		Texture 1
+	EndInput
+
+	Input
+		Name DetailNormalTexture1 // String input in editor, integer texture unit number output to shader
+		Description "First detail normal texture name"
+		Type TextureNormalDXT5nm
+		Default
+			Strings "default_nx"
+		EndDefault
+		Texture 1
+	EndInput
+
+	Input
+		Name ColorTexture // String input in editor, integer texture unit number output to shader
+		Description "Color texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	
+
+	Output
+		Name ColorOut
+		Description "Color and alpha"
+		Float 4
+		AlphaFrom ColorTexture
+	EndOutput
+
+	Output
+		Name NormalOut
+		Description "Normal"
+		Float 4
+		Type Normal
+	EndOutput
+
+	Output
+		Name SpecularValueOut
+		Description "Specular Value"
+		Float 1
+	EndOutput
+	
+	Output
+		Name SpecularExponentOut
+		Description "Specular Exponent"
+		Float 1
+	EndOutput
+	
+EndOperationDef

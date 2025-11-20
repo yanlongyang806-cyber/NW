@@ -1,0 +1,85 @@
+<div data-path="guild">
+	<h1 class="fleet-front-name" data-path=".name.$escapeForHTML()">The Super Awesome Fleet</h1>
+	<div class="fleet-front-motd" data-if=".motd">
+		<h5>Message of the Day:</h5>
+		<p data-path=".motd.$escapeForHTML()">Welcome to the Super Awesome Fleet where everything is super awesome!</p>
+	</div>
+
+	<div class="fleet-front-emblem">
+		<img src="/img/fleet_emblem_generic.png" alt="" />
+	</div>
+
+	<div class="simplebox fleet-front-info">
+
+		<div class="simplebox-header">
+			<h2>Fleet Info</h2>
+		</div>
+
+		<div class="simplebox-body">
+			<dl>
+				<dt>Founding Date:</dt>
+				<dd data-path=".createdon.$stardate()">6</dd>
+
+				<dt>Total Members:</dt>
+				<dd data-path=".totalmembers">35</dd>
+
+				<dt>Minimum Rank:</dt>
+				<dd data-path=".minimumrank">Ensign 1</dd>
+
+				<dt data-if=".website">Website:</dt>
+				<dd data-if=".website"><a data-path=".website" data-set-href="{.website.$httpify()}" href="http://www.startrekonline.com/">http://www.startrekonline.com</a></dd>
+			</dl>
+		</div>
+
+	</div>
+
+	<div data-if="{.viewerismember} && {guildproject.states.length}" class="simplebox fleet-front-holdings" data-path="guildproject">
+		<div class="simplebox-header">
+			<h2>Fleet Holdings</h2>
+		</div>
+
+		<div class="simplebox-body">
+			<ul data-path=".states">
+				<li class="holding-entry">
+					<a class="holding-link" data-set-data-url="/holdings/{.shortname}/overview/tier?tier=guildproject.states[.internalname={.internalname}].categories[0].tiers[0]">
+						<img data-set-src="/tex/{.image}.png" />
+						<h3 data-path=".playername">Deep Space 99</h3>
+						<h4 data-path=".typename">Starbase</h4>
+						<h4>Tier <span data-path=".level">2</span></h4>
+					</a>
+				</li>
+			</ul>
+		</div>
+	</div>
+
+	<div data-if="{.viewerismember}" class="simplebox fleet-front-news">
+		<div class="simplebox-header">
+			<h2>Recent News</h2>
+		</div>
+
+		<div class="simplebox-body">
+
+			<dl data-path=".activityentries.$slice(0, 3)">
+				<dt data-path=".time.$stardate()">12345.00</dt>
+				<dd data-path=".string">Mr Pickles@username has been promoted to Fleet Captain</dd>
+
+			</dl>
+			<div class="fleet-more-link" data-if=".activityentries.$length() gt 3">
+				<a data-url="/logs">More News</a>
+			</div>
+		</div>
+	</div>
+
+	<div data-if="!{.viewerismember}" class="simplebox fleet-front-news">
+		<div class="simplebox-header">
+			<h2>Recruitment</h2>
+		</div>
+
+		<div class="simplebox-body">
+			<dl>
+				<dt>Recruiting Message:</dt>
+				<dd data-path=".recruitmessage.$escapeForHTML()">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</dd>
+			</dl>
+		</div>
+	</div>
+</div>

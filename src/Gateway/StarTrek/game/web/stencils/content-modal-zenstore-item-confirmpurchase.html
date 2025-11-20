@@ -1,0 +1,22 @@
+<!-- if(dev) -->
+<div class="modal-top-outer">
+	<div class="modal-top-inner">
+		<a class="close-button" data-url-silent="closemodal"><span class="back-arrow mobileOnly"></span></a>
+	</div>
+</div>
+<div class="modal-body-outer">
+	<div class="modal-body-inner">
+
+		<div class="modal-confirm">
+			<h2 class="modal-title">Confirm Purchase</h2>
+			<p>Are you sure you wish to spend <img src="/tex/Currency_Icon_Tiny_Zen.png" alt="" /> <span data-path=".price">000</span> on <span class="zenstore-confirm-itemname" data-path=".hdef.displaynamemesg.str">Item Name</span>?</p>
+
+			<div class="modal-confirm-buttons">
+				<a class="button-standard rounded" data-url-silent="closemodal" data-set-onclick="client.purchaseMicrotransaction({.id}, {.price})">OK</a>
+				<a class="button-standard rounded" data-url="back">Cancel</a>
+			</div>
+		</div>
+
+	</div>
+</div>
+<!-- endif(dev) -->

@@ -1,0 +1,31 @@
+<div class="holdings-projects-overview">
+
+	<div class="mobileOnly holding-overview-header-mobile" data-set-style="background-image: url(/tex/{.image}.png);"></div>
+
+	<ul class="project-tiers" data-path=".categories">
+		<li data-set-class="tier-row {.style.$map(tierStyles)}">
+
+			<span class="tier-emblem"><img data-set-src="/tex/{.image}"></span>
+			
+			<h4 data-path=".displayname">Starbase (Tier 2)</h4>
+
+			<h6 data-path=".experience">2,000 Starbase XP</h6>
+			<ul class="tier-bars-container" data-path=".tiers">
+				<li>
+					<a class="desktopOnly selectable-tier" data-set-data-url="?tier={$here()}">
+						<h5 data-path=".numeral">III</h5>
+						<span class="tier-empty"></span>
+						<span class="tier-bar" data-set-style="width: {.progresspercent}%"><span class="tier-fill"></span></span>
+					</a>
+					<a class="mobileOnly selectable-tier" data-set-data-url-silent="/holdings/{$root().queryParams.projectname}/overview/tier/detail?tier={$here()}">
+						<h5 data-path=".numeral">III</h5>
+						<span class="tier-empty"></span>
+						<span class="tier-bar" data-set-style="width: {.progresspercent}%"><span class="tier-fill"></span></span>
+					</a>
+				</li>
+			</ul>
+		</li>
+	</ul>
+	<div id="holdings_project_overview_details"></div>
+</div>
+

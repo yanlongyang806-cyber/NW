@@ -1,0 +1,16 @@
+OperationDef
+	Name "Saturate" // Name of the operation
+	Description "Saturate clamps all channels to lay between 0 and 1: values less-than zero become zero, and values greater-than one become one, while other values remain unchanged."
+	Type SIMPLE
+
+	Input: A, "The operation saturates this input."
+
+	Output
+		Name Result
+		Description "Clamps all channels between 0 and 1"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

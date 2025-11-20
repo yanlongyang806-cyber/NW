@@ -1,0 +1,11 @@
+//Dither_Pattern_4.phl
+{
+	#ifdef D3D11
+		float2 tex_pos = %Seed%.xy + float2(0.5,0.5);
+	#else
+		float2 tex_pos = %Seed%.xy;
+	#endif
+	tex_pos = fmod(tex_pos, 2) * float2(1,2);
+	float index = tex_pos.x + tex_pos.y;
+	%Result% = fmod(index, 3) * 0.3 + 0.1;
+}

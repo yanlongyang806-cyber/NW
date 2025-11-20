@@ -1,0 +1,148 @@
+'use strict';
+
+var escapeForJavascript = require('cryptic/escapeForJavascript');
+
+var dbg = require('cryptic/dbg');
+
+var TYPE_OBJECT = '[object Object]';
+var TYPE_ARRAY  = '[object Array]';
+var TYPE_NUMBER = '[object Number]';
+var TYPE_STRING = '[object String]';
+var TYPE_BOOLEAN = '[object Boolean]';
+var TYPE_NULL = '[object Null]';
+var TYPE_UNDEFINED = '[object Undefined]'
+var TYPE_FUNCTION = '[object Function]';
+
+function diffRecurse(path, pOrig, pNew)
+{
+	var pNewType = Object.prototype.toString.call(pNew);
+	var pOrigType = Object.prototype.toString.call(pOrig);
+	var diff = '';
+
+	if(pNewType === TYPE_OBJECT)
+	{
+		var name;
+
+		if(pOrigType === TYPE_OBJECT && pOrig !== null)
+		{
+			for(name in pNew)
+			{
+				diff += diffRecurse(path + '.' + name,pOrig[name],pNew[name]);
+			}
+
+			//Check for deleted fields
+			for(name in pOrig)
+			{
+				if(pNew[name] === undefined)
+				{
+					diff += 'delete ' + path + '.' + name + ';\n';
+				}
+			}
+
+			return diff;
+		}
+		else
+		{
+			diff = path + ' = JSON.parse(\'' + escapeForJavascript(JSON.stringify(pNew)) + '\');\n';
+			return diff;
+		}
+	}
+	else if(pNewType === TYPE_ARRAY)
+	{
+		var index;
+
+		if(pOrigType === TYPE_ARRAY)
+		{
+			for(index in pNew)
+			{
+				diff += diffRecurse(path + '[' + index + ']',pOrig[index],pNew[index]);
+			}
+
+			for(index in pOrig)
+			{
+				if(pNew[index] === undefined)
+				{
+					diff += 'delete ' + path + '[' + index + '];\n';
+				}
+			}
+
+			if(pNew.length !== pOrig.length)
+			{
+				diff += path + '.length = ' + pNew.length + ';\n';
+			}
+
+			return diff;
+		}
+		else
+		{
+			diff = path + '= JSON.parse(\'' + escapeForJavascript(JSON.stringify(pNew)) + '\');\n';
+			return diff;
+		}
+	}
+	else if(pNewType === TYPE_NUMBER)
+	{
+		if(pNew != pOrig)
+			return path + ' = ' + pNew + ';\n';
+	}
+	else if(pNewType === TYPE_STRING)
+	{
+		if(pNew !== pOrig)
+			return path + ' = \'' + escapeForJavascript(pNew) + '\';\n';
+	}
+	else if (pNewType === TYPE_BOOLEAN)
+	{
+		if(pNew !== pOrig)
+		{
+			return path + ' = ' + (pNew ? 'true;\n' : 'false;\n');
+		}
+	}
+	else if (pNewType === TYPE_NULL)
+	{
+		if(pNew !== pOrig)
+		{
+			return path + ' = ' + 'null;\n';
+		}
+	}
+	else if (pNewType === TYPE_FUNCTION)
+	{
+		//Do nothing, functions are ignored
+	}
+	else if (pNewType === TYPE_UNDEFINED)
+	{
+		return 'delete ' + path + ';\n';
+	}
+	else
+	{
+		dbg.error("Unknown type in javascriptDiff: " + pNewType);
+	}
+
+	return '';
+}
+
+function createDiff(pOrig, pNew)
+{
+	var diff = '';
+
+	diff = diffRecurse('dest', pOrig, pNew);
+
+	return diff;
+}
+
+
+function javascriptDiff(pOrig, pNew)
+{
+	var diff = '/* JSDIFF */\n';
+
+	diff += diffRecurse('dest', pOrig, pNew);
+
+	return diff;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = javascriptDiff;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

@@ -1,0 +1,84 @@
+OperationDef
+	Name "MapSnap_TerrainMaterial_Preview" // Name of the operation
+	Description "Preview of terrain detail texture & parameters"
+	Type CUSTOM
+
+	Input
+		Name DetailTexture // String input in editor, integer texture unit number output to shader
+		Description "Detail texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	
+	Input
+		Name DetailNormalTexture // String input in editor, integer texture unit number output to shader
+		Description "Detail normal and spec texture name"
+		Type TextureNormal
+		Default
+			Strings "dummy_bump"
+		EndDefault
+		Texture 1
+	EndInput
+
+	Input
+		Name Scale
+		Description "Detail texture scale"
+		FloatRange 0 50
+		Float 2
+		NoManualConnect 1
+		Default
+			Floats 16.0 16.0
+		EndDefault
+	EndInput
+
+	Input
+		Name SpecularValue
+		Description "Specular Value"
+		NoManualConnect 1
+		Float 1
+		FloatRange 0 1
+		Default
+			Floats 1.0
+		EndDefault
+	EndInput
+
+	Input
+		Name SpecularExponent
+		Description "Specular Exponent (will be multiplied by 128, default is 0.0625 (8)"
+		NoManualConnect 1
+		Float 1
+		FloatRange 0.01 1
+		Default
+			Floats 0.0625
+		EndDefault
+	EndInput
+
+	Output
+		Name ColorOut
+		Description "Color and alpha"
+		Float 4
+		AlphaFrom DetailTexture
+	EndOutput
+		
+	Output
+		Name NormalOut
+		Description "Normal"
+		Float 4
+		Type Normal
+	EndOutput
+
+	Output
+		Name SpecValueOut
+		Description "Specular Value"
+		Float 1
+		AutoConnect SpecularValue
+	EndOutput
+
+	Output
+		Name SpecExponentOut
+		Description "Specular Exponent"
+		Float 1
+		AutoConnect SpecularExponent
+	EndOutput
+	
+EndOperationDef

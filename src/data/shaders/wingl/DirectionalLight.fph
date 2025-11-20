@@ -1,0 +1,58 @@
+#macro DIRECTIONAL_LIGHT(outColor, position_vs, normal_vs, albedo, spec_color, spec_exponent, temp_light_vs, temp_half_vs, temp_light_vals)
+
+	# light vector
+	MOV temp_light_vs, lightdir_vs;
+		# NORMALIZE(temp_light_vs)
+		DP3 temp_light_vs.w, temp_light_vs, temp_light_vs;
+		RSQ temp_light_vs.w, temp_light_vs.w;
+		MUL temp_light_vs.xyz, temp_light_vs, temp_light_vs.w;
+
+	# view vector
+	ALIAS temp_view_vs = temp_light_vals;
+	MOV temp_view_vs, -position_vs;
+		# NORMALIZE(temp_view_vs)
+		DP3 temp_view_vs.w, temp_view_vs, temp_view_vs;
+		RSQ temp_view_vs.w, temp_view_vs.w;
+		MUL temp_view_vs.xyz, temp_view_vs, temp_view_vs.w;
+
+
+	#ifdef HALF_ANGLE_SPECULAR
+
+		# half-angle vector
+		ADD temp_half_vs.xyz, temp_view_vs, temp_light_vs;
+			# NORMALIZE(temp_half_vs)
+			DP3 temp_half_vs.w, temp_half_vs, temp_half_vs;
+			RSQ temp_half_vs.w, temp_half_vs.w;
+			MUL temp_half_vs.xyz, temp_half_vs, temp_half_vs.w;
+
+		# specular value
+		DP3_SAT temp_light_vals.w, normal_vs, temp_half_vs;
+
+	#else
+
+		# reflection vector
+		ALIAS temp_reflect_vs = temp_half_vs;
+			# REFLECT(temp_reflect_vs, temp_view_vs, normal_vs)
+			DP3 temp_reflect_vs.x, normal_vs, temp_view_vs;
+			MUL	temp_reflect_vs, normal_vs, temp_reflect_vs.x;
+			MAD temp_reflect_vs, temp_reflect_vs, 2, -temp_view_vs;
+
+		# specular value
+		DP3_SAT temp_light_vals.w, temp_light_vs, temp_reflect_vs;
+
+	#endif
+
+	# specular value, continued
+	MUL temp_light_vals.y, spec_exponent, 128;
+	POW temp_light_vals.w, temp_light_vals.w, temp_light_vals.y;
+	MUL temp_half_vs, spec_color, light_specular;
+
+	# diffuse value
+	DP3_SAT temp_light_vals.x, normal_vs, temp_light_vs;
+
+	# final color
+	MUL temp_light_vals.xyz, temp_light_vals.x, light_diffuse;
+	MAD outColor.xyz, temp_light_vals, albedo, outColor;
+	MAD outColor.xyz, temp_light_vals.w, temp_half_vs, outColor;
+
+#endmacro

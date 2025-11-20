@@ -1,0 +1,33 @@
+MaterialProfile D3D9
+	DeviceID D3D
+	GenTemp "float4 %s;" // If it's half4, it messes up texture coordinates and such
+	GenParam "uniform float4 %s : register(c%d);"
+	GenBoolParam "uniform bool %s : register(b%d);"
+	GenParamMatrix42 "uniform column_major float4x2 %s : register(c%d);"
+	GenParamMatrix43 "uniform column_major float4x3 %s : register(c%d);"
+	GenParamMatrix44 "uniform float4x4 %s : register(c%d);"
+	GenParamOffset 11
+	CommentBegin "// "
+	CommentEnd ""
+	TexCoord0 "v.texcoords.xyzw"
+	TexCoord1 "v.texcoords.zwzw"
+	Color0 "v.color0"
+	InstanceParam "v.instanceParam"
+	GenConst1 "%f"
+	GenConst2 "float2(%f, %f)"
+	GenConst3 "float3(%f, %f, %f)"
+	GenConst4 "float4(%f, %f, %f, %f)"
+	GenTexName "%02d"
+	GenShaderPath "shaders/D3D/ops/%s.phl"
+	GenSpecialShaderPath "shaders/D3D/effects/%s.phl"
+	GenTexSampler2D "sampler2D %s%02d : register(s%d);"
+	GenTexSampler3D "sampler3D %s%02d : register(s%d);"
+	GenTexSamplerCUBE "samplerCUBE %s%02d : register(s%d);"
+	GenTexSamplerPart2 "static const float sam%s%02d = 0;" // dummy so the name resolves
+	GenConditionalBranch "[branch]"
+	GenConditionalIf "if (%s) {"
+	GenConditionalElse "} else {"
+	GenConditionalElseIf "} else if (%s) {"
+	GenConditionalEnd "}"
+	ShadowAccumulate "outColor.rgb += shadow_term;"
+EndMaterialProfile

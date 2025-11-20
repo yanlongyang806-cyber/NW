@@ -1,0 +1,242 @@
+#include "ps_inc.hlsl"
+
+SAMPLER_DECL(texture_sampler, 0);
+
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 tex_transform : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 param : PS_CONSTANT_MATERIAL_PARAM1() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+static const int conv_w = 3;
+static const int conv_h = 3;
+static const float conv_matrix[conv_w][conv_h] = {
+	{ 1, 3, 9},
+	{ 3, 5, 3},
+	{ 4, 3, 1},
+};
+static const float conv_mult = 1.f/33.f;
+
+float3 tvFilter(float2 coords)
+{
+	float3 sum = 0;
+	for (int i=0; i<conv_w; i++)
+	{
+		for (int j=0; j<conv_h; j++)
+		{
+			sum += sampleTex2D(texture_sampler, coords + tex_transform*float2(i-conv_w/2, j-conv_h/2)).xyz * conv_matrix[i][j];
+		}
+	}
+	sum *= conv_mult;
+	return sum;
+}
+
+float3 tvFilter2(float2 coords)
+{
+	float xoffset; // Want this generated in bars, noisy within them
+	float3 ret;
+	float yid = floor((coords.y + fmod(param.z*0.2, 1)) * 16); // yid [0, 16]
+	yid = fmod(yid * 1000007, 13);
+	xoffset = (yid / 13 - 0.5) * param.w;
+	float yid2 = floor((coords.y + fmod(param.z*0.3, 1)) * 313);
+	yid2 = fmod(yid2 * 27, 19);
+	xoffset += (yid2 / 19 - 0.5) * 0.01 * param.w;
+	//ret = yid2/19.0;
+	ret = sampleTex2D(texture_sampler, coords + float2(xoffset, 0)).xyz ;
+	return ret;
+}
+
+
+// -----------------------------------------------------------------------
+
+struct PS_OUTPUT
+{
+	float4 color		: COLOR;
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+	float3 texcolor = sampleTex2D(texture_sampler, fragment.texcoord.xy).xyz;
+#ifdef DESATURATE
+	texcolor = lerp(texcolor, getIntensity(texcolor) * param.xyz, param.w);
+#elifdef TV
+	texcolor = tvFilter2(fragment.texcoord.xy);
+#elifdef COLORBLIND
+
+// Copied from:
+//  Deuteranope Simulation using ARBfp
+//  Copyright (c) 2004 Jered Windsheimer
+//  Based on the algorithm described in: G. Meyer, D. Greenberg. 'Color Defective Vision and Computer Graphics Displays'. IEEE Computer Graphics and Applications. Vol 8, Iss 5. pp 28-40.  Sept 1988.
+//  This software is provided 'as-is', without any express or implied warranty. In no event will the authors be held liable for any damages arising from the use of this software.
+//  Permission is granted to anyone to use this software for any purpose, including commercial applications, and to alter it and redistribute it freely, subject to the following restrictions:
+//  1. The origin of this software must not be misrepresented; you must not claim that you wrote the original software. If you use this software in a product, an acknowledgment in the product documentation would be appreciated but is not required.
+//  2. Altered source versions must be plainly marked as such, and must not be misrepresented as being the original software.
+//  3. This notice may not be removed or altered from any source distribution.
+// Permission presumed, since Jered now works here
+
+//////////
+// Constants such as conversion matrices and other useful numbers
+//////////
+
+// RGB to XYZ conversion matrix
+float3 rgb2X = {0.412424,0.357579,0.180464};
+float3 rgb2Y = {0.212656,0.715158,0.0721856};
+float3 rgb2Z = {0.0193324,0.119193,0.950444};
+
+// XYZ to RGB conversion matrix
+float3 XYZ2r = {3.24071,-1.53726,-0.498571};
+float3 XYZ2g = {-0.969258,1.87599,0.0415557};
+float3 XYZ2b = {0.0556352,-0.203996,1.05707};
+
+// XYZ to uv constants
+float3  XYZ2uv_d= {1.0, 15.0, 3.0};
+float4  XYZ2uv_n = {4.0, 9.0, 0.0, 0.0};
+
+// uv to xy chromaticity constants
+float3 uv2xy_d = {6.0, -16.0, 12.0};
+//float4 uv2xy_n = XYZ2uv_n.yxzw;
+
+#ifdef PRO
+// Protanope confusion point and line parameters
+float2 uvPnt = {0.6242, 0.5064};
+float2 lineA = {3.5616608, -0.2361965};
+float2 lineB = {4.0450540, -0.3318116};
+
+#elifdef DEU
+// Deuteranope confusion point and line parameters
+float2 uvPnt = {-4.75, 1.3123};
+float2 lineA = {1.8168601, 0.1089251};
+float2 lineB = {2.4907470, -0.0243697};
+
+#elifdef TRI
+// Tritanope confusion point and line parameters
+float2 uvPnt = {0.2609, -0.0103};
+float2 lineA = {0.2257751, 0.4236417};
+float2 lineB = {0.3338562, 0.4022633};
+#endif
+
+// Miscelaneous useful constants
+float4 miscConst = {2.0, 1.0, 0.5, 0.4683};
+
+//////////
+// Temporary variables with hopefully understandable names
+//////////
+
+float4 XYZ;
+float4 temp1;
+float4 temp2;
+float4 temp3;
+float4 lineEQ;
+float4 intA;
+float4 intB;
+
+float4 oColor;
+
+//////////
+// First we want to get the incoming pixel color and convert it to CIE uv space
+// -- 1 tex, 8 instructions
+//////////
+
+// Get the incoming pixel RGB
+// Rough gamma approximation (^2.0)
+float3 inPixel = texcolor * texcolor;
+
+// Convert the incoming RGB value to XYZ and store in XYZ.xyz
+XYZ.x = dot(inPixel, rgb2X);
+XYZ.y = dot(inPixel, rgb2Y);
+XYZ.z = dot(inPixel, rgb2Z);
+
+// Convert the XYZ value to uv and store in temp1.xy
+XYZ.w = 1.f/dot(XYZ.xyz, XYZ2uv_d);
+temp1 = XYZ * XYZ2uv_n * XYZ.w;
+
+//////////
+// Now that we have the uv and Y values for the pixel, we want to find
+//  the equation for the line between the pixel and the confusion point
+// -- 5 instructions
+//////////
+
+// Find the delta in uv and store in lineEQ.zw
+lineEQ.zw = uvPnt.xy - temp1.xy;
+
+// Find the slope and store in lineEQ.x
+lineEQ.x = 1.f/lineEQ.z;
+lineEQ.x = lineEQ.x * lineEQ.w;
+
+// Find the v intercept and store in lineEQ.y
+lineEQ.y = lineEQ.x * temp1.x;
+lineEQ.y = temp1.y - lineEQ.y;
+
+//////////
+// Once the line equation has been found, we can intersect that line
+//  with other lines in uv space to simulate the color confusion
+// -- 16 instructions
+//////////
+
+// Find the inverse of the determinant of the matrix and store it in intA.w
+intA.w = lineA.x - lineEQ.x;
+intA.w = 1.f/ intA.w;
+
+// Find the intersection point and store it in intA.xy
+//  ** Maybe CPD faster here?
+intA.x = lineEQ.y - lineA.y;
+temp3.x = lineA.x * lineEQ.y;
+temp3.y = lineA.y * lineEQ.x;
+intA.y = temp3.x - temp3.y;
+intA.xy = intA.xy * intA.ww;
+
+
+// Find the inverse of the determinant of the matrix and store it in intB.w
+intB.w = lineB.x -lineEQ.x;
+intB.w = 1.f/intB.w;
+
+// Find the intersection point and store it in intB.xy
+//  ** Maybe CPD faster here?
+intB.x = lineEQ.y - lineB.y;
+temp3.x = lineB.x * lineEQ.y;
+temp3.y = lineB.y * lineEQ.x;
+intB.y = temp3.x - temp3.y;
+intB.xy = intB.xy * intB.ww;
+
+// If the intercept of line A is below the v value of the white point (miscConst.wwww)
+//  then choose interceptB, otherwise choose interceptA, and put that intercept in temp1
+temp3.x = intA.y - miscConst.w;
+temp1.x = (temp3.x<0)?intB.x:intA.x;
+temp1.y = (temp3.x<0)?intB.y:intA.y;
+temp1.z = (temp3.x<0)?intB.z:intA.z;
+temp1.w = (temp3.x<0)?intB.w:intA.w;
+
+//////////
+// Now that we have the appropriate intersection point in uv space, we
+//  must convert back to rgb space
+// -- 18 instructions
+//////////
+
+//Convert the outgoing uv value to xy chromaticity and store in temp2.xy
+temp1.z = 1;
+temp2.w = dot(temp1.xyz, uv2xy_d.xyz);
+temp2.w = 1.f/temp2.w;
+temp2.xy = (temp1 * XYZ2uv_n.yxzw).xy;
+temp2.xy = (temp2 * temp2.wwww).xy;
+
+// Convert xy chromaticity to XYZ and store in XYZ.xyz
+temp2.z = 1.f/temp2.y;
+temp2.w = temp2.z * XYZ.y;
+XYZ.x = temp2.x * temp2.w;
+XYZ.z = 1 - temp2.x;
+XYZ.z = XYZ.z - temp2.y;
+XYZ.z = XYZ.z * temp2.w;
+
+// Convert XYZ to RGB and store in temp1.rgb
+temp1.r = dot(XYZ.xyz, XYZ2r);
+temp1.g = dot(XYZ.xyz, XYZ2g);
+temp1.b = dot(XYZ.xyz, XYZ2b);
+
+// Move the RGB values into the output, and we're done!
+texcolor = pow(temp1, miscConst.z).xyz;
+
+#endif
+	output.color = float4(texcolor, 1);
+	return output;
+}

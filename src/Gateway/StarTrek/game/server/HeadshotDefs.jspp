@@ -1,0 +1,82 @@
+'use strict';
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+
+var defs = {
+	'body' : {
+		containerTypeName: 'ENTITYSAVEDPET',
+
+		defaultImageRedirect: '/img/shot/default_body.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Status',
+			jpgSizeX: '512',
+			jpgSizeY: '512',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+			gmObj.crop(256, 512, 128, 0);
+		}
+	},
+
+	/////////////////////////////////////////////////////////////////////
+
+	'ship' : {
+		containerTypeName: 'ENTITYSAVEDPET',
+
+		defaultImageRedirect: '/img/shot/default_ship.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_Inventory',
+			jpgSizeX: '512',
+			jpgSizeY: '512',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+			gmObj.rotate('black', -90);
+			gmObj.crop(512, 320, 0, 96);
+		}
+	},
+
+	/////////////////////////////////////////////////////////////////////
+
+	'head' : {
+		containerTypeName: 'ENTITYSAVEDPET',
+
+		defaultImageRedirect: '/img/shot/default_head.png',
+
+		imageParams: {
+			jpgStyle: 'HeadshotStyle_StatusSelf',
+			jpgSizeX: '128',
+			jpgSizeY: '128',
+			transparent: '1'
+		},
+
+		finalizeImage: function(gmObj) {
+		}
+	}
+};
+
+
+//////////////////////////////////////////////////////////////////////////
+
+var hs = require('cryptic/proxy/Headshots');
+hs.setDefinitions(defs);
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

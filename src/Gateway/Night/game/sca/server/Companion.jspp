@@ -1,0 +1,49 @@
+'use strict';
+
+var log = require('cryptic/log');
+var cutils = require('cryptic/cutils');
+
+var scaGlobals = require('./scaGlobals');
+var Pile = require('./Pile');
+
+//////////////////////////////////////////////////////////////////////////
+
+function Companion (serverDef)
+{
+	cutils.extend(this, serverDef);
+
+	// Expected fields (* required)
+	//		scpDef* (resource name of SuperCritterPet)
+	//
+
+	var res = /.*\[(.*)\]/.exec(serverDef.scpdef);
+	this.def = scaGlobals.companionDefs.get(res ? res[1] : serverDef.scpdef);
+
+	if(!this.def)
+	{
+		log.error('Unknown companion def name: '+serverDef.scpdef);
+		return undefined;
+	}
+
+	this.ready = Date.now();
+	this.resting = false;
+	this.sleeping = false;
+
+	this.pile = new Pile();
+	for(var i = 0; i < this.def.slots.length; i++)
+	{
+		var def = scaGlobals.diceDefs.getDieDefForSlot(this.def.slots[i], this.level);
+		if(def)
+			this.pile.addDie(def);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = Companion;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

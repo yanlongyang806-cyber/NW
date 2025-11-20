@@ -1,0 +1,36 @@
+OperationDef
+	Name "TextureRGBE" // Name of the operation
+	Description "RGBE Texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name Brightness
+		Description "Brightness multiplier"
+		Float 1
+		FloatRange 0 20
+		Default
+			Floats 2
+		EndDefault
+	EndInput
+	Input
+		Name Texture // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Color plus color times alpha times brightness"
+		Float 4
+	EndOutput
+EndOperationDef

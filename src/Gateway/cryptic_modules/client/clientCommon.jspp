@@ -1,0 +1,357 @@
+'use strict';
+
+var clientCommon = module.exports;
+
+
+
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+var format = require('cryptic/format');
+
+var content = require('cryptic/client/contentHelpers');
+var Shifter = require('cryptic/client/Shifter');
+var dataModel = require('cryptic/client/DataModel');
+var proxyConnection = require('cryptic/client/proxyConnection');
+var buildCommand = require('cryptic/commands/buildCommand');
+
+var shifterTypes;
+
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.dataModel = dataModel;
+clientCommon.dataTableLanguage = {};
+
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.init = function init(shifterInfo)
+{
+	shifterTypes = shifterInfo;
+	shifterTypes.current = shifterTypes['default'];
+
+	getTimeOffsetFromServer();
+
+	// Get the language settings for all dataTables
+	$.ajax("/dataTables.js", {
+		dataType: "json",
+		success: function(data) {
+			if(data)
+			{
+				clientCommon.dataTableLanguage = data;
+			}
+		},
+		error: function() {
+			dbg.error("clientCommon.init(): Error getting dataTables localization.", arguments);
+		}
+	});
+}
+
+clientCommon.onReady = function onReady()
+{
+	dbg.trace('clientCommon');
+
+	// Account guard form submit
+	$(document).on('click', '.onetimecode-submit', function() {
+		var form = $(this).closest('.login-form');
+		var vals = {
+			'code': form.find("#onetimecode-code").val(),
+			'save': form.find("#onetimecode-save").is(':checked'),
+			'name': form.find("#onetimecode-name").val()
+		}
+		if(vals['code'] !== '') // <-- Required
+		{
+			proxyConnection.sendOneTimeCode(vals);
+			client.shifter.shift('#/loading', true, true);
+			client.shifter.loadingUntil(decodeURI(window.location.hash), 'loginInfo');
+		}
+	});
+
+	dataModel.addDefaultResources('Message', window.crypticMessages /* defined globally via a script tag in the HTML */);
+
+	dataModel.cmgr.on('update', cutils.bind(this, this.updateCallback));
+
+	// Start up shifter.
+	this.shifter = new Shifter(shifterTypes.current, cutils.bind(this, this.setTheme), content.setContent);
+	this.shifter.init();
+
+	// Hook up to the proxy and wait for login.
+	// When ready, continue in ProxyConnection.jspp:connectToProxy()
+	proxyConnection.onReady(this);
+
+	// When a client connects, it'll be ProxyConnection.jspp:onConnect()
+
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.alternate = '';
+clientCommon.useAlternate = function useAlternate(str)
+{
+	if(shifterTypes[str])
+	{
+		shifterTypes.current = shifterTypes[str];
+
+		this.alternate = str;
+	}
+}
+
+// section not used in generic setTheme but exists for game overrides.
+// By default, setTheme() does nothing.
+clientCommon.setTheme = function setTheme(section, arg)
+{
+	// section will be 'fleet', 'guild' or 'char'. etc.
+	// arg is an optional argument.  For char, its the ent returned (metaEnt)
+	// arg is empty for fleet, guild at this time.
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// sendCommand
+//
+// Sends an autoCommand to the server.
+//
+// This function can either take a command object returned from buildCommand()
+// or the name of the command and its arguments. If the name and args are given,
+// then the args must be in the right order (since they aren't named).
+//
+clientCommon.sendCommand = function(command)
+{
+	if(typeof command === 'string')
+	{
+		// The command hasn't been built yet. Build it and then execute it.
+		command = buildCommand.apply(null, Array.prototype.slice.call(arguments));
+	}
+
+	dbg.trace(command);
+	if(command)
+	{
+		proxyConnection.sockProxy.emit('Client_SendCommand', command);
+		return true;
+	}
+
+	return false;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.emitToProxy = function (message, data)
+{
+	proxyConnection.sockProxy.emit(message, data);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.idPurchase = 0;
+clientCommon.pendingMT = false;
+clientCommon.purchaseMicrotransaction = function(productid, price)
+{
+	dbg.trace(productid, price);
+
+	if(client.pendingMT)
+	{
+		dataModel.translate('MicroTrans_Purchase_Processing', function(error, str) {
+			client.addNotificationString(str, 'error');
+		});
+		return;
+	}
+
+	client.idPurchase++;
+	client.pendingMT = true;
+
+	var cmd = buildCommand('GatewayCStore_Purchase', productid, price);
+
+	if(cmd)
+	{
+		client.analyticTick('User:ZenSpent', price);
+		client.analyticTick('User:MTBought');
+
+		dataModel.translate('MicroTrans_Purchase_Pending', function(error, str) {
+			str = '<span id="p-' + client.idPurchase + '">' + format.escapeForHTML(str) + '</span>';
+			client.addNotificationHTML(str, 'info');
+		});
+
+		client.sendCommand('GatewayCStore_Purchase', productid, price);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// if the current hash is #/characterselect then we are selecting a char
+// but if the current hash is anything else, we are prompting the user
+// to choose a representitive character before moving on to another page.
+var s_selectingCharacter = false;
+clientCommon.characterSelect = function(atName)
+{
+	var self = this;
+
+	client.analyticTick('User:CharacterSelect');
+
+	// to trap double clicks or repeated clicks.  Only want to do this once.
+	if(!s_selectingCharacter)
+	{
+
+		if(self.shifter.lastActualShift === '#/characterselect/modal')
+		{
+			dbg.trace('Selecting Character and maintaining URL if possible: ' + atName)
+
+			// Parse the current hash, if it is a character hash, simply change focus.
+			// otherwise, go to that characters home page. '/'
+			var hashInfo = self.shifter.parseHash(window.location.hash);
+			if(hashInfo.focus.sec === 'char')
+			{
+				hashInfo.focus = self.shifter.parseFocus('char(' + atName + ')');
+				window.location.hash = self.shifter.makeHash(hashInfo);
+			}
+			else
+			{
+				window.location.hash = '#char(' + atName + ')/';
+			}
+
+			// Clear this after a second.
+			setTimeout(function() {
+				s_selectingCharacter = false;
+			}, 1000);
+
+		}
+		else if(window.location.hash !== '#/characterselect')
+		{
+			// Spin until we get the loginentity.
+			// When we get it, it will forward us to the page we wanted.
+			dbg.trace('Selecting Character for login entity: ' + atName)
+
+			// Prep for timeout and forward when we get the data
+			self.shifter.loadingUntil(window.location.hash, 'loginentity');
+
+			// show the loading spinner.
+			self.shifter.shift('#/loading', false, true);
+
+			// Oh, and go get that loginentity already.
+			self.dataModel.loadLoginEntityByName(atName, function(error, result) {
+
+				// Make sure we know we've done this.
+				s_selectingCharacter = false;
+
+				// No error means we continue as normal.
+				// When loadingUntil sees the entity, it will proceed.
+				// If there was an error though, stop everything and display it.
+				if(error)
+				{
+					// Stop waiting, its not going to load.
+					self.shifter.clearInterval();
+
+					// Forward to error screen.
+					self.shifter.shift('#/error?e=char' + error.message, true, true);
+				}
+			});
+		}
+		else
+		{
+			dbg.trace('Selecting Character for navigation: ' + atName)
+
+			window.location.hash = '#char(' + atName + ')/';
+
+			// Clear this after a second.
+			setTimeout(function() {
+				s_selectingCharacter = false;
+			}, 1000);
+		}
+	}
+}
+
+// Returns the query param that has been parsed and wildcard replaced,
+// for use in stencils, with the requested name.
+// This is intended for use inside of stencils that may need see
+// these params in javascript within a stencil.
+clientCommon.getQueryParam = function(paramName)
+{
+	if((client.dataModel.model.queryParams)
+		&& (typeof client.dataModel.model.queryParams[paramName] !== 'undefined'))
+	{
+		return client.dataModel.model.queryParams[paramName]
+	}
+	else
+	{
+		return undefined;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+clientCommon.analyticTick = function(bucket, count)
+{
+	if(!count)
+	{
+		count = 1;
+	}
+
+	var data = {
+		bucket: bucket,
+		count: count
+	};
+
+	proxyConnection.sockProxy.emit('Client_SendAnalyticTick', data);
+}
+
+var s_serverOffsetSeconds = 0;
+
+// TODO: There is no contingency plan if this fails.  Might want one.
+function getTimeOffsetFromServer()
+{
+	$.ajax({
+		url: '/time',
+		success: function(msg) {
+			var local, server = Date.parse(msg) / 1000;
+			if(server)
+			{
+				local = Math.floor(Date.now() / 1000);
+				s_serverOffsetSeconds = server - local;
+			}
+		}
+	});
+}
+
+clientCommon.offsetDate = function()
+{
+	return new Date(Date.now() + (s_serverOffsetSeconds * 1000));
+}
+
+clientCommon.getServerOffsetSeconds = function()
+{
+	return s_serverOffsetSeconds;
+}
+
+// ----------------------------------------------------------------------------
+
+// The character the user has selected. Their "Login Entity"
+clientCommon.selectedChar = function()
+{
+	if(dataModel.model && dataModel.model.loginInfo && dataModel.model.loginInfo.loginentity)
+	{
+		return dataModel.model.loginInfo.loginentity.name + "@" + dataModel.model.loginInfo.loginentity.publicaccountname;
+	}
+	else
+	{
+		return undefined;
+	}
+}
+
+// The character the user is viewing.  Not nessecarily their own, or the "Login Entity"
+clientCommon.getCurrentCharAtName = function()
+{
+	if(dataModel.model && dataModel.model.ent && dataModel.model.ent.main)
+	{
+		return dataModel.model.ent.main.name + "@" + dataModel.model.ent.main.publicaccountname;
+	}
+	else
+	{
+		return undefined;
+	}
+}
+
+
+// ----------------------------------------------------------------------------
+
+
+// End of File

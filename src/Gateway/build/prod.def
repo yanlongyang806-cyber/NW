@@ -1,0 +1,25 @@
+//
+// Global defines
+//
+
+#define IS_DEBUG(a) (false)
+#define IS_PROD(a) (true)
+
+// Performance tracing
+#define perf.start(a) perf.autoStart(__FUNCTION__)
+#define perf.end(a) perf.autoEnd(__FUNCTION__)
+#define perf.trace(a) perf.count(__FUNCTION__)
+
+// Logging sent to the console on both server and client.
+// pre-processed out in production mode
+#macro dbg.error(a) return '/* dbg.error(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg.warn(a)  return '/* dbg.warn(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg.log(a)   return '/* dbg.log(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg.info(a)  return '/* dbg.info(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg.debug(a) return '/* dbg.debug(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg.dbg(a)   return '/* dbg.dbg(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+#macro dbg(a)       return '/* dbg(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+
+#macro dbg.trace(a) return '/* dbg.trace(' + Array.prototype.slice.call(arguments).join(',') + ') */'
+
+// End of File

@@ -1,0 +1,36 @@
+OperationDef
+	Name "OffsetScroll" // Name of the operation
+	Description "Produce two values cycling from 0 to 1 offset from each other by 0.5"
+	Type TEXTURE
+
+	Input
+		Name ScrollRate
+		Description "Rate of scrolling, in texture tiles per tick"
+		Float 1
+		FloatRange -10 10
+		Type Scroll
+		NoManualConnect 1
+		Default
+			Floats 0.1 0.1
+		EndDefault
+	EndInput
+
+	Output
+		Name Result
+		Description "Scroller from 0 to 1 and repeat"
+		Float 1
+	EndOutput
+
+	Output
+		Name Result2
+		Description "Scroller from 0 to 1 but out of phase with Result1 (always contains a 0.5 difference with the above result)"
+		Float 1
+	EndOutput
+
+	Output
+		Name Bias
+		Type TexCoord
+		Description "Primary use: Result into lerp a, Result2 into lerp b, and Bias into lerp Weight to avoid possible popping in scrolling textures"
+		Float 1
+	EndOutput
+EndOperationDef

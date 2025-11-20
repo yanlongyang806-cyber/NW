@@ -1,0 +1,19 @@
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8" />
+</head>
+<body>
+<table id="maintable" width="90%%">
+<tr><td>
+<table width="100%%">
+<tr>
+<td><span class="title">Account Server</span></td>
+<td align=right>
+%s
+[Accounts: <a href="/search">Search</a>/<a href="/detail">View</a>/<a href="/create">Create</a>/<a href="/deleteAccount">Delete</a>/<a href="/changePassword">Change Password</a>]
+[<a href="/productView">Products</a>]
+[<a href="/subscriptionView">Subscription Plans</a>]
+[<a href="/keygroupList">Activation Keys</a>]
+[<a href="/stats">Stats</a>]
+</td>
+</tr>
+</table>
+<hr size=1>

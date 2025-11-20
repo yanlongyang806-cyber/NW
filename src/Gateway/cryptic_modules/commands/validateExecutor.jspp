@@ -1,0 +1,63 @@
+'use strict';
+
+//
+// validateExecutor
+//
+// A validating executor for use with FunctionQueuer.
+//
+// Throws a string with an error if the validation fails.
+// Returns the value passed in otherwise.
+//
+
+var validateExecutor = {
+	int: function(v) {
+		if(typeof v !== 'number') throw new Error('Parameter should be a number.');
+
+		return v;
+	},
+	str: function(v) {
+		if(typeof v !== 'string') throw new Error('Parameter should be a string.');
+
+		return v;
+	},
+	id: function(v) {
+		if(typeof v !== 'string') throw new Error('All IDs should be strings.');
+		if(!(/^\d+$/.test(v))) throw new Error('Non-digits in ID.');
+
+		return v;
+	},
+
+	minlen: function(v, m) {
+		if(v.length < m) throw new Error('Length is shorter than allowed. '+v.length+'<'+m);
+
+		return v;
+	},
+	maxlen: function(v, m) {
+		if(v.length > m) throw new Error('Length is longer than allowed. '+v.length+'<'+m);
+
+		return v;
+	},
+	min: function(v, m) {
+		if(v < m) throw new Error('Value is less than minimum. '+v+'<'+m);
+
+		return v;
+	},
+	max: function(v, m) {
+		if(v > m) throw new Error('Value is greater than maximum allowed. '+v+'>'+m);
+
+		return v;
+	},
+	nonzero: function(v, m) {
+		if(v === 0 || v === '0') throw new Error('Cannot be zero.');
+
+		return v;
+	}
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////
+
+module.exports = validateExecutor;
+
+// End of File

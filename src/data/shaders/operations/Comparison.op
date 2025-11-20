@@ -1,0 +1,21 @@
+OperationDef
+	Name "Comparison" // Name of the operation
+	Category "Combiner"
+	//ParentName "Comparison"
+	DefaultOptionName "Comparison"
+	OptionName "Greater than"
+	Description "For each channel, returns 1 if A is greater than B"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "For each channel, returns 1 if A is greater than B"
+		Float 4
+		AlphaFrom A
+	EndOutput
+
+EndOperationDef
+

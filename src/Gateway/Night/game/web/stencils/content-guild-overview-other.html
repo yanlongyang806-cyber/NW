@@ -1,0 +1,98 @@
+<div class="page-content" data-path="guild" data-update="guild">
+	<div class="page-guild-overview page-guild-profile">
+		<div class="page-body">
+			<div class="guild-header">
+				<h2 data-path=".name">The Crazy Amazing Guild</h2>
+				<h5 data-if=".recruitmessage">Recruiting Message:</h5>
+				<h4 data-if=".recruitmessage" data-path=".recruitmessage.$escapeForHTML()">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio. Fusce lectus magna, cursus a condimentum vitae, feugiat in justo.</h4>
+			</div>
+
+			<hr class="mobileOnly" />
+
+			<div class="panel-inner silver guild-overview-info">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-content">
+					<h4>Guild Info</h4>
+					<dl>
+						<dt>Founding Date:</dt>
+						<dd data-path=".createdon.$shortDate()">Jan 31, 2013</dd>
+
+						<dt>Total Members:</dt>
+						<dd data-path=".totalmembers">35</dd>
+
+						<dt>Minimum Level:</dt>
+						<dd data-path=".minlevelrecruit">1</dd>
+
+						<dt data-if=".website">Website:</dt>
+						<dd data-if=".website"><a data-path=".website" data-set-href="{.website.$httpify()}" href="http://www.playneverwinter.com/" target="_blank">http://www.playneverwinter.com</a></dd>
+					</dl>
+				</div>
+			</div>
+
+			<div class="panel-inner silver guild-overview-roster">
+				<div class="panel-top">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-mid">
+					<div class="panel-left"></div>
+					<div class="panel-right"></div>
+				</div>
+				<div class="panel-bot">
+					<div class="panel-left"></div>
+					<div class="panel-center"></div>
+					<div class="panel-right"></div>
+				</div>
+
+
+				<div class="panel-content">
+					<h4>Guild Members</h4>
+
+					<table data-if=".members.$length() ge 1" id="gatewayTableGuildProfileRoster">
+						<thead>
+							<tr>
+								<th class="roster-name"><span>Name</span></th>
+								<th class="roster-rank"><span>Guild Rank</span></th>
+								<th class="roster-class"><span>Class</span></th>
+								<th>Class Sortable</th>
+								<th class="roster-level"><span>Level</span></th>
+							</tr>
+						</thead>
+						<tbody data-path=".members">
+							<tr>
+								<td class="roster-name">
+									<a class="roster-name-link" data-set-data-url="#char({.name.$escapeForString()}{.publicaccountname})/charactersheet"><span data-path=".name">Name</span><span data-path=".publicaccountname">Display</span></a>
+								</td>
+								<td class="roster-rank" data-path=".officerrank">Officer</td>
+								<td class="roster-class"><img data-set-src="/tex/Icon_Build_Player_{.classtype.$map(nw_classTypeIcons)}_Tiny"></td>
+								<td data-path=".classtype.$map(nw_classTypeIcons)">eng</td>
+								<td class="roster-level" data-path=".level">2</td>
+							</tr>
+						</tbody>
+					</table>
+
+					<script data-if=".members.$length() gt 1" type="text/javascript">
+						client.guildRosterDataTableOther();
+					</script>
+
+ 					<h3 data-if=".members.$length() eq 0">There are no members of this guild</h3>
+
+				</div>
+			</div>
+		</div>
+	</div>
+</div>

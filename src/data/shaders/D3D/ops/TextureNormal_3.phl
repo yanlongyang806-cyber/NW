@@ -1,0 +1,10 @@
+// TextureNormal_3.phl
+{
+#define HAS_NORMALMAP
+	%Result% = sampleTex2D(TexSampler%NormalMap%, %TexCoord%.xy);
+	%Result%.xyz = rangeExpand(%Result%.xyz);
+	%Result2% = sampleTex2D(TexSampler%NormalMap%, %TexCoord2%.xy);
+	%Result2%.xyz = rangeExpand(%Result2%.xyz);
+	%Result3% = sampleTex2D(TexSampler%NormalMap%, %TexCoord3%.xy);
+	%Result3%.xyz = rangeExpand(%Result3%.xyz);
+}

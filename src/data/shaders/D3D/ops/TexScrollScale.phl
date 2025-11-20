@@ -1,0 +1,5 @@
+// TexScrollScale.phl
+{
+	%Result%.xy = %TexCoord%.xy * %Scale%.xy + %ScrollRate%.xy;
+	%Result%.zw = 0.0;
+}

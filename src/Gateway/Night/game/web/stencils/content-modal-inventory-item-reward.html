@@ -1,0 +1,86 @@
+
+<div data-set-class="desktopOnly modal-reward-frame {.packresultquality} {.hrewardpackitem.name} {.rewards.itemrewards[0].hitem.name.$map(Mount_Nightmare_Armored: mount-nightmare, Head_All_Fools_Crown_T00_L00: head-tymora, Mount_Stag_02: mount-feywild, Pet_Aranea: pet-aranea, Mount_Owlbear: mount-owlbear, Pet_Pseudodragon: pet-pseudodragon, *: regular)}">
+	<div class="modal-deco left"></div>
+	<div class="modal-deco right"></div>
+</div>
+
+<div data-set-class="desktopOnly modal-reward-header {.packresultquality}">
+	Congratulations!
+</div>
+
+<div class="modal-window reward">
+	<div class="mobileOnly sticky-mobile-back-button mobileModalArrowStandard">
+		<div class="main-buttons">
+			<a class="nav-button mobile-back-button" data-url-silent="closemodal">
+				<span class="cap-left"></span>
+				<span class="cap-right"></span>
+				<span class="nav-icon"></span>
+			</a>
+		</div>
+		<hr />
+	</div>
+	<div class="modal-content">
+
+		<button class="close-button" data-url-silent="closemodal"></button>
+
+		<div class="modal-openrewardpack">
+
+			<div data-set-class="mobileOnly modal-reward-header {.packresultquality}">
+				Congratulations!
+			</div>
+
+			<h4>You Opened <span data-set-class="{.packresultquality}" data-path=".hrewardpackitem.displayNameMsg.str">Item Name</span> and received:</h4>
+
+			<div data-path='.rewards.itemrewards'>
+				<div data-set-class="icon-block reward small {.hitem.quality}">
+					<!-- tooltips disabled due to small size of modal window
+					<div class="icon-slot" data-set-data-tt-item=".hitem.name">
+					-->
+					<div class="icon-slot">
+						<img data-set-src="tex/{.hitem.icon}.png" alt="" />
+						<span data-if=".count ge 2" class="quantity" data-path=".count">5</span>
+					</div>
+					<div class="icon-info">
+						<h4 data-path=".hitem.displaynamemsg.str">Item Name</h4>
+					</div>
+				</div>
+			</div>
+			<div data-path='.rewards.numericrewards'>
+				<div data-set-class="icon-block reward small {.hitem.quality}">
+					<div class="icon-slot">
+						<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+						<span data-if=".numericvalue ge 2" class="quantity" data-path=".numericvalue">5</span>
+					</div>
+					<div class="icon-info">
+						<h4 data-path=".hdef.displaynamemsg.str">Item Name</h4>
+					</div>
+				</div>
+			</div>
+
+			<hr />
+			<div class="input-field button">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<button data-url-silent="closemodal">OK</button>
+			</div>
+
+
+
+
+
+			<!--
+			<p>DATA:</p>
+			<p>.hrewardpackitem.displayNameMsg.str: <span data-path=".hrewardpackitem.displayNameMsg.str"></span></p>
+
+			<p>.hrewardpackitem.name: <span data-path=".hrewardpackitem.name"></span></p>
+			<p>.hrewardpackitem.quality: <span data-path=".hrewardpackitem.quality"></span></p>
+			<p>.hrewardpackitem.type: <span data-path=".hrewardpackitem.type"></span></p>
+
+			<p>.packresultquality: <span data-path=".packresultquality"></span></p>
+			<p>.rewardpacktype: <span data-path=".rewardpacktype"></span></p>
+			-->
+
+		</div>
+	</div>
+</div>

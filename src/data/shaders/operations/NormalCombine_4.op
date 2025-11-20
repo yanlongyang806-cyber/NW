@@ -1,0 +1,26 @@
+OperationDef
+	Name "NormalCombine_4" // Name of the operation
+	ParentName "NormalCombine_2+"
+	OptionName "4 normals"
+	Category "Combiner"
+	Description "Sums normal maps"
+	Type SIMPLE
+
+	Input: Normal1, "First normal"
+	Input: Normal2, "Second normal"
+	Input: Normal3, "Third normal"
+	Input: Normal4, "Fourth normal"
+
+	Output
+		Name Result
+		Description "Output of summing normals"
+		Float 4
+		AlphaModeAnd 1
+		AlphaFrom Normal1
+		AlphaFrom Normal2
+		AlphaFrom Normal3
+		AlphaFrom Normal4
+	EndOutput
+
+EndOperationDef
+

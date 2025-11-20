@@ -1,0 +1,36 @@
+OperationDef
+	Name "HeightmapBlend" // Name of the operation
+	Category "Combiner"
+	Description "Generate a blending weight based on a heightmap, blend amount, and hardness"
+	Type CUSTOM
+
+	Input
+		Name Heightmap
+		Description "Heightmap"
+		Float 1
+		FloatRange 0 1
+	EndInput
+	Input
+		Name BlendAmount
+		Description "Blend amount, 0-1"
+		Float 1
+		FloatRange 0 1
+	EndInput
+	Input
+		Name Hardness
+		Description "Hardness, 0-1"
+		Float 1
+		Default
+			Floats 0.7
+		EndDefault
+		FloatRange 0 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Blending weight"
+		Float 1
+	EndOutput
+
+EndOperationDef
+

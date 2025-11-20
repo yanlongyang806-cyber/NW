@@ -1,0 +1,39 @@
+<div class="holdings-container" data-if="{$root().guildproject.viewerismember}">
+	<div class="holdings-header">
+		<h2 data-path=".playername.$escapeForHTML()"><!-- Holding Name --></h2>
+		<h3>Projects</h3>
+		<div class="holdings-motd" data-if=".message">
+			<h4><span data-path=".typename"><!-- Holding --></span> Message of the Day:</h4>
+			<p data-path=".message.$escapeForHTML()"><!-- Message of the Day --></p>
+		</div>
+	</div>
+	<div id="holdings_nav_mobile"></div>
+	<div data-set-class="holdings-projects {.typename.$toLowerCase()}">
+		<div class="project-slots-area" id="holdings_project_slots"></div>
+		<div class="project-vertical-divider desktopOnly"></div>
+		<div class="project-view-area" id="holdings_project_view"></div>
+		<div class="clear"></div>
+	</div>
+</div>
+
+<div class="front-classified" data-if="!{$root().guildproject.viewerismember}">
+	<h1>CLASSIFIED</h1>
+</div>
+
+
+<!-- Put this somewhere where it will work
+<script>
+$(document).ready(function() {
+
+	$(".selectable-entry").on('click', function() {
+		$('.selectable-entry.selected').removeClass('selected');
+		$(this).addClass('selected');
+	});
+	$(".selectable-tier").on('click', function() {
+		$('.selectable-tier.selected').removeClass('selected');
+		$(this).addClass('selected');
+	});
+
+})
+</script>
+-->

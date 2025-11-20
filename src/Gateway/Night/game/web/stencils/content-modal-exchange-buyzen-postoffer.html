@@ -1,0 +1,36 @@
+<!-- if(dev) -->
+<button class="close-button" data-url-silent="closemodal"></button>
+
+<div class="modal-confirm modal-exchangeoffer">
+	<h3>Confirm Offer</h3>
+
+	<p>You are about to make the following offer:</p>
+
+	<p class="exchange-desc">Buy <img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" /> <span data-path="queryParams.quantity">000</span> at <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span data-path="queryParams.price">000</span> each (spending <img src="/tex/Currency_Icon_Tiny_Astral_Diamonds.png" alt="" /> <span class="total">000,000</span>)</p>
+
+	<p>This will be filled by the first available ZEN listing(s) at this price, and the ZEN will be placed in your Exchange Balance.</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal" data-set-onclick="client.createBuyOrder({queryParams.quantity},{queryParams.price})">OK</button>
+
+	</div>
+
+</div>
+
+<script>
+
+var iTotal = client.dataModel.model.queryParams.quantity * client.dataModel.model.queryParams.price;
+
+$('.total').text(iTotal.toLocaleString());
+</script>
+<!-- endif(dev) -->

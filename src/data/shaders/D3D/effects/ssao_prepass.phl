@@ -1,0 +1,68 @@
+//#define DEFERRED_SHADOW
+
+#include "ps_inc.hlsl"
+#include "depth_inc.hlsl"
+
+#macro NUM_SSAO_SAMPLES
+16
+#endmacro
+
+SAMPLER_DECL(depth_sampler, 0);
+
+SAMPLER_DECL(plane_sampler, 1);
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float4 proj_mat_X	: PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 proj_mat_Y	: PS_CONSTANT_MATERIAL_PARAM1() ;
+uniform float4 plane_res	: PS_CONSTANT_MATERIAL_PARAM2() ;
+uniform float4 param_vec	: PS_CONSTANT_MATERIAL_PARAM3() ;
+uniform float4 depth_step	: PS_CONSTANT_MATERIAL_PARAM4() ;
+uniform float4 ssao_vectors[ NUM_SSAO_SAMPLES() ] 
+							: PS_CONSTANT_MATERIAL_PARAM5() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+#include "ssao.hlsl"
+
+struct PS_OUTPUT
+{
+	float4 color : SEM_COLOR(0);
+};
+
+PS_OUTPUT main_output(PS_INPUT_SIMPLE fragment)
+{
+	PS_OUTPUT output;
+
+	output.color.rgba = 0.0f;
+	int i=0;
+
+	float2 screen_texcoord = fragment.texcoord.xy / fragment.texcoord.w;
+	// this is my hack for viewing the left half of the screen
+	//if (screen_texcoord.x > 0.5)
+		//screen_texcoord.x -= 0.5;
+
+	screen_texcoord = floor(float2(screen_texcoord.x/inv_screen_params.x,screen_texcoord.y/inv_screen_params.y))*4*depth_step.xy;
+
+	screen_texcoord -= 1.5*depth_step.xy;
+
+	#ifndef TRANSGAMING
+		[unroll]
+	#endif
+	for (i=0;i<4;i++)
+	{
+		float depth = sampleTexDepthVS(depth_sampler, screen_texcoord);
+
+		float3 position_vs = extractPositionUncompressed(depth, screen_texcoord);
+
+		// i*3 is an arbitrary offset here, but it creates better "coverage" than i*4, assuming I'm doing 8 samples
+		float result = calcSSAO(depth_sampler, depth, position_vs, screen_texcoord, plane_sampler,i*3);
+		if (result)
+		{
+			output.color.a = 1.0f;
+
+			return output;
+		}
+
+		screen_texcoord += depth_step.xy;
+	}
+
+	return output;
+}

@@ -1,0 +1,126 @@
+'use strict';
+
+var clientUpdate = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                    ##    ## ##    ##  #######
+//                    ###   ## ###   ## ##     ##
+//                    ####  ## ####  ## ##     ##
+//                    ## ## ## ## ## ## ##     ##
+//                    ##  #### ##  #### ##     ##
+//                    ##   ### ##   ### ##     ##
+//                    ##    ## ##    ##  #######
+//
+//                This file is for Neverwinter Online.
+//
+
+var dbg = require('cryptic/dbg');
+
+clientUpdate.updateCallback = function(dictname, name, slot, diff)
+{
+	dbg.trace('Data Update: ',dictname, name, slot, diff);
+	if(dictname === 'LoginEntity')
+	{
+		this.dataModel.model.loginInfo.loginentity = slot.container;
+		this.dataModel.renderUpdates(diff, 'loginInfo.loginentity');
+	}
+	else if(dictname === 'Entity')
+	{
+		this.updateModelEnt(slot.container);
+		this.dataModel.renderUpdates(diff, 'ent.main');
+	}
+	else if(dictname === 'Guild')
+	{
+		this.dataModel.model.guild = slot.container;
+		this.dataModel.renderUpdates(diff, 'guild');
+	}
+	else if(dictname === 'AuctionSearch')
+	{
+		if(!this.dataModel.model.auctionList)
+			this.dataModel.model.auctionList = [];
+
+		this.dataModel.model.auctionList[name] = slot.container;
+		this.dataModel.fetchAuctionResultsBundle(diff, name);
+	}
+	else if(dictname === 'CraftingList')
+	{
+		if(!this.dataModel.model.craftinglist)
+			this.dataModel.model.craftinglist = [];
+
+		this.dataModel.model.craftinglist[name] = slot.container;
+		this.dataModel.renderUpdates(diff, 'craftinglist.'+name);
+	}
+	else if(dictname === 'CraftingDetail')
+	{
+		this.dataModel.model.craftingdetail = slot.container;
+		this.dataModel.renderUpdates(diff, 'craftingdetail');
+	}
+	else if(dictname === 'MailList')
+	{
+		dbg.trace(slot.container);
+		this.dataModel.model.maillist = slot.container;
+		this.dataModel.renderUpdates(diff, 'maillist');
+	}
+	else if(dictname === 'MailDetail')
+	{
+		this.dataModel.model.maildetail = slot.container;
+		this.dataModel.renderUpdates(diff, 'maildetail');
+	}
+	else if(dictname === 'CStore')
+	{
+		if(diff === 'destroy *')
+		{
+			this.dataModel.model.cstore = slot.container;
+		}
+		else
+		{
+			var gotBundle = (this.dataModel.model && this.dataModel.model.cstore) ? this.dataModel.model.cstore._gotBundle : false;
+			this.dataModel.model.cstore = slot.container;
+			this.dataModel.model.cstore._gotBundle = gotBundle;
+			this.dataModel.cstoreCategoryBundleUpdate();
+		}
+
+		this.dataModel.renderUpdates(diff, 'cstore');
+	}
+	else if(dictname === 'Vendor')
+	{
+		this.dataModel.model.vendor = slot.container;
+		this.dataModel.renderUpdates(diff, 'vendor');
+	}
+	else if(dictname === 'ExchangeAccountData')
+	{
+		this.dataModel.model.exchangeaccountdata = slot.container;
+		this.dataModel.renderUpdates(diff, 'exchangeaccountdata');
+	}
+	else if(dictname === 'GatewayGameData')
+	{
+		this.dataModel.model.gatewaygamedata = slot.container;
+
+		this.scaUpdateCallback(this.dataModel.model.gatewaygamedata);
+
+		this.dataModel.renderUpdates(diff, 'gatewaygamedata');
+	}
+	else
+	{
+		dbg.trace("Data Update: Did nothing for this update.", dictname, name, slot, diff);
+		// Do nothing special.
+	}
+}
+
+clientUpdate.updateModelEnt = function(entPlayer)
+{
+	if(entPlayer)
+	{
+		if(!this.dataModel.model.ent)
+		{
+			this.dataModel.model.ent = {};
+		}
+
+		this.dataModel.model.ent.main = entPlayer;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

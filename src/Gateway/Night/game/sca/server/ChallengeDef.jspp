@@ -1,0 +1,42 @@
+'use strict';
+
+var Trial = require('./Trial');
+var cutils = require('cryptic/cutils');
+
+var reSplit = /\s*\+\s*/g;
+var reTrim = /^\s+|\s+$/g;
+function ChallengeDef(options)
+{
+	cutils.extend(this, options);
+
+	// Expected fields (* are required):
+	//		id*
+	//		name*
+	//		description*
+	//		image
+	//		icon
+	//		tags*
+	//		def*
+	//		minDice*
+	//		reward
+	//		queueReward
+	//		onStart
+	//		onSuccess
+	//		onFailure
+
+	if(this.def)
+	{
+		this.trialDefs = options.def.replace(reTrim, '').split(reSplit);
+		delete this.def;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ChallengeDef;
+
+///////////////////////////////////////////////////////////////////////////
+
+
+// End of File

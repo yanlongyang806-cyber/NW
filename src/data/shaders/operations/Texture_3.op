@@ -1,0 +1,61 @@
+OperationDef
+	Name "Texture_3" // Name of the operation
+	ParentName "Texture_2+"
+	OptionName "3 texture coords"
+	Description "Texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord2
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord3
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	
+	Input
+		Name Texture // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type Texture
+		Texture 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Color and alpha from the texture"
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+	Output
+		Name Result2
+		Description "Color and alpha from the texture"
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+	Output
+		Name Result3
+		Description "Color and alpha from the texture"
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+EndOperationDef

@@ -1,0 +1,438 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// CUtils
+//
+// Cryptic Studios Utilities
+//
+var cutils = {};
+
+///////////////////////////////////////////////////////////////////////////
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ *
+ * The Function.prototype.inherits from lang.js rewritten as a standalone
+ * function (not on Function.prototype). NOTE: If this file is to be loaded
+ * during bootstrapping this function needs to be rewritten using some native
+ * functions as prototype setup using normal JavaScript does not work as
+ * expected during bootstrapping (see mirror.js in r114903).
+ *
+ * @param {function()} ctor Constructor function which needs to inherit the
+ *     prototype.
+ * @param {function()} superCtor Constructor function to inherit prototype from.
+ */
+ // NOTE: DOES NOT WORK ON IE8
+cutils.inherits = function inherits(ctor, superCtor) {
+	ctor.super_ = superCtor;
+	ctor.prototype = Object.create(superCtor.prototype, {
+		constructor: {
+			value: ctor,
+			enumerable: false,
+			writable: true,
+			configurable: true
+		}
+	});
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+cutils.bind = function bind(scope, func /* ... */)
+{
+	var args = Array.prototype.slice.call(arguments, 2);
+	return function boundFunc() {
+		return func.apply(scope, args.concat(Array.prototype.slice.call(arguments)));
+	}
+}
+
+cutils.extend = function extend(dest /* , src1, ..., srcn */)
+{
+	for(var i = 0; i < arguments.length; i++)
+	{
+		for(var key in arguments[i])
+		{
+			if(Object.hasOwnProperty.call(arguments[i], key))
+			{
+				dest[key] = arguments[i][key];
+			}
+		}
+	}
+
+	return dest;
+}
+
+cutils.copyInto = function copy(dest, src, keep)
+{
+	if(keep)
+	{
+		keep = ' ' + keep + ' ';
+	}
+
+	for(var key in src)
+	{
+		if(Object.hasOwnProperty.call(src, key))
+		{
+			if(!keep || keep.indexOf(' ' + key + ' ') >= 0)
+			{
+				dest[key] = src[key];
+			}
+		}
+	}
+
+	return dest;
+}
+
+var TYPE_OBJECT = '[object Object]';
+var TYPE_ARRAY  = '[object Array]';
+
+cutils.deepExtend = function deepExtend(dest /* , src1, ..., srcn */)
+{
+	for(var i = 0; i < arguments.length; i++)
+	{
+		var src = arguments[i];
+
+		for(var name in src)
+		{
+			if(Object.hasOwnProperty.call(src, name))
+			{
+				var value = src[name];
+				var type = Object.prototype.toString.call(value);
+				if(type === TYPE_OBJECT)
+				{
+					if(dest[name] === undefined)
+						dest[name] = {};
+
+					dest[name] = deepExtend(dest[name], value);
+				}
+				else if(type === TYPE_ARRAY)
+				{
+					if(dest[name] === undefined)
+						dest[name] = [];
+
+					dest[name] = value.concat(dest[name]);
+				}
+				else
+				{
+					dest[name] = value;
+				}
+			}
+		}
+	}
+
+	return dest;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+if(process && process.title !== 'browser' && process.nextTick)
+{
+	cutils.nextTick = process.nextTick;
+}
+else
+{
+	// Modified from Browserify, under the MIT/X11 license.
+	//   https://github.com/substack/node-browserify
+	cutils.nextTick = (function () {
+		var canSetImmediate = typeof window !== 'undefined'
+			&& window.setImmediate;
+		var canPost = typeof window !== 'undefined'
+			&& window.postMessage && window.addEventListener
+		;
+
+		if (canSetImmediate) {
+			return function(f) { return window.setImmediate(f) };
+		}
+
+		if (canPost) {
+			var queue = [];
+			window.addEventListener('message', function (ev) {
+				// The check below is the only edit from Browserify.
+				//   (And I renamed the tick to 'cryptic-tick'.)
+				// Socket.io sometimes runs code from an iframe, which
+				//   appears as a different window. That's a pain, isn't it?
+				// There is no real danger of doing this, in this particular
+				//   case. All the message does is make a tick occur, so if
+				//   someone nefarious sends us this message, it'll just do
+				//   what was queued up anyway. They can't inject any code or
+				//   data.
+				if ( /* ev.source === window && */ ev.data === 'cryptic-tick') {
+					ev.stopPropagation();
+					if (queue.length > 0) {
+						var fn = queue.shift();
+						fn();
+					}
+				}
+			}, true);
+
+			return function nextTick(fn) {
+				queue.push(fn);
+				window.postMessage('cryptic-tick', '*');
+			};
+		}
+
+		return function nextTick(fn) {
+			setTimeout(fn, 0);
+		};
+	})();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+cutils.forEachSeries = function (arr, iterator, callback)
+{
+	callback = callback || function () {};
+	if (!arr.length)
+	{
+		return callback();
+	}
+	var completed = 0;
+	var iterate = function () {
+		iterator(arr[completed], function (err) {
+			if (err)
+			{
+				callback(err);
+				callback = function () {};
+			}
+			else
+			{
+				completed++;
+				if (completed === arr.length)
+				{
+					cutils.nextTick(callback);
+				}
+				else
+				{
+					iterate();
+				}
+			}
+		});
+	};
+	iterate();
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// ipStringToInt
+//
+// Does what it says on the tin.
+//
+cutils.ipStringToInt = function (ipstr)
+{
+	var ip = ipstr.split('.');
+	// This is done with multiply instead of shifts because shifts force 32-bit
+	//   SIGNED numbers, which ends up making the ip value negative.
+	return ((((((+ip[3])*256)+(+ip[2]))*256)+(+ip[1]))*256)+(+ip[0]);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Escape a string to use in a regexp.
+cutils.escapeRegExp = function (str)
+{
+  return str.replace(/[\-\[\]{}()*+?.,\\\^$|#\s]/g, "\\$&");
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Does a find and replace for each value in the find object.
+//
+// Searching for the keys of the replace object and replacing with the
+// values in teh replace object.
+// Example:
+//   findObj:
+//     'one': 'String.with.Things[{1}].to[{2}].replace'
+//     'two': 'Another.String.{2}'
+//
+//   replaceObj: search for keys, replace with values.
+//     '{1}': 'REPLACE'
+//     '{2}': 'HERE'
+//
+//   Examle above returns:
+//     'one': 'String.with.Things[REPLACE].to[HERE].replace'
+//     'two': 'Another.String.HERE'
+//
+cutils.findAndReplaceObjects = function (findObj, replaceObj)
+{
+	var x, y, reg, out = {};
+	for(x in findObj)
+	{
+		out[x] = findObj[x];
+		for(y in replaceObj)
+		{
+			reg = new RegExp(cutils.escapeRegExp(y),'g');
+			out[x] = out[x].replace(reg, replaceObj[y]);
+		}
+	}
+
+	return out;
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Compatibility Functions
+//
+// Fill in missing functions for old browsers, like the evil IE8
+// These come from MDN: https://developer.mozilla.org
+//
+
+// Object.create does not exist in IE8
+// written based on information found here:
+// https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Object/create#Cross-browser_compatibility
+// - Kevin
+if (!Object.create)
+{
+    Object.create = function (obj, prop) {
+        function F() {}
+        F.prototype = obj;
+		var ret = new F();
+
+		if(prop)
+		{
+			for(var key in prop)
+			{
+				ret[key] = prop[key];
+			}
+		}
+
+        return ret;
+    };
+}
+
+if (!Object.keys) {
+	Object.keys = function(o) {
+		if (o !== Object(o))
+			throw new TypeError('Object.keys called on a non-object');
+
+		var k = [];
+		var p;
+		for (p in o)
+			if (Object.prototype.hasOwnProperty.call(o,p))
+				k.push(p);
+
+		return k;
+	}
+}
+
+if(!String.prototype.trim) {
+  String.prototype.trim = function () {
+    return this.replace(/^\s+|\s+$/g,'');
+  };
+}
+
+if(!Array.prototype.forEach) {
+  Array.prototype.forEach = function(fn, scope) {
+    for(var i = 0, len = this.length; i < len; ++i) {
+      fn.call(scope || this, this[i], i, this);
+    }
+  }
+}
+
+if(!Array.isArray) {
+  Array.isArray = function (vArg) {
+    return Object.prototype.toString.call(vArg) === TYPE_ARRAY;
+  };
+}
+
+// code take from https://developer.mozilla.org/en-US/docs/JavaScript/Reference/Global_Objects/Array/indexOf
+// Added ignore flags for things JSHINT was complaingin about.
+// Those 'quirks' me be relied upbon for compatibility so I'd rather not change them.
+if (!Array.prototype.indexOf) {
+    Array.prototype.indexOf = function (searchElement /*, fromIndex */ ) {
+        if (this === null) {
+            throw new TypeError();
+        }
+        var t = Object(this);
+        var len = t.length >>> 0;
+        if (len === 0) {
+            return -1;
+        }
+        var n = 0;
+        if (arguments.length > 1) {
+            n = Number(arguments[1]);
+            if (n != n) { // shortcut for verifying if it's NaN
+                n = 0;
+            } else if (n !== 0 && n != Infinity && n != -Infinity) {
+                n = (n > 0 || -1) * Math.floor(Math.abs(n));
+            }
+        }
+        if (n >= len) {
+            return -1;
+        }
+        var k = n >= 0 ? n : Math.max(len - Math.abs(n), 0);
+        for (; k < len; k++) {
+            if (k in t && t[k] === searchElement) {
+                return k;
+            }
+        }
+        return -1;
+    }
+}
+
+// Browserify was using this
+if(!Array.prototype.map) {
+	Array.prototype.map = function (iterator, context) {
+		var result = [];
+		context = context || this;
+		this.forEach(function (val, key) {
+			result.push(iterator.call(context, val, key));
+		});
+		return result;
+	};
+}
+
+// Browserify was using this
+if (!Array.prototype.reduce) {
+  Array.prototype.reduce = function reduce(accumulator){
+    if (this===null || this===undefined) throw new TypeError("Object is null or undefined");
+    var i = 0, l = this.length >> 0, curr;
+
+    if(typeof accumulator !== "function") // ES5 : "If IsCallable(callbackfn) is false, throw a TypeError exception."
+      throw new TypeError("First argument is not callable");
+
+    if(arguments.length < 2) {
+      if (l === 0) throw new TypeError("Array length is 0 and no second argument");
+      curr = this[0];
+      i = 1; // start accumulating at the second element
+    }
+    else
+      curr = arguments[1];
+
+    while (i < l) {
+      if(i in this) curr = accumulator.call(undefined, curr, this[i], i, this);
+      ++i;
+    }
+
+    return curr;
+  };
+}
+
+// IE8 doesnt have Date.now() so...
+if (!Date.now)
+{
+	Date.now = function now() {
+		return new Date().getTime();
+	};
+}
+
+module.exports = cutils;
+
+// End of File

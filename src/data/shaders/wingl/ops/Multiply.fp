@@ -1,0 +1,1 @@
+MUL %Result%, %A%, %B%;

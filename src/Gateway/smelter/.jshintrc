@@ -1,0 +1,14 @@
+{
+	"predef": [
+		"require",
+		"module",
+		"console",
+		"exports"
+	],
+
+	"node": true,
+	"globalstrict": true,
+	"asi": true,
+	"sub": true,
+	"laxbreak": true
+}

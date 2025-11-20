@@ -1,0 +1,34 @@
+<button class="close-button" data-url-silent="closemodal"></button>
+<div class="modal-confirm modal-inventory">
+
+	<h3>Withdraw Foundry Tips</h3>
+
+	<h4>Available Balance</h4>
+	<p><span class="currency-icon astral"></span><span data-path="ent.main.currencies.foundrytips.$commify()">500</span></p>
+
+	<h4>Amount To Withdraw</h4>
+	<div class="input-field text currency foundry-tips foundyTipWithdraw">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<span class="currency-icon astral"></span>
+		<input type="text" maxlength="9" name="withdrawAmount" data-set-value="ent.main.currencies.foundrytips">
+	</div>
+
+	<h6 class="attention">Note: Withdrawals from the Foundry Tip Pool are permanent.</h6>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button onclick="client.withdrawTips();" data-url-silent="/inventory">Withdraw</button>
+	</div>
+
+</div>

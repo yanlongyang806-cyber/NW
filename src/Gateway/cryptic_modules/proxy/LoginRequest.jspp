@@ -1,0 +1,198 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// LoginRequest
+//
+// Used to intitiate a play session through the LoginServer. This is after
+// being authenticated and given a ticket from the AccountServer.
+//
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+var g_config = require('cryptic/configure')();
+
+var LSConnection = require('./LSConnection');
+
+//
+// LoginRequest
+//
+// Encapsulates all the jive for talking to the LoginServer. This handles
+// all of the sundry and various states and packets, emitting
+//
+var LoginRequest = function LoginRequest(sock, idAccount, idTicket, idMachine, callback)
+{
+	dbg.trace();
+
+	this.sockClient = sock;
+
+	this.myOCD = this.onClientDisconnected.bind(this); // so I can removeListener
+	this.sockClient.on('disconnect', this.myOCD);
+
+	this.idAccount = idAccount;
+	this.idTicket = idTicket;
+	this.idMachine = idMachine;
+
+	this.timeStart = Date.now(); // Will be the elapsed time when complete
+	this.usedOneTimeCode = false;
+
+	this.callback = callback;
+
+	this.ls = new LSConnection();
+
+	this.ls.on('connected',            this.onLSConnected.bind(this));
+	this.ls.on('disconnected',         this.onLSDisconnected.bind(this));
+
+	this.ls.on('LoginServer_PossibleCharacters',   this.onLoginServer_PossibleCharacters.bind(this));
+	this.ls.on('LoginServer_LoginFailed',          this.onLoginServer_LoginFailed.bind(this));
+	this.ls.on('LoginServer_RequestOneTimeCode',   this.onLoginServer_RequestOneTimeCode.bind(this));
+
+	this.attemptLSConnection();
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LoginRequest.prototype.done = function(error, loginInfo)
+{
+	dbg.trace(error);
+
+	var timeElapsed = Date.now() - this.timeStart;
+	if(this.usedOneTimeCode)
+		perf.histogram('Login:OneTimeCodeTime', timeElapsed);
+	else
+		perf.histogram('Login:Time', timeElapsed);
+
+	if(this.ls)
+	{
+		var ls = this.ls;
+		this.ls = null;
+		ls.disconnect();
+	}
+
+	if(this.sockClient)
+	{
+		var sockClient = this.sockClient;
+		this.sockClient = null;
+
+		sockClient.removeListener('disconnect', this.myOCD);
+
+		if(error)
+		{
+			sockClient.emit('Proxy_LoginFailed', error.message);
+		}
+	}
+
+	if(this.callback)
+	{
+		var cb = this.callback;
+		this.callback = null;
+
+		loginInfo = loginInfo || {};
+		loginInfo.idAccount = this.idAccount;
+
+		cb(error, loginInfo);
+	}
+}
+
+LoginRequest.prototype.onClientDisconnected = function()
+{
+	dbg.trace();
+
+	this.done(new Error('Client disconnected'), undefined);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LoginRequest.prototype.attemptLSConnection = function attemptLSConnection()
+{
+	dbg.trace(g_config);
+
+	if(!this.ls)
+	{
+		// This can happen if something goes wrong and we kill the client
+		//   connection early on.
+		return;
+	}
+
+	if(g_config.ipLoginServer && g_config.portLoginServer)
+	{
+		dbg.trace('Connecting to login server for player '+this.idAccount);
+		this.ls.connect(g_config.ipLoginServer, g_config.portLoginServer);
+	}
+	else
+	{
+		throw(new Error('No LoginServer configured. You need to set ipLoginServer and portLoginServer.'))
+	}
+}
+
+LoginRequest.prototype.onLSConnected = function()
+{
+	dbg.trace();
+
+	if(!this.sockClient)
+	{
+		// This can happen if something goes wrong and we kill the client
+		//   connection early on.
+		return;
+	}
+
+	if(g_config.useLogin2)
+	{
+		this.ls.sendSetRequestIP(this.sockClient.handshake.real_address.address);
+		this.ls.sendLogin2BeginLogin(this.idAccount, this.idTicket, this.idMachine);
+	}
+	else
+	{
+		this.ls.sendSetRequestIP(this.sockClient.handshake.real_address.address);
+		this.ls.requestGetPossibleCharacters(this.idAccount, this.idTicket, this.idMachine);
+	}
+};
+
+LoginRequest.prototype.onLSDisconnected = function()
+{
+	dbg.trace();
+
+	this.done(new Error('Login Server disconnected'), undefined);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LoginRequest.prototype.onLoginServer_RequestOneTimeCode = function(data)
+{
+	dbg.trace();
+	this.usedOneTimeCode = true;
+
+	this.sockClient.emit('Proxy_RequestOneTimeCode', data);
+}
+
+LoginRequest.prototype.sendOneTimeCode = function(code, name)
+{
+	dbg.trace();
+
+	if(this.ls)
+	{
+		this.ls.sendOneTimeCode(code, name);
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+LoginRequest.prototype.onLoginServer_PossibleCharacters = function(loginInfo)
+{
+	dbg.trace();
+
+	this.done(undefined, loginInfo);
+}
+
+LoginRequest.prototype.onLoginServer_LoginFailed = function(data)
+{
+	dbg.trace();
+
+	this.done(new Error(data.reason), undefined);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = LoginRequest;
+
+// End of File

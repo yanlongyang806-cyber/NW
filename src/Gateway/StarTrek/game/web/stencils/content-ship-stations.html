@@ -1,0 +1,67 @@
+<div data-path="ent" data-update="ent">
+	<h2>Officer Stations</h2>
+	<div class="ship-banner">
+		<div class="ship-headshot">
+			<img data-set-src="/shot/ship/{.$root().ent.idShip}.png" alt="" />
+		</div>
+		<div class="ship-basicinfo">
+			<h3 data-path=".ship.name">U.S.S. Dark Matter</h3>
+			<h4 data-path=".ship.subname">NC-1234-567</h4>
+			<ul>
+				<li>Fore Weapon Slots: <span data-path=".ship.shipdata.forwardweapons">4</span></li>
+				<li>Aft Weapon Slots: <span data-path=".ship.shipdata.aftweapons">3</span></li>
+			</ul>
+			<ul>
+				<li>Base Hull: <span data-path=".ship.maxhealth">40000</span></li>
+			</ul>
+			<ul>
+				<li>Base Crew: <span data-path=".ship.shipdata.crew">1000</span></li>
+				<li>Base Turn: <span data-path=".ship.shipdata.flightturnrate">6</span></li>
+				<li>Device Slots: <span data-path="">4</span></li>
+			</ul>
+		</div>
+	</div>
+	<div class="ship-stations-wrapper">
+		<div class="ship-stations">
+			<div class="stations-bridge mobileList">
+				<h3 class="mobileListHeader">Bridge Stations</h3>
+				<ul data-path=".ship.crewstation">
+					<li class="mobileListEntry">
+						<span data-set-class="icon-class-officer-small {.classtype.$map(classTypeIcons)}"></span>
+						<div class="station-portrait">
+							<img class="boff-portrait" data-set-src="/shot/head/{.id}.png" alt="" />
+						</div>
+						<h4 class="station-name"><span data-path=".name"></span></h4>
+						<h5 class="station-rank"><span data-path=".stationname.str"></span></h5>
+						<ul class="station-skills" data-path=".powers">
+							<li>
+								<a data-set-class="image-link power {.available.$map(0:locked, 1:available)}" data-set-data-url-silent="power?power={$here()}.stationpowerdef" ><img data-set-src="/tex/{.stationpowerdef.icon}.png" alt="" /></span>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+
+			<div class="stations-awayteam mobileList">
+				<h3 class="mobileListHeader">Away Team</h3>
+				<ul data-path=".main.awayteam">
+					<li class="mobileListEntry">
+						<span data-set-class="icon-class-officer-small {.classtype.$map(classTypeIcons)}"></span>
+						<div class="station-portrait">
+							<img class="boff-portrait" data-set-src="/shot/head/{.id}.png" alt="" />
+						</div>
+						<h4 class="station-name"><span data-path=".name"></span></h4>
+						<h5 class="station-rank"><span data-path=".rankname"></span></h5>
+						<ul class="station-skills" data-path=".powers">
+							<li data-path=".stationpowerdef">
+								<a class="image-link power" data-set-data-url-silent="power?power={$here()}"><img data-set-src="/tex/{.icon}.png" alt="" /></a>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</div>
+			<div class="clear"></div>
+		</div>
+	</div>
+
+</div>

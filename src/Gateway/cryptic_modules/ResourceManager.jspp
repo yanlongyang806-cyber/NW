@@ -1,0 +1,263 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ResourceManager
+//
+//             YOU SHOULD NOT BE INSTANTIATING THIS DIRECTLY.
+//
+//   YOU SHOULD BE USING ProxyResourceManager or ClientResourceManager.
+//
+var dbg = require('cryptic/dbg');
+var ResourceDictionary = require('cryptic/ResourceDictionary');
+
+//
+// new ResourceManager
+//
+// Creates a new resource manager. The resource manager tracks static data
+// resources provided by the server. It caches the resources it receives.
+//
+// There should probably be only one ResourceManager per process. Why would
+// you need more than one?
+//
+// Messages handled on the connection:
+//     requestResource
+//     requestDefaultResource
+//     requestDictionaryKeys
+//
+// Every object in a dictionary inherits from a base object which has all the
+// fields the object can have as well as default values for them.
+// (Note, though, that these defaults are retreived from the server at
+// runtime. You still can't assume objects are valid immediately.)
+//
+var ResourceManager = function ResourceManager()
+{
+	dbg.trace();
+	this.dicts = {};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// find
+//
+// Returns the Resource object associated with a given dictionary and id.
+// If there is no Resource associated, undefined is returned.
+//
+ResourceManager.prototype.find = function find(dictname, id)
+{
+	dbg.trace(dictname, id);
+
+	var dict = this.dicts[dictname];
+
+	return dict ? dict.findResource(id) : undefined;
+}
+
+//
+// findOrCreate
+//
+// Returns the Resource object associated with a given dictionary and id
+// if it already exists. If it doesn't, then one is created. Resources
+// created by this function are not automatically requested from the server.
+//
+ResourceManager.prototype.findOrCreate = function findOrCreate(dictname, id)
+{
+	dbg.trace(dictname, id);
+
+	var res = this.find(dictname, id);
+
+	if(!res)
+	{
+		res = this.createResource(dictname, id);
+			// does not automatically fetch the resource value
+	}
+
+	return res;
+}
+
+//
+// fetch
+//
+// Makes sure the data for resource is available, or requests it if hasn't
+// already been requested.
+//
+ResourceManager.prototype.fetch = function fetch(dictname, id, callback)
+{
+	dbg.trace(dictname, id);
+
+	var dict = this.findOrCreateDictionary(dictname);
+
+	// This prints the overall time to get a resource to the console.
+	// var fullid = '@'+dictname+'['+id+']';
+	// console.time(fullid);
+	// return dict.fetchResource(id, function(e, r) {
+	//	console.timeEnd(fullid);
+	//	callback(e, r)
+	// });
+
+	return dict.fetchResource(id, callback);
+}
+
+//
+// findDictionary
+//
+// Gets the named dictionary.
+//
+ResourceManager.prototype.findDictionary = function findDictionary(dictname)
+{
+	dbg.trace(dictname);
+	return this.dicts[dictname];
+}
+
+//
+// findOrCreateDictionary
+//
+// Finds the named dictionary, or creates it.
+//
+ResourceManager.prototype.findOrCreateDictionary = function findOrCreateDictionary(dictname)
+{
+	dbg.trace(dictname);
+
+	if(!this.dicts[dictname])
+	{
+		this.dicts[dictname] = new ResourceDictionary(dictname, this);
+	}
+
+	return this.dicts[dictname];
+}
+
+//
+// createResource
+//
+// Creates and tracks a new Resource.
+//
+ResourceManager.prototype.createResource = function createResource(dictname, id)
+{
+	dbg.trace(dictname, id);
+
+	var dict = this.findOrCreateDictionary(dictname);
+
+	return dict ? dict.createResource(id) : undefined;
+}
+
+//
+// destroyResource
+//
+// Removes the given resource from the dictionary.
+//
+ResourceManager.prototype.destroyResource = function destroyResource(dictname, id)
+{
+	dbg.trace(dictname, id);
+
+	var dict = this.findDictionary(dictname);
+	if(dict)
+	{
+		dict.destroyResource(id)
+	}
+}
+
+//
+// destroyDictionary
+//
+// Removes the given dictionary from the ResourceManager
+//
+ResourceManager.prototype.destroyDictionary = function destroyDictionary(dictname)
+{
+	dbg.trace(dictname);
+
+	var dict = this.findDictionary(dictname);
+	if(dict)
+	{
+		dict.destroy();
+		delete this.dicts[dictname];
+	}
+}
+
+/*
+
+// Commented out because no one uses resolveAll,
+// and there's no point in having it compiled into the client.
+
+//
+// resolveAll
+//
+// Traverses the given object and resolves any fields which use the
+// given dictionary. If no dictionary is given or if it's *, then resolves
+// all references.
+//
+ResourceManager.prototype.resolveAll = function resolveAll(obj, dictname_to_match)
+{
+	dbg.trace(dictname_to_match);
+	for(var prop in obj)
+	{
+		if(typeof obj[prop] === 'string')
+		{
+			if(obj[prop][0] === '@')
+			{
+				var i = obj[prop].indexOf('[');
+
+				var dict = obj[prop].slice(1, i);
+				var key = obj[prop].slice(i+1, -1);
+
+				if(!dictname_to_match || dictname_to_match === dict || dictname_to_match === '*')
+				{
+					obj[prop] = this.fetch(dict, key);
+				}
+			}
+		}
+		else if(obj[prop] && typeof obj[prop] === 'object')
+		{
+			this.resolveAll(obj[prop], dictname_to_match);
+		}
+	}
+}
+
+*/
+
+///////////////////////////////////////////////////////////////////////////
+
+// Server requests
+
+/*
+
+// All server requests are commented out because the must be overridden for anything to work,
+// and there's no point in having it compiled into the client.
+
+//
+// requestResource
+//
+// Requests a resource from the server.
+//
+ResourceManager.prototype.requestResource = function requestResource(dictname, ref)
+{
+	log.assert(false, 'DERIVE FROM THIS OBJECT AND IMPLEMENT requestResource.');
+}
+
+//
+// getDefaultResource
+//
+// Requests a default, fully-populated resource for a particular dictionary
+// from the server.
+//
+
+ResourceManager.prototype.requestDefaultResource = function requestDefaultResource(dictname)
+{
+	log.assert(false, 'DERIVE FROM THIS OBJECT AND IMPLEMENT getDefaultResource.');
+}
+
+//
+// populateDictionary
+//
+// Requests the entire list of reference ids in a dictionary.
+//
+ResourceManager.prototype.requestDictionaryKeys = function requestDictionaryKeys(dictname)
+{
+	log.assert(false, 'DERIVE FROM THIS OBJECT AND IMPLEMENT requestDictionaryKeys.');
+};
+
+*/
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ResourceManager;
+
+// End of File

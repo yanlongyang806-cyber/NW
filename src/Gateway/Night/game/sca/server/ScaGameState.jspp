@@ -1,0 +1,726 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+
+var scaGlobals = require('./scaGlobals');
+var QuestState = require('./QuestState');
+
+//////////////////////////////////////////////////////////////////////////
+
+var s_activeGames = {};
+
+ScaGameState.scaTick = function()
+{
+	for(var sessionid in s_activeGames)
+	{
+		s_activeGames[sessionid].tick();
+	}
+
+	// This is purposely done with a delay rather than a setInterval in case
+	// things start to get slow, it'll always leave 2 seconds for normal
+	// processing. If anything time-critical goes into tick(), then we may want
+	// to put it into a separate interval.
+	setTimeout(ScaGameState.scaTick, 2 * 1000);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+function ScaGameState (clientSession)
+{
+	dbg.trace();
+
+	this.clientSession = clientSession;
+	clientSession.sca = this;
+
+	this.containerid = ''+clientSession.loginInfo.loginentity.id;
+
+	this.init();
+
+	s_activeGames[clientSession.sessionid] = this;
+	clientSession.requestGatewayGameData(this.containerid);
+}
+
+ScaGameState.prototype.init = function()
+{
+	this.state = ScaGameState.k_Init;
+
+	this.usedQuestDefs = {};
+
+	this.questSlots = {};
+		// The set of player quests available. (Shared quests aren't listed here.)
+
+	this.companions = {};
+		// The set of companions.
+
+	this.questSlotId = '';
+		// The slot ID of the currently chosen quest
+
+	this.questState = null;
+		// The state of the current quest
+
+	this.party = {
+		staminaTotal: 0,
+			// The maximum stamina the party has
+		stamina: 0,
+			// The party's current stamina
+		members: []
+			// The ids of the members in the party
+	};
+
+	this.newQuests = [];
+	this.lastQuest = null;
+		// These are used for client UI.
+
+	this.server = {};
+		// The raw structure from the server is stuck here. It should only be
+		// accessed in SaveLoad.
+}
+
+ScaGameState.get = function (clientSession)
+{
+	return s_activeGames[clientSession.sessionid];
+}
+
+ScaGameState.destroy = function (clientSession)
+{
+	dbg.trace();
+
+	var state = ScaGameState.get(clientSession);
+	if(state)
+		state.destroy();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.destroy = function ()
+{
+	dbg.trace();
+	this.saveGameToServer();
+
+	delete s_activeGames[this.clientSession.sessionid];
+
+	this.clientSession.sca = undefined;
+	this.clientSession = undefined;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.tick = function ()
+{
+	var dirty = false;
+
+	for(var id in this.companions)
+	{
+		var c = this.companions[id];
+		if(c.sleeping && c.ready < Date.now())
+		{
+			c.sleeping = false;
+			dirty = true;
+		}
+	}
+
+	if(dirty)
+	{
+		this.saveGameToServer();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.k_Init = 'k_Init';
+ScaGameState.k_ChooseQuest = 'k_ChooseQuest';
+ScaGameState.k_ChooseParty = 'k_ChooseParty';
+ScaGameState.k_ConfirmParty = 'k_ConfirmParty';
+ScaGameState.k_ChooseEncounter = 'k_ChooseEncounter';
+ScaGameState.k_ConfirmEncounter = 'k_ConfirmEncounter';
+ScaGameState.k_Rolling = 'k_Rolling';
+ScaGameState.k_Discard = 'k_Discard';
+ScaGameState.k_Combat = 'k_Combat';
+ScaGameState.k_CombatChoose = 'k_CombatChoose';
+ScaGameState.k_ChallengeSuccess = 'k_ChallengeSuccess';
+ScaGameState.k_ChallengeFailure = 'k_ChallengeFailure';
+ScaGameState.k_QuestSuccess = 'k_QuestSuccess';
+ScaGameState.k_QuestFailure = 'k_QuestFailure';
+ScaGameState.k_Wait = 'k_Wait';
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.start = function (newQuests)
+{
+	dbg.trace();
+
+	this.state = ScaGameState.k_ChooseQuest;
+
+	this.party = {
+		staminaTotal: 0,
+		stamina: 0,
+		members: []
+	};
+
+	this.questState = null;
+
+	this.chooseNewQuests(newQuests);
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.resetQuest = function ()
+{
+	dbg.trace();
+
+	if(this.state !== ScaGameState.k_ChooseParty
+		&& this.state !== ScaGameState.k_ConfirmParty)
+	{
+		return;
+	}
+
+	this.start(false);
+}
+
+ScaGameState.prototype.setQuest = function (id)
+{
+	dbg.trace();
+
+	if(this.state !== ScaGameState.k_ChooseQuest)
+		return;
+
+	this.questSlotId = id;
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.confirmQuest = function (id)
+{
+	dbg.trace();
+
+	if(this.state !== ScaGameState.k_ChooseQuest)
+		return;
+
+	if(id)
+		this.questSlotId = id;
+
+	if(this.questSlots[this.questSlotId])
+	{
+		this.questState = new QuestState(scaGlobals.questDefs.get(this.questSlots[this.questSlotId].questId), scaGlobals.layouts);
+	}
+	else if(scaGlobals.sharedQuests[this.questSlotId])
+	{
+		this.questState = new QuestState(scaGlobals.questDefs.get(scaGlobals.sharedQuests[this.questSlotId].questId), scaGlobals.layouts);
+	}
+
+	this.state = ScaGameState.k_ChooseParty;
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.addPartyMember = function (id)
+{
+	if(this.state !== ScaGameState.k_ChooseParty)
+	{
+		return;
+	}
+
+	if(id in this.companions
+		&& this.party.members.indexOf(id) < 0
+		&& !this.companions[id].istraining
+		&& this.companions[id].ready <= Date.now())
+	{
+		this.party.members.push(id);
+		this.party.staminaTotal += this.companions[id].def.hitPoints;
+	}
+
+	this.party.stamina = this.party.staminaTotal;
+
+	if(this.party.members.length === 4)
+		this.state = ScaGameState.k_ConfirmParty;
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.removePartyMember = function (id)
+{
+	if(this.state !== ScaGameState.k_ChooseParty
+		&& this.state !== ScaGameState.k_ConfirmParty)
+	{
+		return;
+	}
+
+	if(id in this.companions)
+	{
+		var i = this.party.members.indexOf(id);
+		if(i >= 0)
+		{
+			var c = this.party.members.splice(i, 1);
+			this.party.staminaTotal -= this.companions[c].def.hitPoints;
+		}
+	}
+
+	this.party.stamina = this.party.staminaTotal;
+
+	if(this.party.members.length < 4)
+		this.state = ScaGameState.k_ChooseParty;
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.confirmParty = function ()
+{
+	if(this.state !== ScaGameState.k_ConfirmParty)
+		return;
+
+	for(var i = 0; i < this.party.members.length; i++)
+	{
+		var c = this.companions[this.party.members[i]];
+		c.resting = false;
+	}
+
+	this.questState.populateEncounters();
+
+	this.state = ScaGameState.k_ChooseEncounter;
+
+	this.saveGameToServer();
+}
+
+ScaGameState.prototype.setEncounter = function (id)
+{
+	if(this.state !== ScaGameState.k_ChooseEncounter)
+		return;
+
+	if(this.questState.isEncounterAvailable(id))
+	{
+		this.questState.startEncounter(id);
+
+		this.state = ScaGameState.k_ConfirmEncounter;
+
+		this.saveGameToServer();
+	}
+}
+
+ScaGameState.prototype.confirmEncounter = function (id)
+{
+	if(this.state !== ScaGameState.k_ConfirmEncounter)
+		return;
+
+	if(!id)
+	{
+		this.state = ScaGameState.k_ChooseEncounter;
+		this.saveGameToServer();
+	}
+	else
+	{
+		var i = this.party.members.indexOf(id);
+		if(i >= 0
+			&& !this.companions[id].resting)
+		{
+			this.questState.roller = id;
+
+			this.companions[id].pile.roll();
+			this.state = ScaGameState.k_Rolling;
+
+			this.saveGameToServer();
+		}
+	}
+}
+
+ScaGameState.prototype.doneRolling = function ()
+{
+	if(this.state !== ScaGameState.k_Rolling)
+	{
+		return;
+	}
+
+	if(this.questState.roller)
+	{
+		var c = this.companions[this.questState.roller];
+		var haveOne = false;
+		for(var i = 0; i < c.pile.dice.length; i++)
+		{
+			if(this.questState.isUsable(c.pile.dice[i]))
+			{
+				haveOne = true;
+				break;
+			}
+		}
+
+		if(!haveOne)
+		{
+			this.state = ScaGameState.k_Discard;
+		}
+		else
+		{
+			this.state = ScaGameState.k_CombatChoose;
+		}
+
+		this.saveGameToServer();
+	}
+
+}
+
+ScaGameState.prototype.rollDice = function ()
+{
+	if(this.state !== ScaGameState.k_Combat)
+	{
+		return;
+	}
+
+	this.rollDiceInternal();
+}
+
+// Skips the state check
+ScaGameState.prototype.rollDiceInternal = function ()
+{
+	if(this.questState.roller)
+	{
+		this.companions[this.questState.roller].pile.roll();
+
+		this.state = ScaGameState.k_Rolling;
+		this.saveGameToServer();
+	}
+}
+
+ScaGameState.prototype.chooseDie = function (id, wildIdx)
+{
+	if(this.state == ScaGameState.k_Combat || this.state == ScaGameState.k_CombatChoose)
+	{
+		this.assignDie(id, wildIdx);
+	}
+	else if(this.state == ScaGameState.k_Discard)
+	{
+		this.discardDie(id);
+	}
+}
+
+ScaGameState.prototype.assignDie = function (id, wildIdx)
+{
+	if(this.state !== ScaGameState.k_Combat && this.state !== ScaGameState.k_CombatChoose)
+	{
+		return;
+	}
+
+	if(this.questState.roller)
+	{
+		var c = this.companions[this.questState.roller];
+		var die = c.pile.getDie(id);
+
+		this.state = ScaGameState.k_Combat;
+
+		if(die && !die.used && this.questState.isUsable(die))
+		{
+			if(die.roll.side.wild && wildIdx)
+				die.roll.side.setWildSide(wildIdx);
+
+			if(this.questState.assign(die))
+			{
+				this.state = ScaGameState.k_Rolling;
+			}
+
+			this.checkEncounterCompletion();
+
+			if(this.state == ScaGameState.k_Rolling)
+			{
+				this.rollDiceInternal();
+			}
+		}
+
+		this.saveGameToServer();
+	}
+}
+
+ScaGameState.prototype.discardDie = function (id)
+{
+	if(this.state !== ScaGameState.k_Discard)
+	{
+		return;
+	}
+
+	if(this.questState.roller)
+	{
+		var c = this.companions[this.questState.roller];
+		var die = c.pile.getDie(id);
+
+		die.use();
+		this.state = ScaGameState.k_Combat;
+
+		this.checkEncounterCompletion();
+
+		if(this.state == ScaGameState.k_Combat
+			|| this.state == ScaGameState.k_Rolling)
+		{
+			this.rollDiceInternal();
+		}
+
+		this.saveGameToServer();
+	}
+}
+
+ScaGameState.prototype.checkEncounterCompletion = function ()
+{
+	if(this.questState.isEncounterComplete())
+	{
+		// Challenge is successful
+		if(this.questState.encounter.challenge.def.reward)
+		{
+			this.clientSession.gsSession.grantReward(this.questState.encounter.challenge.def.reward, +this.questState.quest.tier, this.questState.roller);
+		}
+
+		if(this.questState.encounter.challenge.def.queueReward)
+		{
+			this.clientSession.gsSession.queueReward(this.questState.encounter.challenge.def.queueReward, +this.questState.quest.tier);
+		}
+
+		this.state = ScaGameState.k_ChallengeSuccess;
+		this.saveGameToServer();
+	}
+	else
+	{
+		var c = this.companions[this.questState.roller];
+		var haveUnused = false;
+		var haveOne = false;
+		for(var i = 0; i < c.pile.dice.length; i++)
+		{
+			if(!c.pile.dice[i].used)
+			{
+				haveUnused = true;
+				if(this.questState.isUsable(c.pile.dice[i]))
+				{
+					haveOne = true;
+				}
+			}
+		}
+
+		if(!haveUnused)
+		{
+			this.party.stamina--;
+			this.state = ScaGameState.k_ChallengeFailure;
+		}
+		else if(!haveOne)
+		{
+			this.state = ScaGameState.k_Rolling;
+		}
+	}
+}
+
+ScaGameState.prototype.combatDone = function ()
+{
+	if(this.state !== ScaGameState.k_ChallengeFailure
+		&& this.state !== ScaGameState.k_ChallengeSuccess)
+	{
+		return;
+	}
+
+	// Deal with resting
+	var c = this.companions[this.questState.roller];
+	c.resting = true;
+	this.questState.roller = undefined;
+
+	var haveOne = false;
+	for(var i = 0; i < this.party.members.length; i++)
+	{
+		c = this.companions[this.party.members[i]];
+		if(!c.resting)
+		{
+			haveOne = true;
+			break;
+		}
+	}
+
+	if(!haveOne)
+	{
+		for(i = 0; i < this.party.members.length; i++)
+		{
+			c = this.companions[this.party.members[i]];
+			c.resting = false;
+		}
+	}
+	// Done resting
+
+	this.state = ScaGameState.k_ChooseEncounter;
+
+	this.checkQuestCompletion();
+}
+
+
+ScaGameState.prototype.checkQuestCompletion = function ()
+{
+	if(this.questState.isComplete())
+	{
+		this.state = ScaGameState.k_QuestSuccess;
+		this.saveGameToServer();
+
+		// Apply rewards
+		if(this.questState.quest.reward)
+			this.clientSession.gsSession.grantReward(this.questState.quest.reward, +this.questState.quest.tier, this.questState.roller);
+
+		if(this.questState.quest.queueReward)
+			this.clientSession.gsSession.queueReward(this.questState.quest.queueReward, +this.questState.quest.tier);
+	}
+	else if(this.party.stamina <= 0)
+	{
+		this.state = ScaGameState.k_QuestFailure;
+		this.saveGameToServer();
+	}
+	else
+	{
+		this.saveGameToServer();
+	}
+}
+
+ScaGameState.prototype.questDone = function ()
+{
+	var i;
+
+	// This can be called even when not in k_QuestFailure or k_QuestSuccess
+	// if a player wants to quit the quest early.
+
+	if(this.state == ScaGameState.k_QuestFailure)
+	{
+		this.clientSession.gsSession.discardQueuedRewards();
+	}
+	else
+	{
+		this.clientSession.gsSession.claimQueuedRewards(this.party.members);
+
+		for(var id in this.questSlots)
+		{
+			if(this.questSlots[id].questId == this.questState.quest.id)
+			{
+				this.lastQuest = this.questSlots[id];
+				delete this.questSlots[id];
+				break;
+			}
+		}
+	}
+
+	// Sleepytime!
+	for(i = 0; i < this.party.members.length; i++)
+	{
+		var c = this.companions[this.party.members[i]];
+		c.ready = Date.now() + 5 * 60 * 1000;
+		c.sleeping = true;
+	}
+
+	this.start();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.debug = function (msg)
+{
+	switch(msg)
+	{
+		case 'win':
+			if(this.questState.encounter)
+			{
+				this.questState.encounter.challenge.isComplete = true;
+				this.questState.encounter.complete = true;
+				this.checkEncounterCompletion();
+
+				this.saveGameToServer();
+			}
+			break;
+
+		case 'lose':
+			if(this.questState.encounter)
+			{
+				var c = this.companions[this.questState.roller];
+				for(var i = 0; i < c.pile.dice.length; i++)
+				{
+					c.pile.dice[i].use();
+				}
+
+				this.checkEncounterCompletion();
+
+				this.saveGameToServer();
+			}
+			break;
+
+		case 'victory':
+		console.log('victory!')
+			this.questState.encounters[this.questState.end].challenge.isComplete = true;
+			this.checkQuestCompletion();
+			break;
+
+		case 'wakeup':
+			for(var id in this.companions)
+			{
+				this.companions[id].ready = Date.now();
+				this.companions[id].resting = false;
+				this.companions[id].sleeping = false;
+			}
+
+			this.saveGameToServer();
+			break;
+
+		case 'reset':
+			this.clientSession.gsSession.discardQueuedRewards();
+			this.init();
+			this.start(); // does a saveGameToServer
+			break;
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+ScaGameState.prototype.chooseNewQuests = function (refreshAll)
+{
+	dbg.trace();
+
+	if(refreshAll)
+		this.questSlots = {};
+
+	var newQuests = [];
+
+	for(var i = 0; i < scaGlobals.personalQuestList.length; i++)
+	{
+		var id = scaGlobals.personalQuestList[i].id;
+		var quest;
+
+		if(refreshAll || !this.questSlots[id])
+		{
+			var tags = scaGlobals.personalQuestList[i].tags;
+
+			quest = scaGlobals.questDefs.choose(tags, this.usedQuestDefs);
+
+			this.questSlots[id] = { questId: quest.id, samplereward: null, area: i };
+
+			newQuests = newQuests.concat(this.questSlots[id]);
+			this.newQuests = newQuests; // only reset this.newQuests if there are new quests
+		}
+
+		if(!this.questSlots[id].samplereward)
+		{
+			//Request the sample rewards for this quest
+			quest = scaGlobals.questDefs.get(this.questSlots[id].questId);
+			var sampleRewardTable = quest ? quest.sampleReward : undefined;
+
+			if(sampleRewardTable)
+				this.clientSession.gsSession.rewardRequest({ id: this.questSlots[id].questId, table: sampleRewardTable, tier: this.questSlots[id].tier });
+			else
+				this.questSlots[id].samplereward = {};
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+module.exports = ScaGameState; // needs to be first to allow monkey-patching below
+
+
+require('./ScaGameStateSaveLoad');
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

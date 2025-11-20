@@ -1,0 +1,53 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+var util = require('util');
+//
+// prepareCommandSafe(data)
+//
+// Parameter must be an object with:
+//   .cmd = 'CommandName'
+//   .params = { paramname: val, paramname: val, ... }
+//
+// Takes a command sent from the client to the server, validates it, and
+// generates a proper ServerCommand string.
+//
+// If something is wrong, this function throws an exception.
+//
+
+var autoCommands = require('cryptic/commands/autoCommands');
+var validateExecutor = require('cryptic/commands/validateExecutor');
+var emitExecutor = require('cryptic/commands/emitExecutor');
+
+function prepareCommandSafe(data)
+{
+	dbg.trace(data);
+
+	var s = data.cmd;
+
+	if(!data.cmd || !data.params)
+		throw new Error('Missing command name or parameters.');
+
+	if(!(data.cmd in autoCommands))
+		throw new Error(util.format('Command %s is not defined.', data.cmd));
+
+	var cmd = autoCommands[data.cmd];
+	var params = data.params;
+	for(var i = 0; i < cmd.length; i++)
+	{
+		var name = cmd[i]._name;
+		if(!(name in params))
+			throw new Error(util.format('Command %s from client is missing a required parameter (%s)', data.cmd, name));
+
+		cmd[i][name].exec(validateExecutor, params[name]);
+		s += ' ' + cmd[i][name].exec(emitExecutor, params[name]);
+	}
+
+	return s;
+}
+
+
+module.exports = prepareCommandSafe;
+
+// End of File

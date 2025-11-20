@@ -1,0 +1,215 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// RequestQueue
+//
+// A general callback queue, used for calling a given callback when a long
+// asynchronous operation is performed outside of the nodejs app.
+//
+// The requests can be rate limited, and can be forced to time out after a
+// certain amount of time. In either of these cases, the callback is called
+// with an appropriate error.
+//
+// The code is used in this fashion:
+//
+// var qThings = new RequestQueue(options);
+// function makeRequest(identifier, params, callback)
+// {
+//     if(qThings.addRequest(identifier, callback))
+//     {
+//         // Send request
+//     }
+// }
+//
+// function onRequestReturn(data)
+// {
+//     // Parse data to get idenifier, error, and result.
+//     qThings.resolve(identifier, error, result);
+// }
+//
+// RequestQueue#addRequest() returns true if it is a new request. If a request
+// for this identifier has already been made, or if the rate limit has been
+// reached, then it returns false.
+//
+var dbg = require('cryptic/dbg');
+
+//
+// new RequestQueue
+//
+// Creates a new RequestQueue. Options are given with an options object.
+// {
+//    absoluteMax: 0, // If zero, no absolute max is set. Otherwise, the total
+//                    //   number of requests that can be outstanding at one time.
+//    max: 0,         // If zero, no rate limiting is done. Otherwise, the maximum
+//                    //   number of allowed requests that accrue over time.
+//    fill: 1,        // How many allowed requests are added every update period.
+//    msPeriod: 1000  // How often the number of allowed requests is increased (by fill).
+//                    //   in miliseconds.
+//    msTimeout: 0    // If the request takes longer than this time to complete,
+//                    //   call the callback with failure. This is the MINUMUM
+//                    //   timeout time. The timeout is only checked every
+//                    //   msPeriod. Zero means no timeout.
+// }
+function RequestQueue(options)
+{
+	var optionsDefault = {
+		absoluteMax: 0,
+		max: 0,
+		fill: 1,
+		msPeriod: 1000,
+		msTimeout: 0
+	};
+
+	options = options || optionsDefault;
+
+	this.reqsMax = options.max || optionsDefault.max;
+	this.reqsFill = options.fill || optionsDefault.fill;
+	this.msPeriod = options.msPeriod || optionsDefault.msPeriod;
+	this.msTimeout = options.msTimeout || optionsDefault.msTimeout;
+
+	this.reqsAllowed = this.reqsMax;
+	this.rateLimited = this.reqsMax > 0;
+
+	this.reqs = {};
+
+	if(this.rateLimited || this.msTimeout)
+	{
+		setInterval(this.onTimer.bind(this), this.msPeriod);
+	}
+}
+
+//
+// addRequest
+//
+// Adds a request to the queue for the given key. If there is already a
+// request for key in the queue, then the callback is queued up and false
+// is returned. Otherwise, true is returned.
+//
+// One typically makes this call in a requestItem() sort of function.
+//
+RequestQueue.prototype.addRequest = function(key, callback)
+{
+	if(this.rateLimited && this.reqsAllowed <= 0)
+	{
+		dbg.trace('Too many requests: rate limited.');
+		callback(new Error('Too many requests.'), undefined);
+		return false;
+	}
+
+	if(this.absoluteMax && this.absoluteMax < Object.keys(this.reqs).length)
+	{
+		dbg.trace('Too many requests: hit absolute max outstanding.');
+		callback(new Error('Too many requests.'), undefined);
+		return false;
+	}
+
+	var bNewRequest = false;
+	if(!this.reqs[key])
+	{
+		this.reqs[key] = [];
+
+		if(this.rateLimited)
+			this.reqsAllowed -= 1;
+
+		bNewRequest = true;
+
+		dbg.trace('requesting', key);
+	}
+
+	var msTimeout = Date.now() + this.msTimeout;
+	this.reqs[key].push({ callback:callback, timeout: msTimeout });
+
+	dbg.trace('allowed', this.reqsAllowed);
+
+	return bNewRequest;
+}
+
+//
+// resolveRequest
+//
+// Calls all the callbacks queued for a given key with the error/data
+// provided. Removes all the callbacks from the queue for the key.
+//
+// On typically makes this call in a onItemReceived() sort of function.
+//
+RequestQueue.prototype.resolveRequest = function(key, error, data)
+{
+	if(this.reqs[key])
+	{
+		while(this.reqs[key].length > 0)
+		{
+			var req = this.reqs[key].pop();
+			req.callback(error, data);
+		}
+
+		delete this.reqs[key];
+	}
+}
+
+//
+// onTimer
+//
+// Internal function called every msPeriod.
+//
+RequestQueue.prototype.onTimer = function()
+{
+	this.reqsAllowed += this.reqsFill;
+	if(this.reqsAllowed > this.reqsMax)
+		this.reqsAllowed = this.reqsMax;
+
+	if(this.msTimeout)
+	{
+		dbg.trace('check timeouts');
+		var msNow = Date.now();
+		for(var key in this.reqs)
+		{
+			dbg.trace(key);
+			while(this.reqs[key].length > 0)
+			{
+				if(this.reqs[key][0].timeout < msNow)
+				{
+					dbg.trace('timeout');
+					var req = this.reqs[key].shift();
+					req.callback(new Error('timeout'), undefined);
+				}
+				else
+				{
+					dbg.trace('ok');
+					break;
+				}
+			}
+
+			if(this.reqs[key].length === 0)
+			{
+				delete this.reqs[key];
+			}
+		}
+	}
+}
+
+//
+// forceEmpty
+//
+// Empties the queue of all requests.
+//
+RequestQueue.prototype.forceEmpty = function()
+{
+	for(var key in this.reqs)
+	{
+		dbg.trace(key);
+		while(this.reqs[key].length > 0)
+		{
+			dbg.trace('forced');
+			var req = this.reqs[key].shift();
+			req.callback(new Error('forced'), undefined);
+		}
+	}
+
+	this.reqs = {};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = RequestQueue;
+
+// End of File

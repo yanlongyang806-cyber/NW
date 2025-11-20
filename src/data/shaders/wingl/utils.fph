@@ -1,0 +1,118 @@
+#macro NORMALIZE(V)
+	DP3 V.w, V, V;
+	RSQ V.w, V.w;
+	MUL V.xyz, V, V.w;
+#endmacro
+
+#macro NORMALIZE_SAFE(V, temp)
+	DP3 V.w, V, V;
+	SGE temp.w, -V.w, 0;
+	ADD V.w, temp.w, V.w;
+	RSQ V.w, V.w;
+	MUL V.xyz, V, V.w;
+#endmacro
+
+#macro MYALIAS(newName, oldName)
+	#ifdef DEBUG
+		TEMP newName;
+	#else
+		ALIAS newName=oldName;
+	#endif
+#endmacro	
+
+#macro REFLECT(reflect_vec, in_vec, normal)
+		DP3 reflect_vec.x, normal, in_vec;
+		MUL	reflect_vec, normal, reflect_vec.x;
+		MAD reflect_vec, reflect_vec, 2, -in_vec;
+#endmacro
+
+#macro RANGECOMPRESS(out, in)
+	# Range compress from [-1,1] to [0,1]
+	MAD out, 0.5, in, 0.5;
+#endmacro
+
+#macro RANGEEXPAND(out, in)
+	# Expand from [0,1] to [-1,1]
+	MAD out, in, 2.0, -1.0;
+#endmacro
+
+#macro MUL3(out, row0, row1, row2, in)
+	DP3 out.x, row0, in;
+	DP3 out.y, row1, in;
+	DP3 out.z, row2, in;
+#endmacro
+
+#macro MULMAT3(out, mat, in)
+	DP3 out.x, mat[0], in;
+	DP3 out.y, mat[1], in;
+	DP3 out.z, mat[2], in;
+#endmacro
+
+#macro MUL4(out, row0, row1, row2, row3, in)
+	DP4 out.x, row0, in;
+	DP4 out.y, row1, in;
+	DP4 out.z, row2, in;
+	DP4 out.w, row3, in;
+#endmacro
+
+#macro MULMAT4(out, mat, in)
+	DP4 out.x, mat[0], in;
+	DP4 out.y, mat[1], in;
+	DP4 out.z, mat[2], in;
+	DP4 out.w, mat[3], in;
+#endmacro
+
+#macro MUL43(out, row0, row1, row2, in)
+	DP4 out.x, row0, in;
+	DP4 out.y, row1, in;
+	DP4 out.z, row2, in;
+#endmacro
+
+#macro MULMAT43(out, mat, in)
+	DP4 out.x, mat[0], in;
+	DP4 out.y, mat[1], in;
+	DP4 out.z, mat[2], in;
+#endmacro
+
+#macro TOTANGENTSPACE(out, tangent, binormal, normal, in)
+	DP3  out.x, tangent, in;
+	DP3  out.y, binormal, in;
+	DP3  out.z, normal, in;
+#endmacro
+
+#macro FROMTANGENTSPACE(out, tangent, binormal, normal, in)
+	MUL out, in.x, tangent;
+	MAD out, in.y, binormal, out;
+	MAD out, in.z, normal, out;
+#endmacro
+
+#macro COMPUTEFOG(position_vs)
+	DP3    position_vs.w,      position_vs,  position_vs;
+	RSQ    position_vs.w,	   position_vs.w;
+	RCP    result.fogcoord.x,  position_vs.w;
+	MOV    position_vs.w,      1.0;
+#endmacro
+
+#macro EXTRACT_NORMAL(normal_vs, normal_xy, normal_z_negative)
+	MAD normal_xy.xy, 2, normal_xy, -1; # TODO remove this when we get floating point buffer for normals
+	MAD normal_vs.w, normal_xy.x, normal_xy.x, -1;
+	MAD normal_vs.w, normal_xy.y, normal_xy.y, normal_vs.w;
+	RSQ normal_vs.w, -normal_vs.w;
+	RCP normal_vs.z, normal_vs.w;
+	LRP normal_vs.z, normal_z_negative, -normal_vs.z, normal_vs.z;
+	MOV normal_vs.xy, normal_xy;
+#endmacro
+
+#macro EXTRACT_POSITION(position_vs, depth, screen_coords, inv_proj_mat, temp_screen_coords)
+	MAD temp_screen_coords.xy, 2, screen_coords, -1;
+	MOV temp_screen_coords.z, depth;
+	MOV temp_screen_coords.w, 1;
+	DP4 position_vs.x, inv_proj_mat[0], temp_screen_coords;
+	DP4 position_vs.y, inv_proj_mat[1], temp_screen_coords;
+	DP4 position_vs.z, inv_proj_mat[2], temp_screen_coords;
+	DP4 position_vs.w, inv_proj_mat[3], temp_screen_coords;
+	RCP temp_screen_coords.w, position_vs.w;
+	MUL position_vs.xyz, position_vs, temp_screen_coords.w;
+	MUL position_vs, position_vs, 0.5;
+#endmacro
+

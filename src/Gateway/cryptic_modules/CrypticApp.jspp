@@ -1,0 +1,49 @@
+'use strict';
+
+require('longjohn');
+
+var colors = require('colors');
+var log = require('cryptic/log');
+
+var bShuttingDown = false;
+function CrypticApp(name)
+{
+	process.appName = name;
+
+	var now = new Date();
+	console.log('');
+	console.log(colors.bold(process.appName + ' Started - ' + now.toUTCString()));
+	console.log('');
+
+	//
+	// Capture all exits and report them.
+	//
+	process.on('exit', function () {
+		log.error(process.appName + ' shutting down.');
+	});
+
+	process.on('uncaughtException', function (err) {
+		if(!bShuttingDown)
+		{
+			bShuttingDown = true;
+
+			setTimeout(function() {
+				console.log("Bye.");
+				process.abort();
+			}, 5000);
+
+			log.error(err);
+			log.error(process.appName + ' shutdown in 5 seconds.');
+			log.shutdown(err + '\n' + err.stack);
+		}
+		else
+		{
+			log.error(err);
+			log.error(process.appName + ' already shutting down.');
+		}
+	});
+}
+
+module.exports = CrypticApp;
+
+// End of File

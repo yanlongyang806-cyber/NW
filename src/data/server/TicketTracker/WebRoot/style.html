@@ -1,0 +1,218 @@
+<html>
+<head>
+<title>Ticket Tracker</title>
+<style type="text/css">
+<!--
+
+body {
+	background-color: #800000;
+}
+
+#maintable {
+	margin-left: 20px;
+	margin-right: 20px;
+	background-color: #ffffff;
+}
+
+.fullsummarytable {
+	border-width: 3px;
+	border-style: solid;
+	border-color: #aaaaaa;
+	border-spacing: 0px;
+	border-collapse: collapse;
+	padding: 3px;
+	width: 100%;
+}
+
+.summarytable {
+	border: 1px solid #aaaaaa;
+}
+
+.summaryheadtd {
+	font-weight: 900;
+	text-align: right;
+	border: 1px solid #aaaaaa;
+	background-color: #eeeeee;
+	padding: 2px;
+}
+
+.summaryheadtdend {
+	font-weight: 900;
+	text-align: left;
+	border: 1px solid #aaaaaa;
+	background-color: #eeeeee;
+	padding: 2px;
+}
+
+/* -----------------------------------*/
+
+.summaryoddtd {
+	text-align: right;
+	border: 1px solid #aaaaaa;
+	padding: 2px;
+}
+
+.summaryoddtdend {
+	text-align: left;
+	border: 1px solid #aaaaaa;
+	padding: 2px;
+}
+.summaryeventd {
+	text-align: right;
+	border: 1px solid #aaaaaa;
+	background-color: #eeeeee;
+	padding: 2px;
+}
+
+.summaryeventdend {
+	text-align: left;
+	border: 1px solid #aaaaaa;
+	background-color: #eeeeee;
+	padding: 2px;
+}
+
+/* -----------------------------------*/
+
+.summaryexpr {
+	font-weight: 900;
+	font-size: 0.7em;
+	color: #555500;
+}
+
+.summaryerr {
+	font-weight: 900;
+	font-size: 0.7em;
+	color: #aa0000;
+}
+
+.summarycallstack {
+	font-weight: 900;
+	font-size: 0.7em;
+	color: #005555;
+}
+
+.summaryfile {
+	font-weight: 900;
+	font-size: 0.7em;
+	color: #000000;
+}
+
+/* -----------------------------------*/
+
+.title {
+	color: #000000;
+	font-size: 1.2em;
+	font-weight: 900;
+}
+
+a {
+	text-decoration: none;
+	color: #773333;
+}
+
+.heading {
+	font-size: 1.0em;
+	font-weight: 900;
+	margin-top: 15px;
+	margin-bottom: 5px;
+}
+
+.entry {
+}
+
+.versionrange {
+}
+
+.count {
+}
+
+.callstack {
+	border: 1px dashed black;
+	padding: 5px;
+}
+
+.fileline {
+}
+
+.ppExecutableNames {
+}
+
+.ppUserNames {
+}
+
+.ppDayCounts {
+}
+
+.dumps {
+}
+
+.tableheading {
+	font-weight: 900;
+	font-size: 0.8em;
+}
+
+.callstackblamename {
+	font-size: 0.8em;
+	color: #aa0000;
+}
+
+.callstackblametime {
+	font-size: 0.8em;
+	color: #aa0000;
+}
+
+.summary {
+	font-size: 0.8em;
+	color: #666666;
+	padding-left: 20px;
+}
+.description {
+	font-size: 0.8em;
+	color: #0000CD;
+	padding-left: 20px;
+}
+
+#infoheading {
+	padding-left: 20px;
+}
+
+.hint {
+	font-size: 0.6em;
+}
+
+.formdata {
+	font-size: 0.8em;
+}
+
+.pFullError {
+	font-size: 0.8em;
+	font-family: Courier New;
+	white-space: pre;
+	border: 1px dashed #000000;
+	padding: 5px;
+}
+
+-->
+</style>
+<script type="text/javascript">
+function checkUncheckAll(checkbox)
+{
+	var pForm = checkbox.form, i = 0;
+	if (checkbox.name == 'selectall')
+	{
+		for(i=0; i<pForm.length; i++)
+		{
+			if(pForm[i].type == 'checkbox' && pForm[i].name != 'selectall')
+			{
+				pForm[i].checked = checkbox.checked;
+			}
+		}
+	} else
+	{
+		if (!checkbox.checked && pForm.selectall)
+		{
+			pForm.selectall.checked = false;
+		}
+	}
+}
+</script>

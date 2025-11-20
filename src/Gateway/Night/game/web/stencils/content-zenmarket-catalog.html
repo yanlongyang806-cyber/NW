@@ -1,0 +1,78 @@
+
+<div data-update="cstore">
+	<div data-if="!{._gotBundle}">
+		<div class="loading-block">
+			<h2>Loading...</h2>
+			<div class="loading-image"></div>
+		</div>
+	</div>
+	<div data-if="{._gotBundle}">
+
+		<h3 data-set-class="page-title {.name}" data-path=".displayname.str">[CATEGORY NAME]</h3>
+		<div data-set-class="zenmarket-splash {.name}">Welcome to the Zen Market!</div>
+
+		<ul data-path=".products">
+			<li class="zenmarket-entry" data-if="{.prereqsmet}">
+
+				<div data-if="{.price} le {$root().loginInfo.loginentity.zen}" data-set-class="icon-slot xlarge {.quality}">
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="quantity" data-if="{.count} gt 1">
+						x<span data-path=".count">10</span>
+					</span>
+					<a class="icon-hover-link" data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}">
+						<span class="icon-hover"></span>
+						<img data-if="{.new} && +{.price} ge +{.fullprice}" class="zenmarket-flag" src="/tex/Banner_Cstore_New_Small.png" alt="" />
+						<img data-if="+{.price} lt +{.fullprice}" class="zenmarket-flag" src="/tex/Banner_Cstore_Sale_Small.png" alt="" />
+					</a>
+				</div>
+				<div data-if="{.price} gt {$root().loginInfo.loginentity.zen}" data-set-class="icon-slot xlarge disabled {.quality}">
+					<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+					<span class="icon-overlay"></span>
+					<span class="quantity" data-if="{.count} gt 1">
+						x<span data-path=".count">10</span>
+					</span>
+					<a class="icon-hover-link" data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}">
+						<span class="icon-hover"></span>
+						<img data-if="{.new} && +{.price} ge +{.fullprice}" class="zenmarket-flag" src="/tex/Banner_Cstore_New_Small.png" alt="" />
+						<img data-if="+{.price} lt +{.fullprice}" class="zenmarket-flag" src="/tex/Banner_Cstore_Sale_Small.png" alt="" />
+					</a>
+				</div>
+
+				<div class="zenmarket-info-block">
+					<span data-if="{.new} && +{.price} ge +{.fullprice}" class="zenmarket-promo new">New!</span>
+					<span data-if="+{.price} lt +{.fullprice}" class="zenmarket-promo sale">On Sale!<!-- XX% off --></span><!-- SET EXACT PERCENTAGE HERE (replace "On Sale!" with "XX% off") -->
+
+					<h4 data-path=".hdef.displayname.str">Item Name</h4>
+
+					<p data-path=".hdef.description.str">Item Description</p>
+				</div>
+
+
+				<a data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}">More Info</a>
+
+				<div data-if="{.price} le {$root().loginInfo.loginentity.zen}" class="input-field button light with-arrow">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button data-set-data-url-silent="/zenmarket/{$root.queryParams.categoryName}/{.id}">
+						<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+						<span data-path=".price">200</span>
+						Buy
+					</button>
+				</div>
+				<div data-if="{.price} gt {$root().loginInfo.loginentity.zen}" class="input-field button disabled light with-arrow">
+					<div class="input-bg-left"></div>
+					<div class="input-bg-mid"></div>
+					<div class="input-bg-right"></div>
+					<button disabled>
+						<img src="/tex/Currency_Icon_Tiny_Cryptic.png" alt="" />
+						<span data-path=".price">200</span>
+						Buy
+					</button>
+				</div>
+			</li>
+		</ul>
+
+	</div>
+
+</div>

@@ -1,0 +1,40 @@
+name: Build GameServer
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.3.1
+
+      - name: Restore NuGet packages (if any)
+        run: |
+          if (Test-Path src/Core/GameServer/CoreGameServer.vcxproj) {
+            nuget restore src/Core/GameServer/CoreGameServer.vcxproj
+          }
+
+      - name: Build GameServerLib
+        run: msbuild src/CrossRoads/GameServerLib/GameServerLib.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+
+      - name: Build CoreGameServer
+        run: msbuild src/Core/GameServer/CoreGameServer.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+
+      - name: Build NNOGameServer
+        run: msbuild src/Night/GameServer/NNOGameServer.vcxproj /p:Configuration=Release /p:Platform=Win32 /m
+
+      - name: Upload GameServer.exe
+        uses: actions/upload-artifact@v3
+        with:
+          name: GameServer
+          path: src/Night/GameServer/Release/GameServer.exe
+

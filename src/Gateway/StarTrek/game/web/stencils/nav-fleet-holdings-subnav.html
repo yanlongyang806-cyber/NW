@@ -1,0 +1,12 @@
+<div class="button-group-holdings-nav desktopOnly">
+	<span style="display: block; text-align: center;"><span data-path="$root().guildproject.fleetcredits.$commify()">1000</span><img style="display: inline;" width=18 height=24 src="/tex/Numerics_Fleet_Credit.png" /></span>
+	<a id="nav_fleet_holdings_projects" class="button-nav highlighted" data-set-data-url="/holdings/{$root().queryParams.projectname}/overview/tier?tier=guildproject.states[.internalname=Fleet_Possession_{$root().queryParams.projectname}].categories[0].tiers[0]">
+		<span>Projects</span>
+	</a>
+	<a id="nav_fleet_holdings_provisions" class="button-nav" data-set-data-url="/holdings/{$root().queryParams.projectname}/provisions">
+		<span>Provisions</span>
+	</a>
+	<a id="nav_fleet_holdings_leaderboard" class="button-nav" data-set-data-url="/holdings/{$root().queryParams.projectname}/leaderboard">
+		<span>Leaderboard</span>
+	</a>
+</div>

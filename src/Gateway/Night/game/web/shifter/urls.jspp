@@ -1,0 +1,2267 @@
+module.exports = {
+	// Character Entity related URLs
+	'char': {
+
+
+
+
+
+
+		// MOBILE TEST PLAYGROUND ------------------------------------------
+
+		'/mobiletests': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'TEST',
+			extra: {
+				navid: 'test',
+				subnavid: 'test-size'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'test-mobile'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mobilescajpg': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'TEST',
+			extra: {
+				navid: 'test',
+				subnavid: 'test-size'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'test-mobilescajpg'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mobilescaplayground': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'TEST',
+			extra: {
+				navid: 'test',
+				subnavid: 'test-size'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'test-mobilescaplayground'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+
+
+
+
+
+		// Dungeon Dice ------------------------------------------
+		'/adventures': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-title'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca-title'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/overworld': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-overworld'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca'
+				},
+				{
+					selector: '#content_dungeons',
+					stencil: 'content-sca-overworld'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/chooseparty': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-chooseparty'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca'
+				},
+				{
+					selector: '#content_dungeons',
+					stencil: 'content-sca-chooseparty'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		'/adventures/confirmparty': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-confirmparty'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-confirmparty'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/explore': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-explore'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca'
+				},
+				{
+					selector: '#content_dungeons',
+					stencil: 'content-sca-explore'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/encounter': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-encounter'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-encounter'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/combat': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-combat'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca'
+				},
+				{
+					selector: '#content_dungeons',
+					stencil: 'content-sca-combat'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/combat/rolldice': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-combat-rolldice'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-combat-rolldice'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/combat/wild/{id}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-combat-wild'
+			},
+			params: {
+				'rootpath': 'gatewaygamedata.quest.roller.pile.dice[{id}]'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-combat-wild',
+					rootpath: 'rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/adventures/combat/victory': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-combat-victory'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-combat-victory'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/adventures/combat/defeat': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-combat-defeat'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-combat-defeat'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		'/adventures/leaveconfirm': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-leave-confirm'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-leave-confirm'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/adventures/leavedefeat': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-leave-defeat'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-leave-defeat'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/adventures/leavevictory': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-leave-victory'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-sca'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-sca-leave-victory'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		'/adventures/status': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons-status'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-sca'
+				},
+				{
+					selector: '#content_dungeons',
+					stencil: 'content-sca-status'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		'/adventures/dicetest1': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'dicetest'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/adventures/dicetest2': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Sword Coast Adventures',
+			extra: {
+				navid: 'dungeons',
+				subnavid: 'dungeons'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'dicetest2'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+
+		// Main Page ------------------------------------------
+		'/': {
+			str: 'structure-main',
+			loc: 'front',
+			title: 'Neverwinter Gateway',
+			extra: {
+				navid: 'overview'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-front'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		// Character Sheet ------------------------------------------
+		'/charactersheet': {
+			str: 'structure-main',
+			loc: 'section',
+			title: {
+				privileged: 'Character Sheet',
+				other: 'Player Profile'
+			},
+			extra: {
+				navid: 'charactersheet'
+			},
+			content: {
+				privileged: [
+					{
+						selector: '#content_login',
+						stencil: 'content-charactersheet'
+					}
+				],
+				other: [
+					{
+						selector: '#content_login',
+						stencil: 'content-charactersheet-other'
+					}
+				]
+			}
+		},
+		// Inventory ------------------------------------------
+		'/inventory': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-inventory'
+				},
+				{
+					selector: '#content_inventory',
+					stencil: 'content-inventory-bags'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory/item-sell': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-inventory-item-sell',
+					rootpath: 'item'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory/item-discard': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-inventory-item-discard',
+					rootpath: 'item'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory/item-open': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-inventory-item-open',
+					rootpath: 'item'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory/item-rewards': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-reward'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-loading'
+					// replaced after loading by 'content-modal-inventory-item-reward'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory/withdrawtips': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-bags'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-inventory-withdrawtips'
+					// replaced after loading by 'content-modal-inventory-item-reward'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory-professions': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-professions'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-inventory'
+				},
+				{
+					selector: '#content_inventory',
+					stencil: 'content-inventory-professions'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/inventory-companions': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Inventory',
+			extra: {
+				navid: 'inventory',
+				subnavid: 'inventory-companions'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-inventory'
+				},
+				{
+					selector: '#content_inventory',
+					stencil: 'content-inventory-companions'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		// Auction House ------------------------------------------
+		'/auctionhouse': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-browse'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-auctionhouse'
+				},
+				{
+					selector: '#content_auction',
+					stencil: 'content-auctionhouse-browse'
+				},
+				{
+					selector: '#item-details',
+					stencil: 'content-modal-auction-item-details'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-sell': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-sell'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-auctionhouse'
+				},
+				{
+					selector: '#content_auction',
+					stencil: 'content-auctionhouse-sell'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-buy': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-buy'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-auctionhouse'
+				},
+				{
+					selector: '#content_auction',
+					stencil: 'content-auctionhouse-buy'
+				},
+				{
+					selector: '#item-details',
+					stencil: 'content-modal-auction-item-details'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		// Professions ------------------------------------------
+		'/professions': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-professions'
+				},
+				{
+					selector: '#content_professions',
+					stencil: 'content-professions-overview'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions/vendor': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-vendor'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-professions'
+				},
+				{
+					selector: '#content_professions',
+					stencil: 'content-professions-vendor'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions-tasks': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-tasks'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-professions'
+				},
+				{
+					selector: '#content_professions',
+					stencil: 'content-professions-overview'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions-tasks/{category}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-tasklist'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'category': '.craftinglist.craft_{category}',
+				'categoryName': '{category}',
+				'subnavid': '{category}'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-professions'
+				},
+				{
+					selector: '#content_professions',
+					stencil: 'content-professions-tasklist',
+					rootpath: 'category'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions-tasks/{category}/{taskid}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-details'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'task': '.craftingItem',
+				'taskName': '{taskid}',
+				'categoryName': '{category}',
+				'subnavid': '{category}'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-professions'
+				},
+				{
+					selector: '#content_professions',
+					stencil: 'content-professions-details'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		// Mail ------------------------------------------
+		'/mail': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-mail'
+				},
+				{
+					selector: '#content_mail',
+					stencil: 'content-mail-inbox'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mail-compose': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-compose'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-mail'
+				},
+				{
+					selector: '#content_mail',
+					stencil: 'content-mail-compose'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		// Zen Market ------------------------------------------
+
+		'/zenmarket': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-front'
+			},
+			params: {
+				'category': '.cstore.categories[name=Mainfeatured]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-zenmarket'
+				},
+				{
+					selector: '#content_zenmarket',
+					stencil: 'content-zenmarket-catalog',
+					rootpath: 'category'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/zenmarket/{category}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'category': '.cstore.categories[name={category}]',
+				'categoryName': '{category}',
+				'subnavid': '{category}'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-zenmarket'
+				},
+				{
+					selector: '#content_zenmarket',
+					stencil: 'content-zenmarket-catalog',
+					rootpath: 'category'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+		// Astral Diamond Exchange  ------------------------------------------
+		'/exchange': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-buyzen'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-exchange'
+				},
+				{
+					selector: '#content_exchange',
+					stencil: 'content-exchange-buyzen'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/exchange-sellzen': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-sellzen'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-exchange'
+				},
+				{
+					selector: '#content_exchange',
+					stencil: 'content-exchange-sellzen'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/exchange-listings': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-listings'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-exchange'
+				},
+				{
+					selector: '#content_exchange',
+					stencil: 'content-exchange-listings'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/exchange-log': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-log'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-exchange'
+				},
+				{
+					selector: '#content_exchange',
+					stencil: 'content-exchange-log'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+		// Style Guide ------------------------------------------
+		'/styleguide': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Style Guide',
+			extra: {
+				navid: 'styleguide',
+				subnavid: 'styleguide'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-styleguide'
+				}
+			],
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		// Modals ------------------------------------------
+
+		// AUCTION HOUSE - BROWSE (SEARCH) ------------------------------------------
+
+		'/auctionhouse/placebid': {
+			params: {
+				'rootpath': 'auctionList.{list}.list.auctionlots[{idx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-browse'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-bid',
+					rootpath: 'rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-buy/placebid': {
+			duplicateof: '/auctionhouse/placebid'
+		},
+
+		'/auctionhouse/buyout': {
+			params: {
+				'rootpath': 'auctionList.{list}.list.auctionlots[{idx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-browse'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-buyout',
+					rootpath: 'rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-buy/buyout': {
+			duplicateof: '/auctionhouse/buyout'
+		},
+
+		// AUCTION HOUSE - MY CONSIGNMENTS (SELL) ------------------------------------------
+
+		'/auctionhouse-sell/removeitem': {
+			params: {
+				'rootpath': 'auctionList.{list}.list.auctionlots[{idx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-sell'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-remove',
+					rootpath: 'rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-sell/select-item': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-sell'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-select-item'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-sell/select-item/consignment-form': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-sell'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-consignment-form'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/auctionhouse-sell/remove-details': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Auction House',
+			extra: {
+				navid: 'auctionhouse',
+				subnavid: 'auctionhouse-sell'
+			},
+			params: {
+				'path': 'auctionList.ownedlots.list.auctionlots[{idx}]'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-auction-remove-details',
+					rootpath: 'path'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		// ZEN MARKET MODALS -----------------------------------------
+
+		'/zenmarket/buyzen': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-buyzen'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/zenmarket/{category}/buyzen': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-buyzen',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/zenmarket/{category}/{item}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-item',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/zenmarket/{category}/{item}/confirmpurchase': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-item-confirmpurchase',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/zenmarket/{category}/{item}/screenshots': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Zen Market',
+			extra: {
+				navid: 'zenmarket',
+				subnavid: 'zenmarket-catalog'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[id={item}]',
+				'categoryName': '{category}'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-item-screenshots',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		// ASTRAL DIAMOND EXCHANGE MODALS -----------------------------------------
+
+		'/exchange/postoffer': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-buyzen'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-exchange-buyzen-postoffer'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/exchange-sellzen/postoffer': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-sellzen'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-exchange-sellzen-postoffer'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/exchange/withdraw': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-buyzen'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-exchange-withdraw'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/exchange-sellzen/withdraw': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-sellzen'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-exchange-withdraw'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/exchange-listings/cancel/{orderid}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Astral Diamond Exchange',
+			extra: {
+				navid: 'exchange',
+				subnavid: 'exchange-listings'
+			},
+			params: {
+				'Rootpath': 'exchangeaccountdata.openorders[orderid={orderid}]'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-exchange-cancel',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+		// PROFESSIONS MODALS ------------------------------------------
+
+		'/professions/vendor/{storename}/{storeindex}': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-vendor'
+			},
+			params: {
+				'Rootpath': '.vendor',
+				'storeName': '{storename}',
+				'storeIndex': '{storeindex}'
+
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-vendor-amount',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+		'/professions/buypack': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+			},
+			params: {
+				'Rootpath': '.cstore.products[key=Crafting_Pack_Booster_1]'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-medium'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-item',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions/buypack/confirmpurchase': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+				// true subnavid is in params for this URL
+			},
+			params: {
+				'Rootpath': '.cstore.products[key=Crafting_Pack_Booster_1]'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-zenmarket-item-confirmpurchase',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions/finish-now': {
+			redirect: '/professions'
+		},
+		'/professions/finish-now/{assignmentIdx}': {
+			params: {
+				'Rootpath': 'ent.main.itemassignments.assignments[{assignmentIdx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-finish-now',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions/collect-reward': {
+			redirect: '/professions'
+		},
+		'/professions/collect-reward/{assignmentIdx}': {
+			params: {
+				'Rootpath': 'ent.main.itemassignments.assignments[{assignmentIdx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-collect-reward',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions/cancel-task': {
+			redirect: '/professions'
+		},
+		'/professions/cancel-task/{assignmentIdx}': {
+			params: {
+				'Rootpath': 'ent.main.itemassignments.assignments[{assignmentIdx}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-overview'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-cancel',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/professions-tasks/{category}/{taskid}/select-required-item/{slotIdx}': {
+			params: {
+				'Rootpath': 'craftingdetail.required[{slotIdx}]',
+				'taskName': '{taskid}',
+				'categoryName': '{category}'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-details',
+				complexpath: true
+				// use "complexpath" if the data-url has multiple wildcards to traverse
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-select-item',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+		'/professions-tasks/{category}/{taskid}/select-optional-item/{slotIdx}': {
+			params: {
+				'Rootpath': 'craftingdetail.optional[{slotIdx}]',
+				'taskName': '{taskid}',
+				'categoryName': '{category}'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Professions',
+			extra: {
+				navid: 'professions',
+				subnavid: 'professions-details',
+				complexpath: true
+				// use "complexpath" if the data-url has multiple wildcards to traverse
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-professions-select-item',
+					rootpath: 'Rootpath'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+
+
+
+
+
+
+
+		// MAIL MODALS ------------------------------------------
+		'/mail/message': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-mail-message'
+				}
+			],
+
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mail/delete-message': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-mail-delete'
+				}
+			],
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mail/message/delete-message': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-mail-delete'
+				}
+			],
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mail/report-spam': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-mail-spam'
+				}
+			],
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		},
+		'/mail/message/report-spam': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Mail',
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-mail-spam'
+				}
+			],
+			extra: {
+				navid: 'mail',
+				subnavid: 'mail-inbox'
+			},
+			modal: true,
+			ifNotPrivilegedRedirect: '/charactersheet'
+		}
+	},
+	'guild': {
+		// Guild ------------------------------------------
+		'/': {
+			str: 'structure-main',
+			loc: 'section',
+			title: {
+				privileged: 'Guild',
+				other: 'Guild Profile'
+			},
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-overview',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: {
+				privileged: [
+					{
+						selector: '#content_login',
+						stencil: 'content-guild'
+					},
+					{
+						selector: '#content_guild',
+						stencil: 'content-guild-overview'
+					}
+				],
+				other: [
+					{
+						selector: '#content_login',
+						stencil: 'content-guild-overview-other'
+					}
+				]
+			}
+		},
+
+
+
+
+
+		'/news': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-news',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-news'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+
+		'/events': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-events',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-events'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		// THIS ONE NEEDS TEH FANCY {WILDCARD} HOOKUPS WHEN WE HAVE REAL DATAS
+		'/events/details/{detailid}': {
+			params: {
+				'Rootpath': 'guild.events[id={detailid}]'
+			},
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-events'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-events-details',
+					rootpath: 'Rootpath'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		/* not for launch
+		'/events/create': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-events'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-events-edit'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/events/edit': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-events'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-events-edit'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		*/
+		'/roster': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-roster',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-roster'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/info': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-info',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-info'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		}
+		/* NOT FOR LAUNCH
+		'/info/edit': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-info'
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-info-edit'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/settings': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'guild',
+				subnavid: 'guild-settings',
+				guildpage: true
+				// used to enable direct "Back" link on top-level Guild pages only
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-guild'
+				},
+				{
+					selector: '#content_guild',
+					stencil: 'content-guild-settings'
+				}
+			],
+			ifNotPrivilegedRedirect: '/'
+		},
+		*/
+
+
+		// GUILD MODALS ------------------------------------------
+		/*	NOT FOR LAUNCH
+		'/modal-guild-events-cancel': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					stencil: '#modal_content',
+					selector: 'content-modal-guild-events-cancel'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/modal-guild-events-more': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-guild-events-more'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/modal-guild-events-rsvp': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-guild-events-rsvp'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/modal-guild-roster-invite': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					stencil: '#modal_content',
+					selector: 'content-modal-guild-roster-invite'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/modal-guild-roster-kick': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-guild-roster-kick'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		},
+		'/modal-guild-roster-leave': {
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-guild-roster-leave'
+				}
+			],
+			modal: true,
+			ifNotPrivilegedRedirect: '/'
+		}
+		*/
+
+
+	},
+	// URLs that have no entity focus ------------------------------------------
+	'noent': {
+		'/': {
+			'redirect': '/characterselect'
+		},
+		// Login ----------
+		'/login': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Neverwinter Gateway',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-login'
+				}
+			]
+		},
+		'/logout': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Neverwinter Gateway',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-login'
+				}
+			]
+		},
+
+		'/characterselect': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Character Select',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-characterselect'
+				}
+			],
+			characterselect: true
+		},
+		'/characterselect/modal': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Character Select',
+			extra: {
+				navid: 'characterselect',
+				subnavid: 'none'
+			},
+			params: {
+				'isModal': 1
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-large'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-characterselect'
+				}
+			],
+			characterselect: true,
+			modal: true
+		},
+		'/nocharacters': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Character Select',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-nocharacters'
+				}
+			]
+		},
+		'/loading': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Loading',
+			extra: {
+				navid: 'loading',
+				isLoadingScreen: true
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading'
+				}
+			]
+		},
+		'/loading/char': {
+			str: 'structure-main',
+			loc: 'front',
+			title: 'Neverwinter Gateway',
+			extra: {
+				navid: 'loading',
+				isLoadingScreen: true
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-char'
+				}
+			]
+		},
+		'/loading/guild': {
+			str: 'structure-main',
+			loc: 'section',
+			title: 'Guild',
+			extra: {
+				navid: 'loading',
+//				subnavid: 'guild-overview',
+				isLoadingScreen: true
+			},
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-loading-guild'
+				}
+			]
+		},
+		'/error': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Error',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-error'
+				}
+			]
+		},
+		'/accountguard': {
+			str: 'structure-main',
+			loc: 'login',
+			title: 'Account Guard',
+			content: [
+				{
+					selector: '#content_login',
+					stencil: 'content-accountguard'
+				}
+			]
+		},
+		'/disconnected': {
+			extra: {
+				navid: 'disconnected'
+			},
+			content: [
+				{
+					selector: '#modal',
+					stencil: 'modal-small'
+				},
+				{
+					selector: '#modal_content',
+					stencil: 'content-modal-disconnected'
+				}
+			],
+			modal: true
+		}
+	}
+};

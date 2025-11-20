@@ -1,0 +1,527 @@
+'use strict';
+
+var GSConnection = module.exports;
+
+///////////////////////////////////////////////////////////////////////////
+//
+// GSConnection
+//
+//
+var g_config = require('cryptic/configure')();
+var util = require('cryptic/cutils');  // for util.inherits
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+
+var CrypticProtocolConnection = require('cryptic/CrypticProtocolConnection');
+var Packet = require('cryptic/packet');
+
+var proxy = require('./ProxyStartup');
+
+
+var CMD_PING = 1;
+var CMD_CONNECTION = 0x10;
+var CMD_SESSION = 0x20;
+
+///////////////////////////////////////////////////////////////////////////
+
+var RequestQueue = require('cryptic/RequestQueue');
+
+///////////////////////////////////////////////////////////////////////////
+
+var GSConnection = function(ip, port)
+{
+	dbg.trace();
+
+	CrypticProtocolConnection.call(this);
+
+	this.shard = '<unknown>'; // the shard name for the GS we're talking to. (Filled in at connection)
+	this.ipGatewayServer = ip;
+	this.portGatewayServer = port || g_config.portGatewayServer;
+
+	this.qCharacters = new RequestQueue();
+	this.qGuilds = new RequestQueue();
+	this.qOnlining = new RequestQueue({ max: 5, fill: 1});
+
+	this.reconnect = false;
+	this.reconnectID = undefined;
+	this.reconnectTime = 0;
+}
+util.inherits(GSConnection, CrypticProtocolConnection);
+
+///////////////////////////////////////////////////////////////////////////
+
+GSConnection.prototype.attemptConnection = function()
+{
+	dbg.trace();
+
+	dbg('Attempting to connect to remote GatewayServer.');
+
+	if(this.ipGatewayServer && this.portGatewayServer)
+	{
+		this.connect(this.ipGatewayServer, this.portGatewayServer);
+		dbg('\tTrying:', this.ipGatewayServer, this.portGatewayServer);
+	}
+	else
+	{
+		throw(new Error('No GatewayServer ip address or port specified.'));
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSConnection.prototype.onConnected = function onConnected()
+{
+	dbg.trace();
+
+	this.requestHello(g_config.shardName);
+};
+
+GSConnection.prototype.onConnectionTimeout = function onConnectionTimeout()
+{
+	dbg.trace();
+
+	this.reconnect = true;
+};
+
+GSConnection.prototype.onDisconnected = function onDisconnected()
+{
+	dbg.trace();
+
+	log.log('Disconnected from '+this.shard+' shard at '+this.ipGatewayServer+':'+this.portGatewayServer+'.');
+
+	if(this.reconnect)
+	{
+		var self = this;
+		this.reconnect = false;
+
+		log.log('Reconnecting in '+this.reconnectTime/1000+' seconds.');
+
+		this.reconnectID = setTimeout(function() { self.reconnectID = undefined; self.attemptConnection(); }, this.reconnectTime);
+
+		this.reconnectTime += 5000;
+		if(this.reconnectTime > 60 * 1000)
+			this.reconnectTime = 60 * 1000;
+	}
+	else if(typeof this.reconnectID !== 'undefined')
+	{
+		clearTimeout(this.reconnectID);
+		this.reconnectID = undefined;
+	}
+
+	this.qCharacters.forceEmpty();
+	this.qGuilds.forceEmpty();
+	this.qOnlining.forceEmpty();
+};
+
+///////////////////////////////////////////////////////////////////////////
+
+GSConnection.prototype.onPacket = function onPacket(pkt)
+{
+	dbg.trace();
+
+	var cmd = pkt.readUInt8();
+	var msg;
+	var fn;
+	switch(cmd)
+	{
+		case CMD_PING:
+			dbg('ping command received.');
+			break;
+
+		case CMD_CONNECTION:
+			msg = pkt.readString();
+			fn = 'on'+msg;
+
+			// First see if the connection handles this message. If it
+			//   doesn't, emit it as an event for other listeners to handle.
+			if(typeof this[fn] === 'function')
+			{
+				dbg.trace('handling '+msg);
+				this[fn].call(this, pkt);
+			}
+			else
+			{
+				dbg.trace('conn emit '+msg);
+				this.emit(msg, pkt);
+			}
+			break;
+
+		case CMD_SESSION:
+			var magic = pkt.readUInt32();
+			var idxServer = pkt.readUInt32();
+			msg = pkt.readString();
+			fn = 'on'+msg;
+
+			var clientSession = proxy.clientSessionManager.findClientSessionByMagic(magic);
+
+			// Emit the message as an event to the session.
+			if(clientSession && clientSession.gsSession)
+			{
+				var gsSession = clientSession.gsSession;
+				if(typeof gsSession[fn] === 'function')
+				{
+					dbg.trace('session handling '+msg);
+					gsSession[fn].call(gsSession, pkt);
+				}
+				else
+				{
+					dbg.trace('session emit '+msg);
+					this.emit(msg, gsSession, pkt);
+				}
+			}
+			break;
+
+		default:
+			pkt.rewind();
+			dbg.trace('emit packet');
+			this.emit('packet', pkt);
+			break;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSConnection.prototype.requestCreateSession = function requestCreateSession(session)
+{
+	dbg.trace();
+
+	var pkt = this.startConnectionPacket('Proxy_RequestCreateSession');
+	pkt.sendUInt32(session.magic);
+	pkt.sendUInt32(session.idAccount);
+	pkt.sendUInt32(session.locale.crypticLanguage);
+	pkt.endPacket();
+}
+
+GSConnection.prototype.requestDestroySession = function requestDestroySession(session)
+{
+	dbg.trace();
+
+	var pkt = this.startConnectionPacket('Proxy_RequestDestroySession');
+	pkt.sendUInt32(session.magic);
+	pkt.sendUInt32(session.idxServer);
+	pkt.endPacket();
+}
+
+GSConnection.prototype.requestConnectionPing = function requestConnectionPing(message)
+{
+	dbg.trace();
+
+	message = message || '';
+
+	var pkt = this.startConnectionPacket('Proxy_ConnectionPing');
+	pkt.sendString(message);
+	pkt.endPacket();
+}
+
+GSConnection.prototype.requestHello = function requestHello(shardName)
+{
+	dbg.trace();
+
+	var pkt = this.startConnectionPacket('Proxy_RequestHello');
+	pkt.sendString(shardName);
+	pkt.endPacket();
+}
+
+GSConnection.prototype.sendLog = function sendLog(logname, message)
+{
+
+	message = message || '';
+
+	var pkt = this.startConnectionPacket('Proxy_Log');
+	pkt.sendString(logname);
+	pkt.sendString(message);
+	pkt.endPacket();
+}
+
+GSConnection.prototype.sendPerf = function sendPerf()
+{
+
+	var pkt = this.startConnectionPacket('Proxy_Perf');
+	pkt.sendString(perf.reportTextParser().join('\n'));
+	pkt.endPacket();
+}
+
+GSConnection.prototype.sendShutdownWithMessage = function sendShutdownWithMessage(msg)
+{
+	dbg.trace();
+
+	var pkt = this.startConnectionPacket('Proxy_ShutdownMessage');
+	pkt.sendString(msg);
+	pkt.endPacket();
+}
+
+
+GSConnection.prototype.requestCharactersForAccountName = function requestCharactersForAccountName(accountName, callback)
+{
+	dbg.trace(accountName);
+
+	if(this.qCharacters.addRequest(accountName, callback))
+	{
+		var pkt = this.startConnectionPacket('Proxy_RequestCharactersForAccountName');
+		pkt.sendString(accountName);
+		pkt.endPacket();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+GSConnection.prototype.requestGuildIdForName = function requestGuildIdForName(guildName, callback)
+{
+	dbg.trace(guildName);
+
+	if(this.qGuilds.addRequest(guildName, callback))
+	{
+		var pkt = this.startConnectionPacket('Proxy_RequestGuildIdForName');
+		pkt.sendString(guildName);
+		pkt.endPacket();
+	}
+}
+
+GSConnection.prototype.requestOnlineEntityByName = function requestOnlineEntityByName(name, callback)
+{
+	dbg.trace(name);
+
+	if(this.qOnlining.addRequest(name, callback))
+	{
+		var pkt = this.startConnectionPacket('Proxy_RequestOnlineEntityByName');
+		pkt.sendString(name);
+		pkt.endPacket();
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+
+//
+// Receiving
+//
+
+GSConnection.prototype.onServer_CreateSession = function onServer_CreateSession(pkt)
+{
+	dbg.trace();
+
+	var magic = pkt.readUInt32();
+	var idxServer = pkt.readUInt32();
+
+	var clientSession = proxy.clientSessionManager.findClientSessionByMagic(magic);
+	if(clientSession && clientSession.gsSession)
+	{
+		var gsSession = clientSession.gsSession;
+		gsSession.idxServer = idxServer;
+
+		log.log('CreateGSSession: account ' + gsSession.idAccount
+			+ ', addr ' + clientSession.address
+			+ ', magic '+ gsSession.magic
+			+ ', sid ' + clientSession.sessionid);
+
+		if(gsSession.cbCreate)
+		{
+			dbg.trace('Create callback being made.');
+			gsSession.cbCreate(gsSession);
+		}
+		else
+		{
+			dbg.trace('No callback', gsSession);
+		}
+	}
+	else
+	{
+		log.error('GSConnection.onServer_CreateSession: unable to find session.', magic);
+
+		// Tell the server that we don't want the session it just sent.
+		pkt = this.startConnectionPacket('Proxy_RequestDestroySession');
+		pkt.sendUInt32(magic);
+		pkt.sendUInt32(idxServer);
+		pkt.endPacket();
+	}
+}
+
+GSConnection.prototype.onServer_DestroySession = function onServer_DestroySession(pkt)
+{
+	dbg.trace();
+	// This shouldn't happen.
+}
+
+GSConnection.prototype.onServer_ConnectionPing = function onServer_ConnectionPing(pkt)
+{
+	dbg.trace();
+
+	var s = pkt.readString();
+
+	dbg("connection ping received", s);
+}
+
+GSConnection.prototype.onServer_Hello = function onServer_Hello(pkt)
+{
+	dbg.trace();
+
+	if(g_config.useClustering)
+	{
+		this.shard = pkt.readString().toLowerCase();
+		log.log('Hello from shard "' + this.shard + '"');
+	}
+}
+
+GSConnection.prototype.onServer_Lock = function onServer_Lock(pkt)
+{
+	dbg.trace();
+
+	g_config.locked = pkt.readUInt32()
+	log.log("Gateway Proxy has been " + (g_config.locked ? "locked." : "unlocked."));
+}
+
+GSConnection.prototype.onServer_Broadcast = function onServer_Broadcast(pkt)
+{
+	dbg.trace();
+
+	var title = pkt.readString();
+	var string = pkt.readString();
+
+	proxy.clientSessionManager.forAllClientSessions(function(session) {
+		dbg.trace();
+		if(session.sockClient)
+			session.sockClient.emit('Proxy_Message', { title: title, string: string });
+	});
+}
+
+GSConnection.prototype.onServer_CharactersForAccountName = function onServer_CharactersForAccountName(pkt)
+{
+	dbg.trace();
+
+	var chars;
+	var error;
+
+	var accountName = pkt.readString();
+	var json = pkt.readString();
+	try
+	{
+		chars = JSON.parse(json);
+
+		// This is what comes back from the server.
+
+		// { accountid: 1,
+		//   missingshardnames: [],
+		//   characterchoices:
+		//    [ { containerid: 3,                  - REQUIRED
+		//        accountid: 1,                    - REQUIRED
+		//        ownertype: 'OBJECTDB',
+		//        ownerid: 1,
+		//        createdtime: 0,
+		//        level: 0,
+		//        fixupversion: 0,
+		//        lastplayedtime: 0,
+		//        virtualshardid: 0,
+		//        shardname: 'Sposniewski',
+		//        pubaccountname: '',              - REQUIRED
+		//        privaccountname: '',
+		//        savedname: 'Six O. Two',         - REQUIRED
+		//        extradata1: '',
+		//        extradata2: '',
+		//        extradata3: '',
+		//        extradata4: '',
+		//        extradata5: '',
+		//        oldbadname: '',
+		//        isoffline: 1,                    - REQUIRED
+		//        isdeleted: 0,                    - REQUIRED
+		//        isugceditallowed: 0,
+		//        hasbadname: 0,
+		//        detailrequested: 0,
+		//        detailreceived: 0,
+		//        issaveloginrecommended: 0 },
+		//        ...
+		//     ]
+		//  }
+
+		// Fill in the pubaccountname because this call doesn't do so.
+		chars.characterchoices.map(function(choice) { choice.pubaccountname = accountName; } );
+	}
+	catch(e)
+	{
+		log.error('Invalid JSON from server for character list!', json);
+		var fs = require('fs');
+		fs.writeFile('badchars.json', json);
+		error = new Error('Invalid JSON');
+	}
+
+	this.qCharacters.resolveRequest(accountName, error, chars);
+}
+
+GSConnection.prototype.onServer_GuildIdForName = function onServer_GuildIdForName(pkt)
+{
+	dbg.trace();
+
+	var name = pkt.readString();
+	var containerID = pkt.readUInt32();
+
+	this.qGuilds.resolveRequest(name, undefined, containerID);
+}
+
+GSConnection.prototype.onServer_Onlined = function onServer_Onlined(pkt)
+{
+	dbg.trace();
+
+	var name = pkt.readString();
+	var containerID = pkt.readUInt32();
+
+	this.qOnlining.resolveRequest(name, undefined, containerID);
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+//
+// startSessionPacket
+//
+// Used to create a packet object for a session command
+//
+GSConnection.prototype.startSessionPacket = function startSessionPacket(session, cmd)
+{
+	var pkt = new Packet(this);
+	if(this.state === 'connected' && session.idxServer < 0xffffffff)
+	{
+		pkt.startPacket(CMD_SESSION);
+		pkt.sendString(cmd);
+		pkt.sendUInt32(session.magic);
+		pkt.sendUInt32(session.idxServer);
+		return pkt;
+	}
+	else
+	{
+		log.error("Unable to start session packets when disconnected or session isn't ready.", this.state, session.magic, session.idxServer);
+		log.error((new Error()).stack);
+
+		// This returns a packet just to avoid a huge number if error checks.
+		// The packet will get filled up, but will never be sent.
+		return pkt;
+	}
+}
+
+//
+// startConnectionPacket
+//
+// Used to create a packet object for a connection command
+//
+GSConnection.prototype.startConnectionPacket = function startConnectionPacket(cmd)
+{
+	var pkt = new Packet(this);
+	if(this.state === 'connected')
+	{
+		pkt.startPacket(CMD_CONNECTION);
+		pkt.sendString(cmd);
+		return pkt;
+	}
+	else
+	{
+		log.error('Unable to start packets when disconnected.', this.state);
+		return pkt;
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = GSConnection;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

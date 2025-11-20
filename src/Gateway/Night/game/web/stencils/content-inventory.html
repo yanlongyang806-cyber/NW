@@ -1,0 +1,44 @@
+
+<div data-path="ent">
+	<div class="page-inventory">
+		<div class="box-tabs-block">
+			<div class="tabs-horizontal">
+				<div class="tabs-container">
+					<ul>
+						<li>
+							<a data-url="/inventory" class="tab subNav inventory-bags">
+								<span class="tab-name">Bags &amp; Riches</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/inventory-professions" class="tab subNav inventory-professions">
+								<span class="tab-name">Professions</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+						<li>
+							<a data-url="/inventory-companions" class="tab subNav inventory-companions">
+								<span class="tab-name">Companions</span>
+								<span class="tab-left"></span>
+								<span class="tab-right"></span>
+							</a>
+						</li>
+					</ul>
+				</div>
+				<div class="box-top">
+					<div class="box-left"></div>
+					<div class="box-right"></div>
+				</div>
+			</div>
+		</div>
+
+		<div id="content_inventory" class="innerContent">
+		</div>
+	</div>
+</div>
+<script>
+	$('a.mainNav[data-url]').removeClass('disabled');
+</script>

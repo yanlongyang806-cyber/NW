@@ -1,0 +1,11 @@
+// OffsetScroll.phl
+{
+	float offsetScroll = %ScrollRate%.x - floor(%ScrollRate%.x) - 0.5;
+	float offsetBias = max(offsetScroll,offsetScroll * -1.0) * 2.0;
+
+	offsetScroll = offsetScroll + 1;
+	offsetScroll = offsetScroll - floor(offsetScroll);
+	%Result% = offsetScroll;
+	%Result2% = %ScrollRate%.x - floor(%ScrollRate%.x);
+	%Bias% = offsetBias;
+}

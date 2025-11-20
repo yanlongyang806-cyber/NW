@@ -1,0 +1,62 @@
+'use strict';
+
+var Die = require('./Die');
+
+function Pile()
+{
+	this.dice = [];
+}
+
+Pile.prototype.addDie = function(arg)
+{
+	this.dice.push(new Die(arg, this.dice.length));
+}
+
+Pile.prototype.roll = function()
+{
+	var result = [];
+	this.dice.forEach(function(die) {
+		result.push({ die: die, roll: die.rollDie() });
+	});
+
+	return result;
+}
+
+Pile.prototype.getDie = function(id)
+{
+	return this.dice[id];
+}
+
+Pile.prototype.reset = function()
+{
+	this.unuseDice();
+	this.used = false;
+}
+
+Pile.prototype.unuseDice = function()
+{
+	this.dice.forEach(function(die) {
+		die.unuse();
+	});
+}
+
+Pile.prototype.allUsed = function()
+{
+	var r = true;
+	this.dice.forEach(function(die) {
+		if(!die.used)
+			r = false;
+	});
+
+	return r;
+}
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+if(module && module.exports)
+	module.exports = Pile;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

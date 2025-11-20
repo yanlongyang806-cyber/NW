@@ -1,0 +1,54 @@
+#include "ps_inc.hlsl"
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 bloom_glare_amount		: PS_CONSTANT_MATERIAL_PARAM0() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+SAMPLER_DECL(exposed_color_texture, 0);
+SAMPLER_DECL(postprocess_all_lut_texture, 1);
+SAMPLER_DECL(bloom_texture, 2);
+SAMPLER_DECL(glare_texture, 3);
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float3 texcolor = sampleTex2DNoMips(exposed_color_texture, fragment.texcoord.xy).rgb;
+
+	// add bloom and glare
+	#ifndef DISABLE_BLOOM
+	{
+		float4 bloomcolor = sampleTex2DNoMips(bloom_texture, fragment.texcoord.xy);
+#ifdef BLOOM_TONE_CURVE
+		float4 bloom2 = bloomcolor * bloomcolor;
+		texcolor += bloom_glare_amount.x * saturate(bloom2 * (2 - bloomcolor)).xyz; // bloom
+		texcolor = saturate(texcolor);
+#else
+		texcolor = saturate(texcolor + bloom_glare_amount.x * bloomcolor.rgb);
+#endif
+	}
+	#endif
+
+	{
+		// Squish the red value in by a bit to account for some
+		// rounding issues on Intel and old ATI cards.
+		texcolor.x *= 13.9/16.0;
+		texcolor.x += 1.1/16.0;
+
+		float2 real_lut_coords = float2(
+			(15.0 * texcolor.x + 16.0 * floor(15.0 * texcolor.z) + 0.5) / 256.0,
+			texcolor.y * 15.0/16.5 + 0.5/16.0);
+
+		// Same coordinate in the next cell over.
+		float2 real_lut_coords2 = float2(
+			real_lut_coords.x + 1.0/16.0,
+			real_lut_coords.y);
+
+		// Lerp between the values at the positions in the two cells.
+		texcolor = lerp(
+			sampleTex2DNoMips(postprocess_all_lut_texture, real_lut_coords),
+			sampleTex2DNoMips(postprocess_all_lut_texture, real_lut_coords2),
+			frac(texcolor.z * 15.0)).xyz;
+	}
+
+	return float4(texcolor, 1);
+}
+

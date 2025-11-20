@@ -1,0 +1,107 @@
+({
+	id: 'general',
+	name: 'General',
+	actions: [
+
+		{
+			id: 'attack',
+			name: 'Attack!',
+			description: 'Target: Enemy. Attack with current auxiliary and weapons.',
+			notes: 'Attack!',
+			icon: '',
+
+			cooldown: 0,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& attack() &>
+		},
+
+		{
+			id: 'wait',
+			name: 'Wait',
+			description: 'Do nothing this turn.',
+			notes: 'Wait for one turn.',
+			icon: '',
+
+			cooldown: 0,
+
+			onChoose: <& [
+		//		chooseSingleAllyExceptSource()
+				chooseSelf()
+			] &>,
+
+			onResolve: <& [ wait() ] &>
+		},
+
+
+		{
+			id: 'test',
+			name: 'Test power',
+			description: "Who knows?",
+
+			cooldown: 0,
+
+			onChoose: <& [
+		//		chooseSingleAllyExceptSource()
+		//		chooseSingleOpponent()
+				chooseSelf()
+			] &>,
+
+		//	onQueued: <& [
+		//		setState('confused')
+		//		function() { this.source.log('Queued!'); }
+		//	] &>,
+
+		//	onOrders: <& [
+		//		addCounter(3),
+		//	] &>,
+
+		//	onEachTargetEarlyResolve: <& [
+		//		useCounter(1, [ setState('disabled') ])
+		//	] &>,
+
+			onResolve: <& [
+		//          useCounter(1, [
+		//               attribModifyMultiplyBase({ targets: { hitpoints: 0.20 } })
+		//          ])
+				addCounter(3),
+			] &>,
+
+			onEachTargetEarlyUpkeep: <& [
+				// calc
+				//   (s|source).attribs.attribName
+				//   (t|target).attribs.attribName
+				//   (b|bundle). anything in the bundle
+				//   a.damage.(shield|hitpoints|undirected|overkill)
+				//   a.baseDamage
+				//   a.hit.(hit|roll|toHit|hitCritical)
+				//   counter() current counter value for target and action
+				//   counter(s, "name") current counter value for name on source
+				//   counter("name") value of name on target
+				//   state(...) same as counter, but for states.
+				useCounter(1, attribModifyMultiplyBase({ speed : calc('0.2 * counter()') }))
+			] &>,
+
+		//	onEachTargetLateUpkeep: <& [
+		//		setState('confused')
+		//	] &>
+		},
+
+
+		{
+			id: 'attackPatternAlpha',
+			name: 'Attack Pattern Alpha',
+			description: "Target: Self. Do nothing this turn. Next turn this ship's auxiliary is doubled.",
+			notes: 'Add 1 counter to self; next upkeep remove the counter and double accuracy',
+			icon: 'Space_Boff_Attackpatternalpha',
+
+			cooldown: 3,
+
+			onChoose: <& chooseSingleOpponent() &>,
+			onResolve: <& eachTarget( addCounter(2) ) &>,
+			onEachTargetLateUpkeep: <& [
+				ifTrue( useCounter(1), onSource( attribMultiply({ accuracyRating: 2 }) ) )
+			] &>
+		},
+	]
+})

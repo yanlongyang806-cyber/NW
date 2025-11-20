@@ -1,0 +1,9 @@
+// Texture_6.phl
+{
+	%Result% = sampleTex2D(TexSampler%Texture%, %TexCoord%.xy);
+	%Result2% = sampleTex2D(TexSampler%Texture%, %TexCoord2%.xy);
+	%Result3% = sampleTex2D(TexSampler%Texture%, %TexCoord3%.xy);
+	%Result4% = sampleTex2D(TexSampler%Texture%, %TexCoord4%.xy);
+	%Result5% = sampleTex2D(TexSampler%Texture%, %TexCoord5%.xy);
+	%Result6% = sampleTex2D(TexSampler%Texture%, %TexCoord6%.xy);
+}

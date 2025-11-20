@@ -1,0 +1,46 @@
+Str = Foo
+Blah = 10
+Hmm {
+Inner = e
+N = 1.500000
+}
+Another {
+Inner = e
+N = 0.000000
+}
+Arrofstructs {
+0 {
+Inner = 0
+N = 0.000000
+}
+1 {
+Inner = 1
+N = 1.000000
+}
+2 {
+Inner = 2
+N = 4.000000
+Innerarr {
+0 = Testing nested array
+}
+}
+3 {
+Inner = 3
+N = 9.000000
+}
+4 {
+Inner = 4
+N = 16.000000
+}
+}
+Strings {
+0 = A string
+1 = another string
+}
+Somenumbers {
+0 = 0
+1 = -1
+2 = -2
+3 = -3
+4 = -4
+}

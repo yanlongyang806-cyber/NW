@@ -1,0 +1,29 @@
+
+	<div class="notify-zenmarket">
+		<div data-if="{.itemdefnames.$length()} le 0" data-set-class="icon-slot small {.quality}">
+			<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+			<span class="quantity" data-if="{.count} gt 1">
+				x<span data-path=".count">10</span>
+			</span>
+		</div>
+		<div data-if="{.itemdefnames.$length()} gt 0" data-set-class="icon-slot small {.quality}">
+			<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+			<span class="quantity" data-if="{.count} gt 1">
+				x<span data-path=".count">10</span>
+			</span>
+		</div>
+
+		Your purchase of <span data-path=".hdef.displayname.str">Thingy</span> was successful.
+
+		<!--
+		<a class="align-right closeNotification" data-url="/inventory"> Go to your Inventory</span>
+		-->
+		<div class="input-field button light with-arrow">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-url="/inventory">
+				Go to your Inventory
+			</button>
+		</div>
+	</div>

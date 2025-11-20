@@ -1,0 +1,44 @@
+'use strict';
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######   ######     ###
+//                    ##    ## ##    ##   ## ##
+//                    ##       ##        ##   ##
+//                     ######  ##       ##     ##
+//                          ## ##       #########
+//                    ##    ## ##    ## ##     ##
+//                     ######   ######  ##     ##
+//
+//              This file is for Sword Coast Adventures
+//
+
+var cutils = require('cryptic/cutils'+'');
+
+///////////////////////
+//
+// Add the minigame to the client object.
+//
+
+cutils.extend(client, require('./scaMain'));
+
+// Make sure we have access to this for later
+require('./DiceBox');
+
+///////////////////////
+//
+// Intialize the game
+//
+
+$(document).ready(function() {
+	client.scaInstall();
+});
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = client.sca;
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

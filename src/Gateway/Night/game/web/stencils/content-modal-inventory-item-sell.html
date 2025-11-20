@@ -1,0 +1,55 @@
+<button class="close-button" data-url-silent="closemodal"></button>
+<div data-if="{.sellable}" class="modal-confirm modal-inventory">
+
+	<h3>Sell <span data-path=".itemdef.displaynamemsg.str"></span>?</h3>
+
+	<!-- stolen straight from the inventory stencil -->
+	<div data-set-class="icon-slot small {.rarity}">
+		<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+		<span class="icon-overlay"></span>
+		<span class="quantity" data-if="{.count} gt 1" data-path=".count">9</span>
+		<span data-path=".gemslots" data-set-class="enchant-group {.gemslots.$length().$map(0:hidden, 1:one, 2:two, 3:three)}">
+			<span data-set-class="enchant-slot {.type[0]} {.filled.$map(0:empty, 1:filled)}"></span>
+		</span>
+	</div>
+
+	<p data-if="{.count} gt 1">How many <span class="vendor-confirm-itemname" data-path=".itemdef.displaynamemsg.str"></span> would you like to sell?</p>
+	<p data-if="{.count} le 1">Are you sure you want to sell <span class="vendor-confirm-itemname" data-path=".itemdef.displaynamemsg.str"></span>?</p>
+
+	<!-- qty input box -->
+	<div data-if="{.count} gt 1">
+		<div class="vendor-quantity-block">
+			<div class="input-field text">
+				<div class="input-bg-left"></div>
+				<div class="input-bg-mid"></div>
+				<div class="input-bg-right"></div>
+				<input type="text" maxlength="4" size="4" value="1" name="inventorySellQty">
+			</div>
+			<span class="attention">Max <span data-path=".count"></span></span>
+		</div>
+	</div>
+
+	<!-- Needed for when there is no more than 1 of them -->
+	<div data-if="{.count} le 1">
+		<input type="hidden" name="inventorySellQty" value="1">
+	</div>
+
+	<h6 class="attention">Note: This item will be permanently removed from your inventory and cannot be bought back.</h6>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url-silent="closemodal">Cancel</button>
+	</div>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-set-onclick="client.inventorySellItem('{.uid}');" data-url-silent="closemodal">Confirm</button>
+	</div>
+</div>
+<div data-if="!{.sellable}" class="modal-confirm modal-inventory-sell">
+	<h3>You cannot sell <span data-path=".itemdef.displaynamemsg.str"></span>.</h3>
+</div>

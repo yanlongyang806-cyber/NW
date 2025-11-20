@@ -1,0 +1,27 @@
+'use strict';
+
+var s_escapes = {
+	'n':'\n',
+	'r':'\r',
+	't':'\t',
+	'q':'\"',
+	's':'\'',
+	'\\':'\\',
+	'p':'%',
+	'0':'',
+	'd':'$'
+};
+
+var s_reEscapes = /\\([nrtqs\\p0d])/g;
+
+function unescapeCrypticString(str)
+{
+	return str.replace(s_reEscapes, function(match, p1, offset, str) {
+		return s_escapes[p1] ? s_escapes[p1] : p1;
+	});
+}
+
+
+module.exports = unescapeCrypticString;
+
+// End of File

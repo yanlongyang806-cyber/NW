@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title data-no-translation>Star Trek Online</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta name="description" content="" />
+		<meta name="author" content="" />
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+		<meta name="viewport" content="width = device-width, initial-scale = 1, minimum-scale = 1, maximum-scale = 1" />
+		<meta http-equiv="cache-control" content="no-cache" />
+		<meta http-equiv="pragma" content="no-cache" />
+
+		<!-- Le styles -->
+		<style type="text/css">
+			body { visibility: hidden; background: #000; }
+			html { overflow: hidden; }
+		</style>
+		<link href="./css/game-support.css" rel="stylesheet">
+		<link href="./css/style-fed.css" rel="stylesheet" id="stylesheet">
+
+		<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+		<!--[if lt IE 9]>
+			<script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+			<link href="./css/style-ie8.css" rel="stylesheet" id="stylesheet">
+		<![endif]-->
+
+		<!-- Le fav and touch icons -->
+		<link rel="shortcut icon" href="/img/favicon.ico">
+		<link rel="apple-touch-startup-image" href="/img/mobile_splash.png">
+		<link rel="apple-touch-icon" sizes="144x144" href="/img/apple-touch-icon-144.png">
+		<link rel="apple-touch-icon" sizes="114x114" href="/img/apple-touch-icon-114.png">
+		<link rel="apple-touch-icon" sizes="72x72" href="/img/apple-touch-icon-72.png">
+		<link rel="apple-touch-icon" href="/img/apple-touch-icon-57.png">
+		<script type="text/javascript">
+			var _gaq = _gaq || [];
+			_gaq.push(['_setAccount', 'UA-992936-16']);
+			_gaq.push(['_setDomainName', 'startrekonline.com']);
+			_gaq.push(['_trackPageview']);
+
+			(function() {
+				var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+				ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+				var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+			})();
+		</script>
+	</head>
+
+	<body>
+		<!-- NO JAVASCRIPT -->
+		<noscript>
+			<div class="errorpage">
+				<img src="/img/sprites_login.png" alt="" />
+				<p>You have JavaScript disabled. It is required to view this web page.</p>
+				<p>Please enable JavaScript in your browser settings and refresh this page.</p>
+			</div>
+		</noscript>
+		<!-- NO JAVASCRIPT -->
+
+		<!-- NO COOKIES OR UNSUPPORTED BROWSER -->
+		<div id="nocontent" class="errorpage">
+			<img src="/img/sprites_login.png" alt="" />
+			<div id="nocookies">
+				<p>Cookies need to be enabled for this site to work.</p>
+				<p>Please enable cookies in your browser settings and refresh this page.</p>
+			</div>
+			<div id="unsupportedbrowser">
+				<p>You are using an unsupported browser.</p>
+			</div>
+		</div>
+		<!-- NO COOKIES OR UNSUPPORTED BROWSER -->
+
+		<!-- CONTENT -->
+		<div id="content">
+			<div class="login-cover">
+				<div class="login-area">
+					<div class="login-logo">
+						<img src="./img/sprites_login_beta.png" alt="Star Trek Online" />
+					</div>
+					<div class="loginbox">
+						<div class="loginbox-content">
+
+							<span class="login-locked">
+								<p>Star Trek Gateway is currently undergoing maintenance.</p>
+								<p>Please try again later.</p>
+							</span>
+
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- CONTENT -->
+
+
+		<!-- Le javascript
+		================================================== -->
+		<!-- Placed at the end of the document so the pages load faster -->
+
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
+		<script src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<script src="./js/game-support.js"></script>
+
+		<!-- CRYPTIC STUFF -->
+
+		<script src="./lang.js"></script>
+
+
+
+		<script>
+			// NOTE: IE WILL NOT SET COOKIES is there is an underscore in the domain name.
+			// ex: http://qa_nw3/  <- Never setting cookies in IE.
+			document.cookie = "testing=cookies_enabled; path=/";
+		    if(document.cookie.indexOf("testing=cookies_enabled") < 0)
+			{
+				$('#content').hide();
+				$('#nocontent').show();
+				$('#nocookies').show();
+			}
+			/*else if(!client.supportedBrowser)
+			{
+				$('#content').hide();
+				$('#nocontent').show();
+				$('#unsupportedbrowser').show();
+			}*/
+			// Delete the cookie:
+			document.cookie = "testing=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/"
+		</script>
+
+	</body>
+</html>

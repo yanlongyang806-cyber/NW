@@ -1,0 +1,31 @@
+'use strict';
+
+var reAmp = /&/g;
+var reLT = /</g;
+var reGT = />/g;
+var reBS = /\\/g;
+var reNL = /\n/g;
+var reCR = /\r/g;
+var reSQ = /'/g;
+var reDQ = /"/g;
+var reTab = /\t/g;
+
+//
+// escapeForJavascript
+//
+// Given a string, make it safe for embedding in a Javascript string
+//
+function escapeForJavascript (str)
+{
+	return str
+		.replace(reBS, '\\\\')
+		.replace(reSQ, "\\'")
+		.replace(reDQ, '\\"')
+		.replace(reNL, '\\n')
+		.replace(reCR, '\\r')
+		.replace(reTab, '\\t');
+}
+
+module.exports = escapeForJavascript;
+
+// End of File

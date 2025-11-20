@@ -1,0 +1,50 @@
+OperationDef
+	Name "ColorTint3b_IgnoreAlpha" // Name of the operation
+	ParentName "ColorTint3b"
+	OptionName "Ignore Alpha"
+	Description "3 Color tinting"
+	Type EFFECT // One of EFFECT, TEXTURE, SINK
+
+	Input: Diffuse, "RGB: diffuse map, A: ignored"
+	Input
+		Name TintMask
+		Description "RGB: how much tint to apply, A: ignored.  White = Full tint.  Default: White"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Value
+			Floats 1 1 1 1
+		EndDefault
+	EndInput
+	Input: TintColorMap, "Black: Color0, R: Color1, G: Color2, B: ignored, A: ignored"
+	Input
+		Name Color0
+		Description "Tint color 0 (Black in Map)"
+		Float 4
+		NoAutoConnect 1
+		Default
+			Type Color0
+		EndDefault
+	EndInput
+	Input
+		Name Color1
+		Description "Tint color 1 (Red in Map)"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Input
+		Name Color2
+		Description "Tint color 2 (Green in Map)"
+		Float 4
+		NoAutoConnect 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Color tinted output"
+		Float 4
+	EndOutput
+
+EndOperationDef
+

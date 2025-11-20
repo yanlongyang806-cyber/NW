@@ -1,0 +1,388 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// ResourceDictionary
+//
+//
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+var Resource = require('cryptic/Resource');
+
+//
+// new ResourceDictionary
+//
+var ResourceDictionary = function ResourceDictionary(dictname, manager)
+{
+	dbg.trace(dictname);
+
+	this.dictname = dictname;
+	this.manager = manager;  // used for server requests
+	this.state = 'ready';
+	this.dict = {};
+	this.keys = { state: 'stub', _requesters: [] };
+	this._requesters = [];
+
+	// This sets up a base object that everything in the dictionary
+	// will derive from.
+
+	this.defaults = eval('var '+dictname+ ' = function '+dictname+'(obj) { overrideWith(this, obj) }; '+dictname+';');
+		// This is an eval so that the object type is visible in the debugger.
+		// Otherwise, all the objects take a non-descript, anonymous name.
+		// Supposedly, setting .displayName should do this, but it doesn't
+		//   actually work. (And it's non-standard.)
+		// eval() is not fast, but this is a very rarely called function
+		//   in the big scheme of things.
+		// If you want to remove it, simply replace with " = function(obj) { overrideWith(this, obj) };"
+		// --poz
+	this.defaults.prototype = {};
+	this.defaults._requesters = [];
+	this.defaults.state = 'stub';
+	var def = this.defaults;
+	this.defaults.setState = function setState(state, error) { setObjState(def, def, state, error); };
+}
+
+//
+// overrideWith
+//
+// Used when creating a resource to copy in the fields which override the
+// defaults for the particular resource.
+//
+function overrideWith(dest, src)
+{
+	for(var prop in src)
+	{
+		if(prop.charAt(0) !== '_')
+		{
+			dest[prop] = src[prop];
+		}
+	}
+}
+
+//
+// setObjState
+//
+function setObjState(obj, retobj, state, error)
+{
+	obj.state = state;
+
+	if(state === 'ready' || error)
+	{
+		while(obj._requesters.length > 0)
+		{
+			var fn = obj._requesters.pop();
+			fn(error, retobj);
+		}
+	}
+}
+
+//
+// destroy
+//
+// Clear out any dangling references in a resource and mark it as destroyed.
+//
+ResourceDictionary.prototype.destroy = function()
+{
+	dbg.trace(this.dictname);
+
+	// Get rid of all the resources.
+	for(var id in this.dict)
+	{
+		if(this.dict[id].destroy)
+		{
+			this.destroyResource(id);
+		}
+	}
+
+	if(this.defaults._requesters > 0)
+	{
+		dbg.error('Destroying dictionary'+this.dictname+'.defaults that has outstanding requests!');
+		this.defaults._requesters = null;
+	}
+
+	if(this._requesters > 0)
+	{
+		dbg.error('Destroying dictionary '+this.dictname+' that has outstanding requests!');
+		this._requesters = null;
+	}
+
+	this.manager = null;
+}
+
+//
+// createResource
+//
+ResourceDictionary.prototype.createResource = function createResource(id)
+{
+//	dbg.trace(this.dictname, id);
+
+	this.dict[id] = new Resource(this.dictname, id);
+	return this.dict[id];
+}
+
+//
+// destroyResource
+//
+ResourceDictionary.prototype.destroyResource = function destroyResource(id)
+{
+//	dbg.trace(this.dictname, id);
+
+	if(this.dict[id])
+	{
+		this.dict[id].destroy();
+		delete this.dict[id];
+	}
+}
+
+//
+// find
+//
+ResourceDictionary.prototype.findResource = function findResource(id)
+{
+	dbg.trace(this.dictname, id);
+
+	return this.dict[id];
+}
+
+
+//
+// fetchDefaultResource
+//
+ResourceDictionary.prototype.fetchDefaultResource = function fetchDefaultResource(callback)
+{
+	var self = this;
+	dbg.trace(this.dictname);
+
+	if(this.defaults.state === 'stub')
+	{
+		this.defaults.setState('fetching');
+		this.manager.requestDefaultResource(this.dictname);
+	}
+
+	if(callback)
+	{
+		if(this.defaults.state !== 'ready')
+		{
+			this.defaults._requesters.push(callback);
+		}
+		else
+		{
+			cutils.nextTick(function () {
+				callback(undefined, self.defaults);
+			});
+		}
+	}
+
+	return (this.defaults.state === 'ready')
+}
+
+//
+// setDefaultResource
+//
+ResourceDictionary.prototype.setDefaultResource = function setDefaultResource(obj)
+{
+	dbg.trace(this.dictname);
+
+	if(obj)
+	{
+		overrideWith(this.defaults.prototype, obj);
+		this.defaults.setState('ready');
+
+		// Empty-named references are not uncommon. Set one up as the
+		//   defaults.
+		this.setResource('', {}, true);
+	}
+	else
+	{
+		dbg.error(obj);
+		this.defaults.setState('invalid', new Error('Empty default resource for '+this.dictname));
+		this.setState('invalid', new Error('Empty default resource for '+this.dictname));
+	}
+}
+
+//
+// fetchResource
+//
+ResourceDictionary.prototype.fetchResource = function fetchResource(id, callback)
+{
+	dbg.trace(this.dictname, id);
+
+	if(!this.dict[id])
+	{
+		this.createResource(id);
+	}
+
+	var res = this.dict[id];
+
+	if(res.state === 'stub')
+	{
+		this.fetchDefaultResource();
+
+		res.setState('fetching');
+
+		if(id === '' || id === '(null)')
+		{
+			var self = this;
+			// Special case the empty request. This is almost always some
+			//   piece of missing data in an object that the template is not
+			//   checking for.
+			// Make an empty object for it.
+			dbg.error('Got a request from dictionary ' + this.dictname + ' with an empty id.');
+			cutils.nextTick(function () {
+				self.setResource(res.id, {});
+			});
+		}
+		else
+		{
+			this.manager.requestResource(this.dictname, res.id);
+		}
+	}
+
+	if(callback)
+	{
+		if(res.state !== 'ready')
+		{
+			res._requesters.push(callback);
+		}
+		else
+		{
+			cutils.nextTick(function () {
+				callback(undefined, res);
+			});
+		}
+	}
+
+	return (res.state === 'ready')
+}
+
+
+//
+// setResource
+//
+ResourceDictionary.prototype.setResource = function setResource(id, obj, override)
+{
+	dbg.trace(this.dictname, id, obj);
+
+	if(this.dict[id])
+	{
+		if(!override && this.dict[id].value)
+		{
+			dbg.error('Already have a value for '+this.dictname+'.'+id, this.dict[id].value);
+		}
+		else
+		{
+			this.dict[id].value = new this.defaults(obj);
+		}
+	}
+	else if(obj) // Only create the resource if it has a value
+	{
+		this.createResource(id);
+	}
+
+	if(obj)
+	{
+		// This sets up the prototype chain. This allows us to keep all the
+		//   defaults in the prototype instead in every single resource.
+		//   It also keeps the data type, which is useful for debugging.
+		this.dict[id].value = new this.defaults(obj);
+
+		var res = this.dict[id];
+
+		if(this.defaults.state === 'ready')
+		{
+			res.setState('ready', undefined);
+		}
+		else
+		{
+			this.defaults._requesters.push(function(error, obj) {
+				res.setState('ready', error);
+			});
+		}
+	}
+	else if(this.dict[id])
+	{
+		dbg.trace('Invalid object received');
+		this.dict[id].setState('invalid', new Error('Empty object '+this.dictname+'.'+id));
+		this.destroyResource(id);
+	}
+}
+
+//
+// fetchKeys
+//
+ResourceDictionary.prototype.fetchKeys = function fetchKeys(callback)
+{
+	var self = this;
+	dbg.trace(this.dictname);
+
+	if(this.keys.state === 'stub')
+	{
+		this.manager.requestDictionaryKeys(this.dictname);
+	}
+
+	if(callback)
+	{
+		if(this.keys.state !== 'ready')
+		{
+			this.keys._requesters.push(callback);
+		}
+		else
+		{
+			cutils.nextTick(function () {
+				callback(undefined, self);
+			});
+		}
+	}
+
+	return (this.keys.state === 'ready');
+}
+
+//
+// setKeys
+//
+ResourceDictionary.prototype.setKeys = function setKeys(keys)
+{
+	dbg.trace(this.dictname);
+
+	if(keys)
+	{
+		dbg.trace(keys);
+		for(var i = keys.length-1; i>=0; i--)
+		{
+			if(!this.dict[keys[i]] && keys[i].charAt(0)!=='_')
+			{
+				this.createResource(keys[i]);
+			}
+		}
+		this.setKeyState('ready');
+	}
+	else
+	{
+		this.setKeyState('invalid', new Error('Got an null dictionary: '+this.dictname+'.'));
+		this.setState('invalid', new Error('Got an null dictionary: '+this.dictname+'.'));
+	}
+}
+
+//
+// setState
+//
+ResourceDictionary.prototype.setState = function setState(state, error)
+{
+	dbg.trace(this.dictname, state, error);
+	setObjState(this, this, state, error);
+}
+
+//
+// setKeyState
+//
+ResourceDictionary.prototype.setKeyState = function setKeyState(state, error)
+{
+	dbg.trace(this.dictname, state, error);
+	setObjState(this.keys, this, state, error);
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = ResourceDictionary;
+
+// End of File

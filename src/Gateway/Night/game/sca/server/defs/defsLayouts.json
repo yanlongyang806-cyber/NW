@@ -1,0 +1,12201 @@
+[
+	{
+		"name": "Fallback",
+		"id": "Fallback",
+		"width": 19,
+		"height": 13,
+		"tags": "medium long extreme dungeon cave",
+		"tiles": [
+			"R R R R H H R R H H R R H H H H R R R",
+			"R R R R - - R R H H R R - H - - R R R",
+			"R R R R - - R R H H R R - H - - R R R",
+			"- H - - - - R R H H R R - R R - R R R",
+			"R R H H - - - H - - H - - R R - - - H",
+			"R R H H H H H H R R R R H R R - R R R",
+			"- H - - - - H - R R - H - R R - R R R",
+			"R R - - - - R R R R - H - R R H R R R",
+			"R R - - - R R R R R R R H R R - R R R",
+			"R R - - - H - - - - - - - H - - - H -",
+			"- H - - R R R R R R - R R R R - R R R",
+			"R R R - R R R R R R H R R R R H R R R",
+			"R R R - R R R R R R - R R R R - R R R"
+		],
+		"encounters": {
+			"r12c18": {
+				"id": "r12c18",
+				"row": 12,
+				"col": 18,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "",
+				"color": "3"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "4"
+			},
+			"r2c6": {
+				"id": "r2c6",
+				"row": 2,
+				"col": 6,
+				"tags": "",
+				"color": "5"
+			},
+			"r6c17": {
+				"id": "r6c17",
+				"row": 6,
+				"col": 17,
+				"tags": "",
+				"color": "6"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "7"
+			},
+			"r5c14": {
+				"id": "r5c14",
+				"row": 5,
+				"col": 14,
+				"tags": "",
+				"color": "8"
+			},
+			"r7c8": {
+				"id": "r7c8",
+				"row": 7,
+				"col": 8,
+				"tags": "",
+				"color": "9"
+			},
+			"r12c0": {
+				"id": "r12c0",
+				"row": 12,
+				"col": 0,
+				"tags": "+treasure treasure",
+				"color": "10"
+			},
+			"r8c0": {
+				"id": "r8c0",
+				"row": 8,
+				"col": 0,
+				"tags": "",
+				"color": "11"
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "12"
+			},
+			"r10c16": {
+				"id": "r10c16",
+				"row": 10,
+				"col": 16,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r12c18",
+					"r10c16"
+				],
+				"opens": {
+					"2": true,
+					"6": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"5": true,
+					"12": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"8": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"2": true,
+					"9": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r1c11"
+				],
+				"opens": {
+					"5": true,
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r2c6"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"9": true,
+					"12": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r6c17"
+				],
+				"opens": {
+					"0": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"4": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r5c14"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"6": true,
+					"7": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r7c8"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"8": true,
+					"12": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r12c0"
+				],
+				"opens": {
+					"11": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r8c0"
+				],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r4c0"
+				],
+				"opens": {
+					"1": true,
+					"5": true,
+					"9": true,
+					"11": true
+				}
+			}
+		},
+		"roomCount": 13,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_01",
+		"id": "Short_01",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - - - - - - - - - - - - - - - -",
+			"R R R - R R R R R - - R R R H H H - -",
+			"R R R H R R R R R H H R R R - - H - -",
+			"- - H - R R R R R - - - H - - R R R -",
+			"- R R - - - - - H - R R R - - R R R -",
+			"- R R - - - R R R - R R R H H R R R -",
+			"- R R R - - R R R H R R R - - R R R -",
+			"- R R R - - - H - - - - H - - - - H -",
+			"- R R R H R R R - - R R R - - - - H -",
+			"- - - - - R R R H H R R R - - R R R R",
+			"R R R R - R R - - - R R R - - R R R R",
+			"R R R R - - - R R - R R R H H R R R R",
+			"R R R R H H H R R H R R R - - R R R R"
+		],
+		"encounters": {
+			"r0c0": {
+				"id": "r0c0",
+				"row": 0,
+				"col": 0,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r7c2": {
+				"id": "r7c2",
+				"row": 7,
+				"col": 2,
+				"tags": "",
+				"color": "9"
+			},
+			"r2c6": {
+				"id": "r2c6",
+				"row": 2,
+				"col": 6,
+				"tags": "",
+				"color": "1"
+			},
+			"r5c6": {
+				"id": "r5c6",
+				"row": 5,
+				"col": 6,
+				"tags": "",
+				"color": "12"
+			},
+			"r9c6": {
+				"id": "r9c6",
+				"row": 9,
+				"col": 6,
+				"tags": "",
+				"color": "19"
+			},
+			"r1c12": {
+				"id": "r1c12",
+				"row": 1,
+				"col": 12,
+				"tags": "",
+				"color": "2"
+			},
+			"r4c16": {
+				"id": "r4c16",
+				"row": 4,
+				"col": 16,
+				"tags": "",
+				"color": "8"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "",
+				"color": "11"
+			},
+			"r12c7": {
+				"id": "r12c7",
+				"row": 12,
+				"col": 7,
+				"tags": "",
+				"color": "28"
+			},
+			"r10c11": {
+				"id": "r10c11",
+				"row": 10,
+				"col": 11,
+				"tags": "",
+				"color": "20"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "22"
+			},
+			"r11c0": {
+				"id": "r11c0",
+				"row": 11,
+				"col": 0,
+				"tags": "+treasure treasure",
+				"color": "23"
+			},
+			"r2c2": {
+				"id": "r2c2",
+				"row": 2,
+				"col": 2,
+				"tags": "",
+				"color": "29"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c0"
+				],
+				"opens": {
+					"0": true,
+					"29": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r2c6"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"5": true,
+					"10": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c12"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"5": true,
+					"7": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"8": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"29": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"5": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"29": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"11": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r4c16"
+				],
+				"opens": {
+					"3": true,
+					"8": true,
+					"13": true,
+					"17": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r7c2"
+				],
+				"opens": {
+					"6": true,
+					"9": true,
+					"18": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"12": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"7": true,
+					"11": true,
+					"13": true,
+					"14": true,
+					"16": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r5c6"
+				],
+				"opens": {
+					"10": true,
+					"12": true,
+					"14": true,
+					"15": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"11": true,
+					"13": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"12": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"19": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"20": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"17": true,
+					"22": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"19": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r9c6"
+				],
+				"opens": {
+					"15": true,
+					"18": true,
+					"19": true,
+					"21": true
+				}
+			},
+			"20": {
+				"requires": [
+					"r10c11"
+				],
+				"opens": {
+					"16": true,
+					"20": true,
+					"21": true,
+					"25": true,
+					"27": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"20": true,
+					"21": true
+				}
+			},
+			"22": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"17": true,
+					"22": true,
+					"25": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r11c0"
+				],
+				"opens": {
+					"23": true,
+					"26": true
+				}
+			},
+			"24": {
+				"requires": [],
+				"opens": {
+					"24": true,
+					"27": true,
+					"28": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"20": true,
+					"22": true,
+					"25": true
+				}
+			},
+			"26": {
+				"requires": [],
+				"opens": {
+					"23": true,
+					"26": true,
+					"28": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"20": true,
+					"24": true
+				}
+			},
+			"28": {
+				"requires": [
+					"r12c7"
+				],
+				"opens": {
+					"24": true,
+					"26": true
+				}
+			},
+			"29": {
+				"requires": [
+					"r2c2"
+				],
+				"opens": {
+					"0": true,
+					"4": true,
+					"6": true
+				}
+			}
+		},
+		"roomCount": 30,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_02",
+		"id": "Short_02",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R R H H R R R R R H H R R R R R",
+			"R R R R R - - R R R R R - - R R R R R",
+			"H - - - H - - - R R R - - - H - - - H",
+			"R R - R R - R R - - - R R - R R - R R",
+			"R R - R R - R R R R R R R - R R - R R",
+			"R R - R R - R R R R R R R - R R - R R",
+			"- H H H - - H - R R R - H - - H H H -",
+			"R R - R R - R R - - - R R - R R - R R",
+			"R R - R R - R R R - R R R - R R - R R",
+			"R R - R R - R R R - R R R - R R - R R",
+			"H - - - H - - H - - - H - - H - - - H",
+			"R R R R R R R H - - - H R R R R R R R",
+			"R R R R R R R R - - - R R R R R R R R"
+		],
+		"encounters": {
+			"r0c9": {
+				"id": "r0c9",
+				"row": 0,
+				"col": 9,
+				"color": "2",
+				"tags": "",
+				"start": true
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "9"
+			},
+			"r4c4": {
+				"id": "r4c4",
+				"row": 4,
+				"col": 4,
+				"tags": "",
+				"color": "10"
+			},
+			"r8c0": {
+				"id": "r8c0",
+				"row": 8,
+				"col": 0,
+				"tags": "",
+				"color": "18"
+			},
+			"r8c4": {
+				"id": "r8c4",
+				"row": 8,
+				"col": 4,
+				"tags": "",
+				"color": "19"
+			},
+			"r12c3": {
+				"id": "r12c3",
+				"row": 12,
+				"col": 3,
+				"tags": "",
+				"color": "30"
+			},
+			"r8c14": {
+				"id": "r8c14",
+				"row": 8,
+				"col": 14,
+				"tags": "",
+				"color": "22"
+			},
+			"r8c18": {
+				"id": "r8c18",
+				"row": 8,
+				"col": 18,
+				"tags": "",
+				"color": "23"
+			},
+			"r4c18": {
+				"id": "r4c18",
+				"row": 4,
+				"col": 18,
+				"tags": "",
+				"color": "13"
+			},
+			"r4c14": {
+				"id": "r4c14",
+				"row": 4,
+				"col": 14,
+				"tags": "",
+				"color": "12"
+			},
+			"r5c9": {
+				"id": "r5c9",
+				"row": 5,
+				"col": 9,
+				"tags": "",
+				"end": true,
+				"color": "11"
+			},
+			"r12c15": {
+				"id": "r12c15",
+				"row": 12,
+				"col": 15,
+				"tags": "",
+				"color": "31"
+			},
+			"r8c7": {
+				"id": "r8c7",
+				"row": 8,
+				"col": 7,
+				"tags": "+treasure treasure",
+				"color": "20"
+			},
+			"r8c11": {
+				"id": "r8c11",
+				"row": 8,
+				"col": 11,
+				"tags": "+treasure treasure",
+				"color": "21"
+			},
+			"r2c9": {
+				"id": "r2c9",
+				"row": 2,
+				"col": 9,
+				"tags": "",
+				"color": "2"
+			},
+			"r1c0": {
+				"id": "r1c0",
+				"row": 1,
+				"col": 0,
+				"tags": "",
+				"color": "32"
+			},
+			"r1c4": {
+				"id": "r1c4",
+				"row": 1,
+				"col": 4,
+				"tags": "",
+				"color": "33"
+			},
+			"r1c14": {
+				"id": "r1c14",
+				"row": 1,
+				"col": 14,
+				"tags": "",
+				"color": "34"
+			},
+			"r1c18": {
+				"id": "r1c18",
+				"row": 1,
+				"col": 18,
+				"tags": "",
+				"color": "35"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"32": true,
+					"33": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r0c9",
+					"r2c9"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"3": true
+				},
+				"showAlways": true
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"4": true,
+					"34": true,
+					"35": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"32": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"33": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"34": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"35": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r4c0"
+				],
+				"opens": {
+					"5": true,
+					"9": true,
+					"14": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r4c4"
+				],
+				"opens": {
+					"6": true,
+					"10": true,
+					"14": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r5c9"
+				],
+				"opens": {
+					"11": true,
+					"15": true,
+					"16": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r4c14"
+				],
+				"opens": {
+					"7": true,
+					"12": true,
+					"17": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r4c18"
+				],
+				"opens": {
+					"8": true,
+					"13": true,
+					"17": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"10": true,
+					"14": true,
+					"18": true,
+					"19": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"20": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"21": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"13": true,
+					"17": true,
+					"22": true,
+					"23": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r8c0"
+				],
+				"opens": {
+					"14": true,
+					"18": true,
+					"24": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r8c4"
+				],
+				"opens": {
+					"14": true,
+					"19": true,
+					"25": true
+				}
+			},
+			"20": {
+				"requires": [
+					"r8c7"
+				],
+				"opens": {
+					"15": true,
+					"20": true,
+					"26": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r8c11"
+				],
+				"opens": {
+					"16": true,
+					"21": true,
+					"27": true
+				}
+			},
+			"22": {
+				"requires": [
+					"r8c14"
+				],
+				"opens": {
+					"17": true,
+					"22": true,
+					"28": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r8c18"
+				],
+				"opens": {
+					"17": true,
+					"23": true,
+					"29": true
+				}
+			},
+			"24": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"30": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"30": true
+				}
+			},
+			"26": {
+				"requires": [],
+				"opens": {
+					"20": true,
+					"26": true,
+					"30": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"27": true,
+					"31": true
+				}
+			},
+			"28": {
+				"requires": [],
+				"opens": {
+					"22": true,
+					"31": true
+				}
+			},
+			"29": {
+				"requires": [],
+				"opens": {
+					"23": true,
+					"31": true
+				}
+			},
+			"30": {
+				"requires": [
+					"r12c3"
+				],
+				"opens": {
+					"24": true,
+					"25": true,
+					"26": true,
+					"30": true
+				}
+			},
+			"31": {
+				"requires": [
+					"r12c15"
+				],
+				"opens": {
+					"27": true,
+					"28": true,
+					"29": true,
+					"31": true
+				}
+			},
+			"32": {
+				"requires": [
+					"r1c0"
+				],
+				"opens": {
+					"0": true,
+					"5": true
+				}
+			},
+			"33": {
+				"requires": [
+					"r1c4"
+				],
+				"opens": {
+					"0": true,
+					"6": true
+				}
+			},
+			"34": {
+				"requires": [
+					"r1c14"
+				],
+				"opens": {
+					"4": true,
+					"7": true
+				}
+			},
+			"35": {
+				"requires": [
+					"r1c18"
+				],
+				"opens": {
+					"4": true,
+					"8": true
+				}
+			}
+		},
+		"roomCount": 36,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_03",
+		"id": "Short_03",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- - R R R R - - R R R - - R R R R - -",
+			"R R R R R R H H R R R H H R R R R R R",
+			"R R R R R R - - R R R - - R R R R R R",
+			"H - - H - - - - - - - - - - - H - - H",
+			"R R R R - - R H R R R H R - - R R R R",
+			"R R R R - R R - R R R - R R - R R R R",
+			"R - - R H R R - R R R - R R H R - - R",
+			"R R R R - R R - R R R - R R - R R R R",
+			"R R R R - - R H R - R H R - - R R R R",
+			"H - - H - - - - - - - - - - - H - - H",
+			"R R R R R R - - R R R - - R R R R R R",
+			"R R R R R R H H R R R H H R R R R R R",
+			"- - R R R R - - R R R - - R R R R - -"
+		],
+		"encounters": {
+			"r4c9": {
+				"id": "r4c9",
+				"row": 4,
+				"col": 9,
+				"color": "12",
+				"tags": "",
+				"start": true
+			},
+			"r6c9": {
+				"id": "r6c9",
+				"row": 6,
+				"col": 9,
+				"tags": "",
+				"color": "12"
+			},
+			"r1c4": {
+				"id": "r1c4",
+				"row": 1,
+				"col": 4,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c14": {
+				"id": "r1c14",
+				"row": 1,
+				"col": 14,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c4": {
+				"id": "r11c4",
+				"row": 11,
+				"col": 4,
+				"tags": "",
+				"color": "24"
+			},
+			"r11c14": {
+				"id": "r11c14",
+				"row": 11,
+				"col": 14,
+				"tags": "",
+				"color": "26"
+			},
+			"r1c9": {
+				"id": "r1c9",
+				"row": 1,
+				"col": 9,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "25"
+			},
+			"r6c5": {
+				"id": "r6c5",
+				"row": 6,
+				"col": 5,
+				"tags": "",
+				"color": "29"
+			},
+			"r6c13": {
+				"id": "r6c13",
+				"row": 6,
+				"col": 13,
+				"tags": "",
+				"color": "30"
+			},
+			"r4c3": {
+				"id": "r4c3",
+				"row": 4,
+				"col": 3,
+				"tags": "",
+				"color": "31"
+			},
+			"r8c3": {
+				"id": "r8c3",
+				"row": 8,
+				"col": 3,
+				"tags": "",
+				"color": "32"
+			},
+			"r4c15": {
+				"id": "r4c15",
+				"row": 4,
+				"col": 15,
+				"tags": "",
+				"color": "33"
+			},
+			"r8c15": {
+				"id": "r8c15",
+				"row": 8,
+				"col": 15,
+				"tags": "",
+				"color": "34"
+			},
+			"r4c18": {
+				"id": "r4c18",
+				"row": 4,
+				"col": 18,
+				"tags": "",
+				"color": "35"
+			},
+			"r8c18": {
+				"id": "r8c18",
+				"row": 8,
+				"col": 18,
+				"tags": "",
+				"color": "36"
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "37"
+			},
+			"r8c0": {
+				"id": "r8c0",
+				"row": 8,
+				"col": 0,
+				"tags": "",
+				"color": "38"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c4"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c9"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c14"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"37": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"31": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"33": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"35": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"16": true,
+					"31": true,
+					"32": true,
+					"37": true,
+					"38": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"11": true,
+					"18": true,
+					"29": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r4c9",
+					"r6c9"
+				],
+				"opens": {
+					"11": true,
+					"12": true,
+					"13": true,
+					"18": true,
+					"19": true
+				},
+				"showAlways": true
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"14": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"14": true,
+					"19": true,
+					"30": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"17": true,
+					"33": true,
+					"34": true,
+					"35": true,
+					"36": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"29": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"30": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"14": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"24": true,
+					"38": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"24": true,
+					"32": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"26": true,
+					"34": true
+				}
+			},
+			"23": {
+				"requires": [],
+				"opens": {
+					"26": true,
+					"36": true
+				}
+			},
+			"24": {
+				"requires": [
+					"r11c4"
+				],
+				"opens": {
+					"20": true,
+					"21": true,
+					"24": true,
+					"27": true
+				}
+			},
+			"25": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"25": true,
+					"27": true,
+					"28": true
+				}
+			},
+			"26": {
+				"requires": [
+					"r11c14"
+				],
+				"opens": {
+					"22": true,
+					"23": true,
+					"26": true,
+					"28": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"24": true,
+					"25": true,
+					"27": true
+				}
+			},
+			"28": {
+				"requires": [],
+				"opens": {
+					"25": true,
+					"26": true,
+					"28": true
+				}
+			},
+			"29": {
+				"requires": [
+					"r6c5"
+				],
+				"opens": {
+					"10": true,
+					"16": true
+				}
+			},
+			"30": {
+				"requires": [
+					"r6c13"
+				],
+				"opens": {
+					"14": true,
+					"17": true
+				}
+			},
+			"31": {
+				"requires": [
+					"r4c3"
+				],
+				"opens": {
+					"6": true,
+					"9": true
+				}
+			},
+			"32": {
+				"requires": [
+					"r8c3"
+				],
+				"opens": {
+					"9": true,
+					"21": true
+				}
+			},
+			"33": {
+				"requires": [
+					"r4c15"
+				],
+				"opens": {
+					"7": true,
+					"15": true
+				}
+			},
+			"34": {
+				"requires": [
+					"r8c15"
+				],
+				"opens": {
+					"15": true,
+					"22": true
+				}
+			},
+			"35": {
+				"requires": [
+					"r4c18"
+				],
+				"opens": {
+					"8": true,
+					"15": true
+				}
+			},
+			"36": {
+				"requires": [
+					"r8c18"
+				],
+				"opens": {
+					"15": true,
+					"23": true
+				}
+			},
+			"37": {
+				"requires": [
+					"r4c0"
+				],
+				"opens": {
+					"5": true,
+					"9": true
+				}
+			},
+			"38": {
+				"requires": [
+					"r8c0"
+				],
+				"opens": {
+					"9": true,
+					"20": true
+				}
+			}
+		},
+		"roomCount": 39,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_04",
+		"id": "Short_04",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"H H H H R R R H H R R R - R R - R R R",
+			"H H H H R R R H H R R R - R R H R R R",
+			"H H H H R R R H H R R R - R R - R R R",
+			"H H - - - - - - - - - - - - - - - - H",
+			"R R R - - R R R - - H H R R R - - - H",
+			"R R R - - R R R - - H - R R R - R R R",
+			"R R R - - R R R - - H - R R R - R R R",
+			"H H H - - - H - - - H - - - H H R R R",
+			"R R R R R R R - R R R - - - - - - - H",
+			"R R - R - R R - R R R - Ra Ra - R R R R",
+			"R R R R R R R H R R R - Ra Ra - R R R R",
+			"R R R R R R R - - - H - - - - R R R R",
+			"- R R R R R - - - - H H H H H R R R R"
+		],
+		"encounters": {
+			"r1c10": {
+				"id": "r1c10",
+				"row": 1,
+				"col": 10,
+				"tags": "+treasure treasure",
+				"color": "3"
+			},
+			"r1c5": {
+				"id": "r1c5",
+				"row": 1,
+				"col": 5,
+				"tags": "",
+				"color": "1"
+			},
+			"r5c1": {
+				"id": "r5c1",
+				"row": 5,
+				"col": 1,
+				"tags": "",
+				"color": "8"
+			},
+			"r11c3": {
+				"id": "r11c3",
+				"row": 11,
+				"col": 3,
+				"tags": "",
+				"color": "16"
+			},
+			"r5c6": {
+				"id": "r5c6",
+				"row": 5,
+				"col": 6,
+				"tags": "",
+				"end": true,
+				"color": "9"
+			},
+			"r9c9": {
+				"id": "r9c9",
+				"row": 9,
+				"col": 9,
+				"tags": "",
+				"color": "17"
+			},
+			"r5c13": {
+				"id": "r5c13",
+				"row": 5,
+				"col": 13,
+				"tags": "",
+				"color": "11"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "5"
+			},
+			"r6c16": {
+				"id": "r6c16",
+				"row": 6,
+				"col": 16,
+				"tags": "",
+				"color": "12"
+			},
+			"r6c18": {
+				"id": "r6c18",
+				"row": 6,
+				"col": 18,
+				"tags": "",
+				"color": "12",
+				"start": true
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"color": "19"
+			},
+			"r9c12": {
+				"id": "r9c12",
+				"row": 9,
+				"col": 12,
+				"tags": "+treasure treasure",
+				"color": "a"
+			},
+			"r2c13": {
+				"id": "r2c13",
+				"row": 2,
+				"col": 13,
+				"tags": "+portal portal",
+				"color": "4",
+				"alsoOpens": "a"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"8": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c5"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c10"
+				],
+				"opens": {
+					"2": true,
+					"3": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c13"
+				],
+				"opens": {
+					"4": true,
+					"6": true,
+					"a": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"7": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"4": true,
+					"5": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"7": true,
+					"12": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r5c1"
+				],
+				"opens": {
+					"0": true,
+					"8": true,
+					"13": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r5c6"
+				],
+				"opens": {
+					"9": true,
+					"14": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"11": true,
+					"17": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r5c13"
+				],
+				"opens": {
+					"10": true,
+					"11": true,
+					"15": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r6c16",
+					"r6c18"
+				],
+				"opens": {
+					"7": true,
+					"12": true,
+					"15": true,
+					"18": true
+				},
+				"showAlways": true
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"13": true,
+					"16": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"16": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"12": true,
+					"15": true
+				}
+			},
+			"16": {
+				"requires": [
+					"r11c3"
+				],
+				"opens": {
+					"13": true,
+					"14": true,
+					"16": true,
+					"20": true
+				}
+			},
+			"17": {
+				"requires": [
+					"r9c9"
+				],
+				"opens": {
+					"10": true,
+					"17": true,
+					"20": true,
+					"21": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"19": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r11c16"
+				],
+				"opens": {
+					"18": true,
+					"19": true,
+					"21": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"16": true,
+					"17": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"17": true,
+					"19": true,
+					"21": true
+				}
+			},
+			"a": {
+				"requires": [
+					"r9c12"
+				],
+				"opens": {
+					"a": true
+				}
+			}
+		},
+		"roomCount": 23,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_05",
+		"id": "Short_05",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R H H R R H H R R H H H H R R R",
+			"R R R R - - R R H H R R - H - - R R R",
+			"R R R R - - R R H H R R - H - - R R R",
+			"- H - - - - R R H H R R - R R - R R R",
+			"R R H H - - - H - - H - - R R - - - H",
+			"R R H H H H H H R R R R H R R - R R R",
+			"- H - - - - H - R R - H - R R - R R R",
+			"R R - - - - R R R R - H - R R H R R R",
+			"R R - - - R R R R R R R H R R - R R R",
+			"R R - - - H - - - - - - - H - - - H -",
+			"- H - - R R R R R R - R R R R - R R R",
+			"R R R - R R R R R R H R R R R H R R R",
+			"R R R - R R R R R R - R R R R - R R R"
+		],
+		"encounters": {
+			"r12c18": {
+				"id": "r12c18",
+				"row": 12,
+				"col": 18,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "",
+				"color": "3"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "4"
+			},
+			"r2c6": {
+				"id": "r2c6",
+				"row": 2,
+				"col": 6,
+				"tags": "",
+				"color": "5"
+			},
+			"r6c17": {
+				"id": "r6c17",
+				"row": 6,
+				"col": 17,
+				"tags": "",
+				"color": "6"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "7"
+			},
+			"r5c14": {
+				"id": "r5c14",
+				"row": 5,
+				"col": 14,
+				"tags": "",
+				"color": "8"
+			},
+			"r7c8": {
+				"id": "r7c8",
+				"row": 7,
+				"col": 8,
+				"tags": "",
+				"color": "9"
+			},
+			"r12c0": {
+				"id": "r12c0",
+				"row": 12,
+				"col": 0,
+				"tags": "+treasure treasure",
+				"color": "10"
+			},
+			"r8c0": {
+				"id": "r8c0",
+				"row": 8,
+				"col": 0,
+				"tags": "",
+				"color": "11"
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "12"
+			},
+			"r10c16": {
+				"id": "r10c16",
+				"row": 10,
+				"col": 16,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r12c18",
+					"r10c16"
+				],
+				"opens": {
+					"2": true,
+					"6": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"5": true,
+					"12": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"8": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"2": true,
+					"9": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r1c11"
+				],
+				"opens": {
+					"5": true,
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r2c6"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"9": true,
+					"12": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r6c17"
+				],
+				"opens": {
+					"0": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"4": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r5c14"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"6": true,
+					"7": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r7c8"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"8": true,
+					"12": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r12c0"
+				],
+				"opens": {
+					"11": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r8c0"
+				],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r4c0"
+				],
+				"opens": {
+					"1": true,
+					"5": true,
+					"9": true,
+					"11": true
+				}
+			}
+		},
+		"roomCount": 13,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_06",
+		"id": "Short_06",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R R R - Ra Ra Ha Ra R R - - - R R R",
+			"R R R R R R - Ra Ra Ha Ra R R - H H R R R",
+			"R R R R R R - Ra Ra - - - - - H - R R R",
+			"R R R R R R - Ra Ra - H H H H H - - H -",
+			"- H - - H - - - - - H - - - - - - H -",
+			"- H - - R R R H H H H - R R R - R R R",
+			"R R R - R R R - - H - - R R R H R R R",
+			"R R R H R R R - R R R - R R R - R R R",
+			"R R R - R R R - R R R - - - - - H - H",
+			"R R R - - H - - R R R R R R - - H - H",
+			"- H - R R R R - R R R R R R H H R R R",
+			"- H H R R R R - - - - - - - - - R R R",
+			"- - - R R R R H H H H H H H H H R R R"
+		],
+		"encounters": {
+			"r5c18": {
+				"id": "r5c18",
+				"row": 5,
+				"col": 18,
+				"color": "9",
+				"tags": "",
+				"start": true
+			},
+			"r6c13": {
+				"id": "r6c13",
+				"row": 6,
+				"col": 13,
+				"tags": "+portal portal",
+				"color": "8",
+				"alsoOpens": "a"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"color": "20"
+			},
+			"r9c9": {
+				"id": "r9c9",
+				"row": 9,
+				"col": 9,
+				"tags": "",
+				"color": "13"
+			},
+			"r11c4": {
+				"id": "r11c4",
+				"row": 11,
+				"col": 4,
+				"tags": "",
+				"color": "18"
+			},
+			"r6c5": {
+				"id": "r6c5",
+				"row": 6,
+				"col": 5,
+				"tags": "",
+				"color": "7"
+			},
+			"r7c1": {
+				"id": "r7c1",
+				"row": 7,
+				"col": 1,
+				"tags": "",
+				"color": "10"
+			},
+			"r2c7": {
+				"id": "r2c7",
+				"row": 2,
+				"col": 7,
+				"tags": "",
+				"color": "a"
+			},
+			"r0c12": {
+				"id": "r0c12",
+				"row": 0,
+				"col": 12,
+				"tags": "+treasure treasure",
+				"color": "1"
+			},
+			"r1c2": {
+				"id": "r1c2",
+				"row": 1,
+				"col": 2,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r7c17": {
+				"id": "r7c17",
+				"row": 7,
+				"col": 17,
+				"tags": "",
+				"color": "9"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c2"
+				],
+				"opens": {
+					"0": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r0c12"
+				],
+				"opens": {
+					"1": true,
+					"a": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"7": true,
+					"13": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"4": true,
+					"9": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"5": true,
+					"10": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r6c5"
+				],
+				"opens": {
+					"3": true,
+					"6": true,
+					"7": true,
+					"12": true,
+					"16": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r6c13"
+				],
+				"opens": {
+					"8": true,
+					"11": true,
+					"a": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r5c18",
+					"r7c17"
+				],
+				"opens": {
+					"4": true,
+					"9": true,
+					"11": true,
+					"14": true,
+					"15": true
+				},
+				"showAlways": true
+			},
+			"10": {
+				"requires": [
+					"r7c1"
+				],
+				"opens": {
+					"5": true,
+					"10": true,
+					"12": true,
+					"17": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"9": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"10": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r9c9"
+				],
+				"opens": {
+					"3": true,
+					"13": true,
+					"19": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"14": true,
+					"20": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"15": true,
+					"20": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"18": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"17": true,
+					"18": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r11c4"
+				],
+				"opens": {
+					"16": true,
+					"17": true,
+					"18": true,
+					"21": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"19": true,
+					"20": true
+				}
+			},
+			"20": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"14": true,
+					"15": true,
+					"19": true,
+					"20": true,
+					"21": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"20": true,
+					"21": true
+				}
+			},
+			"a": {
+				"requires": [
+					"r2c7"
+				],
+				"opens": {
+					"1": true,
+					"a": true
+				}
+			}
+		},
+		"roomCount": 23,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_07",
+		"id": "Short_07",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- H H H H H H H H R R R H H H H R R R",
+			"- H - - - - - - - R R R - - - - R R R",
+			"- H - R R R R H H R R R - H H H R R R",
+			"- H - R R R R - - - - - H H - - - - -",
+			"- H - - - - H - R R H R R - - - R R R",
+			"- R R - - - H - R R - R R H H - R R R",
+			"- R R - - - H - H - - - - - H - R R R",
+			"- R R - - - R R R - R R - H H - R R R",
+			"- R R R - - R R R - R R - H - - R R R",
+			"- R R R - - R R R R - H - H - - H H H",
+			"- R R R H H R R R R H R R R H R R R R",
+			"- - R R - - - - - - - R R R - R R R R",
+			"- - R R H H H H H H H R R R H R R R R"
+		],
+		"encounters": {
+			"r0c10": {
+				"id": "r0c10",
+				"row": 0,
+				"col": 10,
+				"color": "1",
+				"tags": "",
+				"start": true
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c3": {
+				"id": "r2c3",
+				"row": 2,
+				"col": 3,
+				"tags": "",
+				"color": "4"
+			},
+			"r4c8": {
+				"id": "r4c8",
+				"row": 4,
+				"col": 8,
+				"tags": "",
+				"color": "8"
+			},
+			"r9c2": {
+				"id": "r9c2",
+				"row": 9,
+				"col": 2,
+				"tags": "",
+				"color": "12"
+			},
+			"r9c7": {
+				"id": "r9c7",
+				"row": 9,
+				"col": 7,
+				"tags": "",
+				"color": "15"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "21"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"color": "23"
+			},
+			"r5c17": {
+				"id": "r5c17",
+				"row": 5,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "11"
+			},
+			"r2c10": {
+				"id": "r2c10",
+				"row": 2,
+				"col": 10,
+				"tags": "",
+				"color": "1"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "",
+				"color": "10"
+			},
+			"r8c10": {
+				"id": "r8c10",
+				"row": 8,
+				"col": 10,
+				"tags": "+treasure treasure",
+				"color": "16"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"12": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r0c10",
+					"r2c10"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true,
+					"5": true
+				},
+				"showAlways": true
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"6": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c3"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"7": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"6": true,
+					"10": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"4": true,
+					"7": true,
+					"15": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r4c8"
+				],
+				"opens": {
+					"8": true,
+					"9": true,
+					"14": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"10": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"6": true,
+					"9": true,
+					"10": true,
+					"13": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r5c17"
+				],
+				"opens": {
+					"11": true,
+					"18": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r9c2"
+				],
+				"opens": {
+					"0": true,
+					"12": true,
+					"19": true,
+					"24": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"13": true,
+					"21": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"15": true
+				}
+			},
+			"15": {
+				"requires": [
+					"r9c7"
+				],
+				"opens": {
+					"7": true,
+					"14": true,
+					"15": true,
+					"19": true,
+					"20": true
+				}
+			},
+			"16": {
+				"requires": [
+					"r8c10"
+				],
+				"opens": {
+					"16": true,
+					"17": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"16": true,
+					"21": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"18": true,
+					"23": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"15": true,
+					"19": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"21": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"13": true,
+					"17": true,
+					"20": true,
+					"21": true,
+					"22": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"23": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"18": true,
+					"22": true,
+					"23": true,
+					"25": true
+				}
+			},
+			"24": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"21": true,
+					"24": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"23": true
+				}
+			}
+		},
+		"roomCount": 26,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_08",
+		"id": "Short_08",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R H H R R R R R H H H H H H R R R",
+			"R R R - - R R R R R - - - - - - R R R",
+			"R R R - - - - R R R R - R R R - R R R",
+			"- - - - - - - R R R R H R R R - - H H",
+			"R R R - - - R R R R R - R R R H R R R",
+			"R R R R R - R R R R - - - - - H R R R",
+			"R R R R R R H - - - - - - - - - R R R",
+			"R R R R R - R R R R - - - - - H R R R",
+			"H R R - - R R R R R R - R R R H R R R",
+			"- - - - - R R R R R R H R R R - - H H",
+			"R R R - - - - - R R R - R R R - R R R",
+			"R R Ra Ha Ra Ra Ra - R R - - - - - - R R R",
+			"R R R - Ra Ra Ra - R R H H H H H H R R R"
+		],
+		"encounters": {
+			"r3c13": {
+				"id": "r3c13",
+				"row": 3,
+				"col": 13,
+				"tags": "",
+				"color": "5"
+			},
+			"r9c13": {
+				"id": "r9c13",
+				"row": 9,
+				"col": 13,
+				"tags": "",
+				"color": "15"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "4"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"color": "19"
+			},
+			"r6c17": {
+				"id": "r6c17",
+				"row": 6,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "10"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "+portal portal",
+				"color": "0",
+				"alsoOpens": "a"
+			},
+			"r3c10": {
+				"id": "r3c10",
+				"row": 3,
+				"col": 10,
+				"tags": "",
+				"color": "21"
+			},
+			"r0c9": {
+				"id": "r0c9",
+				"row": 0,
+				"col": 9,
+				"tags": "",
+				"color": "22"
+			},
+			"r12c9": {
+				"id": "r12c9",
+				"row": 12,
+				"col": 9,
+				"tags": "",
+				"color": "23"
+			},
+			"r9c10": {
+				"id": "r9c10",
+				"row": 9,
+				"col": 10,
+				"tags": "",
+				"color": "24"
+			},
+			"r6c4": {
+				"id": "r6c4",
+				"row": 6,
+				"col": 4,
+				"tags": "",
+				"color": "8"
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "8",
+				"start": true
+			},
+			"r6c1": {
+				"id": "r6c1",
+				"row": 6,
+				"col": 1,
+				"tags": "",
+				"color": "8"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "18"
+			},
+			"r12c5": {
+				"id": "r12c5",
+				"row": 12,
+				"col": 5,
+				"tags": "+treasure treasure",
+				"color": "a"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"a": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"11": true,
+					"21": true,
+					"22": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"4": true,
+					"22": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r3c13"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"9": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"21": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"4": true,
+					"7": true,
+					"10": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r6c4",
+					"r4c0",
+					"r6c1"
+				],
+				"opens": {
+					"8": true,
+					"11": true,
+					"14": true
+				},
+				"showAlways": true
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"9": true,
+					"10": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r6c17"
+				],
+				"opens": {
+					"7": true,
+					"9": true,
+					"10": true,
+					"13": true,
+					"17": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"8": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"12": true,
+					"23": true,
+					"24": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"13": true,
+					"15": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"8": true
+				}
+			},
+			"15": {
+				"requires": [
+					"r9c13"
+				],
+				"opens": {
+					"13": true,
+					"15": true,
+					"16": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"24": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"17": true,
+					"19": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"18": true,
+					"a": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"17": true,
+					"19": true,
+					"20": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"20": true,
+					"23": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r3c10"
+				],
+				"opens": {
+					"2": true,
+					"6": true
+				}
+			},
+			"22": {
+				"requires": [
+					"r0c9"
+				],
+				"opens": {
+					"2": true,
+					"3": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r12c9"
+				],
+				"opens": {
+					"12": true,
+					"20": true
+				}
+			},
+			"24": {
+				"requires": [
+					"r9c10"
+				],
+				"opens": {
+					"12": true,
+					"16": true
+				}
+			},
+			"a": {
+				"requires": [
+					"r12c5"
+				],
+				"opens": {
+					"18": true,
+					"a": true
+				}
+			}
+		},
+		"roomCount": 26,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_09",
+		"id": "Short_09",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R R R H R R R R R R - - - - R R",
+			"R R R R R R H R R R R R R - - - - R R",
+			"R R H H R - - - R R R R H H H H H - H",
+			"R R R R R R H - - - - - H H H R R - H",
+			"R R R R R R H R R R R R H H H R R R H",
+			"H H H - H H - R R R R R R - - - R R -",
+			"R R R - R R R - R R R R R - - H H H H",
+			"R R R - R R R - - - - - - - - H H H H",
+			"R R R - R R R - H R R R R H - H H H H",
+			"R R R - R R R - R R R R R R - R R R R",
+			"R R R - R R R - R R H H R R - R R R R",
+			"- H H - H H - - R R R R R R - R R R R",
+			"- H H H H H H H H R R R R H - R R R R"
+		],
+		"encounters": {
+			"r10c13": {
+				"id": "r10c13",
+				"row": 10,
+				"col": 13,
+				"color": "16",
+				"tags": "",
+				"start": true
+			},
+			"r10c8": {
+				"id": "r10c8",
+				"row": 10,
+				"col": 8,
+				"tags": "",
+				"color": "16"
+			},
+			"r8c5": {
+				"id": "r8c5",
+				"row": 8,
+				"col": 5,
+				"tags": "",
+				"color": "13"
+			},
+			"r8c1": {
+				"id": "r8c1",
+				"row": 8,
+				"col": 1,
+				"tags": "",
+				"color": "12"
+			},
+			"r3c1": {
+				"id": "r3c1",
+				"row": 3,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			},
+			"r0c3": {
+				"id": "r0c3",
+				"row": 0,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c9": {
+				"id": "r1c9",
+				"row": 1,
+				"col": 9,
+				"tags": "",
+				"color": "2"
+			},
+			"r5c10": {
+				"id": "r5c10",
+				"row": 5,
+				"col": 10,
+				"tags": "",
+				"color": "9"
+			},
+			"r4c16": {
+				"id": "r4c16",
+				"row": 4,
+				"col": 16,
+				"tags": "",
+				"color": "8"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "18"
+			},
+			"r0c17": {
+				"id": "r0c17",
+				"row": 0,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r3c1",
+					"r0c3"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"4": true,
+					"7": true,
+					"10": true,
+					"11": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c9"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"5": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r0c17"
+				],
+				"opens": {
+					"3": true,
+					"6": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"5": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true,
+					"9": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r4c16"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"8": true,
+					"14": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r5c10"
+				],
+				"opens": {
+					"5": true,
+					"7": true,
+					"9": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"10": true,
+					"12": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"11": true,
+					"13": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r8c1"
+				],
+				"opens": {
+					"10": true,
+					"12": true,
+					"20": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r8c5"
+				],
+				"opens": {
+					"11": true,
+					"13": true,
+					"20": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"14": true,
+					"18": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"16": true
+				}
+			},
+			"16": {
+				"requires": [
+					"r10c13",
+					"r10c8"
+				],
+				"opens": {
+					"15": true,
+					"16": true,
+					"17": true,
+					"19": true,
+					"20": true,
+					"21": true
+				},
+				"showAlways": true
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"16": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"14": true,
+					"18": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"16": true,
+					"19": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"13": true,
+					"16": true,
+					"20": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"16": true
+				}
+			}
+		},
+		"roomCount": 22,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_10",
+		"id": "Short_10",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R H H H H H H R R - - R R H H R R R",
+			"R R - - - - - - R R - - R R - - R R R",
+			"- - - H H H H H H - - - - H - - R R R",
+			"H H H H - - - - - - - R R R R - R R R",
+			"H - - - R R R H H - H R R R R - R R R",
+			"H - R R H R R - R R R - H - - - R R R",
+			"H - R R - - - - R R R - H - - - - - H",
+			"H - H H H R R - - R - - H - R R H H H",
+			"H - H H H R R H H - - R R H R R - - H",
+			"H - R R H - H - R R - R R - - - - R R",
+			"H - R R - - H - R R H H H - - - R R R",
+			"H - - H - - H - - H - - - - R R R R R",
+			"H H H H H H H H H H H H H H R R R R R"
+		],
+		"encounters": {
+			"r5c9": {
+				"id": "r5c9",
+				"row": 5,
+				"col": 9,
+				"tags": "",
+				"color": "14"
+			},
+			"r4c13": {
+				"id": "r4c13",
+				"row": 4,
+				"col": 13,
+				"tags": "",
+				"color": "8"
+			},
+			"r10c2": {
+				"id": "r10c2",
+				"row": 10,
+				"col": 2,
+				"tags": "",
+				"color": "23"
+			},
+			"r10c8": {
+				"id": "r10c8",
+				"row": 10,
+				"col": 8,
+				"tags": "",
+				"color": "24"
+			},
+			"r8c11": {
+				"id": "r8c11",
+				"row": 8,
+				"col": 11,
+				"tags": "",
+				"color": "21"
+			},
+			"r8c15": {
+				"id": "r8c15",
+				"row": 8,
+				"col": 15,
+				"tags": "",
+				"color": "19"
+			},
+			"r0c12": {
+				"id": "r0c12",
+				"row": 0,
+				"col": 12,
+				"tags": "",
+				"color": "3"
+			},
+			"r0c9": {
+				"id": "r0c9",
+				"row": 0,
+				"col": 9,
+				"tags": "",
+				"color": "2"
+			},
+			"r2c17": {
+				"id": "r2c17",
+				"row": 2,
+				"col": 17,
+				"tags": "",
+				"color": "5"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "25"
+			},
+			"r4c5": {
+				"id": "r4c5",
+				"row": 4,
+				"col": 5,
+				"tags": "",
+				"color": "9"
+			},
+			"r5c2": {
+				"id": "r5c2",
+				"row": 5,
+				"col": 2,
+				"tags": "",
+				"color": "12"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "0"
+			},
+			"r7c9": {
+				"id": "r7c9",
+				"row": 7,
+				"col": 9,
+				"tags": "",
+				"color": "14",
+				"start": true
+			},
+			"r7c6": {
+				"id": "r7c6",
+				"row": 7,
+				"col": 6,
+				"tags": "",
+				"color": "18"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r0c9"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"6": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r0c12"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r2c17"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"16": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"6": true,
+					"18": true,
+					"23": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r4c13"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"11": true,
+					"15": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r4c5"
+				],
+				"opens": {
+					"9": true,
+					"10": true,
+					"13": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"10": true,
+					"14": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"14": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r5c2"
+				],
+				"opens": {
+					"12": true,
+					"13": true,
+					"17": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"12": true
+				}
+			},
+			"14": {
+				"requires": [
+					"r5c9",
+					"r7c9"
+				],
+				"opens": {
+					"10": true,
+					"11": true,
+					"14": true
+				},
+				"showAlways": true
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"15": true,
+					"21": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"16": true,
+					"19": true,
+					"25": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"17": true,
+					"18": true,
+					"23": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r7c6"
+				],
+				"opens": {
+					"6": true,
+					"17": true,
+					"18": true,
+					"20": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r8c15"
+				],
+				"opens": {
+					"16": true,
+					"19": true,
+					"22": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"20": true,
+					"24": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r8c11"
+				],
+				"opens": {
+					"15": true,
+					"21": true,
+					"22": true,
+					"26": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"21": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r10c2"
+				],
+				"opens": {
+					"6": true,
+					"17": true,
+					"23": true
+				}
+			},
+			"24": {
+				"requires": [
+					"r10c8"
+				],
+				"opens": {
+					"6": true,
+					"20": true,
+					"24": true,
+					"26": true
+				}
+			},
+			"25": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"6": true,
+					"16": true,
+					"25": true
+				}
+			},
+			"26": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"24": true,
+					"26": true
+				}
+			}
+		},
+		"roomCount": 27,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_11",
+		"id": "Short_11",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- - - - - R R R H H H H H H H H H R R",
+			"- R R R - R R R - - - - - - - - - R R",
+			"- R R R - R R R H H H R R R R R - - H",
+			"- R R R - - - - - - - R R R R R H H H",
+			"- H - H R R R H - - - - - - - - - - H",
+			"- H - H R R R H H H R R R R H - - - H",
+			"- H - - R R R - H - R R R - H H H H H",
+			"- H - - - H H - H - - - - H H H - - -",
+			"- H H H R R R - H - R R H H - H - - -",
+			"- - - H R R R - H - R R - R R R R R R",
+			"R R R - R R R H H H R R - R R R R R R",
+			"R R R - - - - - - - - - - R R R R R R",
+			"R R R H H H H H H H H H H R R R R R R"
+		],
+		"encounters": {
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r1c6": {
+				"id": "r1c6",
+				"row": 1,
+				"col": 6,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "2"
+			},
+			"r9c5": {
+				"id": "r9c5",
+				"row": 9,
+				"col": 5,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c13": {
+				"id": "r2c13",
+				"row": 2,
+				"col": 13,
+				"tags": "",
+				"color": "4"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "",
+				"color": "5"
+			},
+			"r10c11": {
+				"id": "r10c11",
+				"row": 10,
+				"col": 11,
+				"tags": "",
+				"color": "6"
+			},
+			"r10c14": {
+				"id": "r10c14",
+				"row": 10,
+				"col": 14,
+				"tags": "",
+				"color": "7"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"color": "7"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "8"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "9"
+			},
+			"r2c3": {
+				"id": "r2c3",
+				"row": 2,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r2c1",
+					"r2c3"
+				],
+				"opens": {
+					"2": true,
+					"3": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c6"
+				],
+				"opens": {
+					"4": true,
+					"8": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r5c5"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r9c5"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c13"
+				],
+				"opens": {
+					"1": true,
+					"5": true,
+					"6": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true,
+					"6": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r10c11"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true,
+					"5": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r10c14",
+					"r11c17"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"6": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"5": true,
+					"6": true,
+					"7": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"7": true
+				}
+			}
+		},
+		"roomCount": 10,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_12",
+		"id": "Short_12",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- R R R R R H H H H H H H H H H R R R",
+			"R R R R R R - - - - - H - - - - R R R",
+			"R R R R R R - R R - H - R R R - R R R",
+			"R R R R R R - R R H H H R R R - - - -",
+			"H - - - - H H R R - H - R R R H H - -",
+			"H H H - H H - - - H H - H H H - H H -",
+			"H H H H H R R R R - H - R R R - - H -",
+			"H H H - H R R R R H H H R R R - H H -",
+			"H - - - - - - - - - H - R R R H - H -",
+			"H H H R R R R R - H - - - - - R R R -",
+			"H - - R R R R R H H H R R R - R R R -",
+			"R R - - - - - - - - - R R R - R R R -",
+			"R R H H H H H H H H H R R R - - - R -"
+		],
+		"encounters": {
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"end": true,
+				"color": "15"
+			},
+			"r10c16": {
+				"id": "r10c16",
+				"row": 10,
+				"col": 16,
+				"tags": "",
+				"color": "14"
+			},
+			"r7c13": {
+				"id": "r7c13",
+				"row": 7,
+				"col": 13,
+				"tags": "",
+				"color": "10"
+			},
+			"r3c13": {
+				"id": "r3c13",
+				"row": 3,
+				"col": 13,
+				"tags": "",
+				"color": "5"
+			},
+			"r3c7": {
+				"id": "r3c7",
+				"row": 3,
+				"col": 7,
+				"tags": "",
+				"color": "3"
+			},
+			"r7c7": {
+				"id": "r7c7",
+				"row": 7,
+				"col": 7,
+				"tags": "",
+				"color": "9"
+			},
+			"r9c4": {
+				"id": "r9c4",
+				"row": 9,
+				"col": 4,
+				"tags": "",
+				"color": "12"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"color": "16"
+			},
+			"r1c4": {
+				"id": "r1c4",
+				"row": 1,
+				"col": 4,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "2"
+			},
+			"r12c17": {
+				"id": "r12c17",
+				"row": 12,
+				"col": 17,
+				"tags": "",
+				"color": "14",
+				"start": true
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c4",
+					"r2c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"6": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"1": true,
+					"2": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r3c7"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"6": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"9": true,
+					"10": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r3c13"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"3": true,
+					"6": true,
+					"9": true,
+					"12": true,
+					"16": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"7": true,
+					"14": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"8": true,
+					"10": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r7c7"
+				],
+				"opens": {
+					"4": true,
+					"6": true,
+					"9": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r7c13"
+				],
+				"opens": {
+					"4": true,
+					"8": true,
+					"10": true,
+					"11": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"14": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r9c4"
+				],
+				"opens": {
+					"6": true,
+					"12": true,
+					"13": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"13": true,
+					"15": true
+				}
+			},
+			"14": {
+				"requires": [
+					"r10c16",
+					"r12c17"
+				],
+				"opens": {
+					"7": true,
+					"11": true,
+					"14": true
+				},
+				"showAlways": true
+			},
+			"15": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"13": true,
+					"15": true,
+					"17": true
+				}
+			},
+			"16": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"6": true,
+					"16": true,
+					"17": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"16": true,
+					"17": true
+				}
+			}
+		},
+		"roomCount": 18,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_13",
+		"id": "Short_13",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - R R R",
+			"- - H H H R R R - - - R R - - R R R R",
+			"- - H - - R R R H H R R R R H R R R R",
+			"- - R - - - H - - - R R R R - - - H -",
+			"- R R R - - R R - - H - - - - - R R -",
+			"- R R R H H R R R - R R R - - R R - -",
+			"- R R - - - R R R H R R R - - R R R -",
+			"- H - - - - H - - - - H - - - R R R -",
+			"- H - - - - R R R - - R R R H R R - -",
+			"R R R - - - - R R H H R R R - - - - -",
+			"R R R R - - R R R - - - R R - - R R -",
+			"R R R R H H R R R H R R - - - R R R R",
+			"R R R R - - - R R - R R H H H R R R R"
+		],
+		"encounters": {
+			"r0c18": {
+				"id": "r0c18",
+				"row": 0,
+				"col": 18,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r2c12": {
+				"id": "r2c12",
+				"row": 2,
+				"col": 12,
+				"tags": "",
+				"color": "3"
+			},
+			"r7c16": {
+				"id": "r7c16",
+				"row": 7,
+				"col": 16,
+				"tags": "",
+				"color": "11"
+			},
+			"r12c10": {
+				"id": "r12c10",
+				"row": 12,
+				"col": 10,
+				"tags": "",
+				"color": "26"
+			},
+			"r9c12": {
+				"id": "r9c12",
+				"row": 9,
+				"col": 12,
+				"tags": "",
+				"color": "19"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "",
+				"color": "13"
+			},
+			"r5c7": {
+				"id": "r5c7",
+				"row": 5,
+				"col": 7,
+				"tags": "",
+				"color": "9"
+			},
+			"r10c7": {
+				"id": "r10c7",
+				"row": 10,
+				"col": 7,
+				"tags": "",
+				"color": "18"
+			},
+			"r5c2": {
+				"id": "r5c2",
+				"row": 5,
+				"col": 2,
+				"tags": "",
+				"color": "6"
+			},
+			"r1c6": {
+				"id": "r1c6",
+				"row": 1,
+				"col": 6,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "21"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "23"
+			},
+			"r1c16": {
+				"id": "r1c16",
+				"row": 1,
+				"col": 16,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c18",
+					"r1c16"
+				],
+				"opens": {
+					"0": true,
+					"5": true,
+					"8": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"6": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c6"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r2c12"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"10": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"3": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r5c2"
+				],
+				"opens": {
+					"1": true,
+					"6": true,
+					"12": true,
+					"15": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"9": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"11": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r5c7"
+				],
+				"opens": {
+					"7": true,
+					"9": true,
+					"12": true,
+					"14": true,
+					"16": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"13": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r7c16"
+				],
+				"opens": {
+					"8": true,
+					"11": true,
+					"20": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"6": true,
+					"9": true,
+					"12": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"10": true,
+					"13": true,
+					"14": true,
+					"17": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"13": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"6": true,
+					"15": true,
+					"21": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"18": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"19": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r10c7"
+				],
+				"opens": {
+					"16": true,
+					"18": true,
+					"22": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r9c12"
+				],
+				"opens": {
+					"17": true,
+					"19": true,
+					"20": true,
+					"22": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"19": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"15": true,
+					"21": true,
+					"24": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"19": true,
+					"22": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"23": true,
+					"27": true
+				}
+			},
+			"24": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"21": true,
+					"24": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"26": true
+				}
+			},
+			"26": {
+				"requires": [
+					"r12c10"
+				],
+				"opens": {
+					"25": true,
+					"26": true,
+					"27": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"23": true,
+					"26": true,
+					"27": true
+				}
+			}
+		},
+		"roomCount": 28,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_14",
+		"id": "Short_14",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R H H R R R H R R R H H R R R R",
+			"R R R R H H R R R H R R R H H R R R R",
+			"R R R R - - R R R - - - - - - - R R R",
+			"R R R R - - R R R H H R R R H H - - -",
+			"- H H - - - R R R H H R R R H R R R -",
+			"- H H - - - H H - - - H H - - R R R -",
+			"- R R R - - R R R H R R R - - R R R -",
+			"- R R R H H R R R H R R R - - - R R -",
+			"- R R R H H R R R - H H - - - - R R -",
+			"- R R R - - H H - - R R R R R - H - -",
+			"- H H - - R R R H H R R R R R H R R R",
+			"- H H H H R R R H H R R R R R - R R R",
+			"- H H H H H H - - - - - - - - - R R R"
+		],
+		"encounters": {
+			"r12c18": {
+				"id": "r12c18",
+				"row": 12,
+				"col": 18,
+				"color": "27",
+				"tags": "",
+				"start": true
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "21"
+			},
+			"r5c16": {
+				"id": "r5c16",
+				"row": 5,
+				"col": 16,
+				"tags": "",
+				"color": "11"
+			},
+			"r7c7": {
+				"id": "r7c7",
+				"row": 7,
+				"col": 7,
+				"tags": "",
+				"color": "15"
+			},
+			"r10c5": {
+				"id": "r10c5",
+				"row": 10,
+				"col": 5,
+				"tags": "",
+				"color": "24"
+			},
+			"r7c2": {
+				"id": "r7c2",
+				"row": 7,
+				"col": 2,
+				"tags": "",
+				"color": "14"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r2c7": {
+				"id": "r2c7",
+				"row": 2,
+				"col": 7,
+				"tags": "",
+				"color": "2"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "6"
+			},
+			"r10c16": {
+				"id": "r10c16",
+				"row": 10,
+				"col": 16,
+				"tags": "",
+				"color": "28"
+			},
+			"r0c11": {
+				"id": "r0c11",
+				"row": 0,
+				"col": 11,
+				"tags": "",
+				"color": "4"
+			},
+			"r3c12": {
+				"id": "r3c12",
+				"row": 3,
+				"col": 12,
+				"tags": "",
+				"color": "8"
+			},
+			"r7c12": {
+				"id": "r7c12",
+				"row": 7,
+				"col": 12,
+				"tags": "",
+				"color": "17"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"10": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r2c7"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"3": true,
+					"7": true,
+					"12": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r0c11"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"4": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"5": true,
+					"6": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r3c12"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"9": true,
+					"13": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"9": true,
+					"11": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"10": true,
+					"14": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r5c16"
+				],
+				"opens": {
+					"9": true,
+					"11": true,
+					"22": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"12": true,
+					"15": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"13": true,
+					"17": true
+				}
+			},
+			"14": {
+				"requires": [
+					"r7c2"
+				],
+				"opens": {
+					"10": true,
+					"14": true,
+					"18": true,
+					"23": true
+				}
+			},
+			"15": {
+				"requires": [
+					"r7c7"
+				],
+				"opens": {
+					"12": true,
+					"15": true,
+					"16": true,
+					"18": true,
+					"20": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"16": true,
+					"17": true
+				}
+			},
+			"17": {
+				"requires": [
+					"r7c12"
+				],
+				"opens": {
+					"13": true,
+					"16": true,
+					"17": true,
+					"19": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"14": true,
+					"15": true,
+					"18": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"17": true,
+					"19": true,
+					"21": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"20": true,
+					"24": true
+				}
+			},
+			"21": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"19": true,
+					"21": true,
+					"25": true,
+					"26": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"28": true
+				}
+			},
+			"23": {
+				"requires": [],
+				"opens": {
+					"14": true,
+					"23": true,
+					"24": true
+				}
+			},
+			"24": {
+				"requires": [
+					"r10c5"
+				],
+				"opens": {
+					"20": true,
+					"23": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"26": {
+				"requires": [],
+				"opens": {
+					"21": true,
+					"28": true
+				}
+			},
+			"27": {
+				"requires": [
+					"r12c18"
+				],
+				"opens": {
+					"27": true,
+					"28": true
+				},
+				"showAlways": true
+			},
+			"28": {
+				"requires": [
+					"r10c16"
+				],
+				"opens": {
+					"22": true,
+					"26": true,
+					"27": true
+				}
+			}
+		},
+		"roomCount": 29,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_15",
+		"id": "Short_15",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"- R R R R R R R H - H R R R R R R R -",
+			"R R R R R R R H H - H H R R R R R R R",
+			"H H - H H - H H - - - H H - H H - H H",
+			"R R - R R - R R H - H R R - R R - R R",
+			"R R - R R - R R H - H R R - R R - R R",
+			"R R - R R - R R - - - R R - R R - R R",
+			"H H H H H - H H R R R H H - H H H H H",
+			"R R - R R - R R R R R R R - R R - R R",
+			"R R - R R - R R R R R R R - R R - R R",
+			"R R - R R - H H - - - H H - R R - R R",
+			"H H - H H - - - R R R - - - H H - H H",
+			"R R R R R H H R R R R R H H R R R R R",
+			"- R R R R H H R R R R R H H R R R R -"
+		],
+		"encounters": {
+			"r12c9": {
+				"id": "r12c9",
+				"row": 12,
+				"col": 9,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r7c9": {
+				"id": "r7c9",
+				"row": 7,
+				"col": 9,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r10c9": {
+				"id": "r10c9",
+				"row": 10,
+				"col": 9,
+				"tags": "",
+				"color": "0"
+			},
+			"r11c2": {
+				"id": "r11c2",
+				"row": 11,
+				"col": 2,
+				"tags": "",
+				"color": "2"
+			},
+			"r8c0": {
+				"id": "r8c0",
+				"row": 8,
+				"col": 0,
+				"tags": "",
+				"color": "3"
+			},
+			"r8c4": {
+				"id": "r8c4",
+				"row": 8,
+				"col": 4,
+				"tags": "",
+				"color": "4"
+			},
+			"r4c0": {
+				"id": "r4c0",
+				"row": 4,
+				"col": 0,
+				"tags": "",
+				"color": "5"
+			},
+			"r4c4": {
+				"id": "r4c4",
+				"row": 4,
+				"col": 4,
+				"tags": "",
+				"color": "6"
+			},
+			"r4c14": {
+				"id": "r4c14",
+				"row": 4,
+				"col": 14,
+				"tags": "",
+				"color": "7"
+			},
+			"r4c18": {
+				"id": "r4c18",
+				"row": 4,
+				"col": 18,
+				"tags": "",
+				"color": "8"
+			},
+			"r0c3": {
+				"id": "r0c3",
+				"row": 0,
+				"col": 3,
+				"tags": "",
+				"color": "9"
+			},
+			"r0c15": {
+				"id": "r0c15",
+				"row": 0,
+				"col": 15,
+				"tags": "",
+				"color": "10"
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"color": "11"
+			},
+			"r8c14": {
+				"id": "r8c14",
+				"row": 8,
+				"col": 14,
+				"tags": "",
+				"color": "12"
+			},
+			"r8c18": {
+				"id": "r8c18",
+				"row": 8,
+				"col": 18,
+				"tags": "",
+				"color": "13"
+			},
+			"r4c7": {
+				"id": "r4c7",
+				"row": 4,
+				"col": 7,
+				"tags": "+treasure treasure",
+				"color": "14"
+			},
+			"r4c11": {
+				"id": "r4c11",
+				"row": 4,
+				"col": 11,
+				"tags": "+treasure treasure",
+				"color": "15"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r12c9",
+					"r10c9"
+				],
+				"opens": {
+					"2": true,
+					"11": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r7c9"
+				],
+				"opens": {
+					"14": true,
+					"15": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c2"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r8c0"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r8c4"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r4c0"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"6": true,
+					"9": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r4c4"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"9": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r4c14"
+				],
+				"opens": {
+					"8": true,
+					"10": true,
+					"12": true,
+					"13": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r4c18"
+				],
+				"opens": {
+					"7": true,
+					"10": true,
+					"12": true,
+					"13": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r0c3"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"14": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r0c15"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"15": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r11c16"
+				],
+				"opens": {
+					"0": true,
+					"12": true,
+					"13": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r8c14"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"11": true,
+					"13": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r8c18"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"11": true,
+					"12": true
+				}
+			},
+			"14": {
+				"requires": [
+					"r4c7"
+				],
+				"opens": {
+					"1": true,
+					"9": true
+				}
+			},
+			"15": {
+				"requires": [
+					"r4c11"
+				],
+				"opens": {
+					"1": true,
+					"10": true
+				}
+			}
+		},
+		"roomCount": 16,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_16",
+		"id": "Short_16",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"H H R R R R - - - R R - - R R R R H H",
+			"R R R R R R H H R R R H H R R R R R R",
+			"R R R R R R - - R R - - - R R R R R R",
+			"H - - H - - - - - - - - - - - H - - H",
+			"R R R R - H R H R - R H R H - R R R R",
+			"H - R R - R R - R R R - R R - R R - H",
+			"H R R R H R R - R R R - R R H R R R H",
+			"H - R R - R R - - R - - R R - R R - H",
+			"R R R R - H R H R R R H R H - R R R R",
+			"H - - H - - - - - - - - - - - H - - H",
+			"R R R R R H - - R R R - - H R R R R R",
+			"R R R R R R H H R R R H H R R R R R R",
+			"H H R R R H - - R R R - - H R R R H H"
+		],
+		"encounters": {
+			"r6c6": {
+				"id": "r6c6",
+				"row": 6,
+				"col": 6,
+				"tags": "",
+				"color": "13"
+			},
+			"r6c12": {
+				"id": "r6c12",
+				"row": 6,
+				"col": 12,
+				"tags": "",
+				"color": "17"
+			},
+			"r6c2": {
+				"id": "r6c2",
+				"row": 6,
+				"col": 2,
+				"tags": "",
+				"color": "11"
+			},
+			"r6c16": {
+				"id": "r6c16",
+				"row": 6,
+				"col": 16,
+				"tags": "",
+				"color": "19"
+			},
+			"r1c4": {
+				"id": "r1c4",
+				"row": 1,
+				"col": 4,
+				"tags": "",
+				"color": "1"
+			},
+			"r1c14": {
+				"id": "r1c14",
+				"row": 1,
+				"col": 14,
+				"tags": "",
+				"color": "3"
+			},
+			"r1c9": {
+				"id": "r1c9",
+				"row": 1,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "2"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "",
+				"end": true,
+				"color": "34"
+			},
+			"r8c9": {
+				"id": "r8c9",
+				"row": 8,
+				"col": 9,
+				"color": "15",
+				"tags": "",
+				"start": true
+			},
+			"r5c9": {
+				"id": "r5c9",
+				"row": 5,
+				"col": 9,
+				"tags": "",
+				"color": "15"
+			},
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "",
+				"color": "36"
+			},
+			"r11c3": {
+				"id": "r11c3",
+				"row": 11,
+				"col": 3,
+				"tags": "",
+				"color": "32"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c4"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"5": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c9"
+				],
+				"opens": {
+					"2": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c14"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"6": true,
+					"9": true,
+					"10": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"5": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true,
+					"6": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"11": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"11": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"19": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"19": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r6c2"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"11": true,
+					"20": true,
+					"22": true,
+					"28": true,
+					"29": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"13": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r6c6"
+				],
+				"opens": {
+					"12": true,
+					"13": true,
+					"14": true,
+					"22": true,
+					"24": true,
+					"25": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"15": true
+				}
+			},
+			"15": {
+				"requires": [
+					"r8c9",
+					"r5c9"
+				],
+				"opens": {
+					"14": true,
+					"15": true,
+					"16": true,
+					"25": true,
+					"26": true
+				},
+				"showAlways": true
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"17": true
+				}
+			},
+			"17": {
+				"requires": [
+					"r6c12"
+				],
+				"opens": {
+					"16": true,
+					"17": true,
+					"18": true,
+					"23": true,
+					"26": true,
+					"27": true
+				}
+			},
+			"18": {
+				"requires": [],
+				"opens": {
+					"17": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r6c16"
+				],
+				"opens": {
+					"9": true,
+					"10": true,
+					"19": true,
+					"21": true,
+					"23": true,
+					"30": true,
+					"31": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"20": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"21": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"13": true
+				}
+			},
+			"23": {
+				"requires": [],
+				"opens": {
+					"17": true,
+					"19": true
+				}
+			},
+			"24": {
+				"requires": [],
+				"opens": {
+					"13": true
+				}
+			},
+			"25": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"15": true
+				}
+			},
+			"26": {
+				"requires": [],
+				"opens": {
+					"15": true,
+					"17": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"17": true
+				}
+			},
+			"28": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"32": true
+				}
+			},
+			"29": {
+				"requires": [],
+				"opens": {
+					"11": true,
+					"32": true
+				}
+			},
+			"30": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"36": true
+				}
+			},
+			"31": {
+				"requires": [],
+				"opens": {
+					"19": true,
+					"36": true
+				}
+			},
+			"32": {
+				"requires": [
+					"r11c3"
+				],
+				"opens": {
+					"28": true,
+					"29": true,
+					"32": true,
+					"33": true,
+					"37": true,
+					"39": true,
+					"40": true
+				}
+			},
+			"33": {
+				"requires": [],
+				"opens": {
+					"32": true
+				}
+			},
+			"34": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"34": true,
+					"37": true,
+					"38": true
+				}
+			},
+			"35": {
+				"requires": [],
+				"opens": {
+					"36": true
+				}
+			},
+			"36": {
+				"requires": [
+					"r11c15"
+				],
+				"opens": {
+					"30": true,
+					"31": true,
+					"35": true,
+					"36": true,
+					"38": true,
+					"41": true,
+					"42": true
+				}
+			},
+			"37": {
+				"requires": [],
+				"opens": {
+					"32": true,
+					"34": true,
+					"37": true
+				}
+			},
+			"38": {
+				"requires": [],
+				"opens": {
+					"34": true,
+					"36": true,
+					"38": true
+				}
+			},
+			"39": {
+				"requires": [],
+				"opens": {
+					"32": true,
+					"39": true
+				}
+			},
+			"40": {
+				"requires": [],
+				"opens": {
+					"32": true
+				}
+			},
+			"41": {
+				"requires": [],
+				"opens": {
+					"36": true
+				}
+			},
+			"42": {
+				"requires": [],
+				"opens": {
+					"36": true,
+					"42": true
+				}
+			}
+		},
+		"roomCount": 43,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_17",
+		"id": "Short_17",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - - - - R R R H H R R R H H H H",
+			"R R R H H - H R R R - - R R R - - - H",
+			"R R R - - - - R R R H H R R R H H - H",
+			"H - - - - - - - - - - - - - - - H - H",
+			"H - H H R R R - - - - R R R - - R R R",
+			"R R R - R R R - - - - R R R - - R R R",
+			"R R R - R R R H H H - R R R - - R R R",
+			"R R R H - - - - - H - - H - - - H - H",
+			"- - - H - - - - R R R H R R R R R R R",
+			"R R R R - - - - R R R - R R R R R R R",
+			"R R R R - - - - R R R H R R R R R R R",
+			"R R R R - - - - - H - - R R R R R R R",
+			"R R R R H H H H H H - - R R - - - R R"
+		],
+		"encounters": {
+			"r5c12": {
+				"id": "r5c12",
+				"row": 5,
+				"col": 12,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r6c0": {
+				"id": "r6c0",
+				"row": 6,
+				"col": 0,
+				"tags": "",
+				"color": "1",
+				"start": true
+			},
+			"r6c2": {
+				"id": "r6c2",
+				"row": 6,
+				"col": 2,
+				"tags": "",
+				"color": "1"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "",
+				"color": "2"
+			},
+			"r10c1": {
+				"id": "r10c1",
+				"row": 10,
+				"col": 1,
+				"tags": "",
+				"color": "3"
+			},
+			"r9c9": {
+				"id": "r9c9",
+				"row": 9,
+				"col": 9,
+				"tags": "",
+				"color": "4"
+			},
+			"r1c8": {
+				"id": "r1c8",
+				"row": 1,
+				"col": 8,
+				"tags": "+treasure treasure",
+				"color": "5"
+			},
+			"r1c13": {
+				"id": "r1c13",
+				"row": 1,
+				"col": 13,
+				"tags": "",
+				"color": "6"
+			},
+			"r5c17": {
+				"id": "r5c17",
+				"row": 5,
+				"col": 17,
+				"tags": "",
+				"color": "7"
+			},
+			"r10c15": {
+				"id": "r10c15",
+				"row": 10,
+				"col": 15,
+				"tags": "",
+				"color": "8"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "9"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r5c12"
+				],
+				"opens": {
+					"8": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r6c0",
+					"r6c2"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"9": true
+				},
+				"showAlways": true
+			},
+			"2": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r10c1"
+				],
+				"opens": {
+					"1": true,
+					"4": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r9c9"
+				],
+				"opens": {
+					"3": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c8"
+				],
+				"opens": {
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r1c13"
+				],
+				"opens": {
+					"5": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r5c17"
+				],
+				"opens": {
+					"6": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r10c15"
+				],
+				"opens": {
+					"0": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r5c5"
+				],
+				"opens": {
+					"1": true,
+					"4": true
+				}
+			}
+		},
+		"roomCount": 10,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_18",
+		"id": "Short_18",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R R R R R - - - H H H H H R R R -",
+			"R - R - R - R - - - H - - H - R R R R",
+			"R R R R R R R H R R R - - - - R R R R",
+			"R - R R R - R H R R R - - H - - R R R",
+			"R R R R R R R H R R R - R R R - - - H",
+			"- H - - - - H - - - H - R - R H R R R",
+			"R R R - - R R R - H H - R R R - R R R",
+			"R R R - - R R R - H - - R R R - R R R",
+			"R R R - - R R R - H H H R R R - - - H",
+			"- H - - - - - - - - - - - - - - - - H",
+			"- H - - R R R - R R R - - - R R R R R",
+			"- H H H R R R H R R R H - H R R R R R",
+			"- - - - R R R - R R R - - - R R R R -"
+		],
+		"encounters": {
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "",
+				"color": "19"
+			},
+			"r6c18": {
+				"id": "r6c18",
+				"row": 6,
+				"col": 18,
+				"tags": "",
+				"color": "12",
+				"start": true
+			},
+			"r6c16": {
+				"id": "r6c16",
+				"row": 6,
+				"col": 16,
+				"tags": "",
+				"color": "12"
+			},
+			"r7c13": {
+				"id": "r7c13",
+				"row": 7,
+				"col": 13,
+				"tags": "",
+				"color": "6"
+			},
+			"r1c16": {
+				"id": "r1c16",
+				"row": 1,
+				"col": 16,
+				"tags": "",
+				"color": "2"
+			},
+			"r3c9": {
+				"id": "r3c9",
+				"row": 3,
+				"col": 9,
+				"tags": "",
+				"color": "4"
+			},
+			"r11c5": {
+				"id": "r11c5",
+				"row": 11,
+				"col": 5,
+				"tags": "",
+				"color": "17"
+			},
+			"r7c1": {
+				"id": "r7c1",
+				"row": 7,
+				"col": 1,
+				"tags": "",
+				"color": "13"
+			},
+			"r7c6": {
+				"id": "r7c6",
+				"row": 7,
+				"col": 6,
+				"tags": "",
+				"end": true,
+				"color": "14"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "18"
+			},
+			"r3c3": {
+				"id": "r3c3",
+				"row": 3,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r3c3"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c16"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"7": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r3c9"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true,
+					"10": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r7c13"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"10": true,
+					"11": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"12": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"13": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"14": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"4": true,
+					"6": true,
+					"10": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"6": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r6c18",
+					"r6c16"
+				],
+				"opens": {
+					"7": true,
+					"11": true,
+					"12": true,
+					"15": true
+				},
+				"showAlways": true
+			},
+			"13": {
+				"requires": [
+					"r7c1"
+				],
+				"opens": {
+					"8": true,
+					"13": true,
+					"16": true
+				}
+			},
+			"14": {
+				"requires": [
+					"r7c6"
+				],
+				"opens": {
+					"9": true,
+					"14": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"15": true,
+					"19": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"16": true,
+					"17": true
+				}
+			},
+			"17": {
+				"requires": [
+					"r11c5"
+				],
+				"opens": {
+					"16": true,
+					"17": true,
+					"20": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"18": true,
+					"20": true,
+					"21": true
+				}
+			},
+			"19": {
+				"requires": [
+					"r11c15"
+				],
+				"opens": {
+					"15": true,
+					"19": true,
+					"22": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"17": true,
+					"18": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"18": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"19": true
+				}
+			}
+		},
+		"roomCount": 23,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_19",
+		"id": "Short_19",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - R R R R R R - R R R R - R R R",
+			"R R R - R R R R R R H R R R R H R R R",
+			"- H - - R R R R R R - R R R R - R R R",
+			"R R R - - H - - - - - - - - - - - H H",
+			"R R R - - R R R R R R R H R R - R R R",
+			"R R R - - R R R R R H H - R R H R R R",
+			"- - H - - - H H R R H H - R R - R R R",
+			"R R R - H H H H R R R R H R R - R R R",
+			"R R R H H - - H - - H - - R R - - H -",
+			"- H - - - - R R - - R R - R R - R R R",
+			"R R R R - - R R - H R R - H - - R R R",
+			"R R R R - - R R H H R R - H - - R R R",
+			"R R R R H H R R - - R R H H H H R R R"
+		],
+		"encounters": {
+			"r4c1": {
+				"id": "r4c1",
+				"row": 4,
+				"col": 1,
+				"tags": "",
+				"color": "7"
+			},
+			"r7c1": {
+				"id": "r7c1",
+				"row": 7,
+				"col": 1,
+				"tags": "",
+				"color": "18"
+			},
+			"r10c7": {
+				"id": "r10c7",
+				"row": 10,
+				"col": 7,
+				"tags": "",
+				"color": "23"
+			},
+			"r11c11": {
+				"id": "r11c11",
+				"row": 11,
+				"col": 11,
+				"tags": "",
+				"color": "24"
+			},
+			"r10c17": {
+				"id": "r10c17",
+				"row": 10,
+				"col": 17,
+				"tags": "",
+				"color": "25"
+			},
+			"r6c17": {
+				"id": "r6c17",
+				"row": 6,
+				"col": 17,
+				"tags": "",
+				"color": "13"
+			},
+			"r0c18": {
+				"id": "r0c18",
+				"row": 0,
+				"col": 18,
+				"tags": "",
+				"color": "3",
+				"start": true
+			},
+			"r1c12": {
+				"id": "r1c12",
+				"row": 1,
+				"col": 12,
+				"tags": "",
+				"color": "2"
+			},
+			"r6c13": {
+				"id": "r6c13",
+				"row": 6,
+				"col": 13,
+				"tags": "",
+				"color": "12"
+			},
+			"r5c8": {
+				"id": "r5c8",
+				"row": 5,
+				"col": 8,
+				"tags": "",
+				"color": "10"
+			},
+			"r1c6": {
+				"id": "r1c6",
+				"row": 1,
+				"col": 6,
+				"tags": "",
+				"color": "1"
+			},
+			"r0c1": {
+				"id": "r0c1",
+				"row": 0,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "0"
+			},
+			"r11c2": {
+				"id": "r11c2",
+				"row": 11,
+				"col": 2,
+				"tags": "",
+				"end": true,
+				"color": "26"
+			},
+			"r2c16": {
+				"id": "r2c16",
+				"row": 2,
+				"col": 16,
+				"tags": "",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c1"
+				],
+				"opens": {
+					"0": true,
+					"6": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c6"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"8": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c12"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r0c18",
+					"r2c16"
+				],
+				"opens": {
+					"3": true,
+					"5": true,
+					"9": true
+				},
+				"showAlways": true
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"3": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r4c1"
+				],
+				"opens": {
+					"6": true,
+					"7": true,
+					"16": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"10": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"9": true,
+					"13": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r5c8"
+				],
+				"opens": {
+					"8": true,
+					"10": true,
+					"11": true,
+					"14": true,
+					"17": true,
+					"19": true,
+					"20": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r6c13"
+				],
+				"opens": {
+					"11": true,
+					"12": true,
+					"15": true,
+					"19": true,
+					"28": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r6c17"
+				],
+				"opens": {
+					"9": true,
+					"13": true,
+					"15": true,
+					"21": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"14": true
+				}
+			},
+			"15": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"13": true
+				}
+			},
+			"16": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"18": true
+				}
+			},
+			"17": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"17": true,
+					"18": true,
+					"23": true
+				}
+			},
+			"18": {
+				"requires": [
+					"r7c1"
+				],
+				"opens": {
+					"16": true,
+					"17": true,
+					"18": true,
+					"22": true
+				}
+			},
+			"19": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"12": true
+				}
+			},
+			"20": {
+				"requires": [],
+				"opens": {
+					"10": true,
+					"24": true
+				}
+			},
+			"21": {
+				"requires": [],
+				"opens": {
+					"13": true,
+					"25": true
+				}
+			},
+			"22": {
+				"requires": [],
+				"opens": {
+					"18": true,
+					"26": true
+				}
+			},
+			"23": {
+				"requires": [
+					"r10c7"
+				],
+				"opens": {
+					"17": true,
+					"23": true,
+					"27": true,
+					"29": true
+				}
+			},
+			"24": {
+				"requires": [
+					"r11c11"
+				],
+				"opens": {
+					"20": true,
+					"24": true,
+					"27": true,
+					"28": true
+				}
+			},
+			"25": {
+				"requires": [
+					"r10c17"
+				],
+				"opens": {
+					"21": true,
+					"25": true,
+					"28": true
+				}
+			},
+			"26": {
+				"requires": [
+					"r11c2"
+				],
+				"opens": {
+					"22": true,
+					"26": true,
+					"29": true
+				}
+			},
+			"27": {
+				"requires": [],
+				"opens": {
+					"23": true,
+					"24": true,
+					"27": true
+				}
+			},
+			"28": {
+				"requires": [],
+				"opens": {
+					"12": true,
+					"24": true,
+					"25": true,
+					"28": true
+				}
+			},
+			"29": {
+				"requires": [],
+				"opens": {
+					"23": true,
+					"26": true,
+					"29": true
+				}
+			}
+		},
+		"roomCount": 30,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_20",
+		"id": "Short_20",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - - - - R R R H R R - - R R R R",
+			"R R R - - - - R R R - R R - - R R R R",
+			"R R R H H H H R R - R R R H H R R R R",
+			"R R R - R R - R R H R R R - - - - - H",
+			"- - H - R R - H - - - - H - R R R R R",
+			"R R R - R R - R R R R R R H R R R R R",
+			"R R R H R R H R R R R R R - - - H - -",
+			"R R R H R R H R R R R R R - R R R R R",
+			"R R R - R R - R R R R R R - R R R R R",
+			"H - - - H H - - - - H H - - - - R R R",
+			"R R R - R R R R H R R R R R R - - - H",
+			"R R R - R R R R - R R R R R R - R R R",
+			"R R R H R R R R - R R R R R R - R R R"
+		],
+		"encounters": {
+			"r12c0": {
+				"id": "r12c0",
+				"row": 12,
+				"col": 0,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r7c1": {
+				"id": "r7c1",
+				"row": 7,
+				"col": 1,
+				"tags": "",
+				"color": "1"
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "",
+				"color": "2"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "3"
+			},
+			"r7c10": {
+				"id": "r7c10",
+				"row": 7,
+				"col": 10,
+				"tags": "",
+				"color": "4"
+			},
+			"r1c8": {
+				"id": "r1c8",
+				"row": 1,
+				"col": 8,
+				"tags": "",
+				"color": "5"
+			},
+			"r2c11": {
+				"id": "r2c11",
+				"row": 2,
+				"col": 11,
+				"tags": "",
+				"color": "6"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "7"
+			},
+			"r5c17": {
+				"id": "r5c17",
+				"row": 5,
+				"col": 17,
+				"tags": "",
+				"color": "8"
+			},
+			"r8c17": {
+				"id": "r8c17",
+				"row": 8,
+				"col": 17,
+				"tags": "",
+				"color": "9"
+			},
+			"r12c17": {
+				"id": "r12c17",
+				"row": 12,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "10"
+			},
+			"r11c5": {
+				"id": "r11c5",
+				"row": 11,
+				"col": 5,
+				"tags": "",
+				"color": "11"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "12"
+			},
+			"r10c2": {
+				"id": "r10c2",
+				"row": 10,
+				"col": 2,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r12c0",
+					"r10c2"
+				],
+				"opens": {
+					"1": true,
+					"11": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r7c1"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r2c1"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"5": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r5c5"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true,
+					"5": true,
+					"11": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r7c10"
+				],
+				"opens": {
+					"3": true,
+					"5": true,
+					"6": true,
+					"8": true,
+					"12": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c8"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"4": true,
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r2c11"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"6": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r5c17"
+				],
+				"opens": {
+					"4": true,
+					"7": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r8c17"
+				],
+				"opens": {
+					"8": true,
+					"10": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r12c17"
+				],
+				"opens": {
+					"9": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r11c5"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"4": true,
+					"11": true
+				}
+			}
+		},
+		"roomCount": 13,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_21",
+		"id": "Short_21",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - R R R R - R R R R R H - R R R",
+			"R R R H R R R R H R R R R R R - R R R",
+			"R R R - R R R - - R R R R R R - - H -",
+			"- H - - H H - - - - - H - - - R R R -",
+			"R R R - R R R H R R R R R R - R R R R",
+			"R R R H R R R - H R R R R H - - R R R",
+			"R R R H R R R - H R R R H H H H - H -",
+			"R R R - R R R H R R R R H H - R R R R",
+			"H - H - R R - - H - - - H - - R R R R",
+			"R R R - R R - R R H H R R - - - - H -",
+			"R R R - H H R R R H H R R R H R R R R",
+			"R R R - H H R R R H H R R R H R R R R",
+			"R R R H H H R R R H H R R R H R R R R"
+		],
+		"encounters": {
+			"r0c0": {
+				"id": "r0c0",
+				"row": 0,
+				"col": 0,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r5c1": {
+				"id": "r5c1",
+				"row": 5,
+				"col": 1,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c1": {
+				"id": "r10c1",
+				"row": 10,
+				"col": 1,
+				"tags": "",
+				"color": "2"
+			},
+			"r6c5": {
+				"id": "r6c5",
+				"row": 6,
+				"col": 5,
+				"tags": "",
+				"color": "3"
+			},
+			"r1c5": {
+				"id": "r1c5",
+				"row": 1,
+				"col": 5,
+				"tags": "",
+				"color": "4"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "5"
+			},
+			"r5c10": {
+				"id": "r5c10",
+				"row": 5,
+				"col": 10,
+				"tags": "",
+				"color": "6"
+			},
+			"r11c7": {
+				"id": "r11c7",
+				"row": 11,
+				"col": 7,
+				"tags": "",
+				"color": "7"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "8"
+			},
+			"r8c16": {
+				"id": "r8c16",
+				"row": 8,
+				"col": 16,
+				"tags": "",
+				"color": "9"
+			},
+			"r4c16": {
+				"id": "r4c16",
+				"row": 4,
+				"col": 16,
+				"tags": "",
+				"color": "10"
+			},
+			"r1c16": {
+				"id": "r1c16",
+				"row": 1,
+				"col": 16,
+				"tags": "+treasure treasure",
+				"color": "11"
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "12"
+			},
+			"r2c2": {
+				"id": "r2c2",
+				"row": 2,
+				"col": 2,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c0",
+					"r2c2"
+				],
+				"opens": {
+					"1": true,
+					"4": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r5c1"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r10c1"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"7": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r6c5"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true,
+					"6": true,
+					"7": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r1c5"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c11"
+				],
+				"opens": {
+					"4": true,
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r5c10"
+				],
+				"opens": {
+					"3": true,
+					"5": true,
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r11c7"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"6": true,
+					"7": true,
+					"9": true,
+					"12": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r8c16"
+				],
+				"opens": {
+					"6": true,
+					"8": true,
+					"10": true,
+					"12": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r4c16"
+				],
+				"opens": {
+					"9": true,
+					"11": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r1c16"
+				],
+				"opens": {
+					"10": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r11c16"
+				],
+				"opens": {
+					"8": true,
+					"9": true
+				}
+			}
+		},
+		"roomCount": 13,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_22",
+		"id": "Short_22",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"H H R R R - - - R R R - - - R R - R R",
+			"H - R R R - - - R R R - - R R R R R R",
+			"H - R R - H H H R R R - - R R R R R H",
+			"H - - - - H - - - - H - - - R R - - H",
+			"H R R - - H R R H H R R R - H - R R R",
+			"H R R R - H R R - - R R R H H - R R R",
+			"H R R R - H R R R - R R R - - - R R R",
+			"H R R R - H R R R - - - - - H H H - H",
+			"H R R R - H - - - - - - R R R - - - H",
+			"H R R R - R R R R - - - R R R - - - H",
+			"H R R - - R R R R - - H R R R - R R R",
+			"H - - - - H R R R - - H - - - - R R R",
+			"H H H H H H - H H H H H H H H H R R R"
+		],
+		"encounters": {
+			"r0c18": {
+				"id": "r0c18",
+				"row": 0,
+				"col": 18,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r1c15": {
+				"id": "r1c15",
+				"row": 1,
+				"col": 15,
+				"tags": "",
+				"color": "0"
+			},
+			"r5c17": {
+				"id": "r5c17",
+				"row": 5,
+				"col": 17,
+				"tags": "",
+				"color": "1"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "",
+				"color": "2"
+			},
+			"r9c13": {
+				"id": "r9c13",
+				"row": 9,
+				"col": 13,
+				"tags": "",
+				"color": "3"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "",
+				"color": "4"
+			},
+			"r6c7": {
+				"id": "r6c7",
+				"row": 6,
+				"col": 7,
+				"tags": "",
+				"color": "5"
+			},
+			"r1c9": {
+				"id": "r1c9",
+				"row": 1,
+				"col": 9,
+				"tags": "",
+				"color": "6"
+			},
+			"r10c7": {
+				"id": "r10c7",
+				"row": 10,
+				"col": 7,
+				"tags": "",
+				"color": "7"
+			},
+			"r7c2": {
+				"id": "r7c2",
+				"row": 7,
+				"col": 2,
+				"tags": "",
+				"end": true,
+				"color": "8"
+			},
+			"r1c3": {
+				"id": "r1c3",
+				"row": 1,
+				"col": 3,
+				"tags": "+treasure treasure",
+				"color": "9"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c18",
+					"r1c15"
+				],
+				"opens": {
+					"1": true,
+					"2": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r5c17"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"0": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r9c13"
+				],
+				"opens": {
+					"1": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"7": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r6c7"
+				],
+				"opens": {
+					"2": true,
+					"6": true,
+					"7": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r1c9"
+				],
+				"opens": {
+					"2": true,
+					"5": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r10c7"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"6": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r7c2"
+				],
+				"opens": {
+					"7": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r1c3"
+				],
+				"opens": {
+					"7": true,
+					"8": true
+				}
+			}
+		},
+		"roomCount": 10,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Short_23",
+		"id": "Short_23",
+		"width": 19,
+		"height": 13,
+		"tags": "short dungeon cave",
+		"tiles": [
+			"R R R - - - - - - - - - - - - Rf Rf Rf -",
+			"R R R - - Rd Rd Rd Rd Rd Rd Rd Rd - - Rf Rf Rf -",
+			"R R R - - Rd Rd Rd Rd Rd Rd Rd Rd - - Rf Rf Rf -",
+			"- H - Ra Ra - - - - - - - - Re Re - H - -",
+			"- H - Ra Ra - R R R R R R - Re Re - H - -",
+			"- H - Ra Ra - R R R R R R - Re Re - H R R",
+			"- H - Ra Ra - R R R R R R - Re Re - H R R",
+			"- H - Ra Ra - R R R R R R - Re Re - H R R",
+			"- H - Ra Ra - R R R R R R - Re Re - H - -",
+			"- H - Ra Ra - - - - - - - - Re Re - H - -",
+			"Rc Rc Rc - - Rb Rb Rb Rb Rb Rb Rb Rb - - R R R -",
+			"Rc Rc Rc - - Rb Rb Rb Rb Rb Rb Rb Rb - - R R R -",
+			"Rc Rc Rc - - - - - - - - - - - - R R R -"
+		],
+		"encounters": {
+			"r5c10": {
+				"id": "r5c10",
+				"row": 5,
+				"col": 10,
+				"tags": "",
+				"color": "3",
+				"start": true
+			},
+			"r7c7": {
+				"id": "r7c7",
+				"row": 7,
+				"col": 7,
+				"tags": "+portal portal",
+				"color": "3",
+				"alsoOpens": "a b"
+			},
+			"r6c3": {
+				"id": "r6c3",
+				"row": 6,
+				"col": 3,
+				"tags": "+portal portal",
+				"color": "a",
+				"alsoOpens": "c"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "+portal portal",
+				"color": "b",
+				"alsoOpens": "c"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"color": "c"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "+portal portal",
+				"color": "0",
+				"alsoOpens": "d e"
+			},
+			"r1c10": {
+				"id": "r1c10",
+				"row": 1,
+				"col": 10,
+				"tags": "+portal portal",
+				"color": "d",
+				"alsoOpens": "f"
+			},
+			"r6c14": {
+				"id": "r6c14",
+				"row": 6,
+				"col": 14,
+				"tags": "+portal portal",
+				"color": "e",
+				"alsoOpens": "f"
+			},
+			"r1c16": {
+				"id": "r1c16",
+				"row": 1,
+				"col": 16,
+				"tags": "",
+				"color": "f"
+			},
+			"r6c18": {
+				"id": "r6c18",
+				"row": 6,
+				"col": 18,
+				"tags": "+treasure treasure",
+				"color": "4"
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"d": true,
+					"e": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r5c10",
+					"r7c7"
+				],
+				"opens": {
+					"3": true,
+					"a": true,
+					"b": true
+				},
+				"showAlways": true
+			},
+			"4": {
+				"requires": [
+					"r6c18"
+				],
+				"opens": {
+					"2": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r11c16"
+				],
+				"opens": {
+					"2": true,
+					"5": true
+				}
+			},
+			"a": {
+				"requires": [
+					"r6c3"
+				],
+				"opens": {
+					"c": true
+				}
+			},
+			"b": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"c": true
+				}
+			},
+			"c": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"d": {
+				"requires": [
+					"r1c10"
+				],
+				"opens": {
+					"f": true
+				}
+			},
+			"e": {
+				"requires": [
+					"r6c14"
+				],
+				"opens": {
+					"f": true
+				}
+			},
+			"f": {
+				"requires": [
+					"r1c16"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 12,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_01",
+		"id": "Tutorial_01",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R R R - - - - - - - - - - - - - -",
+			"R R R R R H H H R R R R R R R - - - -",
+			"R R R R R - - - R R R R R R R H H H -",
+			"R R R R R - - - R R R R R R R - - H -",
+			"- - - - - - - - - - - - - - - - - H -",
+			"- - - - - - - - - - - - - - - R R R R",
+			"- - - - - - - - R R R R - - - R R R R",
+			"- R R R R R - - R R R R H H H R R R R",
+			"- R R R R R - - R R R R - - - R R R R",
+			"- R R R R R - - R R R R - - - R R R R",
+			"- R R R R R H H R R R R - - - - - - -",
+			"- R R R R R - - R R R R H H R R R - -",
+			"- R R R R R - - - - - - - - R R R - -"
+		],
+		"encounters": {
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r2c3": {
+				"id": "r2c3",
+				"row": 2,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			},
+			"r2c11": {
+				"id": "r2c11",
+				"row": 2,
+				"col": 11,
+				"tags": "",
+				"color": "1"
+			},
+			"r7c17": {
+				"id": "r7c17",
+				"row": 7,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r8c9": {
+				"id": "r8c9",
+				"row": 8,
+				"col": 9,
+				"tags": "",
+				"color": "3"
+			},
+			"r9c3": {
+				"id": "r9c3",
+				"row": 9,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r12c15": {
+				"id": "r12c15",
+				"row": 12,
+				"col": 15,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1",
+					"r2c3"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r2c11"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r7c17"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r8c9"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r9c3"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r12c15"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_02",
+		"id": "Tutorial_02",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - R R R R - - R R R R R",
+			"- - - - - - - - R R R R - - R R R R R",
+			"- - - - H H H H R R R R - - R R R R R",
+			"- - - - H - - - R R R R - - R R R R R",
+			"- - R R R - - - - - - - - - R R R R R",
+			"- - R R R - - R R R R R R - R R R R R",
+			"- - R R R H H R R R R R R - R R R R R",
+			"- - R R R - - R R R R R R - - H H - -",
+			"- - R R R - - - - - - - H - - H H - -",
+			"- - - - - - - - - R R R R R R R R R -",
+			"- - - - - R R R - R R R R R R R R R -",
+			"- - - - - R R R H R R R R R R R R R -",
+			"- - - - - R R R - - - - - - - - - - -"
+		],
+		"encounters": {
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r2c9": {
+				"id": "r2c9",
+				"row": 2,
+				"col": 9,
+				"tags": "",
+				"color": "0"
+			},
+			"r6c3": {
+				"id": "r6c3",
+				"row": 6,
+				"col": 3,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c10": {
+				"id": "r6c10",
+				"row": 6,
+				"col": 10,
+				"tags": "",
+				"color": "2"
+			},
+			"r10c13": {
+				"id": "r10c13",
+				"row": 10,
+				"col": 13,
+				"tags": "",
+				"color": "3"
+			},
+			"r3c16": {
+				"id": "r3c16",
+				"row": 3,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c11",
+					"r2c9"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r6c3"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c10"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r10c13"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r3c16"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_03",
+		"id": "Tutorial_03",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - R R R R",
+			"- - R R R R R R R R R R R H H R R R R",
+			"- - R R R R R R R R R R R - - R R R R",
+			"- - R R R R R R R R R R R H H R R R R",
+			"- - H - H - - - - - - - - - - - - - -",
+			"- - R R R - - - - - - - - - R R R R R",
+			"- - R R R - - - R R R R - - R R R R R",
+			"- - R R R - - - R R R R - - R R R R R",
+			"- - R R R - - - R R R R - - R R R R R",
+			"- - R R R - - - H - - H - - R R R R R",
+			"- - R R R H R R R R R R R H R R R R R",
+			"- - R R R - R R R R R R R - R R R R R",
+			"- - R R R H R R R R R R R H R R R R R"
+		],
+		"encounters": {
+			"r0c17": {
+				"id": "r0c17",
+				"row": 0,
+				"col": 17,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r2c16": {
+				"id": "r2c16",
+				"row": 2,
+				"col": 16,
+				"tags": "",
+				"color": "0"
+			},
+			"r2c7": {
+				"id": "r2c7",
+				"row": 2,
+				"col": 7,
+				"tags": "",
+				"color": "1"
+			},
+			"r8c3": {
+				"id": "r8c3",
+				"row": 8,
+				"col": 3,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "",
+				"color": "3"
+			},
+			"r8c16": {
+				"id": "r8c16",
+				"row": 8,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r7c9": {
+				"id": "r7c9",
+				"row": 7,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r0c17",
+					"r2c16"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r2c7"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r8c3"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r8c16"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r7c9"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_04",
+		"id": "Tutorial_04",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- R R - - - - - R R R R R R R R R R R",
+			"- R R - - - - - R R R R R R R R R R R",
+			"- H - - - - - - R R R R R R R R R R R",
+			"- R R R R R H H H H H R R R R R R R R",
+			"- R R R R R H H H H H R R R R R R R R",
+			"- R R R R R - - - - - - - - - - - - -",
+			"- R R R R R - - R R R R R R H R R R R",
+			"- R R R R R - - R R R R R R H R R R R",
+			"- R R R R R - - R R R R R R H R R R R",
+			"- R R R R R - - H H H H H H - - - - -",
+			"- R R R R R H H R R R R R R - - - - -",
+			"- R R R R R H H R R R R R R - - - - -",
+			"- R R R R R H H R R R R R R - - - - -"
+		],
+		"encounters": {
+			"r7c18": {
+				"id": "r7c18",
+				"row": 7,
+				"col": 18,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r7c16": {
+				"id": "r7c16",
+				"row": 7,
+				"col": 16,
+				"tags": "",
+				"color": "0"
+			},
+			"r7c10": {
+				"id": "r7c10",
+				"row": 7,
+				"col": 10,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c11": {
+				"id": "r11c11",
+				"row": 11,
+				"col": 11,
+				"tags": "",
+				"color": "2"
+			},
+			"r8c3": {
+				"id": "r8c3",
+				"row": 8,
+				"col": 3,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c14": {
+				"id": "r2c14",
+				"row": 2,
+				"col": 14,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r1c2": {
+				"id": "r1c2",
+				"row": 1,
+				"col": 2,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r7c18",
+					"r7c16"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r7c10"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c11"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r8c3"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c14"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c2"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_05",
+		"id": "Tutorial_05",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - H H H H H R R R R - - H H R R R R",
+			"H H H - - - - R R R R H H H - R R R R",
+			"H - H H H - - R R R R - H - - R R R R",
+			"H - - - H - - R R R R H H - - H - - H",
+			"H - R R R - - - - - - - - - - H - H H",
+			"H - R R R - - R R R - - - - - H - H -",
+			"H H R R R H H R R R - - - - - H - H H",
+			"- - R R R - - R R R - - - H H H - - H",
+			"- - H - H - - - - - - - - H - - - - H",
+			"- R R R R R R R R R R - R R R R R R R",
+			"- R R R R R R R R R R - R R R R R R R",
+			"- R R R R R R R R R R - R R R R R R R",
+			"- R R R R R R R R R R - R R R R R R R"
+		],
+		"encounters": {
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r10c14": {
+				"id": "r10c14",
+				"row": 10,
+				"col": 14,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "1"
+			},
+			"r2c8": {
+				"id": "r2c8",
+				"row": 2,
+				"col": 8,
+				"tags": "",
+				"color": "2"
+			},
+			"r5c3": {
+				"id": "r5c3",
+				"row": 5,
+				"col": 3,
+				"tags": "",
+				"color": "3"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r6c8": {
+				"id": "r6c8",
+				"row": 6,
+				"col": 8,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c17",
+					"r10c14"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c17"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r2c8"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r5c3"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r6c8"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_06",
+		"id": "Tutorial_06",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R R R R R R R H R R R R R R R R R",
+			"R R R R R R R R R H R R R R R R R R R",
+			"R R R R R R R R R H R R R R R R R R R",
+			"R R R R R R R R R - - - H - - H - - -",
+			"R R R R R R R R R - - R R - - H - - -",
+			"- - - - - - - - - - - R R - - H H H -",
+			"- - H H H H H H - - - - - - - - - H -",
+			"H H H - - - - H H H H H H H H - R R R",
+			"H - - H H H - - - - - - - - H - R R R",
+			"R R R H - H - R R R R R R - H - R R R",
+			"R R R - H H - R R R R R R - H H R R R",
+			"R R R - H - - R R R R R R - - - R R R",
+			"R R R - H H H R R R R R R - - - R R R"
+		],
+		"encounters": {
+			"r11c11": {
+				"id": "r11c11",
+				"row": 11,
+				"col": 11,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r10c9": {
+				"id": "r10c9",
+				"row": 10,
+				"col": 9,
+				"tags": "",
+				"color": "0"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c17": {
+				"id": "r10c17",
+				"row": 10,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r1c14": {
+				"id": "r1c14",
+				"row": 1,
+				"col": 14,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c3": {
+				"id": "r2c3",
+				"row": 2,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r5c11": {
+				"id": "r5c11",
+				"row": 5,
+				"col": 11,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c11",
+					"r10c9"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r10c17"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c14"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c3"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r5c11"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_07",
+		"id": "Tutorial_07",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R R R H H H H H H H H H H H R R R",
+			"R R R R R H H H H H H H H H H H R R R",
+			"R R R R R - H - - - - - - - - - R R R",
+			"R R R R R - H - - - - - - - - - R R R",
+			"R R R R R - H - R R R R R R - - R R R",
+			"R R R R - - H - R R R R R R - - R R R",
+			"- - - - H H H - R R R R R R - - R R R",
+			"- R R H H - - - R R R R R R - - R R R",
+			"- R R - - - H H R R R R R R - - R R R",
+			"- - - - H H H - H H H H H H - - - H -",
+			"R R R R R - - R R R R R R R R R R R R",
+			"R R R R R - - R R R R R R R R R R R R",
+			"R R R R R - - R R R R R R R R R R R R"
+		],
+		"encounters": {
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r11c3": {
+				"id": "r11c3",
+				"row": 11,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			},
+			"r6c11": {
+				"id": "r6c11",
+				"row": 6,
+				"col": 11,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c12": {
+				"id": "r11c12",
+				"row": 11,
+				"col": 12,
+				"tags": "",
+				"color": "2"
+			},
+			"r4c17": {
+				"id": "r4c17",
+				"row": 4,
+				"col": 17,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r7c1": {
+				"id": "r7c1",
+				"row": 7,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c1",
+					"r11c3"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r6c11"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c12"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r4c17"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c1"
+				],
+				"opens": {
+					"3": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r7c1"
+				],
+				"opens": {
+					"3": true,
+					"4": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_08",
+		"id": "Tutorial_08",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- R R R R R R R H H H - R R R R R R R",
+			"- R R R R R R R - - H - R R R R R R R",
+			"- R R R R R R R - - H - R R R R R R R",
+			"- R R R R R R R H - H - R R R R R R R",
+			"- - - - - - - - H - H - R R R R R R R",
+			"R R R R R R R - H - H - - - - - H - H",
+			"R R R R R R R - H - H - R R - - H - H",
+			"R R R R R R R - H - H - R R - - H - H",
+			"- - - - - H - - H - H - - H - - H - H",
+			"- - - - R R R R R - H - - H - - H - H",
+			"- - - - R R R R R - H - - R R R R R R",
+			"- - - - R R R R R - H - - R R R R R R",
+			"- - - - R R R R R - H H H R R R R R R"
+		],
+		"encounters": {
+			"r6c1": {
+				"id": "r6c1",
+				"row": 6,
+				"col": 1,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r6c4": {
+				"id": "r6c4",
+				"row": 6,
+				"col": 4,
+				"tags": "",
+				"color": "0"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "",
+				"color": "1"
+			},
+			"r1c3": {
+				"id": "r1c3",
+				"row": 1,
+				"col": 3,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"color": "3"
+			},
+			"r2c15": {
+				"id": "r2c15",
+				"row": 2,
+				"col": 15,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r6c12": {
+				"id": "r6c12",
+				"row": 6,
+				"col": 12,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r6c1",
+					"r6c4"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r1c3"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c16"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c15"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r6c12"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_09",
+		"id": "Tutorial_09",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R R R R R H H R R R R R R R R - -",
+			"R R R R R R R - - R R R R R R R R - -",
+			"R R R R R R R - - - - - - - - - - - -",
+			"R R R R R R R H H H H H H H H R R R R",
+			"R R R R R R R - - - - - - - - R R R R",
+			"H - H - H - H - - R R R R - - R R R R",
+			"H - H - H - H - - R R R R - - R R R R",
+			"R R R R R R R R - R R R R - - R R R R",
+			"R R R R R R R R - H - - H - - R R R R",
+			"R R R R R R R R - R R R R H H R R R R",
+			"R R R R R R R R - R R R R - - R R R R",
+			"R R R R R R R R - R R R R - - R R R R",
+			"R R R R R R R R - R R R R H H R R R R"
+		],
+		"encounters": {
+			"r5c9": {
+				"id": "r5c9",
+				"row": 5,
+				"col": 9,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r6c11": {
+				"id": "r6c11",
+				"row": 6,
+				"col": 11,
+				"tags": "",
+				"color": "0"
+			},
+			"r11c10": {
+				"id": "r11c10",
+				"row": 11,
+				"col": 10,
+				"tags": "",
+				"color": "1"
+			},
+			"r8c17": {
+				"id": "r8c17",
+				"row": 8,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r2c3": {
+				"id": "r2c3",
+				"row": 2,
+				"col": 3,
+				"tags": "",
+				"color": "3"
+			},
+			"r10c3": {
+				"id": "r10c3",
+				"row": 10,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			},
+			"r1c15": {
+				"id": "r1c15",
+				"row": 1,
+				"col": 15,
+				"tags": "+treasure treasure",
+				"color": "5"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r5c9",
+					"r6c11"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r11c10"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r8c17"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r2c3"
+				],
+				"opens": {
+					"2": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r10c3"
+				],
+				"opens": {
+					"3": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r1c15"
+				],
+				"opens": {
+					"3": true
+				}
+			}
+		},
+		"roomCount": 6,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_10",
+		"id": "Tutorial_10",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - R R",
+			"R R R R H R R R R R R R R R R R H R R",
+			"R R R R H R R R R R R R R R R R - R R",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R - - -",
+			"R R R R H R R R R R R R R R R R R R -",
+			"R R R R H R R R R R R R R R R R R R -"
+		],
+		"encounters": {
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"color": "0",
+				"tags": "",
+				"start": true
+			},
+			"r11c13": {
+				"id": "r11c13",
+				"row": 11,
+				"col": 13,
+				"tags": "",
+				"color": "0"
+			},
+			"r9c7": {
+				"id": "r9c7",
+				"row": 9,
+				"col": 7,
+				"tags": "",
+				"color": "0"
+			},
+			"r4c12": {
+				"id": "r4c12",
+				"row": 4,
+				"col": 12,
+				"tags": "",
+				"color": "0"
+			},
+			"r2c8": {
+				"id": "r2c8",
+				"row": 2,
+				"col": 8,
+				"tags": "",
+				"color": "0"
+			},
+			"r6c1": {
+				"id": "r6c1",
+				"row": 6,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "1"
+			},
+			"r6c18": {
+				"id": "r6c18",
+				"row": 6,
+				"col": 18,
+				"tags": "+treasure treasure",
+				"color": "2"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c17",
+					"r11c13",
+					"r9c7",
+					"r4c12",
+					"r2c8"
+				],
+				"opens": {
+					"1": true,
+					"2": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r6c1"
+				],
+				"opens": {
+					"0": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c18"
+				],
+				"opens": {
+					"0": true
+				}
+			}
+		},
+		"roomCount": 3,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_11",
+		"id": "Tutorial_11",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - - - -",
+			"- R R R R R R H H H R R R R R R R R R",
+			"- R R R R R R R - - R R R R R R R R R",
+			"- R R R R R R H H H R R R R R R R R R",
+			"- R R R R R R R - - R R R R R R R R R",
+			"- R R R R R R H H H R R R R R R R R R",
+			"- R R R R R R R - - H R R H R H R H R",
+			"- R R H - H - - - H H - H - H - H - H",
+			"- R R - - H - - - H - - R R R R R R R",
+			"- R R R H H - - - H - - R R R R R R R",
+			"- R R R H H - - R R R - R R R R R R R",
+			"- R R R H H - - R R R - R R R R R R R",
+			"- - - - - - - - R R R - R R R R R R R"
+		],
+		"encounters": {
+			"r10c2": {
+				"id": "r10c2",
+				"row": 10,
+				"col": 2,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r2c2": {
+				"id": "r2c2",
+				"row": 2,
+				"col": 2,
+				"tags": "",
+				"color": "0"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "0"
+			},
+			"r4c11": {
+				"id": "r4c11",
+				"row": 4,
+				"col": 11,
+				"tags": "",
+				"color": "1"
+			},
+			"r2c16": {
+				"id": "r2c16",
+				"row": 2,
+				"col": 16,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c15": {
+				"id": "r10c15",
+				"row": 10,
+				"col": 15,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r10c2",
+					"r2c2",
+					"r5c5"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r4c11",
+					"r2c16"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r10c15"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"1": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_12",
+		"id": "Tutorial_12",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"H R R R R R H - H R R R R R R R R R H",
+			"R R R R R R R - R R R R R R R R R R R",
+			"R R R R R R R - R R R R R R R R R R R",
+			"R R - H - R R - R R R R R R R R R R R",
+			"R R H H H R R - R R R R R R R R R R H",
+			"R R - H - R R - R R R R R R R R - - H",
+			"H R R R R R H - H R R R R R R R - - H",
+			"- - R R R - H - H - H - H - H - R R H",
+			"- - - R - - H - H - H - H - H - R R R",
+			"- - - - - - H R R R R R R R R R R R R",
+			"R R R H - - R R R R R R R R R R R R R",
+			"R R R H H H H R R R R R R R R R R R R",
+			"R R R H - - R R R R R R R R R R R R R"
+		],
+		"encounters": {
+			"r1c3": {
+				"id": "r1c3",
+				"row": 1,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r4c9": {
+				"id": "r4c9",
+				"row": 4,
+				"col": 9,
+				"tags": "",
+				"color": "1"
+			},
+			"r2c14": {
+				"id": "r2c14",
+				"row": 2,
+				"col": 14,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c16": {
+				"id": "r10c16",
+				"row": 10,
+				"col": 16,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "3"
+			},
+			"r2c10": {
+				"id": "r2c10",
+				"row": 2,
+				"col": 10,
+				"tags": "+treasure treasure",
+				"color": "1",
+				"start": true
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c3"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r4c9",
+					"r2c14",
+					"r2c10"
+				],
+				"opens": {
+					"2": true
+				},
+				"showAlways": true
+			},
+			"2": {
+				"requires": [
+					"r10c16",
+					"r11c9"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_13",
+		"id": "Tutorial_13",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- R R R R R R R R R H H H R R R R R -",
+			"R R R R R R R R R R R - R R R R R R R",
+			"R R - R - R - R - R R - R R - R - R R",
+			"R R H R H R H R H R R - R R H R H R R",
+			"R R H R H R H R H R R - R R H R H R R",
+			"R R - R - R - R - R R - R R - R - R R",
+			"R R R R R R R R R R R - R R R R R R R",
+			"H R R R R R R R R R H H H R R R R R -",
+			"H - - H - H - H - - - - - - - - - - -",
+			"H R R H - H - H R R R R R R R R R R -",
+			"R R R R - H - R R H H R R R R H H R R",
+			"R R R R - H - R R H H R R R R H H R R",
+			"- R R - - H H H R R R R R R R R R R -"
+		],
+		"encounters": {
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r3c12": {
+				"id": "r3c12",
+				"row": 3,
+				"col": 12,
+				"tags": "",
+				"color": "0"
+			},
+			"r6c15": {
+				"id": "r6c15",
+				"row": 6,
+				"col": 15,
+				"tags": "",
+				"color": "0"
+			},
+			"r0c4": {
+				"id": "r0c4",
+				"row": 0,
+				"col": 4,
+				"tags": "",
+				"color": "1"
+			},
+			"r7c6": {
+				"id": "r7c6",
+				"row": 7,
+				"col": 6,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c13": {
+				"id": "r11c13",
+				"row": 11,
+				"col": 13,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r11c2": {
+				"id": "r11c2",
+				"row": 11,
+				"col": 2,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c17",
+					"r3c12",
+					"r6c15"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r0c4",
+					"r7c6"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r11c13"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c2"
+				],
+				"opens": {
+					"1": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_14",
+		"id": "Tutorial_14",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- R R R R R R R R R R R R R R R R R R",
+			"R R R R R R R R R R R R R R R R R R R",
+			"R R - - - - - - H H H H H H H H H H H",
+			"R R H R R R - - R R R R R R R R R R R",
+			"R R H R R R R - R R R R R R R R R R R",
+			"R R H R R R R - R R R R R R R R R R R",
+			"R R H R R R R - R R R R R R R R R R R",
+			"R R H R R R R - R R R R R R R R R R R",
+			"R R H R R R R - R R H H H H H H H R R",
+			"R R H R R R - - - R R R R R R R R R -",
+			"R R - - - - - - - - - - - - - - - - -",
+			"R R R R R R R R H H H H H H H H R R R",
+			"- R R R R R R R H H H H H H H H R R R"
+		],
+		"encounters": {
+			"r6c13": {
+				"id": "r6c13",
+				"row": 6,
+				"col": 13,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r4c9": {
+				"id": "r4c9",
+				"row": 4,
+				"col": 9,
+				"tags": "",
+				"color": "0"
+			},
+			"r4c17": {
+				"id": "r4c17",
+				"row": 4,
+				"col": 17,
+				"tags": "",
+				"color": "0"
+			},
+			"r0c13": {
+				"id": "r0c13",
+				"row": 0,
+				"col": 13,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c4": {
+				"id": "r6c4",
+				"row": 6,
+				"col": 4,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r12c17": {
+				"id": "r12c17",
+				"row": 12,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "3"
+			},
+			"r0c3": {
+				"id": "r0c3",
+				"row": 0,
+				"col": 3,
+				"tags": "",
+				"color": "1"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r6c13",
+					"r4c9",
+					"r4c17"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r0c13",
+					"r0c3"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c4"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r12c17"
+				],
+				"opens": {
+					"1": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_15",
+		"id": "Tutorial_15",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R H R R R R R R R R R R R R R R R R",
+			"R R H R R - R R R R R R R R R R - R R",
+			"- - - R R R R R R R R R - R R R R R R",
+			"- - - R R R R - R R R R R R R R R R R",
+			"- - - R R R R R R - - R R R R R R - R",
+			"- H H H R R R R R R R R R R R R R R R",
+			"- H - - - - - - - - - - - H - - - - -",
+			"- H R R R R R R - - - - R R R - - - -",
+			"- R R R - - R R R - - - R R R R R R R",
+			"- R R R - - R R R - - R R R R R R R R",
+			"- R R R R R R R R - - R R R R R R R R",
+			"- R - R R R R - R - - - R R R R R R R",
+			"- R R R R R R R R - - - R R R - - - -"
+		],
+		"encounters": {
+			"r11c4": {
+				"id": "r11c4",
+				"row": 11,
+				"col": 4,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r8c13": {
+				"id": "r8c13",
+				"row": 8,
+				"col": 13,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c13": {
+				"id": "r11c13",
+				"row": 11,
+				"col": 13,
+				"tags": "",
+				"color": "1"
+			},
+			"r9c17": {
+				"id": "r9c17",
+				"row": 9,
+				"col": 17,
+				"tags": "",
+				"color": "1",
+				"start": true
+			},
+			"r1c8": {
+				"id": "r1c8",
+				"row": 1,
+				"col": 8,
+				"tags": "",
+				"color": "2"
+			},
+			"r3c15": {
+				"id": "r3c15",
+				"row": 3,
+				"col": 15,
+				"tags": "",
+				"color": "2"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c4"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r8c13",
+					"r11c13",
+					"r9c17"
+				],
+				"opens": {
+					"2": true
+				},
+				"showAlways": true
+			},
+			"2": {
+				"requires": [
+					"r1c8",
+					"r3c15"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_16",
+		"id": "Tutorial_16",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - R R R R R R R R R R R R R R R R",
+			"R R - R - - - - - H R H - - - - - - R",
+			"R R - R - H R R R R R R R R R R H - R",
+			"R R - R - H R R R R R R R R R R H - R",
+			"- H - R - - - - - - - - - - - - - - R",
+			"- H - R R R R R R R R R R R R R R R R",
+			"- H H - - - - - - - - - - - - - - - H",
+			"- - R R R R R R R R R R R R R R R R H",
+			"- H R R R R R R R R R R R R R R R R H",
+			"- H - - - - - - - - - - - - - - - - -",
+			"- H - - - - - - - - - - - - - - - - -",
+			"- H R R R R R R R R R R R R R R R R -",
+			"- - R R R R R R R R R R R R R R R R -"
+		],
+		"encounters": {
+			"r11c4": {
+				"id": "r11c4",
+				"row": 11,
+				"col": 4,
+				"tags": "",
+				"color": "10"
+			},
+			"r7c6": {
+				"id": "r7c6",
+				"row": 7,
+				"col": 6,
+				"tags": "",
+				"color": "8"
+			},
+			"r8c12": {
+				"id": "r8c12",
+				"row": 8,
+				"col": 12,
+				"tags": "",
+				"color": "8"
+			},
+			"r3c10": {
+				"id": "r3c10",
+				"row": 3,
+				"col": 10,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "1"
+			},
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "",
+				"color": "10",
+				"start": true
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "",
+				"color": "10"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r3c10"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true,
+					"4": true,
+					"5": true,
+					"7": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r2c1"
+				],
+				"opens": {
+					"1": true,
+					"6": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"0": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"0": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"4": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"5": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true,
+					"8": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r7c6",
+					"r8c12"
+				],
+				"opens": {
+					"6": true,
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"8": true,
+					"9": true,
+					"10": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r11c4",
+					"r11c15",
+					"r11c9"
+				],
+				"opens": {
+					"9": true,
+					"10": true
+				},
+				"showAlways": true
+			}
+		},
+		"roomCount": 11,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_17",
+		"id": "Tutorial_17",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R - - - - - - - R R R R R R R R R",
+			"R R R H H - H H H - R R R R R R R - R",
+			"R R R - H - H - H - R R R R R R R R R",
+			"- - - - H - H - H - R R R R R R R R R",
+			"- - - - H - H - H H R - R R R R R R R",
+			"- - - - H H H - - - R R R R R R R R R",
+			"- - - - - - - - - H R R R R R R R R R",
+			"R R R R R R R R R R H - - - H H - - -",
+			"R R R R R R R R R R - - R R R R R R -",
+			"R R R - R R R R R R - R R R R R R R R",
+			"R R R R R R R R R R - R R R R R R R R",
+			"R R R R R R R R - R - R R R R R R R R",
+			"R R R R R R R R R R - - - R R R R - -"
+		],
+		"encounters": {
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r8c1": {
+				"id": "r8c1",
+				"row": 8,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			},
+			"r10c6": {
+				"id": "r10c6",
+				"row": 10,
+				"col": 6,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c12": {
+				"id": "r1c12",
+				"row": 1,
+				"col": 12,
+				"tags": "",
+				"color": "1"
+			},
+			"r4c16": {
+				"id": "r4c16",
+				"row": 4,
+				"col": 16,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c14": {
+				"id": "r10c14",
+				"row": 10,
+				"col": 14,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r11c1",
+					"r8c1",
+					"r10c6"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c12",
+					"r4c16"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r10c14"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r1c1"
+				],
+				"opens": {
+					"1": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_18",
+		"id": "Tutorial_18",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"H R H - - - R R R R R R R R R R R R R",
+			"R R R - - - R R R R R R R R R R R R R",
+			"R R R - H H R R R R R R R R R R R R R",
+			"R R R R H - H - H - H - H - H - R R R",
+			"R R R R R - R R R R R R R R R H R R R",
+			"R R R R R - R R R R R R R R R - R R R",
+			"R R R R R - R R R R R R R R R H R R R",
+			"R R R R R - R R R R R R R R R - R R R",
+			"R R R R R - R R R R R R R R R H R R R",
+			"H R R R H - H - H - H - H - H - R R R",
+			"- - - - H H R R R R R R R R R R R R R",
+			"R R R - - - R R R R R R R R R R R R R",
+			"R R R H H H R R R R R R R R R R R R R"
+		],
+		"encounters": {
+			"r1c1": {
+				"id": "r1c1",
+				"row": 1,
+				"col": 1,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r4c1": {
+				"id": "r4c1",
+				"row": 4,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			},
+			"r7c3": {
+				"id": "r7c3",
+				"row": 7,
+				"col": 3,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c10": {
+				"id": "r6c10",
+				"row": 6,
+				"col": 10,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c1",
+					"r4c1",
+					"r7c3"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c11",
+					"r11c15"
+				],
+				"opens": {
+					"0": true,
+					"2": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c10"
+				],
+				"opens": {
+					"1": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"1": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_19",
+		"id": "Tutorial_19",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - R R R H H H H H R R R R R",
+			"- - - - - - R R R - - - - - R R R R R",
+			"- - - - - - - - - - - - - - R R R R R",
+			"R R R R R R R R R R R H H H R R R R R",
+			"R R R R R R R R R R R - - - H - R R R",
+			"R R - R R R R R - R R - R R R - R R R",
+			"R R R - R R R - R R R - R R R - R R R",
+			"R R R R - R - R R R R - R R R - R R R",
+			"R R R R R R R R R R R - - - H - R R R",
+			"R R R R R R R R R R R H H H R R R R R",
+			"- - - - - - - - - - - - - - R R R R R",
+			"- - - - - - - - - - - - - - R R R R R",
+			"- - - - - - - - - - - - - - R R R R R"
+		],
+		"encounters": {
+			"r8c1": {
+				"id": "r8c1",
+				"row": 8,
+				"col": 1,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r8c9": {
+				"id": "r8c9",
+				"row": 8,
+				"col": 9,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c7": {
+				"id": "r1c7",
+				"row": 1,
+				"col": 7,
+				"tags": "+treasure treasure",
+				"color": "1"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "0"
+			},
+			"r2c17": {
+				"id": "r2c17",
+				"row": 2,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r10c17": {
+				"id": "r10c17",
+				"row": 10,
+				"col": 17,
+				"tags": "",
+				"color": "2"
+			},
+			"r6c13": {
+				"id": "r6c13",
+				"row": 6,
+				"col": 13,
+				"tags": "",
+				"end": true,
+				"color": "3"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r8c1",
+					"r8c9",
+					"r5c5"
+				],
+				"opens": {
+					"2": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r1c7"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r2c17",
+					"r10c17"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r6c13"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 4,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_20",
+		"id": "Tutorial_20",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - - - -",
+			"R R R R R R R R R R R R R R R R R R R",
+			"R - R R R R R R R R R R R R R R R - R",
+			"R R R - - - - - - H - - - - - - R R R",
+			"- H - - R R R R R R R R R R R - - H -",
+			"- H - - R R R - - - - - - - R - - H -",
+			"- H - - R R R - - - - - - - R - R R R",
+			"- H - - R R - R R R R R R - R - R R R",
+			"- H - - R R R R R R - R R - R - R R R",
+			"R R R - R R R R R R R R R - R - R R R",
+			"R R R - R R - - - - - - - - R - R R R",
+			"R R R - R R R R R R R R R R R - R R R",
+			"- - - - - - - - - - - - - - - - - - -"
+		],
+		"encounters": {
+			"r9c17": {
+				"id": "r9c17",
+				"row": 9,
+				"col": 17,
+				"tags": "",
+				"end": true,
+				"color": "5"
+			},
+			"r10c1": {
+				"id": "r10c1",
+				"row": 10,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "6"
+			},
+			"r8c12": {
+				"id": "r8c12",
+				"row": 8,
+				"col": 12,
+				"tags": "",
+				"color": "3",
+				"start": true
+			},
+			"r8c8": {
+				"id": "r8c8",
+				"row": 8,
+				"col": 8,
+				"tags": "",
+				"color": "3"
+			},
+			"r5c5": {
+				"id": "r5c5",
+				"row": 5,
+				"col": 5,
+				"tags": "",
+				"color": "3"
+			},
+			"r1c7": {
+				"id": "r1c7",
+				"row": 1,
+				"col": 7,
+				"tags": "",
+				"color": "0"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c7",
+					"r1c11"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true,
+					"4": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"3": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"2": true,
+					"6": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r8c12",
+					"r8c8",
+					"r5c5"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				},
+				"showAlways": true
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r9c17"
+				],
+				"opens": {
+					"4": true,
+					"5": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r10c1"
+				],
+				"opens": {
+					"2": true,
+					"6": true
+				}
+			}
+		},
+		"roomCount": 7,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_21",
+		"id": "Tutorial_21",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"H H H H H H H H - H R R R H H R R R H",
+			"H R R R R R R H H H R R R H H R R R H",
+			"H R R R R R R H H H R R R R R R R R H",
+			"H R R R R R R H - H H H R R R R H H H",
+			"H H H H H H H H - - - - - H - - - H -",
+			"- - - - - - - - - - - - - - H - H H -",
+			"- R R H H H H H H H R R R R R R R - -",
+			"- R R R - - - - - - R R R R R R R H H",
+			"- R R R R H H - - - R R R R R R R - H",
+			"- R R R R R H - - - R R - - - - - - H",
+			"- H - R R R R - - - R R - - R R R - H",
+			"- H H - R R R - - - H - - - R R R H H",
+			"- H H H R R H H H H H - - - R R R - -"
+		],
+		"encounters": {
+			"r2c2": {
+				"id": "r2c2",
+				"row": 2,
+				"col": 2,
+				"tags": "",
+				"color": "4",
+				"start": true
+			},
+			"r2c4": {
+				"id": "r2c4",
+				"row": 2,
+				"col": 4,
+				"tags": "",
+				"color": "4"
+			},
+			"r1c11": {
+				"id": "r1c11",
+				"row": 1,
+				"col": 11,
+				"tags": "",
+				"color": "1"
+			},
+			"r1c16": {
+				"id": "r1c16",
+				"row": 1,
+				"col": 16,
+				"tags": "",
+				"color": "1"
+			},
+			"r7c12": {
+				"id": "r7c12",
+				"row": 7,
+				"col": 12,
+				"tags": "",
+				"color": "9"
+			},
+			"r9c3": {
+				"id": "r9c3",
+				"row": 9,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "7"
+			},
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "+treasure treasure",
+				"color": "13"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"4": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c11",
+					"r1c16"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"2": true,
+					"3": true,
+					"5": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"3": true,
+					"9": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c2",
+					"r2c4"
+				],
+				"opens": {
+					"0": true,
+					"4": true
+				},
+				"showAlways": true
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"1": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"9": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r9c3"
+				],
+				"opens": {
+					"7": true,
+					"8": true,
+					"11": true,
+					"12": true,
+					"14": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r7c12"
+				],
+				"opens": {
+					"3": true,
+					"6": true,
+					"8": true,
+					"9": true,
+					"10": true,
+					"14": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"9": true,
+					"10": true,
+					"13": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"11": true
+				}
+			},
+			"12": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"12": true
+				}
+			},
+			"13": {
+				"requires": [
+					"r11c15"
+				],
+				"opens": {
+					"10": true,
+					"13": true
+				}
+			},
+			"14": {
+				"requires": [],
+				"opens": {
+					"7": true,
+					"9": true,
+					"14": true
+				}
+			}
+		},
+		"roomCount": 15,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_22",
+		"id": "Tutorial_22",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"R R R - - R R R - R R R - R R R R R R",
+			"R R R - - R R R R R R R H R R R R R R",
+			"R R R - - R R R - R R R - R R R R R R",
+			"R R R - - - - - - - - - - R R R R R R",
+			"R R R R R R H H R R - - - R R R R R R",
+			"R R R R R R H H R R R - - - H R R R R",
+			"H - - R R R H H R R R H H H - R R R R",
+			"H - - R R - - - - R R R - - - R R R R",
+			"R R R R R - - - - R R R - - - R R R R",
+			"R R R R R - - - - R R R - - - R R R R",
+			"- H - - H - - - R R R H H H H R R R R",
+			"- R R R R H H H R R R - - R R R R R R",
+			"- R R R R H H H R R - - - R R R R R R"
+		],
+		"encounters": {
+			"r1c6": {
+				"id": "r1c6",
+				"row": 1,
+				"col": 6,
+				"tags": "",
+				"color": "1",
+				"start": true
+			},
+			"r8c10": {
+				"id": "r8c10",
+				"row": 8,
+				"col": 10,
+				"tags": "",
+				"color": "5"
+			},
+			"r2c15": {
+				"id": "r2c15",
+				"row": 2,
+				"col": 15,
+				"tags": "",
+				"color": "2"
+			},
+			"r9c16": {
+				"id": "r9c16",
+				"row": 9,
+				"col": 16,
+				"tags": "",
+				"color": "2"
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			},
+			"r11c2": {
+				"id": "r11c2",
+				"row": 11,
+				"col": 2,
+				"tags": "+treasure treasure",
+				"color": "12"
+			},
+			"r1c10": {
+				"id": "r1c10",
+				"row": 1,
+				"col": 10,
+				"tags": "",
+				"color": "1"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r2c1"
+				],
+				"opens": {
+					"0": true,
+					"4": true,
+					"7": true,
+					"9": true,
+					"10": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r1c6",
+					"r1c10"
+				],
+				"opens": {
+					"1": true,
+					"3": true
+				},
+				"showAlways": true
+			},
+			"2": {
+				"requires": [
+					"r2c15",
+					"r9c16"
+				],
+				"opens": {
+					"2": true,
+					"3": true,
+					"6": true,
+					"11": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r8c10"
+				],
+				"opens": {
+					"4": true,
+					"5": true,
+					"8": true,
+					"11": true,
+					"13": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"2": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"8": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"12": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"12": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"5": true,
+					"11": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r11c2"
+				],
+				"opens": {
+					"9": true,
+					"10": true,
+					"12": true,
+					"13": true
+				}
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"12": true,
+					"13": true
+				}
+			}
+		},
+		"roomCount": 14,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_23",
+		"id": "Tutorial_23",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - R R R R - - - R R R R - - - R -",
+			"- - - R R R R R R R R R R R - - R R R",
+			"- - - - R R R R R R R R R - R R R R R",
+			"- - - - - - R R R R R H - R R R R - R",
+			"- R R - - - - R R R - H - R R R R R R",
+			"- R R - R R - - - - - R - - - - - H H",
+			"- R R R R R R R R R R R H R R R R R R",
+			"- R R R R R R R R R R R - R R R R R R",
+			"- - R - R - R - R - R - R R R R R R R",
+			"- - R R R R R R R R R H R R - R R R -",
+			"- - - - - H - H - - - - R R R R R R R",
+			"- R R - - R R R - - R R - R R R R R R",
+			"- - R R R R R R R R R - - R R R R R R"
+		],
+		"encounters": {
+			"r1c17": {
+				"id": "r1c17",
+				"row": 1,
+				"col": 17,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r3c15": {
+				"id": "r3c15",
+				"row": 3,
+				"col": 15,
+				"tags": "",
+				"color": "0"
+			},
+			"r7c15": {
+				"id": "r7c15",
+				"row": 7,
+				"col": 15,
+				"tags": "",
+				"color": "1"
+			},
+			"r11c16": {
+				"id": "r11c16",
+				"row": 11,
+				"col": 16,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c4": {
+				"id": "r6c4",
+				"row": 6,
+				"col": 4,
+				"tags": "",
+				"color": "2"
+			},
+			"r2c8": {
+				"id": "r2c8",
+				"row": 2,
+				"col": 8,
+				"tags": "",
+				"end": true,
+				"color": "3"
+			},
+			"r11c6": {
+				"id": "r11c6",
+				"row": 11,
+				"col": 6,
+				"tags": "+treasure treasure",
+				"color": "4"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r1c17",
+					"r3c15"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r7c15",
+					"r11c16"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c4"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r2c8"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r11c6"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 5,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_24",
+		"id": "Tutorial_24",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - Ra Ra Ha Ra Ra Ra Ha - H - - - - - - -",
+			"- - - Ra Ra Ha Ra Ra Ra Ra - H R R R R R R -",
+			"- - - - - - - - Ra Ra - R R R R R R R -",
+			"R R R R R R Ra - Ra Ra - R R R R R R R -",
+			"R - - - - - Ra - Ra Ra - R R R - - H - -",
+			"R - R R R - Ra Ha Ra Ra - R R R - R R R -",
+			"R - R R R - Ra - Ra Ra Ha Ra R R H R R R R",
+			"R - R R R - Ra Ha Ra Ra - R R R - R R R -",
+			"R - R R R - Ra - Ra Ra - R R R - - H - -",
+			"R R R R R R Ra - Ra Ra - R R R R R R R -",
+			"- - - - - - - - Ra Ra - R R R R R R R -",
+			"- - - Ra Ra Ha Ra Ra Ra Ra - H R R R R R R -",
+			"- - - Ra Ra Ha Ra Ra Ra Ha - H - - - - - - -"
+		],
+		"encounters": {
+			"r6c18": {
+				"id": "r6c18",
+				"row": 6,
+				"col": 18,
+				"tags": "",
+				"color": "4",
+				"start": true
+			},
+			"r6c16": {
+				"id": "r6c16",
+				"row": 6,
+				"col": 16,
+				"tags": "",
+				"color": "4"
+			},
+			"r2c13": {
+				"id": "r2c13",
+				"row": 2,
+				"col": 13,
+				"tags": "",
+				"color": "1"
+			},
+			"r9c12": {
+				"id": "r9c12",
+				"row": 9,
+				"col": 12,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c8": {
+				"id": "r6c8",
+				"row": 6,
+				"col": 8,
+				"tags": "",
+				"color": "a"
+			},
+			"r6c3": {
+				"id": "r6c3",
+				"row": 6,
+				"col": 3,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r11c3": {
+				"id": "r11c3",
+				"row": 11,
+				"col": 3,
+				"tags": "+treasure treasure",
+				"color": "a"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r2c13",
+					"r9c12"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true,
+					"5": true,
+					"6": true,
+					"7": true,
+					"a": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c3"
+				],
+				"opens": {
+					"2": true,
+					"a": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"4": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r6c18",
+					"r6c16"
+				],
+				"opens": {
+					"3": true,
+					"4": true,
+					"5": true,
+					"6": true
+				},
+				"showAlways": true
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"4": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"4": true
+				}
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"7": true
+				}
+			},
+			"a": {
+				"requires": [
+					"r6c8",
+					"r11c3"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"a": true
+				}
+			}
+		},
+		"roomCount": 9,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_25",
+		"id": "Tutorial_25",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - R R R R R R - - - - - - - - -",
+			"- - - R R R R R R R H R - - - - - - -",
+			"- - - R R R R R R H R R - - - - - - -",
+			"- - - R R R R R H R R R - R R R R - -",
+			"- - - R R R R H H R R - - R R R R - -",
+			"- - - R R R H R R - - R R R R R R - -",
+			"- - - R R H R R R H R R R R R R R - -",
+			"- - - - - R R R - R R R H - - - - - -",
+			"- - - - - - - - - R R H R R R R - - -",
+			"- - - - - - - R R R R - R R - R - - -",
+			"- - - - - - - R R R R - R - - R - - -",
+			"- - - - - - - R R R R - R R R R R - -",
+			"- - - - - - - R R R R - - - - R H - -"
+		],
+		"encounters": {
+			"r11c15": {
+				"id": "r11c15",
+				"row": 11,
+				"col": 15,
+				"tags": "",
+				"color": "12",
+				"start": true
+			},
+			"r9c13": {
+				"id": "r9c13",
+				"row": 9,
+				"col": 13,
+				"tags": "",
+				"color": "12"
+			},
+			"r4c15": {
+				"id": "r4c15",
+				"row": 4,
+				"col": 15,
+				"tags": "",
+				"color": "5"
+			},
+			"r11c8": {
+				"id": "r11c8",
+				"row": 11,
+				"col": 8,
+				"tags": "",
+				"color": "5"
+			},
+			"r6c7": {
+				"id": "r6c7",
+				"row": 6,
+				"col": 7,
+				"tags": "",
+				"color": "7"
+			},
+			"r3c10": {
+				"id": "r3c10",
+				"row": 3,
+				"col": 10,
+				"tags": "+treasure treasure",
+				"color": "2"
+			},
+			"r2c5": {
+				"id": "r2c5",
+				"row": 2,
+				"col": 5,
+				"tags": "",
+				"end": true,
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r2c5"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true,
+					"4": true,
+					"6": true,
+					"8": true
+				}
+			},
+			"1": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r3c10"
+				],
+				"opens": {
+					"1": true,
+					"2": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"2": true,
+					"4": true,
+					"7": true
+				}
+			},
+			"5": {
+				"requires": [
+					"r4c15",
+					"r11c8"
+				],
+				"opens": {
+					"5": true,
+					"9": true,
+					"10": true,
+					"11": true
+				}
+			},
+			"6": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true
+				}
+			},
+			"7": {
+				"requires": [
+					"r6c7"
+				],
+				"opens": {
+					"4": true,
+					"6": true,
+					"7": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"7": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"7": true
+				}
+			},
+			"10": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"12": true
+				}
+			},
+			"11": {
+				"requires": [],
+				"opens": {
+					"5": true,
+					"12": true
+				}
+			},
+			"12": {
+				"requires": [
+					"r11c15",
+					"r9c13"
+				],
+				"opens": {
+					"10": true,
+					"11": true,
+					"12": true,
+					"13": true
+				},
+				"showAlways": true
+			},
+			"13": {
+				"requires": [],
+				"opens": {
+					"12": true
+				}
+			}
+		},
+		"roomCount": 14,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_26",
+		"id": "Tutorial_26",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - - - -",
+			"- R R R - R R R R H R R R R R R R R -",
+			"- R R R H R R R R H R R R R R R R R -",
+			"- R R R - R R R - - - - - - R R R R -",
+			"- - - - - - - H H H H H H H - - - - -",
+			"- - - - - - - - - - - - - H R R R R -",
+			"- - - R R R R R R R R R R R R R R R -",
+			"- - - R R R R R R R R R R R R R R R -",
+			"- - - R R R R - - - - - - - - - - - -",
+			"- - - - H - - R R R - R R - - - - - -",
+			"- - - - H H R R R R R R R - - - - - -",
+			"- - - - - - - R R R - R R - - - - - -",
+			"- - - - - - - - - - - - - - - - - - -"
+		],
+		"encounters": {
+			"r10c8": {
+				"id": "r10c8",
+				"row": 10,
+				"col": 8,
+				"tags": "",
+				"color": "0"
+			},
+			"r7c4": {
+				"id": "r7c4",
+				"row": 7,
+				"col": 4,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c15": {
+				"id": "r6c15",
+				"row": 6,
+				"col": 15,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c12": {
+				"id": "r10c12",
+				"row": 10,
+				"col": 12,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r2c6": {
+				"id": "r2c6",
+				"row": 2,
+				"col": 6,
+				"tags": "",
+				"color": "2"
+			},
+			"r2c2": {
+				"id": "r2c2",
+				"row": 2,
+				"col": 2,
+				"tags": "+treasure treasure",
+				"color": "3"
+			},
+			"r2c16": {
+				"id": "r2c16",
+				"row": 2,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r10c8",
+					"r10c12"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r7c4",
+					"r6c15"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r2c6"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r2c2"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r2c16"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 5,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_27",
+		"id": "Tutorial_27",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - H H H H H H H H H H H H H - - - -",
+			"- - H - - - - - - - - - - - H H - - -",
+			"- R R - R R R R R R R R H H - H - - -",
+			"- R R - R R R R R R R R - H - H H H -",
+			"- R R - R R R - - R R R - H - - - H -",
+			"- R R - R R - - - - R R - H R R R H -",
+			"- - - - R R R - - R R R - - R R R - -",
+			"- - - - R R R R R R R R - - R R R - -",
+			"- - - H R R R R R R R R - - - H - - -",
+			"- R R R H - - - - - - - - R R R R - -",
+			"- R R R - - - - R R R R R R R - R R -",
+			"R R R R - - - - R R R R R R - - R R -",
+			"R R - - - - - - R R R R - R R R R - -"
+		],
+		"encounters": {
+			"r10c2": {
+				"id": "r10c2",
+				"row": 10,
+				"col": 2,
+				"tags": "",
+				"color": "0"
+			},
+			"r3c5": {
+				"id": "r3c5",
+				"row": 3,
+				"col": 5,
+				"tags": "",
+				"color": "1"
+			},
+			"r7c10": {
+				"id": "r7c10",
+				"row": 7,
+				"col": 10,
+				"tags": "",
+				"color": "1"
+			},
+			"r6c15": {
+				"id": "r6c15",
+				"row": 6,
+				"col": 15,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c9": {
+				"id": "r11c9",
+				"row": 11,
+				"col": 9,
+				"tags": "",
+				"end": true,
+				"color": "3"
+			},
+			"r4c1": {
+				"id": "r4c1",
+				"row": 4,
+				"col": 1,
+				"tags": "+treasure treasure",
+				"color": "4"
+			},
+			"r12c0": {
+				"id": "r12c0",
+				"row": 12,
+				"col": 0,
+				"tags": "",
+				"color": "0",
+				"start": true
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r10c2",
+					"r12c0"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r3c5",
+					"r7c10"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r6c15"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c9"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r4c1"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 5,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_28",
+		"id": "Tutorial_28",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - - - -",
+			"- R R R R R R R R R R R R R R R R R -",
+			"- R R R R R R R R R R R R R R R R R -",
+			"- R R R R R R R R R R R R R R R R R -",
+			"- - H H - - - - - - - - - H - - - - -",
+			"R R R R R R - H H H H H H H - R R R R",
+			"R R R R R R - H - - - - - - - R R R R",
+			"R R R R R R - H - - - - R R R R R R -",
+			"- - - - - - - H - - - - R R R R R R -",
+			"- R R R R R R R R R R R H - - R R R -",
+			"- R R - R R R R R - R R - - - - - - -",
+			"- R R R R R R R R R R R - - - - - R R",
+			"- - - - - - - - - - - H H H H H H R R"
+		],
+		"encounters": {
+			"r6c4": {
+				"id": "r6c4",
+				"row": 6,
+				"col": 4,
+				"tags": "",
+				"color": "0",
+				"start": true
+			},
+			"r6c1": {
+				"id": "r6c1",
+				"row": 6,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			},
+			"r2c4": {
+				"id": "r2c4",
+				"row": 2,
+				"col": 4,
+				"tags": "",
+				"color": "1"
+			},
+			"r2c14": {
+				"id": "r2c14",
+				"row": 2,
+				"col": 14,
+				"tags": "",
+				"color": "1"
+			},
+			"r10c6": {
+				"id": "r10c6",
+				"row": 10,
+				"col": 6,
+				"tags": "",
+				"color": "2"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "3"
+			},
+			"r7c16": {
+				"id": "r7c16",
+				"row": 7,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "4"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r6c4",
+					"r6c1"
+				],
+				"opens": {
+					"1": true
+				},
+				"showAlways": true
+			},
+			"1": {
+				"requires": [
+					"r2c4",
+					"r2c14"
+				],
+				"opens": {
+					"0": true,
+					"2": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r10c6"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"2": true
+				}
+			},
+			"4": {
+				"requires": [
+					"r7c16"
+				],
+				"opens": {
+					"2": true
+				}
+			}
+		},
+		"roomCount": 5,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_29",
+		"id": "Tutorial_29",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- - - - - - - - - - - - - - - - - - -",
+			"R R R R - - - - R R R - - - - R R R R",
+			"R R R H H H H H R R R H H H H H R R R",
+			"R R R R - H - - R R R - - H - R R R R",
+			"R R R R - - - - - - - - - H - R R R R",
+			"R R R R - H - - R R R - - H - R R R R",
+			"R R R R H H H H R R R H - H H R R R R",
+			"R R R R - H - - R R R - - H - R R R R",
+			"R R R R - H - - - - - - - H - R R R R",
+			"R R R R - H - - R R R - - H - R R R R",
+			"R R R - H H - H R R R H H H H H R R R",
+			"R R R R - - - - R R R - - - - R R R R",
+			"- - - - - - - - - - - - - - - - - - -"
+		],
+		"encounters": {
+			"r7c9": {
+				"id": "r7c9",
+				"row": 7,
+				"col": 9,
+				"tags": "",
+				"color": "6",
+				"start": true
+			},
+			"r10c9": {
+				"id": "r10c9",
+				"row": 10,
+				"col": 9,
+				"tags": "+treasure treasure",
+				"color": "8"
+			},
+			"r2c9": {
+				"id": "r2c9",
+				"row": 2,
+				"col": 9,
+				"tags": "",
+				"color": "1"
+			},
+			"r8c16": {
+				"id": "r8c16",
+				"row": 8,
+				"col": 16,
+				"tags": "",
+				"end": true,
+				"color": "2"
+			},
+			"r5c9": {
+				"id": "r5c9",
+				"row": 5,
+				"col": 9,
+				"tags": "",
+				"color": "6"
+			},
+			"r2c1": {
+				"id": "r2c1",
+				"row": 2,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			},
+			"r8c1": {
+				"id": "r8c1",
+				"row": 8,
+				"col": 1,
+				"tags": "",
+				"color": "0"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [
+					"r2c1",
+					"r8c1"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"5": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r2c9"
+				],
+				"opens": {
+					"1": true,
+					"3": true,
+					"4": true
+				}
+			},
+			"2": {
+				"requires": [
+					"r8c16"
+				],
+				"opens": {
+					"2": true,
+					"4": true
+				}
+			},
+			"3": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"2": true,
+					"4": true,
+					"8": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"5": true,
+					"6": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r7c9",
+					"r5c9"
+				],
+				"opens": {
+					"5": true,
+					"6": true,
+					"7": true
+				},
+				"showAlways": true
+			},
+			"7": {
+				"requires": [],
+				"opens": {
+					"6": true
+				}
+			},
+			"8": {
+				"requires": [
+					"r10c9"
+				],
+				"opens": {
+					"4": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [],
+				"opens": {
+					"8": true
+				}
+			}
+		},
+		"roomCount": 10,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	},
+	{
+		"name": "Tutorial_30",
+		"id": "Tutorial_30",
+		"width": 19,
+		"height": 13,
+		"tags": "tutorial dungeon cave",
+		"tiles": [
+			"- H H H H H H H H H H H H H H H H - -",
+			"- H - - - - - - - - - - - - - - H - -",
+			"R R R - H H H H H H H H H - - R R R -",
+			"R R R - H - - - - - - - H - - R R R -",
+			"R R R - H - - H H H H - H - - R R R -",
+			"R R R - H - - H - - H - H - - H - H H",
+			"R R R - H - R R R - H - H - R R R - H",
+			"- H - - H - R R R - H - H - R R R - H",
+			"R R R - H - R R R - H - H - R R R - H",
+			"R R R - H - - - - - H - H - R R R - H",
+			"R R R - H H H H H H H - H - - - - - H",
+			"R R R - - - - - - - - - H - - - R R R",
+			"R R R H H H H H H H H H H - - - R R R"
+		],
+		"encounters": {
+			"r11c1": {
+				"id": "r11c1",
+				"row": 11,
+				"col": 1,
+				"tags": "",
+				"color": "9"
+			},
+			"r3c1": {
+				"id": "r3c1",
+				"row": 3,
+				"col": 1,
+				"tags": "",
+				"color": "1"
+			},
+			"r3c16": {
+				"id": "r3c16",
+				"row": 3,
+				"col": 16,
+				"tags": "",
+				"color": "3"
+			},
+			"r11c17": {
+				"id": "r11c17",
+				"row": 11,
+				"col": 17,
+				"tags": "+treasure treasure",
+				"color": "10"
+			},
+			"r7c15": {
+				"id": "r7c15",
+				"row": 7,
+				"col": 15,
+				"tags": "",
+				"end": true,
+				"color": "7"
+			},
+			"r8c7": {
+				"id": "r8c7",
+				"row": 8,
+				"col": 7,
+				"tags": "",
+				"color": "6",
+				"start": true
+			},
+			"r6c7": {
+				"id": "r6c7",
+				"row": 6,
+				"col": 7,
+				"tags": "",
+				"color": "11"
+			}
+		},
+		"locations": {},
+		"rooms": {
+			"0": {
+				"requires": [],
+				"opens": {
+					"0": true,
+					"1": true,
+					"3": true
+				}
+			},
+			"1": {
+				"requires": [
+					"r3c1"
+				],
+				"opens": {
+					"0": true,
+					"1": true,
+					"8": true
+				}
+			},
+			"2": {
+				"requires": [],
+				"opens": {
+					"2": true,
+					"9": true,
+					"11": true
+				}
+			},
+			"3": {
+				"requires": [
+					"r3c16"
+				],
+				"opens": {
+					"0": true,
+					"3": true,
+					"4": true,
+					"5": true
+				}
+			},
+			"4": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"7": true
+				}
+			},
+			"5": {
+				"requires": [],
+				"opens": {
+					"3": true,
+					"5": true,
+					"10": true
+				}
+			},
+			"6": {
+				"requires": [
+					"r8c7"
+				],
+				"opens": {
+					"6": true,
+					"11": true
+				},
+				"showAlways": true
+			},
+			"7": {
+				"requires": [
+					"r7c15"
+				],
+				"opens": {
+					"4": true,
+					"7": true
+				}
+			},
+			"8": {
+				"requires": [],
+				"opens": {
+					"1": true,
+					"9": true
+				}
+			},
+			"9": {
+				"requires": [
+					"r11c1"
+				],
+				"opens": {
+					"2": true,
+					"8": true,
+					"9": true
+				}
+			},
+			"10": {
+				"requires": [
+					"r11c17"
+				],
+				"opens": {
+					"5": true,
+					"10": true
+				}
+			},
+			"11": {
+				"requires": [
+					"r6c7"
+				],
+				"opens": {
+					"2": true,
+					"6": true
+				}
+			}
+		},
+		"roomCount": 12,
+		"showAll": true,
+		"showColors": false,
+		"editMode": true
+	}
+]

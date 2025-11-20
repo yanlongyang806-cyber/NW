@@ -1,0 +1,80 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+
+var GSSession = require('cryptic/proxy/GSSession');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Server Hooks
+//
+
+//
+// If we need to add handling for server commands, this is the place to do it.
+//
+
+var saveGatewayGameData = function (data)
+{
+	dbg.trace();
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_SaveGatewayGameData');
+	pkt.sendString(data);
+	pkt.endPacket();
+}
+
+GSSession.addRequester('saveGatewayGameData', saveGatewayGameData);
+
+var rewardRequest = function (data)
+{
+	dbg.trace();
+
+	var pkt = this.conn.startSessionPacket(this, 'Proxy_RewardRequest');
+	pkt.sendString(data.id);
+	pkt.sendString(data.table);
+	pkt.sendUInt32(data.tier);
+	pkt.endPacket();
+}
+
+var server_RewardRequest = function(pkt)
+{
+	dbg.trace();
+
+	var id = pkt.readString();
+	var json = pkt.readString();
+	var rewardRequest;
+
+	try
+	{
+		dbg.trace('RewardRequest!' + json);
+		rewardRequest = JSON.parse(json);
+	}
+	catch(e)
+	{
+		log.error('Invalid JSON from server for reward request!');
+	}
+
+
+	for(var tag in this.ownerSession.sca.questSlots)
+	{
+		if(this.ownerSession.sca.questSlots[tag].questId === id)
+		{
+			this.ownerSession.sca.questSlots[tag].samplereward = rewardRequest;
+			break;
+		}
+	}
+
+	this.ownerSession.sca.sendGameUpdate();
+}
+
+GSSession.addRequester('rewardRequest', rewardRequest);
+GSSession.addHandler('Server_RewardRequest', server_RewardRequest);
+
+//////////////////////////////////////////////////////////////////////////
+
+
+
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

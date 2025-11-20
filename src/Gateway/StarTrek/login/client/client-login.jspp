@@ -1,0 +1,30 @@
+'use strict';
+
+var clientLogin = require('cryptic/login/clientLoginCommon');
+var Sound = require('cryptic/client/Sound');
+
+var SoundPlayer = new Sound();
+
+SoundPlayer.init({
+	'hover': 3,
+	'login': 1
+}, true);
+
+$(document).ready(function() {
+
+	$('body').on('mouseenter','#login',function() {
+		SoundPlayer.play('hover');
+	});
+
+	$('body').on('submit','#form',function() {
+		SoundPlayer.play('login');
+	});
+
+	clientLogin.onReady();
+});
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = clientLogin;
+
+// End of File

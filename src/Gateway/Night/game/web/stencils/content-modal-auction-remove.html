@@ -1,0 +1,19 @@
+<button class="close-button" data-url="back"></button>
+<div class="modal-confirm">
+	<h3>Remove Lot</h3>
+	<p>Are you sure you want to take down your sale of <span class="item-name-highlight" data-path=".slots[0].itemdef.displaynamemsg.str">Potion of Minor Healing</span>?</p>
+
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<button data-url="back">Cancel</button>
+	</div>
+	<div class="input-field button">
+		<div class="input-bg-left"></div>
+		<div class="input-bg-mid"></div>
+		<div class="input-bg-right"></div>
+		<input data-set-onclick="client.auctionSendRemoveItem('{$root.queryParams.list}','{.containerid}')" type='submit' value='OK' data-url="back" />
+	</div>
+
+</div>

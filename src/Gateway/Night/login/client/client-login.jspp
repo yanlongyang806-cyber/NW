@@ -1,0 +1,11 @@
+'use strict';
+
+var clientLogin = require('cryptic/login/clientLoginCommon');
+
+$(document).ready(clientLogin.onReady);
+
+///////////////////////////////////////////////////////////////////////////
+
+module.exports = clientLogin;
+
+// End of File

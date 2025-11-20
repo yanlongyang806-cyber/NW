@@ -1,0 +1,477 @@
+[
+	////////////////////////////////////////////////////////////////////////
+	//
+	// First, preprocess and otherwise spindle the sources so they are
+	// in their ready-to-be-bundled form.
+	//
+	////////////////////////////////////////////////////////////////////////
+
+	/////////////////////
+	//
+	// Stencils
+	//
+	/////////////////////
+	{
+		name:     'debug stencils game',
+		task:     stencil,
+
+		watch:    '../$game$/web/stencils',
+
+		out:      [ './tmp/debug/$game$/client/Stencils.js' ],
+		messages: [ './tmp/debug/$game$/client/messages.msg' ],
+
+		options : { optimize: false, dev: true }
+
+	},
+	{
+		feature:  'sca',
+		name:     'debug stencils sca',
+		task:     stencil,
+
+
+		watch:    '../$game$/sca/web/stencils',
+
+		out:      [ './tmp/debug/$game$/sca/client/sca-stencils.js' ],
+		messages: [ './tmp/debug/$game$/sca/client/messages.msg' ],
+
+		options : { optimize: false, dev: true }
+
+	},
+	{
+		name:     'prod stencils game',
+		task:     stencil,
+
+		watch:    '../$game$/web/stencils',
+
+		out:      [ './tmp/prod/$game$/client/Stencils.js' ],
+		messages: [ './tmp/prod/$game$/client/messages.msg' ],
+
+		options : { optimize: true, dev: false }
+	},
+	{
+		feature:  'sca',
+		name:     'prod stencils sca',
+		task:     stencil,
+
+		watch:    '../$game$/sca/web/stencils',
+
+		out:      [ './tmp/prod/$game$/sca/client/sca-stencils.js' ],
+		messages: [ './tmp/prod/$game$/sca/client/messages.msg' ],
+
+		options : { optimize: true, dev: false }
+	},
+	{
+		name:     'debug stencils game server',
+		task:     stencil,
+
+		watch:    '../$game$/server/stencils',
+
+		out:      [ './deploy/debug/$game$/server/static-stencils.js'],
+		messages: [ './tmp/debug/$game$/server/messages.msg' ],
+
+		options : { optimize: false, dev: true }
+
+	},
+	{
+		name:     'prod stencils game server',
+		task:     stencil,
+
+		watch:    '../$game$/server/stencils',
+
+		out:      [ './deploy/prod/$game$/server/static-stencils.js'],
+		messages: [ './tmp/prod/$game$/server/messages.msg' ],
+
+		options : { optimize: true, dev: false }
+	},
+
+	//
+	// Login uses static stencils on the server.
+	//
+	{
+		name:     'debug stencils login server',
+		task:     stencil,
+
+		watch:    '../$login$/server/stencils',
+
+		out:      [ './deploy/debug/$login$/server/login-stencils.js'],
+		messages: [ './tmp/debug/$login$/server/messages.msg' ],
+
+		options : { optimize: false, dev: true }
+
+	},
+	{
+		name:     'prod stencils login server',
+		task:     stencil,
+
+		watch:    '../$login$/server/stencils',
+
+		out:      [ './deploy/prod/$login$/server/login-stencils.js'],
+		messages: [ './tmp/prod/$login$/server/messages.msg' ],
+
+		options : { optimize: true, dev: false }
+	},
+
+	/////////////////////
+	//
+	// Translation
+	// Generate the Cryptic message file and the default/English mapping.
+	//
+	/////////////////////
+	{
+		name:     'debug translation game',
+		task:     translate,
+
+		watch:    [ './tmp/debug/$game$' ],
+		extmatch: '.msg',
+
+		out:      [ './deploy/debug/$game$/server/en.js' ],
+	},
+	{
+		name:     'prod translation game',
+		task:     translate,
+
+		watch:    [ './tmp/prod/$game$' ],
+		extmatch: '.msg',
+
+		out:      [ './deploy/prod/$game$/server/en.js' ],
+	},
+
+	{
+		name:     'debug translation login',
+		task:     translate,
+
+		watch:    [ './tmp/debug/$login$' ],
+		extmatch: '.msg',
+
+		out:      [ './deploy/debug/$login$/server/en.js' ],
+	},
+	{
+		name:     'prod translation login',
+		task:     translate,
+
+		watch:    [ './tmp/prod/$login$' ],
+		extmatch: '.msg',
+
+		out:      [ './deploy/prod/$login$/server/en.js'  ],
+	},
+
+	{
+		name:     'Message file',
+		task:     translate,
+
+		watch:    [ './tmp/prod/$login$',  './tmp/prod/$game$' ],
+		extmatch: '.msg',
+
+		outmsgfile: [ './deploy/prod/$game$/server/$prefix$Gateway.ms' ]
+	},
+
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Bundle the client javascript into a single package
+	//
+	////////////////////////////////////////////////////////////////////////
+
+	/////////////////////
+	//
+	// Debug client
+	//
+	/////////////////////
+	{
+		name:     'bundle debug client',
+		task:     bundle,
+
+		after:    [ 'jspp debug', 'copy node_modules', 'debug stencils game' ],
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ] , debug: true},
+
+		bundle:   './tmp/debug/$game$/client/client.js',
+		out:      [ './deploy/debug/$game$/server/public/js/client.js' ],
+		uglify:   false
+	},
+	{
+		feature:  'sca',
+		name:     'bundle debug sca',
+		task:     bundle,
+
+		after:    [ 'jspp debug', 'copy node_modules', 'debug stencils sca' ],
+
+		bundleopts: { noGlobals : true, exports : [ 'require' ], ignore: [ 'colors', 'util' ] , debug: true},
+
+		bundle:   './tmp/debug/$game$/sca/client/sca.js',
+		out:      [ './deploy/debug/$game$/server/public/js/sca.js' ],
+		uglify:   false
+	},
+	{
+		name:     'bundle stub debug client',
+		task:     bundle,
+
+		after:    [ 'jspp debug', 'copy node_modules', 'debug stencils game' ],
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ], debug: true },
+
+		bundle:   './tmp/debug/$game$/client/client-stub.js',
+		out:      [ './deploy/debug/$game$/server/public/js/client-stub.js', './tmp/prod/$game$/server/public/js/client-stub.js' ],
+		uglify:   false
+	},
+	{
+		name:     'bundle login debug',
+		task:     bundle,
+
+		after:    [ 'jspp debug', 'copy node_modules' ],
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ], debug: true },
+
+		bundle:   './tmp/debug/$login$/client/client-login.js',
+		out:      [ './deploy/debug/$login$/server/public/js/client-login.js' ],
+		uglify:   false
+	},
+
+	/////////////////////
+	//
+	// Production client
+	//
+	/////////////////////
+	{
+		name:     'bundle prod client',
+		task:     bundle,
+
+		after:    [ 'jspp prod', 'copy node_modules', 'prod stencils game' ],
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ] },
+
+		bundle:   './tmp/prod/$game$/client/client.js',
+		out:      [ './deploy/prod/$game$/server/public/js/client.js' ],
+		uglify:   true
+	},
+	{
+		feature:  'sca',
+		name:     'bundle prod sca',
+		task:     bundle,
+
+		after:    [ 'jspp prod', 'copy node_modules', 'prod stencils sca' ],
+
+		bundleopts: { noGlobals: true, exports : [ 'require' ], ignore: [ 'colors', 'util' ] },
+
+		bundle:   './tmp/prod/$game$/sca/client/sca.js',
+		out:      [ './deploy/prod/$game$/server/public/js/sca.js' ],
+		uglify:   true
+	},
+    {
+		name:     'bundle login prod',
+		task:     bundle,
+
+		after:    [ 'jspp prod', 'jspp prod login', 'copy node_modules' ],
+
+		bundleopts: { exports : [ 'require' ], ignore: [ 'colors', 'util' ] },
+
+		bundle:   './tmp/prod/$login$/client/client-login.js',
+		out:      [ './deploy/prod/$login$/server/public/js/client-login.js' ],
+		uglify:   true
+	},
+
+	////////////////////////////////////////////////////////////////////////
+	//
+	// Build the deploy directory from the processed stuff above and
+	// any other assets.
+	//
+	////////////////////////////////////////////////////////////////////////
+
+
+	/////////////////////
+	//
+	// Assets
+	//
+	/////////////////////
+
+	///////////
+	//
+	// LESS to CSS
+	//
+	{
+		name:     'less->css webgame prod',
+		task:     less,
+
+		watch:    '../$game$/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/prod/$game$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: true }
+	},
+	{
+		feature:  'sca',
+		name:     'less->css sca prod',
+		task:     less,
+
+		watch:    '../$game$/sca/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/prod/$game$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: true }
+	},
+
+	{
+		name:     'less->css webgame debug',
+		task:     less,
+
+		watch:    '../$game$/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/debug/$game$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: false }
+	},
+	{
+		feature:  'sca',
+		name:     'less->css sca debug',
+		task:     less,
+
+		watch:    '../$game$/sca/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/debug/$game$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: false }
+	},
+
+	{
+		name:     'less->css login prod',
+		task:     less,
+
+		watch:    '../$login$/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/prod/$login$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: true }
+	},
+
+	{
+		name:     'less->css login debug',
+		task:     less,
+
+		watch:    '../$login$/web/less',
+		extmatch: '.less',
+
+		out:      [ './deploy/debug/$login$/server/public/css' ],
+		extout:   '.css',
+
+		options:  { compress: false }
+	},
+
+	///////////
+	//
+	// Cat and minimize static assets
+	//
+	{
+		name:     'concat static login javascript',
+		task:     concat,
+
+		uglify:   true,
+
+		watch:    '../$login$/web/js',
+		ignore:   'jquery.js',
+		out:      [ './deploy/debug/$login$/server/public/js/login-support.js', './deploy/prod/$login$/server/public/js/login-support.js' ],
+	},
+	{
+		name:     'concat static game javascript',
+		task:     concat,
+
+		uglify:   true,
+
+		watch:    '../$game$/web/js',
+		ignore:   'jquery.js',
+		out:      [ './deploy/debug/$game$/server/public/js/game-support.js', './deploy/prod/$game$/server/public/js/game-support.js' ],
+	},
+	{
+		feature:  'sca',
+		name:     'concat static sca javascript',
+		task:     concat,
+
+		uglify:   true,
+
+		watch:    '../$game$/sca/web/js',
+		ignore:   'jquery.js',
+		out:      [ './deploy/debug/$game$/server/public/js/sca-support.js', './deploy/prod/$game$/server/public/js/sca-support.js' ],
+	},
+
+	{
+		name:     'concat static login css',
+		task:     concat,
+
+		watch:    '../$login$/web/css',
+		ignore:   'jquery.js',
+		out:      [ './deploy/debug/$login$/server/public/css/login-support.css', './deploy/prod/$login$/server/public/css/login-support.css' ],
+	},
+	{
+		name:     'concat static game css',
+		task:     concat,
+
+		watch:    '../$game$/web/css',
+		ignore:   'jquery.css',
+		out:      [ './deploy/debug/$game$/server/public/css/game-support.css', './deploy/prod/$game$/server/public/css/game-support.css' ],
+	},
+
+	///////////
+	//
+	// Static assets
+	//
+	{
+		name:     'deploy static webgame assets',
+		task:     copy,
+		summary:  true,
+
+		dirignore: [ 'less', 'stencils', 'shifter', 'css', 'js' ],
+
+		watch:    '../$game$/web',
+		out:      [ './deploy/debug/$game$/server/public', './deploy/prod/$game$/server/public' ],
+	},
+	{
+		feature:  'sca',
+		name:     'deploy static sca assets',
+		task:     copy,
+		summary:  true,
+
+		dirignore: [ 'less', 'stencils', 'shifter', 'css', 'js' ],
+
+		watch:    '../$game$/sca/web',
+		out:      [ './deploy/debug/$game$/server/public', './deploy/prod/$game$/server/public' ],
+	},
+	{
+		name:     'deploy static login assets',
+		task:     copy,
+		summary:  true,
+
+		dirignore: [ 'less', 'stencils', 'shifter', 'css', 'js' ],
+
+
+		watch:    '../$login$/web',
+		out:      [ './deploy/debug/$login$/server/public', './deploy/prod/$login$/server/public' ],
+	},
+
+	///////////
+	//
+	// Internally used def files
+	//
+	///////////
+
+	///////////
+	//
+	// Sword Coast Def files
+	//
+	{
+		feature:  'sca',
+		name:     'deploy sca defs',
+		task:     copy,
+		summary:  true,
+
+		watch:    '../$game$/sca/server/defs',
+		out:      [ './deploy/debug/$game$/sca/server/defs', './deploy/prod/$game$/sca/server/defs' ],
+	},
+]

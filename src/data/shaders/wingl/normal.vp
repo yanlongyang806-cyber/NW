@@ -1,0 +1,186 @@
+!!ARBvp1.0
+
+#include "utils.fph"
+#include "params.fph"
+
+# ##############################################
+# unlit outputs (same in terrain.vp)
+# 
+# texcoord[0]	-	st1 and st2 (packed)
+# texcoord[1]	-	view space position
+# texcoord[2]	-	view space normal
+# texcoord[3]	-	view space tangent (HAS_BUMP only)
+# texcoord[4]	-	view space binormal (HAS_BUMP only)
+# 
+# ##############################################
+
+
+TEMP	position_vs;
+TEMP	normal_vs;
+TEMP	tangent_vs;
+TEMP	binormal_vs;
+
+
+#ifdef HAS_SKIN
+
+	TEMP	position_ws, position_bp;
+	TEMP	normal_ws;
+	TEMP	tangent_ws;
+	TEMP	binormal_ws;
+
+	TEMP temp_vec;
+	ADDRESS A0;
+
+	ALIAS weightvec = boneweights;
+
+	ADD position_bp.xyz, position, basepose_offset;
+	MOV position_bp.w, 1;
+
+	# ---------
+	# BONE 0
+	# ---------
+
+	# Load the bone index
+	ARL A0.x, boneidxs.x;
+
+	# Transform position
+	MUL43(position_ws, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], position_bp)
+	MUL position_ws.xyz, position_ws, weightvec.x;					# Weight the result by bone weight
+
+	# Transform normal
+	MUL3(normal_ws, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], normal)
+	MUL normal_ws.xyz, normal_ws, weightvec.x;						# Weight the result by bone weight
+
+	#ifdef HAS_BUMP
+		# Transform tangent
+		MUL3(tangent_ws, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], tangent)
+		MUL tangent_ws.xyz, tangent_ws, weightvec.x;				# Weight the result by bone weight
+
+		# Transform binormal
+		MUL3(binormal_ws, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], binormal)
+		MUL binormal_ws.xyz, binormal_ws, weightvec.x;				# Weight the result by bone weight
+	#endif
+
+	# ---------
+	# BONE 1
+	# ---------
+
+	# Load the bone index
+	ARL A0.x, boneidxs.y;
+
+	# Transform position
+	MUL43(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], position_bp)
+	MAD position_ws.xyz, temp_vec, weightvec.y, position_ws;		# Accumulate the weighted contribution for this bone
+
+	# Transform normal
+	MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], normal)
+	MAD normal_ws.xyz, temp_vec, weightvec.y, normal_ws;			# Accumulate the weighted contribution for this bone
+
+	#ifdef HAS_BUMP
+		# Transform tangent
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], tangent)
+		MAD tangent_ws.xyz, temp_vec, weightvec.y, tangent_ws;		# Accumulate the weighted contribution for this bone 
+
+		# Transform binormal
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], binormal)
+		MAD binormal_ws.xyz, temp_vec, weightvec.y, binormal_ws;	# Accumulate the weighted contribution for this bone 
+	#endif
+
+	# ---------
+	# BONE 2
+	# ---------
+
+	# Load the bone index
+	ARL A0.x, boneidxs.z;
+
+	# Transform position
+	MUL43(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], position_bp)
+	MAD position_ws.xyz, temp_vec, weightvec.z, position_ws;		# Accumulate the weighted contribution for this bone
+
+	# Transform normal
+	MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], normal)
+	MAD normal_ws.xyz, temp_vec, weightvec.z, normal_ws;			# Accumulate the weighted contribution for this bone
+
+	#ifdef HAS_BUMP
+		# Transform tangent
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], tangent)
+		MAD tangent_ws.xyz, temp_vec, weightvec.z, tangent_ws;		# Accumulate the weighted contribution for this bone 
+
+		# Transform binormal
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], binormal)
+		MAD binormal_ws.xyz, temp_vec, weightvec.z, binormal_ws;	# Accumulate the weighted contribution for this bone 
+	#endif
+
+
+	# ---------
+	# BONE 3
+	# ---------
+
+	# Load the bone index
+	ARL A0.x, boneidxs.w;
+
+	# Transform position
+	MUL43(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], position_bp)
+	MAD position_ws.xyz, temp_vec, weightvec.w, position_ws;		# Accumulate the weighted contribution for this bone
+
+	# Transform normal
+	MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], normal)
+	MAD normal_ws.xyz, temp_vec, weightvec.w, normal_ws;			# Accumulate the weighted contribution for this bone
+
+	#ifdef HAS_BUMP
+		# Transform tangent
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], tangent)
+		MAD tangent_ws.xyz, temp_vec, weightvec.w, tangent_ws;		# Accumulate the weighted contribution for this bone 
+
+		# Transform binormal
+		MUL3(temp_vec, bonemats[A0.x+0], bonemats[A0.x+1], bonemats[A0.x+2], binormal)
+		MAD binormal_ws.xyz, temp_vec, weightvec.w, binormal_ws;	# Accumulate the weighted contribution for this bone 
+	#endif
+
+	MOV position_ws.w, 1;
+
+	# clip space position
+	MULMAT4(result.position, worldclip_mat, position_ws)
+
+	# view space coords
+	MULMAT43(position_vs, view_mat, position_ws)
+	MULMAT3(normal_vs, view_mat, normal_ws)
+	#ifdef HAS_BUMP
+		MULMAT3(tangent_vs, view_mat, tangent_ws)
+		MULMAT3(binormal_vs, view_mat, binormal_ws)
+	#endif
+#else
+
+	# clip space position
+	MULMAT4(result.position, clip_mat, position)
+
+	# view space coords
+	MULMAT43(position_vs, modelview_mat, position)
+	MULMAT3(normal_vs, modelview_mat, normal)
+	#ifdef HAS_BUMP
+		MULMAT3(tangent_vs, modelview_mat, tangent)
+		MULMAT3(binormal_vs, modelview_mat, binormal)
+	#endif
+#endif
+
+COMPUTEFOG(position_vs)
+
+
+# pack texcoords
+MOV result.texcoord[0].xy, vertex.texcoord[0].xyxy;
+MOV result.texcoord[0].zw, vertex.texcoord[1].xyxy;
+
+
+# output view space coords
+MOV result.texcoord[1], position_vs;
+MOV result.texcoord[2], normal_vs;
+#ifdef HAS_BUMP
+	MOV result.texcoord[3], tangent_vs;
+	MOV result.texcoord[4], binormal_vs;
+#endif
+
+MOV result.color.primary, color;
+MOV result.color.secondary, color;
+
+END
+

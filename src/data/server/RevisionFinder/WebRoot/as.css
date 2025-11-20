@@ -1,0 +1,204 @@
+body {
+    background-color: #333;
+    font-family: Verdana, Arial, sans-serif;
+    font-size: 0.8em;
+}
+
+#main {
+    margin-left: auto;
+    margin-right: auto;
+    background-color: #fff;
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #444;
+    -moz-border-radius: 10px;
+    -webkit-border-radius: 10px;
+}
+
+#footer {
+    margin-top: 30px;
+    font-size: 0.8em;
+    text-align: center;
+    color: #777;
+}
+
+#footer p {
+    margin: 0.1em;
+}
+
+.title {
+    font-weight: bold;
+    font-size: 1.3em;
+    float: left;
+    margin-top: 0;
+    color: #20548E;
+}
+
+a {
+    text-decoration: none;
+    color: #773333;
+}
+
+a:hover {
+    color: #333;
+}
+
+#content {
+    border-top: 1px solid #444;
+    clear: both;
+}
+
+/* Main Menu */
+
+#mainmenu {
+    margin: 0;
+    padding: 0;
+    float: right;
+    margin-bottom: 10px;
+}
+
+#mainmenu li {
+    float: left;
+    list-style: none;
+}
+
+#mainmenu li a {
+    display: block;
+    background: #20548E;
+    padding: 5px 12px;
+    text-decoration: none;
+    border-right: 1px solid white;
+    color: #EAFFED;
+    white-space: nowrap;
+}
+
+#mainmenu li a:hover {
+    background: #1A4473;
+}
+
+#mainmenu li ul {
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    visibility: hidden;
+    border-top: 1px solid white;
+    z-index: 100;
+}
+
+#mainmenu li ul li {
+    float: none;
+    display: inline;
+}
+
+#mainmenu li ul li a {
+    width: auto;
+    background: #9F1B1B;
+}
+
+#mainmenu li ul li a:hover {
+    background: #7F1616;
+}
+
+.dialog {
+    display: none;
+}
+
+.shortss2000 {
+    display: inline;
+}
+
+.ss2000 {
+    display: inline;
+}
+
+/* Tables */
+
+table.tablesorter thead th {
+    background-color: #20548E;
+    color: white;
+    padding: 4px;
+}
+
+table.tablesorter {
+    margin: 10px 0 15px 0;
+    font-size: 0.9em;
+    width: 100%;
+    text-align: left;
+}
+
+table.tablesorter thead tr .header {
+    background-image: url(bgw.gif);
+    background-repeat: no-repeat;
+    background-position: center right;
+    cursor: pointer;
+}
+
+table.tablesorter tbody td {
+    color: #3D3D3D;
+    padding: 4px;
+    background-color: #FFF;
+    vertical-align: top;
+}
+
+table.tablesorter tbody tr.odd td {
+    background-color:#F0F0F6;
+}
+
+table.tablesorter thead tr .headerSortUp {
+    background-image: url(ascw.gif);
+}
+
+table.tablesorter thead tr .headerSortDown {
+    background-image: url(descw.gif);
+}
+
+table.tablesorter thead tr .headerSortDown, table.tablesorter thead tr .headerSortUp {
+    background-color: #4074AE;
+}
+
+table caption {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+/* Forms */
+
+.verticalForm label {
+    text-align: left;
+}
+
+.verticalForm small {
+    color: #888;
+    display: block;
+    clear: left;
+}
+
+.verticalForm fieldset {
+    border: 0;
+    margin-top: 10px;
+}
+
+.verticalForm fieldset legend {
+    font-size: 1.2em;
+    font-weight: bold;
+}
+
+.smallForm .rowElem {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Misc */
+
+.label {
+    font-weight: bold;
+}
+
+section {
+    margin-bottom: 1em;
+}
+
+section h2 {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}

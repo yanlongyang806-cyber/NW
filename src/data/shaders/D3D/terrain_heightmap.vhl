@@ -1,0 +1,105 @@
+#define TERRAIN_HEIGHTMAP
+#include "vs_inc.hlsl"
+#include "vs_standard_inc.hlsl"
+
+void terrain_heightmap_vertexshader(in VS_INPUT vIn,
+						  out VS_OUTPUT_NORMAL vOut
+						  )
+{
+	// Transform to clip space
+
+	float4 tcoord;
+	tcoord.xy = vIn.texcoords.xy;
+	tcoord.zw = 1 - vIn.texcoords.xy;
+	float4 interp = tcoord.zxzx * tcoord.wwyy;
+
+#ifdef INTERP_OLD_WAY
+	float lod_interp = dot(terrain_lods, interp);
+	lod_interp *= lod_interp;
+#else
+	tcoord.xy = step(float2(0.99, 0.99), vIn.texcoords.xy);
+	tcoord.zw = step(float2(0.99, 0.99), 1 - vIn.texcoords.xy);
+	float4 interp2 = max(tcoord.zxzx, tcoord.wwyy);
+	float lod_interp = step(0.99, dot(terrain_lods, interp) * (max(max(interp2.x, interp2.y), max(interp2.z, interp2.w))));
+#endif
+
+	float4 position_in;
+	float3 position_vs;
+	float4 position_ws;
+#ifndef DEPTH_ONLY
+	float4 normal_in = float4(vIn.normal, 0);
+	float3 normal_ws;
+#endif
+
+	position_in.xz = vIn.texcoords.xy * terrain_color_and_geo_size.w;
+	position_in.y = lerp(vIn.position.x, vIn.position.y, lod_interp);
+	position_in.w = 1;
+
+	#ifdef DEPTH_ONLY
+		do_standard(position_in, position_vs, position_ws);
+	#elif NO_NORMALMAP
+		do_standard(position_in, normal_in.xyz,
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, position_ws);
+	#else
+		do_standard(position_in, normal_in.xyz, vIn.tangent, vIn.binormal, 
+					position_vs, vOut.normal_vs_and_unused.xyz, normal_ws, vOut.tangent_vs, vOut.binormal_vs, position_ws);
+	#endif
+
+	// Transform to clip space
+	calcClipPosition(vOut.position_clip, position_vs);
+
+	#ifndef NOPIXELSHADER
+		#ifndef DEPTH_ONLY
+			vOut.vpos_xyw_and_unused.xyz = vOut.position_clip.xyw;
+			float4 ambient_color = getAmbientColorNoVertex();
+		#endif
+
+		vOut.position_vs.xyz = position_vs;
+		#ifdef VERTEX_FOG
+			vOut.position_vs.w = fogVertexFog(length(vOut.position_vs.xyz));
+		#else
+			vOut.position_vs.w = fogCalculateHeightCoord(vOut.position_vs.xyz);
+		#endif
+
+		vOut.texcoords.xy = vIn.texcoords.xy * terrain_color_and_geo_size.x + terrain_color_and_geo_size.yz;
+		vOut.texcoords.zw = vIn.texcoords.zw;
+
+		#ifdef HAS_VERTEX_COLOR
+			vOut.color0 = vIn.vertex_color.rgba;
+		#else
+			vOut.color0 = 0;
+		#endif
+        vOut.instanceParam = global_instance_param;
+
+		#ifndef DEPTH_ONLY
+		// Zero things to make compiler warnings go away (they are set inside this function, but the compiler complains about passing uninitialized data
+			vOut.hemisphere_dir_vs_and_unused = 0;
+			vOut.vpos_xyw_and_unused.w = 0;
+			#ifndef ALPHA_FADE_PLANE
+				vOut.normal_vs_and_unused.w = 0;
+			#endif
+			#ifndef NO_NORMALMAP
+			#elifdef SINGLE_DIRLIGHT
+				#ifdef SM30
+					vOut.sdl_values = 0;
+				#else
+					vOut.diffuse_value = 0;
+				#endif
+			#elifdef VERTEX_ONLY_LIGHTING
+				vOut.diffuse_value = 0;
+			#endif
+
+			float3 vertex_lighting = 0;
+			#ifdef HAS_MORPH
+				// Vertex light is stored in position2, which is normally used by morph data.
+				#ifndef NoVertexLighting
+					vertex_lighting += vIn.position2;
+				#endif
+			#endif
+
+			doVertexLighting(vOut, normal_ws, ambient_color, vertex_lighting);
+
+		#endif
+	#endif
+
+}

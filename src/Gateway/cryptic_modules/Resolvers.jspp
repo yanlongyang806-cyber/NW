@@ -1,0 +1,795 @@
+'use strict';
+
+var resolvers = module.exports;
+
+///////////////////////////////////////////////////////////////////////////
+
+var format = require('cryptic/format');
+
+///////////////////////////////////////////////////////////////////////////
+
+resolvers.here = function(ctx, unused, args, fn)
+{
+	fn(undefined, this.calcStack(ctx));
+}
+
+resolvers.back = function(ctx, unused, args, fn)
+{
+	var howfar = args[0] || 1;
+	var index = ctx.length - 1 - howfar;
+	fn(undefined, ctx[index].obj);
+}
+
+resolvers.root = function(ctx, unused, args, fn)
+{
+	fn(undefined, ctx[0]);
+}
+
+resolvers.insertInto = function(ctx, val, args, fn)
+{
+	var s = args[0].replace(/[%]+/g,val);
+
+	fn(undefined, s);
+}
+
+resolvers.asArray = function(ctx, val, args, fn)
+{
+	var a = [];
+
+	if(typeof val === 'object')
+	{
+		var i = 0;
+		for(var field in val)
+		{
+			a[i++] = val[field];
+		}
+	}
+	else if (Array.isArray(val))
+	{
+		a = val;
+	}
+	else
+	{
+		a = [ val ];
+	}
+
+	fn(undefined, a);
+}
+
+resolvers.hereIndex= function(ctx, unused, args, fn)
+{
+	var index;
+
+	for(var i = ctx.length - 1; i >= 0; i--)
+	{
+		if(ctx[i].stack)
+		{
+			var res = /\[([^\]]+)\]/.exec(ctx[i].stack);
+			if(res && res[1])
+			{
+				fn(undefined, res[1]);
+				return;
+			}
+		}
+	}
+
+	fn(undefined, 0);
+}
+
+//
+// $commify
+//
+// Inserts commas into numbers
+//
+resolvers.commify = function(ctx, val, args, fn)
+{
+	fn(undefined, format.commify(val, ','));
+}
+
+//
+// $ifEmptyUse(value)
+//
+// Returns the provided value if the current value is undefined or the empty
+// string.
+//
+resolvers.ifEmptyUse = function(ctx, val, args, fn)
+{
+	fn(undefined, !val && typeof val !== 'number' ? args.join(', ') : val);
+}
+
+//
+// $derefWithDefault(value, default)
+//
+// Returns the provided value if the current value is undefined or the empty
+// string.
+//
+resolvers.derefWithDefault = function(ctx, val, args, fn)
+{
+	var ret;
+	if (!val || typeof args[0] === 'undefined' || typeof val[args[0]] === 'undefined')
+		ret = args[1];
+	else
+		ret = val[args[0]];
+
+	fn(undefined, ret);
+}
+
+//
+// $escapeForString(value)
+//
+// Returns the value as a string appropriate for placement inside of a
+// Javascript string.
+//
+resolvers.escapeForString = function(ctx, val, args, fn)
+{
+	fn(undefined, format.escapeForString(val));
+}
+
+//
+// $escapeForString(value)
+//
+// Returns a string properly escaped for display in HTML
+//
+resolvers.escapeForHTML = function(ctx, val, args, fn)
+{
+	fn(undefined, format.escapeForHTML(val));
+}
+
+//
+// $getResource(dict)
+//
+resolvers.getResource = function(ctx, val, args, fn)
+{
+	this.rmgr.fetch(args[0], val, function(error, val) {
+		if(error)
+		{
+			fn(error);
+		}
+		else
+		{
+			fn(undefined, val.value)
+		}
+	});
+}
+
+//
+// $JSON()
+//
+// Takes an object and turns it into a JSON string
+resolvers.JSON = function(ctx, val, args, fn)
+{
+	fn(undefined,JSON.stringify(val));
+}
+
+
+//
+// $timerShort(7200, 2)
+//
+// Takes an integer (and assuming it is in seconds) returns how long
+// this is in human redable text. '2h 30m'
+//
+// The second parameter denotes how many units to show.
+//   (7200, 3) '2h 30m 0s'
+//   (7200, 2) '2h 30m'
+//   (7200, 1) '2h'
+//
+resolvers.timerShort = function(ctx, val, args, fn)
+{
+	var time = val;
+	var msg = "";
+	var num = args.length > 0 ? args[0] : 9;
+
+	var values = [
+		{ //days
+			'time': 86400,
+			'prefix': "d"
+		},
+		{ //hours
+			'time': 3600,
+			'prefix': "h"
+		},
+		{ //Minutes
+			'time': 60,
+			'prefix': "m"
+		},
+		{ //Seconds
+			'time': 1,
+			'prefix': "s"
+		}
+	];
+
+	// Is at least 1 year
+	var i;
+
+	for(i in values)
+	{
+		var value = values[i];
+
+		if(time >= value.time)
+		{
+			var valTime = Math.floor(time / value.time);
+
+			if(msg)
+				msg += " ";
+
+			msg = msg + valTime + value.prefix;
+
+			time = time % value.time;
+
+			num--;
+			if(num === 0)
+				break;
+		}
+	}
+
+	fn(undefined, msg);
+}
+
+//
+// $timerAgoShort('Thu Nov 15 2012 14:16:57 GMT-0800')
+//
+// takes a time string (RFC 2822) and returns how long until
+// it reaches the given time in a short form human readable
+// text ex: '24m 43s'
+//
+// The second parameter denotes how many units to show.
+//   (7200, 3) '2h 30m 0s'
+//   (7200, 2) '2h 30m'
+//   (7200, 1) '2h'
+//
+// NOTE: If the time given is in the past, an empty string will be displayed
+resolvers.timerAgoShort = function (ctx, val, args, fn)
+{
+	var time;
+	if(/^\d+$/.test(val))
+		time = val / 1000
+	else
+		time = new Date(val).getTime() / 1000;
+
+	var now = new Date().getTime() / 1000;
+
+	time = time - now;
+
+	if(time < 0)
+	{
+		return fn(undefined, ""); // time = Math.abs(time);
+	}
+
+	return resolvers.timerShort(ctx, time, args, fn);
+}
+
+//
+// $ago('Thu Nov 15 2012 14:16:57 GMT-0800')
+//
+// Takes a time string (RFC 2822) and returns how long ago it
+// was as human readable text. '2 days ago', '10 minutes ago'...
+resolvers.ago = function(ctx, val, args, fn)
+{
+	var time;
+	if(/^\d+$/.test(val))
+		time = val / 1000
+	else
+		time = new Date(val).getTime() / 1000;
+
+	var now = new Date().getTime() / 1000;
+	var msg, lang, ago;
+	var inFuture = false;
+
+	lang = crypticMessages['httpLanguage']; // JSHINT_IGNOREME - globally available
+
+	// Get how much time has passed since 'time'
+	time = now - time;
+
+	if(time < 0 && args.length > 0 && args[0] == 1)
+	{
+		time = Math.abs(time);
+		inFuture = true;
+	}
+
+	if(time < 45) // less than 45 seconds
+	{
+		// less than a minute ago
+		ago = translateAgo(time, 'seconds', lang, inFuture);
+	}
+	else if(time < 90) // 45 - 90 seconds
+	{
+		// about a minute ago
+		ago = translateAgo(1, 'minute', lang, inFuture);
+	}
+	else if(time < 120) // less than two minutes
+	{
+		// 2 minutes ago
+		ago = translateAgo(2, 'minutes', lang, inFuture);
+	}
+	else if(time < 2700) // less than 45 minutes
+	{
+		// X minutes ago
+		ago = translateAgo(Math.round(time/60), 'minutes', lang, inFuture);
+	}
+	else if(time < 5340) // less than 89 min
+	{
+		// about an hour ago
+		ago = translateAgo(1, 'hour', lang, inFuture);
+	}
+	else if(time < 82800) // less than 23 hours
+	{
+		// X hours ago
+		ago = translateAgo(Math.round(time/60/60), 'hours', lang, inFuture);
+	}
+	else if(time < 147600) // less than 41 hours
+	{
+		// a day ago
+		ago = translateAgo(1, 'day', lang);
+	}
+	else if(time < 17280000) // less than 200 days
+	{
+		// X days ago
+		ago = translateAgo(Math.round(time/60/60/24), 'days', lang, inFuture);
+	}
+	// Single year
+	else if(time < 63072000) // less than 730 days (2 years)
+	{
+		// about a year ago
+		ago = translateAgo(1, 'year', lang)
+	}
+	else // whatever it is, its a plural number of years ago
+	{
+		// X years ago
+		ago = translateAgo(Math.round(time/60/60/24/365), 'year', lang, inFuture)
+	}
+
+	fn(undefined, ago);
+}
+
+function translateAgo(num, span, lang, inFuture)
+{
+	var msg, ago = [];
+
+	msg = getTranslationAgo(lang);
+
+	if(inFuture)
+	{
+		if(msg['prefixFromNow'])
+		{
+			ago.push(msg['prefixFromNow']);
+		}
+	}
+	else
+	{
+		if(msg['prefixAgo'])
+		{
+			ago.push(msg['prefixAgo']);
+		}
+	}
+
+	ago.push(msg[span]);
+
+	if(inFuture)
+	{
+		if(msg.suffixFromNow)
+		{
+			ago.push(msg['suffixFromNow']);
+		}
+	}
+	else
+	{
+		if(msg.suffixAgo)
+		{
+			ago.push(msg['suffixAgo']);
+		}
+	}
+
+	ago = ago.join(' ');
+
+	ago = ago.replace("%d", num);
+
+	return ago;
+}
+
+// Get translations for translateAgo above
+function getTranslationAgo(lang) {
+
+	// Translations aquired here:
+	// https://github.com/rmm5t/jquery-timeago/tree/master/locales
+	// TODO: Put these translations somewhere that makes more sense?
+
+	// English:
+	switch(lang)
+	{
+	case 'en':
+		return {
+			'prefixAgo': "",
+			'prefixFromNow': "",
+			'suffixAgo': "ago",
+			'suffixFromNow': "from now",
+			'seconds': "less than a minute",
+			'minute': "about a minute",
+			'minutes': "%d minutes",
+			'hour': "about an hour",
+			'hours': "about %d hours",
+			'day': "a day",
+			'days': "%d days",
+			'month': "about a month",
+			'months': "%d months",
+			'year': "about a year",
+			'years': "%d years"
+		}
+		break;
+
+	// French:
+	case 'fr':
+		return {
+			'prefixAgo': "il y a",
+			'prefixFromNow': "d'ici",
+			'suffixAgo': "",
+			'suffixFromNow': "",
+			'seconds': "moins d'une minute",
+			'minute': "environ une minute",
+			'minutes': "environ %d minutes",
+			'hour': "environ une heure",
+			'hours': "environ %d heures",
+			'day': "environ un jour",
+			'days': "environ %d jours",
+			'month': "environ un mois",
+			'months': "environ %d mois",
+			'year': "un an",
+			'years': "%d ans"
+		}
+		break;
+
+	// German:
+	case 'de':
+		return {
+			'prefixAgo': "vor",
+			'prefixFromNow': "in",
+			'suffixAgo': "",
+			'suffixFromNow': "",
+			'seconds': "wenigen Sekunden",
+			'minute': "etwa einer Minute",
+			'minutes': "%d Minuten",
+			'hour': "etwa einer Stunde",
+			'hours': "%d Stunden",
+			'day': "etwa einem Tag",
+			'days': "%d Tagen",
+			'month': "etwa einem Monat",
+			'months': "%d Monaten",
+			'year': "etwa einem Jahr",
+			'years': "%d Jahren"
+		}
+		break;
+
+	// Turkish:
+	case 'tr':
+		return {
+			suffixAgo: 'önce',
+			suffixFromNow: null,
+			seconds: '1 dakikadan',
+			minute: '1 dakika',
+			minutes: '%d dakika',
+			hour: '1 saat',
+			hours: '%d saat',
+			day: '1 gün',
+			days: '%d gün',
+			month: '1 ay',
+			months: '%d ay',
+			year: '1 yıl',
+			years: '%d yıl'
+		}
+		break;
+
+	// Italian:
+	case 'it':
+		return {
+			suffixAgo: "fa",
+			suffixFromNow: "da ora",
+			seconds: "meno di un minuto",
+			minute: "circa un minuto",
+			minutes: "%d minuti",
+			hour: "circa un'ora",
+			hours: "circa %d ore",
+			day: "un giorno",
+			days: "%d giorni",
+			month: "circa un mese",
+			months: "%d mesi",
+			year: "circa un anno",
+			years: "%d anni"
+		}
+		break;
+
+	case 'pl':
+		return {
+			prefixAgo: null,
+			prefixFromNow: "za",
+			suffixAgo: "temu",
+			suffixFromNow: null,
+			seconds: "mniej niż minutę",
+			minute: "minutę",
+			minutes: function(value) { return numpf(value, "%d minuty", "%d minut"); },
+			hour: "godzinę",
+			hours: function(value) { return numpf(value, "%d godziny", "%d godzin"); },
+			day: "dzień",
+			days: "%d dni",
+			month: "miesiąc",
+			months: function(value) { return numpf(value, "%d miesiące", "%d miesięcy"); },
+			year: "rok",
+			years: function(value) { return numpf(value, "%d lata", "%d lat"); }
+		}
+		break;
+	}
+}
+
+// Needed for Polish translation above. (getTranslationAgo)
+function numpf(n, s, t)
+{
+	// s - 2-4, 22-24, 32-34 ...
+	// t - 5-21, 25-31, ...
+	var n10 = n % 10;
+	if ( (n10 > 1) && (n10 < 5) && ( (n > 20) || (n < 10) ) )
+	{
+		return s;
+	}
+	else
+	{
+		return t;
+	}
+}
+
+//
+// $length(array)
+//
+// Returns the length of any object (such as an array) that has a length field
+//
+// Objects that do not have a length are considered to have a size of 1
+//
+resolvers.length = function(ctx, val, args, fn)
+{
+	if(typeof val === 'undefined')
+	{
+		fn(undefined, 0)
+	}
+	else if (typeof val.length ==='number')
+	{
+		fn(undefined, val.length);
+	}
+	else
+	{
+		fn(undefined, 1);
+	}
+}
+
+//
+// $slice(array)
+//
+resolvers.slice = function(ctx, val, args, fn)
+{
+	if(val && Array.isArray(val))
+	{
+		fn(undefined, val.slice(args[0], args[1]));
+	}
+	else
+	{
+		fn(undefined, []);
+	}
+}
+
+//
+// $dateParse('Fri Nov 16 2012 12:00:57 GMT-0800')
+//
+resolvers.dateParse = function(ctx, val, args, fn)
+{
+	var timestamp = Math.round(Date.parse(val) / 1000);
+	fn(undefined, timestamp);
+}
+
+//
+// $index(property,order)
+//
+// Creates a property '_index_property' which has the index of the element
+// as sorted in 'order' (asc or desc). order is optional and will default
+// to asc.
+resolvers.index = function(ctx, val, args, fn)
+{
+	// If we dont have the index yet
+	// and the property exists in the object
+	if((!(('_index_' + args[0]) in val[0])) && (args[0] in val[0]))
+	{
+		// select the correct sorting function.
+		var fnSort;
+		if((args[1]) && (args[1] === 'desc'))
+		{
+			fnSort = function(a, b) {
+				return b[args[0]] - a[args[0]];
+			};
+		}
+		else
+		{
+			// asc
+			fnSort = function(a, b) {
+				return a[args[0]] - b[args[0]];
+			}
+		}
+
+		// Sort, and index.
+		val.sort(fnSort);
+		val.forEach(function(ele, idx, arr) {
+			ele['_index_' + args[0]] = idx + 1;
+		});
+	}
+	fn(undefined, val);
+}
+
+//
+// $dottedDate
+//
+// Turns a date into YYYY.DD.MM
+//
+resolvers.dottedDate = function(ctx, val, args, fn)
+{
+	fn(undefined, format.dottedDate(val));
+}
+
+//
+// $shortDate
+//
+// Turns a date into a locale-specific date (no time)
+//
+resolvers.shortDate = function(ctx, val, args, fn)
+{
+	fn(undefined, format.shortDate(val));
+}
+
+//
+// $shortDateNoYear
+//
+// Turns a date into a locale-specific date (no time, no year)
+//
+resolvers.shortDateNoYear = function(ctx, val, args, fn)
+{
+	fn(undefined, format.shortDateNoYear(val));
+}
+
+//
+// $shortDateTime
+//
+// Turns a date into a locale-specific date
+//
+resolvers.shortDateTime = function(ctx, val, args, fn)
+{
+	fn(undefined, format.shortDateTime(val));
+}
+
+//
+// $formatTime
+//
+// Turns a date into something like: 7:00 PM
+//
+resolvers.formatTime = function(ctx, val, args, fn)
+{
+	fn(undefined, format.time(val));
+}
+
+//
+// $fullDateTime
+//
+// Turns a date into something like: November 14, 2012 @ 7:00 PM
+//
+resolvers.fullDateTime = function(ctx, val, args, fn)
+{
+	fn(undefined, format.fullDateTime(val));
+}
+
+//
+// $formatDuration
+//
+// Turns a date into something like: 4 hours, 20 minutes
+// The result is localized to the client language.
+// The argument is an integer number of minutes.
+//
+resolvers.formatDuration = function(ctx, val, args, fn)
+{
+	fn(undefined, format.duration(val));
+}
+
+//
+// $stardate('Thu Nov 15 2012 14:16:57 GMT-0800')
+//
+// Turns a date into a stardate
+//
+// This is the same algorithm the game uses, which is loosely adapted from
+// the algorithm described here:
+//     http://trekguide.com/Stardates.htm#TNGcalculator
+//
+resolvers.stardate = function(ctx, val, args, fn)
+{
+	fn(undefined, format.stardate(val));
+}
+
+//
+// $httpify
+//
+// Takes a url, which may or may not have an http:// in front of it,
+// and if it doesn't it prepends http://
+//
+resolvers.httpify = function(ctx, val, args, fn)
+{
+	if (val.indexOf('://') >= 0)
+	{
+		fn(undefined,  val)
+	}
+	else
+	{
+		fn(undefined, 'http://'.concat(val))
+	}
+}
+
+//
+// $replace
+//
+// A wrapper for the standard String function replace
+//
+resolvers.replace = function(ctx, val, args, fn)
+{
+	fn(undefined, val.replace(args[0], args[1]));
+}
+
+//
+// $toLowerCase
+//
+// A wrapper for the standard String function toLowerCase
+//
+resolvers.toLowerCase = function(ctx, val, args, fn)
+{
+	fn(undefined, val.toLowerCase());
+}
+
+//
+// $choose
+//
+// Returns the first element if true the value is true
+// Otherwise returns the second argument
+//
+// Designed to emulate the terary operator.
+//
+resolvers.choose = function(ctx, val, args, fn)
+{
+	fn(undefined, val ? args[0] : args[1]);
+}
+
+//
+// $cleanUpSMF
+//
+// Converts typical SMF stuff into better HTML.
+//
+resolvers.cleanUpSMF = function(ctx, val, args, fn)
+{
+	fn(undefined, format.cleanUpSMF(val));
+}
+
+//
+// $displayAsCoins
+//
+// Display a numeric value as a coin value
+resolvers.displayAsCoins = function(ctx, val, args, fn)
+{
+	fn(undefined, format.displayAsCoins(val));
+}
+
+//
+// $isDesktop
+//
+// Detect weather you are desktop, or mobile
+resolvers.isDesktop = function(ctx, val, args, fn)
+{
+	fn(undefined, client.isDesktop(true));
+}
+
+//
+// $cachebuster
+//
+// Returns the cache buster key for the current build.
+resolvers.cachebuster = function(ctx, val, args, fn)
+{
+	fn(undefined, cachebuster); // JSHINT_IGNOREME globally available, check index.html
+}
+
+// End of File

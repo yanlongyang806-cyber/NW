@@ -1,0 +1,22 @@
+OperationDef
+	Name "Normalize" // Name of the operation
+	Description "Normalize (use after combining any 2 normals)"
+	Type SIMPLE
+
+	Input
+		Name Normal
+		Description "Normal direction"
+		Float 4
+		Type Normal
+	EndInput
+
+	Output
+		Name Result
+		Description "Normalized result (alpha left untouched)"
+		Float 4
+		Type Normal
+		AlphaFrom Normal
+	EndOutput
+
+EndOperationDef
+

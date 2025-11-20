@@ -1,0 +1,25 @@
+<div class="modal-top-outer">
+	<div class="modal-top-inner">
+		<a class="close-button" data-url="back"><span class="back-arrow mobileOnly"></span></a>
+	</div>
+</div>
+<div class="modal-body-outer">
+	<div class="modal-body-inner">
+
+		<div class="item-card">
+			<div data-set-class="item-icon large {.rarity}">
+				<span class="item-rarity-border"></span>
+				<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+			</div>
+
+			<h3 data-set-class="item-name {.rarity}" data-path=".itemdef.displaynamemsg.str"><!-- item name --></h3>
+			<h4 data-set-class="item-type {.rarity}-light"><span data-path=".raretext"></span><span> </span><span data-path=".sorttext"></span></h4>
+			<h5 class="item-rank" data-path=".restrictioncattext"></h5>
+			<h5 class="item-value" data-if=".value"><span><span data-path=".value.$commify()"><!-- value --></span><span class="currency-ec"></span></span></h5>
+			<h5 class="item-bound" data-path=".boundtext" ><!-- Bound --></h5>
+
+			<div class="item-desc" data-path=".itemdef.descriptionmsg.str"><!-- item description --></div>
+
+		</div>
+	</div>
+</div>

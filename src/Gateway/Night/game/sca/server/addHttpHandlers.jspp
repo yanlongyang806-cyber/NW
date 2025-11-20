@@ -1,0 +1,36 @@
+'use strict';
+
+//////////////////////////////////////////////////////////////////////////
+//
+// HTTP Hooks
+//
+
+//
+// If we need to handle any HTTP requests, this is where it's done. It's
+// handled just like it is in ProxyStartup: Create a connect middleware
+// function/handler and .use() it.
+//
+
+var connect = require('connect');
+
+var scaHttpHandlers = connect()
+	.use('/test', test)
+
+
+
+function test(req, res, next)
+{
+	console.log('Sword Coast Adventures Ho!');
+	next();
+}
+
+
+
+// This adds the handler list above to the HTTP handler list. It is added
+// at the end, just before the static file handler middleware.
+var httpHandlers = require('cryptic/proxy/httpHandlers');
+httpHandlers.addHook('/sca', scaHttpHandlers);
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

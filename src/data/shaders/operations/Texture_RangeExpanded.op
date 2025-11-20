@@ -1,0 +1,29 @@
+OperationDef
+	Name "Texture_RangeExpanded" // Name of the operation
+	Description "Texture fetch that will treat it similar to that of a normal map."
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name Texture // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type Texture
+		Texture 1
+	EndInput
+
+	Output
+		Name Result
+		Description "Output from treating texture as if normal map."
+		Float 4
+		AlphaFrom Texture
+	EndOutput
+EndOperationDef

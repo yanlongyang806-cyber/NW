@@ -1,0 +1,733 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var cutils = require('cryptic/cutils');
+var events = require('events');
+
+var applyCrypticDiff = require('cryptic/applyCrypticDiff');
+var applyJSDiff = require('cryptic/applyJSDiff');
+var javascriptDiff = require('cryptic/javascriptDiff');
+var objDeepCompare = require('cryptic/objDeepCompare');
+
+var handlersGenerated = false;
+
+var ContainerManager = function ContainerManager(connProxy)
+{
+	dbg.trace()
+
+	if(!handlersGenerated)
+	{
+		generateHandlers();
+		handlersGenerated = true;
+	}
+
+	// These names must match the messages being sent as well as the
+	// event handlers. For example, 'Entity' will assume:
+	//    Requester:       'requestEntity'
+	//    Request message: 'Client_RequestEntity'
+	//    Receive message: 'Proxy_Entity'
+	//    Handler:          onProxy_Entity()
+
+	this.dicts = { };
+
+	var dict;
+	for(dict in dictsTemplate)
+	{
+		this.dicts[dict] = { };
+	}
+
+	if(connProxy)
+	{
+		this.connect(connProxy);
+	}
+}
+cutils.inherits(ContainerManager, events.EventEmitter);
+
+ContainerManager.prototype.connect = function connect(connProxy)
+{
+	dbg.trace();
+
+	this.connProxy = connProxy;
+
+	var dict;
+	for(dict in this.dicts)
+	{
+		var msg = 'Proxy_' + dict;
+		this.connProxy.removeAllListeners(msg);
+		this.connProxy.on(msg, cutils.bind(this, this['on' + msg]));
+	}
+}
+
+ContainerManager.prototype.disconnect = function disconnect()
+{
+	dbg.trace();
+	this.connProxy = null;
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// For searching:
+//
+// Functions:
+//   requestLoginEntity
+//   requestEntity
+//   requestPet
+//   requestGuild
+//   requestGroupProject
+//   requestAuctionSearch
+//   requestCraftingList
+//   requestCraftingDetail
+//   requestMailList
+//   requestMailDetail
+//   requestItemTooltip
+//   requestCStore
+//   requestVendor
+//   requestExchangeAccountData
+//   requestGatewayGameData
+//
+// Messages:
+//   "Client_RequestLoginEntity"
+//   "Client_RequestEntity"
+//   "Client_RequestPet"
+//   "Client_RequestGuild"
+//   "Client_RequestGroupProject"
+//   "Client_RequestAuctionSearch"
+//   "Client_RequestCraftingList"
+//   "Client_RequestCraftingDetail"
+//   "Client_RequestMailList"
+//   "Client_RequestMailDetail"
+//   "Client_RequestItemTooltip"
+//   "Client_RequestVendor"
+//   "Client_RequestExchangeAccountData"
+//   "Client_RequestGatewayGameData"
+//
+function makeRequestHandler(dictname, template)
+{
+	return function(nameToRequest, paramObj, callback)	{
+		dbg.trace(dictname, nameToRequest);
+
+		if(typeof nameToRequest === 'string')
+		{
+			// i18n: This may be a problem
+			nameToRequest = nameToRequest.toLowerCase();
+		}
+
+		if(typeof paramObj === 'function')
+		{
+			callback = paramObj;
+			paramObj = undefined;
+		}
+
+		if(!this.dicts[dictname][nameToRequest]) this.dicts[dictname][nameToRequest] = {};
+		this.requestContainer(this.dicts[dictname][nameToRequest],
+			nameToRequest,
+			'Client_Request' + dictname,
+			paramObj,
+			callback);
+	};
+}
+
+ContainerManager.prototype.requestContainer = function requestContainer(slot, id, commandToSend, paramObj, callback)
+{
+	dbg.trace(slot, id, commandToSend);
+
+	if(slot.state === 'error')
+	{
+		// Allow requests of errored containers try again fresh.
+		dbg.trace('Re-fetching errored container', id)
+		slot.state = undefined;
+	}
+
+	if(slot.state && slot.state !== 'fetching')
+	{
+		if(callback)
+		{
+			if(slot.state === 'ready')
+			{
+				callback(undefined, slot.container);
+			}
+			else
+			{
+				callback(new Error(slot.state), undefined);
+			}
+		}
+	}
+	else
+	{
+		if(this.connProxy)
+		{
+			if(callback)
+			{
+				if(!slot._requesters)
+					slot._requesters = [];
+				slot._requesters.push(callback);
+			}
+
+			if(slot.state !== 'fetching')
+			{
+				if(typeof paramObj === 'undefined')
+					paramObj = {};
+
+				slot.state = 'fetching';
+				slot.paramObj = paramObj;
+				this.connProxy.emit(commandToSend, { 'id': id, 'params': paramObj } );
+			}
+		}
+		else
+		{
+			dbg.error("Can't request entity when disconnected.");
+
+			if(callback)
+			{
+				callback(new Error("Can't request entity when disconnected"), undefined);
+			}
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// For searching:
+//
+// Functions:
+//   releaseLoginEntity
+//   releaseEntity
+//   releasePet
+//   releaseGuild
+//   releaseGroupProject
+//   releaseAuctionSearch
+//   releaseCraftingList
+//   releaseCraftingDetail
+//   releaseMailList
+//   releaseMailDetail
+//   releaseItemTooltip
+//   releaseCStore
+//   releaseVendor
+//   releaseExchangeAccountData
+//   releaseGatewayGameData
+//
+// Messages:
+//   "Client_ReleaseLoginEntity"
+//   "Client_ReleaseEntity"
+//   "Client_ReleasePet"
+//   "Client_ReleaseGuild"
+//   "Client_ReleaseGroupProject"
+//   "Client_ReleaseAuctionSearch"
+//   "Client_ReleaseCraftingList"
+//   "Client_ReleaseCraftingDetail"
+//   "Client_ReleaseMailList"
+//   "Client_ReleaseMailDetail"
+//   "Client_ReleaseItemTooltip"
+//   "Client_ReleaseVendor"
+//   "Client_ReleaseExchangeAccountData"
+//   "Client_ReleaseGatewayGameData"
+//
+function makeReleaseHandler(dictname, template)
+{
+	return function(nameToRelease, paramObj, callback)	{
+		dbg.trace(dictname, nameToRelease);
+
+		if(typeof nameToRelease === 'string')
+		{
+			// i18n: This may be a problem
+			nameToRelease = nameToRelease.toLowerCase();
+		}
+
+		if(this.dicts[dictname][nameToRelease])
+			delete this.dicts[dictname][nameToRelease];
+
+		this.connProxy.emit('Client_Release' + dictname, { 'id': nameToRelease });
+	};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// For searching:
+//
+// Functions:
+//   onProxy_LoginEntity
+//   onProxy_Pet
+//   onProxy_Guild
+//   onProxy_AuctionSearch
+//   onProxy_CraftingList
+//   onProxy_CraftingDetail
+//   onProxy_MailList
+//   onProxy_MailDetail
+//   onProxy_ItemTooltip
+//   onProxy_Vendor
+//
+// Messages:
+//   "Proxy_LoginEntity"
+//   "Proxy_Entity"
+//   "Proxy_Pet"
+//   "Proxy_Guild"
+//   "Proxy_GroupProject"
+//   "Proxy_AuctionSearch"
+//   "Proxy_CraftingList"
+//   "Proxy_CraftingDetail"
+//   "Proxy_MailList"
+//   "Proxy_MailDetail"
+//   "Proxy_ItemTooltip"
+//   "Proxy_Vendor"
+//
+function makeReceiveHandler(dictname, template)
+{
+	return function _onReceiveContainer(data) {
+		dbg.trace(dictname, data);
+
+		var bUpdate = false;
+		var error;
+		var result;
+
+		// data is in this form
+		// {
+		//      id,        // identifier for the container
+		//      state,     // 'online', 'offline', 'deleted'
+		//                 //   Used by entities, mainly. All other containers respond with 'online' or an error.
+		//      container, // If present, the entire container. May not be present
+		//                 //   if diff is present (or there's an error)
+		//      diff,      // A Cryptic-ish StructDiff containing the changes from the previous version.
+		// }
+		//
+		// If container is present, it should be replace the existing container, even if diff is present.
+		// If diff is present (but no container) then it should be applied to the existing container.
+		// If diff is present, it should be used for the update callback.
+
+		var name = data.id;
+		if(typeof name === 'string')
+		{
+			// i18n: This may be a problem
+			name = name.toLowerCase();
+		}
+
+		var slot = this.dicts[dictname][name] || { };
+
+		if(slot.state !== 'ready' && data.container && !data.diff)
+		{
+			data.diff = 'create *';
+		}
+
+		if(template.evict && data.diff === 'create *')
+		{
+			this.dicts[dictname] = { };
+		}
+
+		this.dicts[dictname][name] = slot;
+
+		if(data.container)
+		{
+			if(!data.status)
+			{
+				data.status = 'online';
+			}
+
+			if(!data.diff)
+			{
+				data.diff = 'update *';
+			}
+
+			switch(data.status)
+			{
+				case 'online':
+					slot.state = 'ready';
+
+					bUpdate = true;
+					if(slot.container)
+					{
+						replaceInPlace(slot.container, data.container);
+					}
+					else
+					{
+						slot.container = data.container;
+					}
+
+					result = data.container;
+					break;
+
+				case 'offline':
+					slot.state = 'offline';
+					error = new Error('offline');
+					break;
+
+				case 'deleted':
+					slot.state = 'deleted';
+					error = new Error('deleted');
+					break;
+
+				default:
+					// All other errors will end up here.
+					slot.state = 'error';
+					error = new Error(data.status);
+					break;
+			}
+		}
+		else if(typeof data.diff !== 'undefined' && slot.container)
+		{
+			if(data.diff)
+			{
+				if(data.diff.indexOf('/* JSDIFF */') === 0)
+				{
+					if(!applyJSDiff(slot.container, data.diff))
+					{
+						dbg.error('Error applying JSDiff! Investigate!', slot.container, data);
+						window.alert('Error applying JSDiff! Alert Mike (mmccarry) immediately! Don\'t close or refresh this window!');
+						// Something went bad with the diff. Try to recover by
+						//  asking for the container again from scratch.
+						slot.state = 'error';
+						slot.container = JSON.parse(data.obj);
+
+						//Add the rest of this back in when the backup object stuff is removed
+						//this.requestContainer(slot, name, 'Client_Request' + dictname, slot.paramObj);
+
+						// Skip the rest
+						//return;
+					}
+
+					if(!objDeepCompare(slot.container, JSON.parse(data.obj)))
+					{
+						dbg.error('applyJSDiff did not make a matching container!!!', slot.container, JSON.parse(data.obj));
+
+						slot.container = JSON.parse(data.obj);
+					}
+
+					bUpdate = true;
+				}
+				else
+				{
+					if(data.diff == 'destroy *')
+					{
+						delete this.dicts[dictname][name];
+						slot = { container: null };
+					}
+					else if(!applyCrypticDiff(slot.container, data.diff))
+					{
+						// Something went bad with the diff. Try to recover by
+						//   asking for the container again from scratch.
+						slot.state = 'error';
+						this.requestContainer(slot, name, 'Client_Request' + dictname, slot.paramObj);
+
+						// Skip the rest
+						return;
+					}
+					bUpdate = true;
+				}
+
+			}
+		}
+		else
+		{
+			slot.state = 'error';
+			error = new Error(data.status);
+		}
+
+		if(template.onReceive)
+		{
+			template.onReceive.call(this, slot, data.diff);
+		}
+
+		if(slot._requesters)
+		{
+			while(slot._requesters.length > 0)
+			{
+				var fn = slot._requesters.pop();
+				fn(error, result);
+			}
+		}
+
+		if(template.update && bUpdate)
+		{
+			this.emit('update', dictname, name, slot, data.diff);
+		}
+	};
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ContainerManager.prototype.invalidateContainer = function invalidateContainer(dictname, nameToRequest)
+{
+	dbg.trace();
+
+	// i18n: This may be a problem
+	nameToRequest = nameToRequest.toLowerCase();
+	if(this.dicts[dictname][nameToRequest])
+	{
+		dbg.trace('Invalidating ' + nameToRequest);
+		this.dicts[dictname][nameToRequest] = {};
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ContainerManager.prototype.onReceiveEntity = function onReceiveEntity(slot, diff)
+{
+	updatePetsFromEntity(this, slot);
+
+	if(diff === 'create *')
+	{
+		this.emptyDict('ItemTooltip');
+	}
+}
+
+ContainerManager.prototype.onReceiveLoginEntity = function onReceiveLoginEntity(slot, diff)
+{
+	// Ugh. Not happy about this use of client.
+	client.dataModel.model.loginInfo.loginentity = slot ? slot.container : undefined;
+
+	if(diff === 'create *')
+	{
+		this.emptyDict('AuctionSearch');
+		this.emptyDict('CraftingList');
+		this.emptyDict('CraftingDetail');
+		this.emptyDict('MailList');
+		this.emptyDict('MailDetail');
+		this.emptyDict('CStore');
+		this.emptyDict('Vendor');
+	}
+}
+
+ContainerManager.prototype.onReceiveCStore = function onReceiveCStore(slot, diff)
+{
+
+	if(diff === 'destroy *')
+	{
+		return;
+	}
+
+	var i;
+	var products = {};
+	var categories = {};
+	var obj = slot.container;
+
+	if(!obj.products || !obj.userproducts || !obj.categories)
+	{
+		return;
+	}
+
+
+	// Make a hash of the product ids.
+	for(i = 0; i < obj.products.length; i++)
+	{
+		products[obj.products[i].id] = obj.products[i];
+	}
+
+	// Augment the products with the user-specific data.
+	for(i = 0; i < obj.userproducts.length; i++)
+	{
+		var prod = products[obj.userproducts[i].id];
+		if(prod)
+		{
+			cutils.extend(prod, obj.userproducts[i]);
+		}
+	}
+	delete obj.userproducts; // data added to products, now not needed
+
+	obj.productsByID = products; // handy map of products by the id
+
+	// At this point, all the products are filled in and ready to use.
+
+	// Turn all the product IDs into object references
+	linkProducts(products, obj.categories);
+
+
+	// Make a hash of the categories. (used by linkCategories)
+	for(i = 0; i < obj.categories.length; i++)
+	{
+		categories[obj.categories[i].name] = obj.categories[i];
+	}
+
+	// Scan through and get the top level (non-child) categories
+	obj.topLevel = linkCategories(categories, obj.categories);
+
+}
+
+//
+// This switches all the numerical product ids to be references to actual
+// product objects.
+//
+function linkProducts(products, arrCategories)
+{
+	for(var i = 0; i < arrCategories.length; i++)
+	{
+		var cat = arrCategories[i];
+		if(cat.productids)
+		{
+			cat.products = [];
+			for(var j = 0; j < cat.productids.length; j++)
+			{
+				var prod = products[cat.productids[j]];
+				if(prod)
+					cat.products.push(prod);
+			}
+			delete cat.productids;
+		}
+	}
+}
+
+//
+// This switches all the category names into object references.
+// It also determines what the top-level category list is.
+//
+function linkCategories(categories, arrCategories)
+{
+	var topLevel = [];
+	for(var i = 0; i < arrCategories.length; i++)
+	{
+		var cat = arrCategories[i];
+
+		if(!cat.parentcategory)
+		{
+			topLevel.push(cat);
+			for(var j = 0; j < cat.children.length; j++)
+			{
+				cat.children[j] = categories[cat.children[j]];
+			}
+			if(cat.children.length === 0)
+			{
+				var dummy = {};
+				cutils.extend(dummy, cat);
+				delete dummy.children;
+				dummy.parentcategory = cat.name;
+				dummy.displayname = '@Message[Transactions.SubCategory.All]';
+
+				cat.children.push(dummy);
+			}
+		}
+		else
+		{
+			delete cat.children;
+		}
+	}
+
+	return topLevel;
+}
+
+
+ContainerManager.prototype.emptyDict = function emptyDict(dictname)
+{
+	if(dictname in this.dicts)
+	{
+		if(dictsTemplate[dictname] && dictsTemplate[dictname].update)
+		{
+			var self = this;
+
+			var emptySlot = { container: null };
+
+			var keys = Object.keys(this.dicts[dictname]);
+			keys.forEach(function(name) {
+				self.emit('update', dictname, name, emptySlot, 'destroy *');
+			});
+		}
+
+		this.dicts[dictname] = {};
+	}
+}
+
+
+function updatePetsFromEntity(cmgr, slot)
+{
+	dbg.trace(slot);
+
+	if(!slot || !slot.container || !slot.container.ownedcontainers)
+	{
+		dbg.trace('No entity or ownedcontainers: removing all pets.');
+		cmgr.dicts['Pet'] = {};
+	}
+	else
+	{
+		var oldpets = cmgr.dicts['Pet'];
+
+		cmgr.dicts['Pet'] = {};
+
+		for(var i = 0; i < slot.container.ownedcontainers.length; i++)
+		{
+			var id = slot.container.ownedcontainers[i].id;
+			if(oldpets[id])
+			{
+				dbg.trace('Remembering pet', id);
+				cmgr.dicts['Pet'][id] = oldpets[id];
+			}
+		}
+	}
+}
+
+function replaceInPlace(dest, src)
+{
+	var prop;
+	for(prop in dest)
+	{
+		delete dest.prop;
+	}
+
+	for(prop in src)
+	{
+		dest[prop] = src[prop];
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+ContainerManager.prototype.findEntity = function findEntity(name)
+{
+	// i18n: This will be a problem
+	name = name.toLowerCase();
+	return this.dicts['Entity'][name];
+}
+
+ContainerManager.prototype.findPet = function findPet(id)
+{
+	return this.dicts['Pet'][id];
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+var dictsTemplate = {
+	// 'key': must match the messages being sent.
+	// evict: if true, will only keep the most recently sent container of the type.
+	// onReceive: if given, called after the boilerplater receiving code, but before callbacks and events
+	// update: if true, will emit an update event when the container is updated.
+	'LoginEntity':     { evict: true,  update: true, onReceive: ContainerManager.prototype.onReceiveLoginEntity },
+	'Entity':          { evict: true,  update: true, onReceive: ContainerManager.prototype.onReceiveEntity },
+	'Pet':             { evict: false, update: true },
+	'Guild':           { evict: true,  update: true },
+	'GroupProject':    { evict: false, update: true },
+	'PersonalProject': { evict: false, update: true },
+	'AuctionSearch':   { evict: false, update: true },
+	'CraftingList':    { evict: false, update: true },
+	'CraftingDetail':  { evict: true,  update: true },
+	'MailList':        { evict: false, update: true },
+	'MailDetail':      { evict: true,  update: true },
+	'ItemTooltip':     { evict: false, update: true },
+	'CStore':          { evict: true,  update: true, onReceive: ContainerManager.prototype.onReceiveCStore },
+	'Vendor':          { evict: true,  update: true },
+	'ExchangeAccountData': { evict: true, update: true },
+	'GatewayGameData': { evict: true,  update: true}
+};
+
+function generateHandlers()
+{
+	var dict;
+	for(dict in dictsTemplate)
+	{
+		var reqName = 'request' + dict;
+		if(!ContainerManager.prototype[reqName])
+		{
+			ContainerManager.prototype[reqName] = makeRequestHandler(dict, dictsTemplate[dict]);
+		}
+
+		var relName = 'release' + dict;
+		if(!ContainerManager.prototype[relName])
+		{
+			ContainerManager.prototype[relName] = makeReleaseHandler(dict, dictsTemplate[dict]);
+		}
+
+		var onName = 'onProxy_' + dict;
+		if(!ContainerManager.prototype[onName])
+		{
+			ContainerManager.prototype[onName] = makeReceiveHandler(dict, dictsTemplate[dict]);
+		}
+	}
+}
+
+module.exports = ContainerManager;
+
+// End of File

@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<title>Card Maker</title>
+		<link rel="stylesheet" href="./mg.css">
+		<link rel="stylesheet" href="./cardMaker.css">
+	</head>
+
+	<body>
+		<div id="tooltip" class="tooltip"></div>
+		<div id="copy-box"><h4>cardList.js</h4><textarea id="copy-text"></textarea><br><button onclick="$('#copy-box').hide();">Close</button></div>
+		<div id="content">
+
+			<div class="column-wide">
+				<h3 id="loaded-card-heading">Loaded Card:<span id="loaded-card-modified">*</span>
+
+				<a class="icon-button" onclick="cm.saveCardDataFromForm('loaded');" data-tt="Save this card.">
+					<img src="./img/save-icon.png">
+				</a>
+
+				<a class="icon-button" onclick="cm.clearCardDataFromForm('loaded');" data-tt="Clear the currently loaded card and make a new one.">
+					<img src="./img/new-icon.png">
+				</a>
+
+				</h3>
+				<h3 id="selected-card-heading">Selected Card:</h3>
+				<ul class="cards">
+					<li id="loaded-card" class="card">
+						<h4><span class="editable-field" data-fieldname="name">card name</span></h4>
+						<div class="card-stats">
+							<span class="card-stats-left">
+								<table cellpadding="2" cellspacing="0">
+								<tr>
+									<th>Shield:</th><td><span class="editable-field" data-fieldname="attribs.shield">10</span></td>
+								</tr>
+								<tr>
+									<th>HP:</th><td><span class="editable-field" data-fieldname="attribs.hitpoints">10</span></td>
+								</tr>
+								<tr>
+									<th>Accuracy:</th><td> <span class="editable-field" data-fieldname="attribs.accuracyRating">10</span></td>
+								</tr>
+								<tr>
+									<th>Evasion:</th><td><span class="editable-field" data-fieldname="attribs.evasionRating">10</span></td>
+								</tr>
+								</table>
+							</span>
+							<span class="card-stats-right">
+								<table cellpadding="2" cellspacing="0">
+								<tr>
+									<th>Speed:</th><td><span class="editable-field" data-fieldname="attribs.speed">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Min:</th><td><span class="editable-field" data-fieldname="attribs.attackMin">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Max:</th><td><span class="editable-field" data-fieldname="attribs.attackMax">10</span></td>
+								</tr>
+								<tr>
+									<th>Critical:</th><td><span class="editable-field" data-fieldname="attribs.criticalMult">120</span>x</td>
+								</tr>
+								</table>
+							</span>
+						</div>
+
+						<div class="hidden-card-stats">
+							<h5>Hidden attributes:</h5>
+							<span class="hidden-card-stats-list">
+								<table>
+								<tr>
+									<th>Shield Bleed:</th><td><span class="editable-field" data-fieldname="attribs.shieldBleed">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Bonus Amount:</th><td><span class="editable-field" data-fieldname="attribs.attackBonusAmount">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Bonus Percent:</th><td><span class="editable-field" data-fieldname="attribs.attackBonusPercent">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Reflection:</th><td><span class="editable-field" data-fieldname="attribs.attackReflection">30</span></td>
+								</tr>
+								<tr>
+									<th>Attack Reduction:</th><td><span class="editable-field" data-fieldname="attribs.attackReduction">30</span></td>
+								</tr>
+								</table>
+							</span>
+						</div>
+
+						<div class="card-actions"></div>
+
+					</li>
+					<li id="selected-card" class="card">
+						<h4><span data-fieldname="name">card name</span></h4>
+
+						<div class="card-stats">
+							<span class="card-stats-left">
+								<table cellpadding="2" cellspacing="0">
+								<tr>
+									<th>Shield:</th><td><span data-fieldname="attribs.shield">10</span></td>
+								</tr>
+								<tr>
+									<th>HP:</th><td><span data-fieldname="attribs.hitpoints">10</span></td>
+								</tr>
+								<tr>
+									<th>Accuracy:</th><td> <span data-fieldname="attribs.accuracyRating">10</span></td>
+								</tr>
+								<tr>
+									<th>Evasion:</th><td><span data-fieldname="attribs.evasionRating">10</span></td>
+								</tr>
+								</table>
+							</span>
+							<span class="card-stats-right">
+								<table cellpadding="2" cellspacing="0">
+								<tr>
+									<th>Speed:</th><td><span data-fieldname="attribs.speed">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Min:</th><td><span data-fieldname="attribs.attackMin">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Max:</th><td><span data-fieldname="attribs.attackMax">10</span></td>
+								</tr>
+								<tr>
+									<th>Critical:</th><td><span data-fieldname="attribs.criticalMult">120</span>x</td>
+								</tr>
+								</table>
+							</span>
+						</div>
+
+						<div class="hidden-card-stats">
+							<h5>Hidden attributes:</h5>
+							<span class="hidden-card-stats-list">
+								<table>
+								<tr>
+									<th>Shield Bleed:</th><td><span data-fieldname="attribs.shieldBleed">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Bonus Amount:</th><td><span data-fieldname="attribs.attackBonusAmount">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Bonus Percent:</th><td><span data-fieldname="attribs.attackBonusPercent">10</span></td>
+								</tr>
+								<tr>
+									<th>Attack Reflection:</th><td><span data-fieldname="attribs.attackReflection">30</span></td>
+								</tr>
+								<tr>
+									<th>Attack Reduction:</th><td><span data-fieldname="attribs.attackReduction">30</span></td>
+								</tr>
+								</table>
+							</span>
+						</div>
+
+						<div class="card-actions"></div>
+
+					</li>
+				</ul>
+				<p>Welcome to the card maker.  You can create, edit, and delete cards using this tool.</p>
+
+				<p>You can click on the field numbers/values to change their values. (ex: Click the card name)</p>
+
+				<p>Select actions form the action list on the right.  You can also drag the actions around to reorder them in the card.</p>
+
+				<p>You can select the cards from the list on the right, and load/save them there.  Cards will be saved/identified by name.  So no two cards can share the same name.</p>
+
+				<p><strong>IMPORTANT:</strong> All changes are done in the browser window and will NOT be saved to a file.  You will have to click the 'Download' to save your work to a file OR click 'Display' to copy the contents into a text file.</p>
+			</div>
+
+			<div class="column">
+				<h2>Actions:</h2>
+				<div id="cardmaker-actions"></div>
+			</div>
+
+			<div class="column">
+				<h2>Cards:
+					<button onclick="cm.displayCardListForCopy($('input[name=cardlist-minified]').is(':checked'))" data-tt="Display cardList.js file so you can copy and paste it. Check the minified box to make it as small as possible. (For Live)">Display</button><span style="font-size: 12px;font-weight: normal;">
+
+					<button onclick="cm.downloadCardList($('input[name=cardlist-minified]').is(':checked'))" data-tt="Download a cardList.js file to save all of your work.  Check the minified box to make it as small as possible. (For Live)">Download</button><span style="font-size: 12px;font-weight: normal;">
+
+					<label><input type="checkbox" name="cardlist-minified" value="1" />Minified</label></span>
+				</h2>
+				<div id="cardmaker-cards"></div>
+			</div>
+
+
+		</div>
+
+		<!-- JQuery and bootstrapping ************************************** -->
+		<script>
+			var module = {};
+		</script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+		<script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.3/jquery-ui.min.js"></script>
+		<script src="./jquery.jrumble.1.3.min.js"></script>
+		<script src="./cm-bundle.jsb" ></script>
+		<script src="./cardList.js" ></script>
+
+		<script>
+			var cm = require('cardMaker');
+//			cm.updateCardList(cardList);
+//
+//			var CardDef = require('CardDef');
+//			var cardDefs = {};
+//			for(id in cardList)
+//			{
+//				var cd = CardDef.createFromData(cardList[id]);
+//				cardDefs[id] = cd;
+//			}
+		</script>
+	</body>
+</html>

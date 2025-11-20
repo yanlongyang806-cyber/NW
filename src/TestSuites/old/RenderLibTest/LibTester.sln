@@ -1,0 +1,101 @@
+Microsoft Visual Studio Solution File, Format Version 8.00
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LibTester", "LibTester.vcproj", "{6B62140B-786B-4672-9655-1A827F30D5E8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{FC433264-E0BC-42EA-8070-177A1EBADD67} = {FC433264-E0BC-42EA-8070-177A1EBADD67}
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08} = {A6741F6E-5476-4F9F-9D65-62B54AAF1D08}
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4} = {C860157E-9B18-4BEF-AC93-8184F230A7F4}
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837} = {13E22C87-13EF-4A48-8CB2-001BFAC29837}
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81} = {E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3} = {F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLRenderLib", "..\..\libs\Renderers\GLRenderLib\GLRenderLib.vcproj", "{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InputLib", "..\..\libs\InputLib\InputLib.vcproj", "{C860157E-9B18-4BEF-AC93-8184F230A7F4}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "RenderLib", "..\..\libs\Renderers\RenderLib.vcproj", "{13E22C87-13EF-4A48-8CB2-001BFAC29837}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundLib", "..\..\libs\SoundLib\SoundLib.vcproj", "{FC433264-E0BC-42EA-8070-177A1EBADD67}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "UtilitiesLib", "..\..\libs\UtilitiesLib\UtilitiesLib.vcproj", "{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "XRenderLib", "..\..\libs\Renderers\XRenderLib\XRenderLib.vcproj", "{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfiguration) = preSolution
+		Debug = Debug
+		Full Debug = Full Debug
+		Xenon Debug = Xenon Debug
+		Xenon Full Debug = Xenon Full Debug
+	EndGlobalSection
+	GlobalSection(ProjectConfiguration) = postSolution
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Debug.ActiveCfg = Debug|Win32
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Debug.Build.0 = Debug|Win32
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Full Debug.ActiveCfg = Full Debug|Win32
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Full Debug.Build.0 = Full Debug|Win32
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Xenon Debug.Build.0 = Debug|Xenon
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{6B62140B-786B-4672-9655-1A827F30D5E8}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Debug.ActiveCfg = Debug|Win32
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Debug.Build.0 = Debug|Win32
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Full Debug.ActiveCfg = Full Debug|Win32
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Full Debug.Build.0 = Full Debug|Win32
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Xenon Debug.ActiveCfg = Debug|Win32
+		{E1FC0FBD-2511-4F77-937E-D61BBF6B9B81}.Xenon Full Debug.ActiveCfg = Full Debug|Win32
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Debug.ActiveCfg = Debug|Win32
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Debug.Build.0 = Debug|Win32
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Full Debug.ActiveCfg = Full Debug|Win32
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Full Debug.Build.0 = Full Debug|Win32
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Xenon Debug.Build.0 = Debug|Xenon
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{C860157E-9B18-4BEF-AC93-8184F230A7F4}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Debug.ActiveCfg = Debug|Win32
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Debug.Build.0 = Debug|Win32
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Full Debug.ActiveCfg = Full Debug|Win32
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Full Debug.Build.0 = Full Debug|Win32
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Xenon Debug.Build.0 = Debug|Xenon
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{13E22C87-13EF-4A48-8CB2-001BFAC29837}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Debug.ActiveCfg = Debug|Win32
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Debug.Build.0 = Debug|Win32
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Full Debug.ActiveCfg = Full Debug|Win32
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Full Debug.Build.0 = Full Debug|Win32
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Xenon Debug.Build.0 = Debug|Xenon
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{FC433264-E0BC-42EA-8070-177A1EBADD67}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Debug.ActiveCfg = Debug|Win32
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Debug.Build.0 = Debug|Win32
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Full Debug.ActiveCfg = Full Debug|Win32
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Full Debug.Build.0 = Full Debug|Win32
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Xenon Debug.Build.0 = Debug|Xenon
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{A6741F6E-5476-4F9F-9D65-62B54AAF1D08}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Debug.ActiveCfg = Debug|Win32
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Full Debug.ActiveCfg = Full Debug|Win32
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Xenon Debug.ActiveCfg = Debug|Xenon
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Xenon Debug.Build.0 = Debug|Xenon
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Xenon Full Debug.ActiveCfg = Full Debug|Xenon
+		{F8DA0FDB-B33D-4FC2-83DB-8C5E4BA4C7F3}.Xenon Full Debug.Build.0 = Full Debug|Xenon
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+	EndGlobalSection
+	GlobalSection(ExtensibilityAddIns) = postSolution
+	EndGlobalSection
+EndGlobal

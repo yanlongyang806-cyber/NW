@@ -1,0 +1,45 @@
+#include "ps_inc.hlsl"
+
+SAMPLER_DECL(color_texture, 0);
+
+PS_CONSTANT_MATERIAL_BUFFER_START()
+uniform float2 tex_transform : PS_CONSTANT_MATERIAL_PARAM0() ;
+uniform float4 filter_coefficients[2] : PS_CONSTANT_MATERIAL_PARAM1() ;
+PS_CONSTANT_MATERIAL_BUFFER_END()
+
+float4 sample_tex(float2 texcoord, float offset)
+{
+	float4 color;
+
+#ifdef _XBOX
+	asm
+	{
+		#ifdef VERTICAL
+			tfetch2D color.xyzw, texcoord.xy, color_texture, OffsetX = 0, OffsetY = offset
+		#else
+			tfetch2D color.xyzw, texcoord.xy, color_texture, OffsetX = offset, OffsetY = 0
+		#endif
+	};
+#else
+	#ifdef VERTICAL
+		texcoord += tex_transform * float2(0, offset);
+	#else
+		texcoord += tex_transform * float2(offset, 0);
+	#endif
+
+	color = sampleTex2D(color_texture, texcoord);
+#endif
+
+	return color;
+}
+
+float4 main_output(PS_INPUT_SIMPLE fragment) : COLOR
+{
+	float4 avg_color;
+ 
+	avg_color =  sample_tex(fragment.texcoord.xy, -1) * filter_coefficients[0].x;
+	avg_color += sample_tex(fragment.texcoord.xy,  0) * filter_coefficients[0].y;
+	avg_color += sample_tex(fragment.texcoord.xy,  1) * filter_coefficients[0].x;
+
+	return avg_color;
+}

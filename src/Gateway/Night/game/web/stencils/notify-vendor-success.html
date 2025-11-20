@@ -1,0 +1,27 @@
+
+	<div class="notify-zenmarket">
+		<div data-set-class="icon-slot small {.hdef.quality}">
+			<img data-set-src="tex/{.hdef.icon}.png" alt="" />
+			<span class="quantity" data-if="{.count} gt 1">
+				x<span data-path=".count">10</span>
+			</span>
+		</div>
+
+		Your purchase of <span data-path=".hdef.displaynamemsg.str">Thingy</span> was successful.
+
+		<!--
+		<a class="align-right closeNotification" data-url="/inventory"> Go to your Inventory</span>
+		-->
+		<div class="input-field button light with-arrow">
+			<div class="input-bg-left"></div>
+			<div class="input-bg-mid"></div>
+			<div class="input-bg-right"></div>
+			<button data-if="{.contact} eq 'Nw_Gateway_Professions_Merchant'" data-url="/inventory-professions">
+				Go to your Inventory
+			</button>
+			<button data-if="{.contact} ne 'Nw_Gateway_Professions_Merchant'" data-url="/inventory">
+				Go to your Inventory
+			</button>
+		</div>
+	</div>
+

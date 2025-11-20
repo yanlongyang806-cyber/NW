@@ -1,0 +1,81 @@
+'use strict';
+///////////////////////////////////////////////////////////////////////////
+//
+// GatewayProxy
+//
+// The main program for the GatewayProxy
+//
+//
+//////////////////////////////////////////////////////////////////////////
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+
+var app = require('cryptic/CrypticApp');
+
+//
+// Sets the process name, catches exceptions, and prints startup message.
+//
+app('GatewayProxy');
+
+//
+// Handle argv and config file.
+//
+var g_config = require('cryptic/configure')();
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+dbg.setLevel(g_config.debugLevel);
+//dbg.setLevel(dbg.DEBUG);
+dbg.disableFile('packet');
+dbg.disableFile('CrypticProtocolConnection');
+dbg.disableFile('ResourceDictionary');
+dbg.disableFile('GSConnection');
+dbg.disableFile('ProxyResourceManager');
+dbg.disableFile('ResourceManager');
+dbg.disableFile('GeneratedItemCache');
+dbg.disableFile('LSConnection');
+dbg.disableFile('LoginRequest');
+dbg.disableFile('RequestQueue');
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+
+// ProxyStartup does a whole crap-ton of setup.
+// It sets up HTTP serving, socket io, and the Gateway Server connection.
+require('cryptic/proxy/ProxyStartup');
+
+// Proxy Request handlers sets up all the request handlers for the client.
+require('cryptic/proxy/ProxyRequestHandlers');
+
+//////////////////////////////////////////////////////////////////////////
+//
+// STO-specific stuff
+//
+
+// Override the headshot defaults
+require('./HeadshotDefs');
+
+//
+//
+//////////////////////////////////////////////////////////////////////////
+
+perf.init();
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

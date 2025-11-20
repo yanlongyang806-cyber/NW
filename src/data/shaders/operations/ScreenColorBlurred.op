@@ -1,0 +1,32 @@
+OperationDef
+	Name "ScreenColorBlurred" // Name of the operation
+	Description "Screen color grabbed from opaque object rendering"
+	Type CUSTOM
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name ScreenColorBlurred
+		Description "Internal"
+		Type Texture_ScreenColor_Blurred
+		Texture 1
+		Hidden 1
+	EndInput
+
+	Output
+		Name Result
+		Description "ScreenColorBlurred Output"
+		Float 4
+		AutoConnect UnlitColor
+	EndOutput
+
+EndOperationDef
+

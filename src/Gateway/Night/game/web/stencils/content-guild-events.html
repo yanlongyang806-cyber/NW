@@ -1,0 +1,104 @@
+
+<div class="page-content" data-path="guild" data-update="guild">
+	<div class="page-guild-events">
+		<div class="page-body" data-if="!{guild.calendar}">
+			<h3 class="page-title">Events Calendar</h3>
+			Loading...
+		</div>
+		<div class="page-body" data-if="{guild.calendar}">
+			<h3 class="page-title">Events Calendar</h3>
+
+			<div class="calendar-title desktopOnly">
+				<span class="big-arrow prev disabled"></span>
+				<h3></h3>
+				<span class="big-arrow next"></span>
+			</div>
+
+			<table class="calendar-header desktopOnly">
+				<tr>
+					<th>Sun</th>
+					<th>Mon</th>
+					<th>Tues</th>
+					<th>Wed</th>
+					<th>Thurs</th>
+					<th>Fri</th>
+					<th>Sat</th>
+				</tr>
+			</table>
+
+			<div class="calendar-container" data-path=".calendar">
+				<table class="calendar-body" data-path=".weeks">
+					<tr data-path=".days">
+
+						<td data-set-class=".type" data-set-data-month=".month.$map(monthLongNames)" data-set-data-year=".year">
+
+
+							<h4 class="desktopOnly">
+								<span data-path=".month.$map(monthShortNames)" data-if=".date ne 1" class="month">Jan</span>
+								<span data-path=".month.$map(monthShortNames)" data-if=".date eq 1">Jan</span>
+								<span data-path=".date">1</span>
+							</h4>
+
+							<div data-if=".events.$length() gt 0">
+								<h4 class="mobileOnly calendar-subheader">
+									<span data-path=".date">18</span>
+									<span data-path=".month.$map(monthLongNames)">March</span>
+									<span data-path=".year">1987</span>
+								</h4>
+								<ul class="calendar-events" data-path=".events">
+									<li>
+										<a data-set-data-url="/events/details/{.id}">
+											<span class="event-name" data-path=".title">Event Name</span>
+											<span class="event-time mobileOnly" data-path=".starttime.$formatTime()">1:00pm</span>
+										</a>
+									</li>
+								</ul>
+								<div class="desktopOnly" data-if=".events.$length() gt 2">
+									<a class="calendar-more" data-set-data-url="?date{$here()}">more...</span>
+								</div>
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+			<script>
+				client.guildCalendarShowPage(0);
+			</script>
+		</div>
+	</div>
+</div>
+
+<!-- NOT FOR LAUNCH
+<div class="box-footer-block">
+	<div class="box-footer">
+		<div class="box-top">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-mid">
+			<div class="box-content">
+				<div class="page-footer">
+					<div class="footer-body">
+						<div class="footer-controls-right">
+							<div class="input-field button">
+								<div class="input-bg-left"></div>
+								<div class="input-bg-mid"></div>
+								<div class="input-bg-right"></div>
+								<button class="resetWindow" data-url="/guild/events/create">Create New Event</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="box-bot">
+			<div class="box-left"></div>
+			<div class="box-right"></div>
+		</div>
+		<div class="deco-left"></div>
+		<div class="deco-right"></div>
+	</div>
+</div>
+-->

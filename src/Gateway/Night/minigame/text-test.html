@@ -1,0 +1,281 @@
+<html><head>
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+	<script src="./jquery.lettering.js"></script>
+	<script src="./jquery.color.js"></script>
+
+	<style type="text/css">
+		.test {
+			wdith: 1000px;
+			height: 200px;
+			line-height: 200px;
+			vertical-align: middle;
+			font-family: sans-serif;
+			text-align: center;
+		}
+		.test .word,
+		.test .char {
+			display: inline-block;
+			vertical-align: middle;
+			line-height: 200px;
+			opacity: 0;
+			font-size: 60px;
+		}
+/*		.appearing {
+			-webkit-animation-name: appear;
+			-webkit-animation-duration: 1100ms;
+			-webkit-animation-timing-function: ease-in-out;
+			-webkit-animation-fill-mode: both;
+		}
+
+@-webkit-keyframes appear {
+	0% {
+		font-size: 60px;
+	}
+	45% {
+		font-size: 80px;
+		opacity: 1;
+	}
+	72% {
+		font-size: 55px;
+	}
+	86% {
+		font-size: 62px;
+	}
+	100% {
+		font-size: 60px;
+		opacity: 1;
+	}
+}
+
+@-webkit-keyframes appear2 {
+	0% {
+		-webkit-transform: scale(1.33);
+		opacity: 0;
+	}
+	.1% {
+		-webkit-transform: scale(.06);
+	}
+	45% {
+		-webkit-transform: scale(1.33);
+		opacity: 1;
+	}
+	72% {
+		-webkit-transform: scale(.91);
+	}
+	86% {
+		-webkit-transform: scale(1.03);
+	}
+	100% {
+		-webkit-transform: scale(1.0);
+		opacity: 1;
+	}*/
+
+
+	.burn {
+		background-color: #b59b60;
+		width: 100%;
+		height: 300px;
+	}
+
+	.burn h1 {
+		font-size: 50px;
+		font-family: sans-serif;
+		line-height: 150px;
+		color: #b59b60;
+
+	}
+
+	.burn h1 span {
+		-webkit-transition:text-shadow 0.5s ease-in-out;
+    	-moz-transition:text-shadow 0.5s ease-in-out;
+    	-o-transition:text-shadow 0.5s ease-in-out;
+    	-ms-transition:text-shadow 0.5s ease-in-out;
+    	transition:text-shadow 0.5s ease-in-out;
+    }
+
+    .char, .line {
+    	text-shadow: 0px 0px 0px hsl(25, 100%, 50%);
+    }
+
+	.stage1 {
+		text-shadow: 0px 0px 20px hsl(50, 100%, 50%), 0px 0px 15px hsl(50, 100%, 50%) !important;
+	}
+
+	.stage1.stage2 {
+		text-shadow: 0px 0px 30px hsl(50, 100%, 50%), 0px 0px 25px hsl(50, 100%, 50%) !important;
+	}
+
+	.stage1.stage2.stage3 {
+		text-shadow: 0px 0px 25px hsl(25, 100%, 50%), 0px 0px 20px hsl(25, 100%, 50%) !important;
+	}
+
+}
+
+	</style>
+
+</head>
+<body>
+	<script>
+	$(document).ready(function() {
+		// $(".test").lettering('words');
+
+		// function appearJQuery(el, delay)
+		// {
+		// 	el.delay(delay);
+		// 	el.animate({ 'font-size': '80px', 'opacity': 1.0 }, {
+		// 		'duration': 500
+		// 	});
+		// 	el.animate({ 'font-size': '55px' }, {
+		// 		'duration': 300
+		// 	});
+		// 	el.animate({ 'font-size': '62px' }, {
+		// 		'duration': 150
+		// 	});
+		// 	el.animate({ 'font-size': '60px' }, {
+		// 		'duration': 150
+		// 	});
+		// }
+
+		// function appearCSS(el, delay)
+		// {
+		// 	el.addClass('appearing');
+		// 	el.css('-webkit-animation-delay', ''+delay+'ms');
+		// }
+
+		// var els = $('.word');
+		// var delay = 500;
+		// els.each(function(idx) {
+		// 	appearJQuery($(this), delay);
+		// 	delay+=20;
+		// });
+
+
+	 	$('.burn h1').lettering();
+
+		// setTimeout(function() {
+		// 	$('.char').each(function() {
+		// 		burnIn($(this), (Math.random() * 200));
+		// 	});
+		// }, 1000);
+
+	});
+
+	function burnIn(jqElem, delay)
+	{
+		jqElem
+			.delay(delay)
+//			.animate({
+//				'color': 'hsl(50, 0% , 0%)'
+//			}, 500)
+//			.addClass('stage1')
+//			.delay(1000)
+			.promise().done(function() {
+				jqElem
+					.addClass('stage1 stage2')
+					.animate({
+						'color': 'hsl(0, 100%, 100%)'
+					 }, 800)
+					.delay(100)
+					.promise().done(function() {
+						jqElem
+//							.delay(750)
+							.addClass('stage3')
+							.animate({
+								'color': 'hsl(0, 100%, 40%)'
+							 }, 1500)
+//							.delay(1000)
+							.promise().done(function() {
+								jqElem
+									.removeClass('stage1 stage2 stage3')
+									.animate({
+										'color': 'hsl(25, 25%, 20%)'
+									 }, 1500)
+							});
+					});
+			});
+
+	}
+
+	var s_chars = 0;
+	function stage1()
+	{
+		$('.char').each(function() {
+			s_chars++;
+			$(this)
+				.delay((Math.random() * 1250))
+				.promise().done(function() {
+					$(this)
+						.addClass('stage1 stage2')
+						.animate({
+							'color': 'hsl(0, 100%, 100%)' // to white.
+						 }, 800)
+						.delay(100)
+						.promise().done(function() {
+							s_chars--;
+						})
+				})
+		});
+
+		stage2();
+	}
+
+	// Going to wait until stage1 is complete
+	function stage2()
+	{
+		if(s_chars)
+		{
+			setTimeout(stage2, 100);
+		}
+		else
+		{
+			$('.char').each(function() {
+				$(this)
+					.addClass('stage3')
+					.animate({
+						'color': 'hsl(0, 100%, 40%)'
+					 }, 1500)
+					.promise().done(function() {
+						$(this)
+							.removeClass('stage1 stage2 stage3')
+							.animate({
+								'color': 'hsl(0, 25%, 20%)'
+							}, 1500)
+					});
+			});
+		}
+	}
+
+
+	function reset()
+	{
+		$('.char').css('color','#b59b60');
+	}
+
+	function burnItInAgain()
+	{
+		// $('.char')
+		// 	.css('color','#b59b60')
+		// 	.delay(1000)
+		// 	.each(function() {
+		// 		burnIn($(this), (Math.random() * 200));
+		// 	});
+
+		stage1();
+	}
+
+	</script>
+
+<!-- 	<div class="test">
+		<span class="word word1" style="opacity: 1; font-size: 60px;">Choose&nbsp;</span>
+		<span class="word word2" style="opacity: 1; font-size: 60px;">a&nbsp;</span>
+		<span class="word word3" style="opacity: 1; font-size: 60px;">location&nbsp;</span>
+		<span class="word word4" style="opacity: 1; font-size: 60px;">to&nbsp;</span>
+		<span class="word word5" style="opacity: 1; font-size: 60px;">adventure!</span>
+	</div>
+ -->
+	<div class="burn">
+		<h1>Welcome to your doom! ...and stuff</h1>
+	</div>
+
+<br><button onclick="burnItInAgain();">Do it again!</button><br>
+</body></html>

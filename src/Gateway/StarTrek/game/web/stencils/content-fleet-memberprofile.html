@@ -1,0 +1,238 @@
+<!-- if(dev) -->
+<!--
+<div class="scalable-container needsScrollBars">
+
+	<div class="scrollBarContent">
+		<div class="profile-overview boff">
+			<div class="profile-basics boff">
+				<div class="profile-card">
+					<div class="profile-portrait">
+						<img data-set-src="/shot/head/{.id}.png"/>
+					</div>
+					<div class="profile-ranks">
+						<span data-set-class="icon-class-officer-mini {.classtype.$map(classTypeIcons)}"></span>
+						<span data-set-class="icon-rank-small {.rank.$map(rankIcons)}"></span>
+					</div>
+				</div>
+				<h3 data-path=".formalname">Lorem</h3>
+				<ul>
+					<li data-path=".formalname">Lorem Ipsum Dolor</li>
+					<li data-path=".classname">Starfleet Science Officer</li>
+					<li data-path=".rankname">Commander</li>
+					<li><span data-path=".speciesname">Vulcan</span> <span data-path=".gendername">Female</span></li>
+				</ul>
+			</div>
+
+			<div class="profile-equipment boff">
+
+				<div class="profile-body" >
+					<img data-set-src="/shot/body/{.id}.png"/>
+				</div>
+				<div class="profile-items" data-path=".inventory">
+					<div class="profile-equipment-shields">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h4>Shields</h4>
+							<ul data-path=".bags[bagid=Shield].slots">
+								<li>
+									<span class="image-link item" data-set-data-url="?item={$here()}" tabindex="-1">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="profile-equipment-body">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h4>Body</h4>
+							<ul data-path=".bags[bagid=Body].slots">
+								<li>
+									<span class="image-link item" data-set-data-url="?item={$here()}" tabindex="-1">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="profile-equipment-weapons">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h4>Weapon</h4>
+							<ul data-path=".bags[bagid=ActiveWeapon].slots">
+								<li>
+									<span class="image-link item" data-set-data-url="?item={$here()}" tabindex="-1">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="profile-equipment-devices">
+						<div class="equipment-bar"></div>
+						<div class="equipment-container">
+							<h4>Devices</h4>
+							<ul data-path=".bags[bagid=Devices].slots">
+								<li>
+									<span class="image-link item" data-set-data-url="?item={$here()}" tabindex="-1">
+										<div data-set-class="item-icon medium {.rarity}">
+											<span class="item-rarity-border"></span>
+											<img data-set-src="/tex/{.itemdef.icon}.png" alt="" />
+										</div>
+									</span>
+								</li>
+							</ul>
+						</div>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		<div class="profile-details boff">
+
+			<div class="profile-details-col-1">
+				<h4 class="stats-title">Personal Info</h4>
+
+				<table class="stats-table">
+					<tbody>
+						<tr>
+							<td>Full Name:</td>
+							<td data-path=".formalname">Lorem Ipsum Dolor</td>
+						<tr>
+						</tr>
+							<td>Species:</td>
+							<td data-path=".speciesname">Vulcan</td>
+						<tr>
+						</tr>
+							<td>Gender:</td>
+							<td data-path=".gendername">Female</td>
+						<tr>
+						</tr>
+							<td>Career:</td>
+							<td data-path=".classname">Starfleet Science Officer</td>
+						<tr>
+						</tr>
+							<td>Rank:</td>
+							<td data-path=".rankname">Commander</td>
+						</tr>
+					</tbody>
+				</table>
+
+				<h4 class="stats-title">Biography</h4>
+
+				<div class="profile-bio" data-path=".description">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse eget elit vel nisl adipiscing commodo. Nullam vitae orci tellus, ac convallis odio.
+
+				Fusce lectus magna, cursus a condimentum vitae, feugiat in justo. Aenean consectetur sem ut nibh congue vitae fringilla justo tristique. In sed neque in dui ornare vestibulum a ac nunc. Maecenas dapibus nisi non sapien lacinia gravida non eget odio. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Integer eget tempus neque. Fusce eleifend vehicula odio id mattis. Donec rhoncus justo nec libero accumsan dapibus. Pellentesque vel turpis sem.
+
+				Ut pulvinar velit vel dui imperdiet nec suscipit leo pulvinar. Nam ac dolor quis sapien volutpat vehicula. Morbi sit amet odio et metus aliquam semper luctus sed eros.</div>
+
+				<h4 class="stats-title">Officer Points</h4>
+
+				<table class="stats-table">
+					<tbody>
+						<tr>
+							<td>Expertise Spent:</td>
+							<td data-path=".expertise.spent.$commify"></td>
+						<tr>
+						</tr>
+							<td>Expertise Needed for Next Rank:</td>
+							<td data-path=".expertise.nextrank.$commify"></td>
+						</tr>
+					</tbody>
+				</table>
+
+
+				<h4 class="stats-title">Traits</h4>
+
+				<table class="stats-table">
+					<tr>
+						<td>General Traits:</td>
+						<td>
+							<ul data-path=".powers.generictraitpowers" >
+								<li data-path="powerdef.displayname.str"></li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<td>Racial Specific Traits:</td>
+						<td>
+							<ul data-path=".powers.racetraitpowers" >
+								<li data-path="powerdef.displayname.str"></li>
+							</ul>
+						</td>
+					</tr>
+					<tr>
+						<td>Unique Traits:</td>
+						<td>
+							<ul data-path=".powers.uniquetraitpowers" >
+								<li data-path="powerdef.displayname.str"></li>
+							</ul>
+						</td>
+					</tr>
+				</table>
+
+			</div>
+			<div class="profile-details-col-2">
+				<h4 class="stats-title">Space Skills</h4>
+
+				<div class="profile-skills">
+					<ul class="skill-list" data-path=".powers.spacenodes[haspower=1]">
+						<li data-set-data-url="?skill={$here()}.nodepowerdef" tabindex="-1">
+							<span class="skill-image">
+								<span class="skill-icon"><img alt=""  data-set-src="/tex/{.nodepowerdef.icon}.png"></span>
+							</span>
+							<span class="skill-name" data-path=".nodepowerdef.displayname.str">Power Name</span>
+							<span class="skill-level" data-path=".numberpowers">0</span>
+						</li>
+					</ul>
+					<ul class="skill-list locked" data-path=".powers.spacenodes[haspower=0]">
+						<li>
+							<span class="skill-image">
+								<span class="skill-icon"><img alt=""  data-set-src="/tex/{.nodepowerdef.icon}.png"></span>
+							</span>
+							<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+							<span class="skill-level" data-path=".numberpowers">0</span>
+						</li>
+					</ul>
+				</div>
+
+				<h4 class="stats-title">Ground Skills</h4>
+				<div class="profile-skills">
+					<ul class="skill-list" data-path=".powers.groundnodes[haspower=1]">
+						<li data-set-data-url="?skill={$here()}.nodepowerdef" tabindex="-1">
+							<span class="skill-image">
+								<span class="skill-icon"><img alt=""  data-set-src="/tex/{.iconname}.png"></span>
+							</span>
+							<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+							<span class="skill-level" data-path=".numberpowers">0</span>
+						</li>
+					</ul>
+					<ul class="skill-list locked" data-path=".powers.groundnodes[haspower=0]">
+						<li>
+							<span class="skill-image">
+								<span class="skill-icon"><img alt=""  data-set-src="/tex/{.iconname}.png"></span>
+							</span>
+							<span class="skill-name" data-path=".ptnodedef.displaymessage.str">Power Name</span>
+							<span class="skill-level" data-path=".numberpowers">0</span>
+						</li>
+					</ul>
+				</div>
+			</div>
+
+		</div>
+	</div>
+</div>
+-->
+<!-- endif(dev) -->

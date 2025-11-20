@@ -1,0 +1,19 @@
+OperationDef
+	Name "Subtract_IgnoreAlpha" // Name of the operation
+	Category "Combiner"
+	ParentName "Subtract"
+	OptionName "Ignore Alpha"
+	Description "Subtract, ignore alpha values"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "Output of A - B"
+		Float 4
+	EndOutput
+
+EndOperationDef
+

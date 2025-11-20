@@ -1,0 +1,42 @@
+OperationDef
+	Name "Jiggle" // Name of the operation
+	Description "Computes x0+sin(xt*xts)*xs, y0+cos(yt*xts)*ys"
+	Type ADVANCED
+
+	Input
+		Name TexCoords
+		Description "Base TexCoords, may want to scale/scroll this"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name Theta
+		Description "Connect a TexScroll node to this to adjust jiggle over time"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+
+	Input
+		Name JiggleScale
+		Description "xs, ys"
+		Float 2
+		FloatRange -1 1
+		Default
+			Floats 0.1 0.1
+		EndDefault
+	EndInput
+
+
+	Output
+		Name Result
+		Description "Result of x0+sin(xt*xts)*xs, y0+cos(yt*xts)*ys"
+		Float 2
+	EndOutput
+EndOperationDef

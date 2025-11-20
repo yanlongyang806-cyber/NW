@@ -1,0 +1,240 @@
+.hide {
+	display: none;
+}
+
+table input {
+	width:25px;
+	font-size: 10px;
+}
+
+.editable-field:hover {
+	background: #ff0;
+}
+
+.maker-button {
+	width: 180px;
+	margin-top: 10px;
+}
+
+.column {
+	display: block;
+	float: left;
+	margin-left: 20px;
+	width: 300px;
+	height: 720px;
+	overflow: auto;
+}
+
+.column-wide {
+	display: block;
+	float: left;
+	margin-left: 20px;
+	width: 580px;
+	height: 720px;
+}
+
+p {
+	margin-bottom: 15px;
+}
+
+.card {
+	width: 250px;
+}
+
+.card-actions a.button:hover {
+	border-color: red;
+}
+
+/* ------------------------------- */
+
+h3#loaded-card-heading {
+	float:left;
+	width: 270px;
+}
+
+h3#selected-card-heading {
+	float:left;
+	margin-left: 10px;
+}
+
+
+/* ------------------------------- */
+
+.hidden-card-stats {
+	position: relative;
+	clear: both;
+	margin-top: 90px;
+}
+
+.hidden-card-stats-list {
+	left: 0%;
+	top: 18px;
+	position: absolute;
+}
+
+/* ------------------------------- */
+
+.toggleOpen, .toggleClose {
+	margin-right: 5px;
+	width: 15px;
+	height: 15px;
+	border:1px solid #333;
+	float:left;
+	text-align: center;
+	padding-bottom: 3px;
+}
+
+.action-category {
+	border: 1px solid #666;
+	cursor: pointer;
+}
+
+.action-category h4 {
+	background-color: #ccc;
+	padding: 5px;
+}
+
+.action-action {
+	height: 25px;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	border-top:1px solid #ccc;
+	display: none;
+	clear: both;
+}
+
+.action-action button {
+	clear: right;
+	float: right;
+	font-size: 12px;
+}
+
+/* ------------------------------- */
+
+.action-action.current-action {
+	background-color: #ff0;
+}
+
+.action-action.current-action .action-add-button {
+	display: none;
+}
+
+.action-action.current-action .action-remove-button {
+	display: inline;
+}
+
+.action-remove-button {
+	display: none;
+}
+
+.action-count {
+	float:right;
+}
+
+/* ------------------------------- */
+
+#cardmaker-cards div {
+	margin-left: 15px;
+	margin-top: 5px;
+	padding-top: 2px;
+	padding-bottom: 5px;
+	padding-left: 2px;
+	cursor: pointer;
+	border:1px solid white;
+}
+
+div.selected {
+	border-color: red !important;
+}
+
+div.loaded {
+	background-color: #ff0;
+}
+
+.icon-button {
+	float: right;
+	margin-right: 5px;
+	margin-bottom: 2px;
+
+	border-top: 1px solid #ccc;
+	border-left: 1px solid #ccc;
+
+	border-bottom: 1px solid black;
+	border-right: 1px solid black;
+}
+
+.icon-button:active {
+	border-top: 1px solid black;
+	border-left: 1px solid black;
+
+	border-bottom: 1px solid #ccc;
+	border-right: 1px solid #ccc;
+}
+
+.icon-button img {
+	width: 16px;
+	height: 16px;
+}
+
+.column-wide .icon-button {
+	margin-left: 5px;
+}
+
+/* ------------------------------- */
+
+#copy-box {
+	position: absolute;
+	z-index: 9001;
+	top: 25px;
+	left: 250px;
+	border:2px solid black;
+	background-color: white;
+	padding: 15px;
+	display: none;
+}
+
+#copy-box textarea {
+	width: 600px;
+	height: 400px;
+}
+
+#copy-box button {
+	width: 100px;
+	float: right;
+}
+
+/* ------------------------------- */
+
+.compare.positive {
+	color:green;
+	font-weight: bold;
+}
+
+.compare.negative {
+	color: #c33;
+	font-weight: bold;
+}
+
+.icon {
+	float: left;
+	width: 19px;
+	height: 25px;
+	padding: 0px 5px 5px 5px;
+}
+
+/* ------------------------------- */
+
+#loaded-card-modified {
+	font-size: 30px;
+	color: red;
+	font-weight: bold;
+	margin-bottom:-15px;
+	float: left;
+	display: none;
+}
+
+/* ------------------------------- */
+
+.cards table {
+	font-size: 10px;
+}

@@ -1,0 +1,50 @@
+'use strict';
+
+var dbg = require('cryptic/dbg');
+var log = require('cryptic/log');
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// These files hook into the base proxy code to provide HTTP handling,
+// container object handling, and socket messages specific to SCA
+
+require('./addContainerHandlers');
+require('./addDestroyHandler');
+require('./addHttpHandlers');
+require('./addServerMessageHandlers');
+require('./addSessionRequestHandlers');
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+//
+// Global data
+//
+
+// This will load all the static game data.
+var scaGlobals = require('./scaGlobals');
+
+
+// The load is asynchronous, because that's the way node is.
+// When scaGlobals.waitUntilLoaded will call its callback when everthing is
+// loaded.
+scaGlobals.waitUntilLoaded(scaStart);
+
+
+//////////////////////////////////////////////////////////////////////////
+
+var ScaGameState = require('./ScaGameState');
+
+function scaStart()
+{
+	ScaGameState.scaTick();
+
+	log.log('SCA data files loaded.');
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

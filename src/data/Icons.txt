@@ -1,0 +1,10 @@
+Each game's icons are specified in three places: the Game Client, the game Launcher, and the installer.
+It would be reasonable to merge them into one, but someone would have to go through the effort of
+updating everything and making sure it worked with all applicable build processes.  Therefore, if you
+update a game icon, you must update it in all three places.
+
+Example:
+
+Installer: C:\FightClub\tools\installer\Champions.ico
+Launcher: C:\src\Core\CrypticLauncher\games\FC\FC.ico
+Game Client: C:\src\FightClub\GameClient\FC.ico

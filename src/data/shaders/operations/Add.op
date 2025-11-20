@@ -1,0 +1,20 @@
+OperationDef
+	Name "Add" // Name of the operation
+	Category "Combiner"
+	Description "Add"
+	Type SIMPLE
+
+	Input: A, "First parameter"
+	Input: B, "Second parameter"
+
+	Output
+		Name Result
+		Description "Output of A + B"
+		Float 4
+		AlphaModeAnd 1
+		AlphaFrom A
+		AlphaFrom B
+	EndOutput
+
+EndOperationDef
+

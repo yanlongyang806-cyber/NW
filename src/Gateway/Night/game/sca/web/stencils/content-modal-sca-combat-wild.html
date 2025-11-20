@@ -1,0 +1,43 @@
+<div class="modal-window sca small wild">
+	<div class="fancy-box fit-content">
+		<div class="fancy-box-top">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+			<button class="fancy-box-close startPulse" data-url-silent="closemodal" onclick="startPulse()"></button>
+		</div>
+		<div class="fancy-box-mid">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-content">
+
+				<div class="modal-confirm combat-wild">
+					<div class="wild-header"></div>
+					<h3>Critical Hit!</h3>
+					<h4>Choose Result:</h4>
+
+					<div class="dice-rolls" data-path=".roll.choices">
+						<button
+								data-set-class="dice large d{count} {color} {.symbol.$map(p:perception, m:magic, t:thievery, c:combat)} {.valid.$choose(usable,disabled)}" data-url-silent="closemodal"
+								data-set-onclick="client.scaChooseDieWild('{id}','{.$hereIndex}')">
+							<span class="rune"></span>
+							<span data-if="{.count} gt 1" class="num" data-path=".count">2</span>
+						</button>
+					</div>
+				</div>
+			</div>
+			<div class="fancy-box-right"></div>
+		</div>
+		<div class="fancy-box-bot">
+			<div class="fancy-box-left"></div>
+			<div class="fancy-box-right"></div>
+		</div>
+	</div>
+</div>
+
+
+<script>
+	function startPulse()
+	{
+		$('.dice-tray .dice-rolls').removeClass('no-pulse');
+	}
+</script>
+

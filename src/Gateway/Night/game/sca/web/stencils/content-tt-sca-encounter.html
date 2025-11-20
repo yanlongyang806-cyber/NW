@@ -1,0 +1,13 @@
+<!-- if(dev) -->
+<div class="tooltip tt-encounter">
+	<h3 data-path=".challenge.def.name"></h3>
+	<p data-path=".challenge.def.description" class="attention"></p>
+	<div class="trial-summary" data-path=".challenge.trials">
+		<span class="trial-divider" data-if="{$hereIndex()} ne 0">+</span>
+		<span data-path=".needs.$asArray()">
+			<div data-set-class="dice side {.symbol.$map(nw_sides)}"><span class="num" data-path=".count">1</span></div>
+		</span>
+	</div>
+</div>
+
+<!-- endif(dev) -->

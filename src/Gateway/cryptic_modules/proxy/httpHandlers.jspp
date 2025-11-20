@@ -1,0 +1,859 @@
+'use strict';
+
+var handlers = module.exports;
+
+//
+// HTTP Handlers
+//
+var fs = require('fs');
+var path = require('path');
+var url = require('url');
+var http = require("http");
+var connect = require('connect');
+
+var log = require('cryptic/log');
+var dbg = require('cryptic/dbg');
+var perf = require('cryptic/perf');
+var locale = require('cryptic/locale');
+
+var isInternalIp = require('cryptic/isInternalIp');
+
+var g_proxy = require('./ProxyStartup');
+var g_config = require('cryptic/configure')();
+
+var hs = require('./Headshots');
+
+//////////////////////////////////////////////////////////////////////////
+
+var httpHooks = [];
+var connectHooks;
+function addHook(route, hook)
+{
+	// hook should work like any connect middleware
+	// hook(req, res, next)
+	if(typeof route !== 'string')
+	{
+		hook = route;
+		route = '/'
+	}
+
+	httpHooks.push({ route: route, hook: hook });
+	buildHookList();
+}
+
+function removeHook(hook)
+{
+	var i = httpHooks.index(hook);
+	if(i >= 0)
+	{
+		httpHooks.splice(i, 1);
+		buildHookList();
+	}
+}
+
+function buildHookList()
+{
+	connectHooks = undefined;
+	if(httpHooks.length > 0)
+	{
+		connectHooks = connect();
+		for(var i = 0; i < httpHooks.length; i++)
+		{
+			connectHooks.use(httpHooks[i].route, httpHooks[i].hook);
+		}
+	}
+}
+
+function handleHooks(req, res, next)
+{
+	if(connectHooks)
+		connectHooks(req, res, next);
+	else
+		next();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function getRealAddress(req, res, next)
+{
+	if(req.headers['x-real-ip'])
+	{
+		req.realAddress = req.headers['x-real-ip'];
+	}
+	else
+	{
+		req.realAddress = req.connection.remoteAddress;
+	}
+
+	next();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function generateTexture(url, clientSession, callback)
+{
+	var basename = url ? path.basename(url, path.extname(url)) : 'white';
+
+	g_proxy.gsMaster.requestTexture(basename, function(error, buffer) {
+		callback(error, error ? undefined : { data: buffer });
+	});
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+function generateHeadshot(url, clientSession, callback)
+{
+	hs.generate(url, clientSession, callback);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function findClientSession(req)
+{
+	if(req && req.signedCookies && req.signedCookies['gw_st'])
+	{
+		return g_proxy.clientSessionManager.findClientSessionBySessionId(req.signedCookies['gw_st']);
+	}
+	return undefined;
+}
+
+// If the shard is locked or offline, redirect to the static page locked.html
+function handleLock(req, res, next)
+{
+	if(g_proxy.config.locked && !isInternalIp(req.realAddress))
+	{
+		if(['/', '/index.html'].indexOf(req.url) !== -1)
+		{
+			perf.count('Login:Reject:Locked', 1);
+
+			res.writeHead(302, 'Moved Temporarily', {
+				'Location': '/locked.html',
+				'Cache-Control': 'no-cache'
+			});
+			res.end();
+			return;
+		}
+	}
+
+	if(!isInternalIp(req.realAddress)
+		&& (g_proxy.overloaded ||
+			(g_config.userLimit && g_config.userLimit <= g_proxy.clientSessionManager.getSessionCount())
+		))
+	{
+		if(['/', '/index.html'].indexOf(req.url) !== -1)
+		{
+			if(g_proxy.overloaded)
+				log.log('Login attempt when overloaded.');
+			else
+				log.log('Login attempt when user count limited to '+g_config.userLimit+'.');
+
+			perf.count('Login:Reject:Lock', 1);
+
+			res.statusCode = 503;
+			res.setHeader('Cache-Control', 'no-cache');
+			res.setHeader('Retry-After', '120'); // seconds (advisory to browser)
+			req.url = '/503.html';
+			// Fall through and send back 503.html
+		}
+	}
+
+	next();
+}
+
+// Gates login. Redirect users to get a one-time-use login token.
+// We store this login, along with browser ID and account ID, in the session.
+// They are later used by onRequestLogin to authenticate the connection.
+function checkLogin(req, res, next)
+{
+	// Only gate requests to the home page, let through requests to static files, etc.
+	var reqURL = url.parse(req.url, true);
+	if(['/', '/index.html'].indexOf(reqURL.pathname) !== -1)
+	{
+		dbg.trace(reqURL.pathname);
+		var clientSession = findClientSession(req);
+		if(+reqURL.query.account && +reqURL.query.ticket && reqURL.query.browser)
+		{
+			dbg.trace('checkLogin Incoming ticket over GET');
+
+			if(clientSession)
+			{
+				clientSession.destroy();
+			}
+
+			// Let client load index.html and connect to socket.io for asynchronous login.
+			req.session.idAccount  = +reqURL.query.account;
+			req.session.idTicket   = +reqURL.query.ticket;
+			req.session.idBrowser  =  reqURL.query.browser;
+			req.session.save();
+			res.writeHead(302, 'Moved Temporarily', { 'Location': '/' });
+			res.end();
+			return;
+		}
+		else if(!clientSession && !(+req.session.idAccount && +req.session.idTicket && req.session.idBrowser))
+		{
+			dbg.trace('checkLogin No client session, no ticket in HTTP session.');
+			// Redirect user to GatewayLogin.
+			// This URL is calculated, as opposed to a g_config variable.
+			// So, we avoid possible human error on the NetOps side of things.
+
+			// Start with the GatewayProxy's domain name.
+			var loginURL = getLoginURL(req.headers.host);
+			res.writeHead(302, 'Moved Temporarily', { 'Location': loginURL });
+			res.end();
+			return;
+		}
+	}
+	next();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function serveResource(resourceManager)
+{
+	var querystring = require('querystring');
+	// Format @dictname[key]?callback=name
+	var reParseRes = /^\/@([^\[]+)\[([^\]]+)\]\??(.*)/;
+		// 1 = dictname
+		// 2 = key
+		// 3 = query string
+
+	// Format /dictname/key?callback=name
+	var reParseResSlash = /^\/([^\/]+)\/([^\/\?]+)\??(.*)/;
+		// 1 = dictname
+		// 2 = key
+		// 3 = query string
+
+	return function serveResource(req, res, next)
+	{
+		dbg.trace();
+		var request = {};
+
+		var clientSession = findClientSession(req);
+		if(!clientSession)
+		{
+			res.writeHead(401);
+			res.end();
+			return;
+		}
+
+		var lang = clientSession.locale.crypticLanguage;
+
+		// Yank out the dictionary name, key, and any query string
+		var r = reParseRes.exec(req.url);
+		if(r || !!(r = reParseResSlash.exec(req.url)))
+		{
+			request.dictname = r[1];
+			request.id = r[2];
+			request.query = r[3];
+		}
+
+		if(request.dictname && request.id)
+		{
+			if(request.query)
+			{
+				request.query = querystring.parse(request.query);
+			}
+
+			if(!resourceManager.isValidDictName(request.dictname) || request.id.length > 256)
+			{
+				res.writeHead(404);
+				res.end();
+			}
+			else
+			{
+				resourceManager.fetchForLanguage(lang, request.dictname, request.id, function(error, obj) {
+					if(error)
+					{
+						res.writeHead(404);
+						res.end();
+					}
+					else
+					{
+						res.setHeader('Content-Type', 'application/json')
+						res.writeHead(200);
+						var out = JSON.stringify({
+							dictname: obj.dictname,
+							id: obj.id,
+							value: obj.value
+						});
+
+						// If there's a query string with a callback parameter,
+						//   respond with JSONP
+						if(request.query.callback)
+						{
+							out = request.query.callback + '(' + out + ');';
+						}
+						res.end(out);
+					}
+				});
+			}
+		}
+		else
+		{
+			res.writeHead(404);
+			res.end();
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+var reReject = /(^(Pd|Pl|Ms|Mu|Id|Powerdef\.Desc|Powerdef\.Desclong)\.)|(\.Description$)/;
+function fillReferenceList(list, obj, depth, options)
+{
+	if(!depth)
+		return;
+
+	depth--;
+
+	if(Array.isArray(obj))
+	{
+		for(var i = 0; i < obj.length; i++)
+		{
+			fillReferenceList(list, obj[i], depth, options);
+		}
+	}
+	else if(typeof obj === 'object')
+	{
+		for(var prop in obj)
+		{
+			fillReferenceList(list, obj[prop], depth, options);
+		}
+	}
+	else if(typeof obj === 'string')
+	{
+		if(obj[0] === '@')
+		{
+			var idx = obj.indexOf('[');
+
+			var dict = obj.slice(1, idx);
+			var key = obj.slice(idx + 1, -1);
+
+			if(dict && key)
+			{
+				if(options.dicts)
+				{
+					if(!(dict in options.dicts))
+						return;
+				}
+
+				if(options.prune)
+				{
+					// Prune out messages which aren't needed all at once.
+					// This basically gets rid of descriptions and summaries,
+					//   leaving names.
+					if(/^Costume/.test(dict)
+						|| (dict === 'Message' && reReject.test(key)))
+					{
+						return;
+					}
+				}
+
+				if(!list[dict])
+					list[dict] = {};
+
+				if(!list[dict][key])
+				{
+					list[dict][key] = {};
+					list.count++;
+				}
+			}
+		}
+	}
+}
+
+
+var Synchro = require('cryptic/synchro');
+//function serveEntityBundle(req, res, next)
+function fillRefList2(out, resourceManager, depth, options, fn)
+{
+	var sync = new Synchro();
+
+	/*jshint loopfunc:true */
+	for(var dict in out)
+	{
+		for(var id in out[dict])
+		{
+			(function(dict, id) {
+				sync.add(function(ready) {
+					resourceManager.fetchForLanguage(options.lang || 0, dict, id, function(e, res) {
+						out[res.dictname][id] = res.value;
+						fillReferenceList(out, res.value, 2, options);
+
+						ready();
+					});
+				});
+			})(dict, id);
+		}
+	}
+	/*jshint loopfunc:false */
+
+	var lastCount = out.count;
+	sync.waitForAll(function() {
+		if(depth && lastCount !== out.count)
+		{
+			depth--;
+			fillRefList2(out, resourceManager, depth, options, fn);
+		}
+		else
+		{
+			fn();
+		}
+	});
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function serveEntityResourceBundle(resourceManager)
+{
+	return function serveEntityResourceBundle(req, res, next)
+	{
+		var clientSession = findClientSession(req);
+
+		if(clientSession && clientSession.gsSession)
+		{
+			if(clientSession.gsSession.entityForBundle)
+			{
+				var out = { count: 0 };
+				var options = {
+					prune: true,
+					lang: clientSession.locale.crypticLanguage
+				};
+
+				var ent = clientSession.gsSession.entityForBundle;
+
+				fillReferenceList(out, ent, 7, options);
+
+				fillRefList2(out, resourceManager, 3, options, function() {
+					for(var dictname in out)
+					{
+						var dict = resourceManager.findDictionary(dictname);
+						if(dict && dict.defaults)
+						{
+							out[dictname]['_defaults'] = dict.defaults.prototype;
+						}
+					}
+
+					clientSession.gsSession.entityForBundle = undefined;
+					clientSession.gsSession.entityBundleString = JSON.stringify(out);
+
+					res.setHeader('Content-Type', 'application/json')
+					res.writeHead(200);
+					res.write(clientSession.gsSession.entityBundleString);
+					res.end();
+				});
+
+				return;
+			}
+			else if(clientSession.gsSession.entityBundleString)
+			{
+				res.setHeader('Content-Type', 'application/json')
+				res.writeHead(200);
+				res.write(clientSession.gsSession.entityBundleString);
+				res.end();
+
+				return;
+			}
+		}
+
+		res.writeHead(401); // Unauthorized
+		res.end();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function serveResourceBundle(resourceManager)
+{
+	return function _serveResourceBundle(req, res, next)
+	{
+		var clientSession = findClientSession(req);
+		if(clientSession)
+		{
+			if(Array.isArray(req.body.res))
+			{
+				var depth = +req.body.depth || 2
+				var options = {
+					prune: req.body.prune || true,
+					dicts: req.body.dicts,
+					lang: clientSession.locale.crypticLanguage
+				};
+
+				var out = { count: 0 };
+
+				fillReferenceList(out, req.body.res, depth, options);
+
+				fillRefList2(out, resourceManager, depth, options, function() {
+					for(var dictname in out)
+					{
+						var dict = resourceManager.findDictionary(dictname);
+						if(dict && dict.defaults)
+						{
+							out[dictname]['_defaults'] = dict.defaults.prototype;
+						}
+					}
+
+					res.setHeader('Content-Type', 'application/json')
+					res.writeHead(200);
+					res.write(JSON.stringify(out));
+					res.end();
+				});
+
+				return;
+			}
+		}
+
+		res.writeHead(401); // Unauthorized
+		res.end();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function doLogout(req)
+{
+	// Destroy the session if we have one
+	if(req.session)
+	{
+		req.session.destroy();
+	}
+
+	if(req.signedCookies && req.signedCookies['gw_st'])
+	{
+		var clientSession = g_proxy.clientSessionManager.findClientSessionBySessionId(req.signedCookies['gw_st']);
+		if(clientSession)
+		{
+			clientSession.destroy('Logged out.');
+		}
+	}
+
+}
+
+function doLogoutAndRedirect(req, res, next)
+{
+	doLogout(req);
+
+	// Forward to login page
+	res.writeHead(302, 'Moved Temporarily', { 'Location': getLoginURL(req.headers.host) });
+	res.end();
+}
+
+function doLogoutAndContinue(req, res, next)
+{
+	doLogout(req);
+
+	res.setHeader('Cache-Control', 'no-cache');
+
+	next();
+}
+
+function getLoginURL(hostname)
+{
+	// Example hostnames:
+	//    localhost:6860
+	//    gateway.crypticstudios.com
+	var u = url.parse('http://' + hostname);
+	u.host = undefined; // So the modified hostname and port will be used
+
+	if(!u.port || +u.port === 80)
+	{
+		// Production environment.
+		if(g_config.useAuthLoginUrl)
+		{
+			u.hostname = u.hostname.replace('gateway', 'auth'); // Change the subdomain.
+		}
+
+		u.protocol = 'https:';  // Use HTTPS.
+	}
+	else
+	{
+		// Development environment.
+		u.port = g_proxy.config.portLoginStart; // Replace the port number.
+		u.search = '?ret=' + hostname;
+	}
+
+	// Send redirect headers.
+	return url.format(u);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+var unserializePHPBase = require('cryptic/unserializePHP');
+
+
+function unserializePHP(str)
+{
+	var obj = unserializePHPBase(str);
+	// OK, now do some fixups to make it more Javascripty.
+	if(obj && typeof obj === 'object')
+	{
+		var bIsArray = true;
+		var arr = [];
+		Object.keys(obj).forEach(function(e) {
+			if(bIsArray && /[0-9]+/.test(e))
+			{
+				var idx = parseInt(e, 10);
+				arr[idx] = obj[e];
+			}
+			else
+			{
+				bIsArray = false;
+			}
+		});
+
+		if(bIsArray)
+		{
+			obj = arr;
+		}
+	}
+
+	return obj;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function parseNews(data, server)
+{
+	try
+	{
+		var news = unserializePHP(data);
+		if(Array.isArray(news))
+		{
+			for(var i = 0; i < news.length; i++)
+			{
+				news[i].href = 'http://' + server + '/news/?p=' + news[i].post_id;
+			}
+		}
+		return JSON.stringify(news);
+	}
+	catch(e)
+	{
+		// use old data if it's there
+	}
+}
+
+function urlNews (server, query)
+{
+	// Sanitize number of posts to show.
+
+	var count = query.count - 1; // Subtract one due to a bug.
+
+	if(!count || count < 0 || count > 20)
+		count = 2; // Show up to 3 articles by default.
+
+	var pwURL = 'http://' + server + '/wordpress/service/latestpostsforlauncher.php';
+	pwURL += '?tagName=' + query.game.toUpperCase() + '+Launcher' + '&maxposts=' + count;
+
+	return pwURL;
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function parseEBS(data, server)
+{
+	try
+	{
+		var obj = JSON.parse(data);
+		if(obj && ('message' in obj))
+		{
+			return JSON.stringify({ 'message': obj.message });
+		}
+	}
+	catch(e)
+	{
+		// use old data if it's there.
+	}
+}
+
+function urlEBS(server, query)
+{
+	return 'http://' + server + '/home/launcher_settings';
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+var s_cache = {
+	'news': {
+		parse: parseNews,
+		url: urlNews,
+		servers : {
+			'en': 'perfectworld.com',
+			'de': 'de.perfectworld.eu',
+			'fr': 'fr.perfectworld.eu'
+		}
+	},
+	'ebs': {
+		parse: parseEBS,
+		url: urlEBS,
+		servers : {
+			'en': 'perfectworld.com',
+			'de': 'de.perfectworld.eu',
+			'fr': 'fr.perfectworld.eu'
+		}
+	}
+};
+
+
+//
+// A general sort of function for fetching and caching data from a
+// PerfectWorld site.
+//
+function servePerfectWorldStuff(req, res, next, entry)
+{
+	var reqURL = url.parse(req.url, true);
+
+	// Look up server using language parameter.
+	// Language comes from req.session.langIndex on the client.
+	var language = 'en';
+	if(req.session && typeof req.session.langIndex !== 'undefined')
+		language = locale.allLocales[req.session.langIndex].httpLanguage;
+	if(!(language in entry.servers))
+		language = 'en';
+
+	// Sanitize game parameter.
+	if(['sto', 'co', 'nw'].indexOf(reqURL.query.game) === -1)
+	{
+		res.writeHead(500);
+		res.end('Invalid game supplied.');
+		return;
+	}
+
+	// Respond with cache if less than 5 minutes old.
+	var key = reqURL.query.game + language;
+	var now = Date.now();
+	var expired = now - (5 * 60 * 1000);
+
+	if(!(key in entry))
+	{
+		entry[key] = { time: 0 };
+	}
+
+	if(typeof entry[key].json !== 'undefined'
+		&& entry[key].time < expired)
+	{
+		var expireDate = new Date(now + (5 * 60 * 1000));
+		res.writeHead(200, {
+			'Content-Type': 'application/json',
+			'Expires': expireDate.toUTCString()
+		});
+		res.end(entry[key].json);
+		return;
+	}
+
+	// Cache miss, try to fetch from launcher settings page.
+	var server = reqURL.query.game.toLowerCase() + '.' + entry.servers[language];
+
+	var pwURL = entry.url(server, reqURL.query);
+	var reqError;
+	try
+	{
+		var reqPW = http.get(pwURL, function(response) {
+			var data = '';
+
+			response.on('data', function (chunk) {
+				data += chunk;
+			});
+
+			response.on('end', function() {
+				if(reqError)
+					return;
+				try
+				{
+					var json = entry.parse(data, server);
+					if(json)
+						entry[key].json = json;
+				}
+				catch (e)
+				{
+					dbg.error("servePerfectWorldStuff(): ERROR: Could not parse json from PW");
+				}
+
+				if(entry[key].json)
+				{
+					// Send response.
+					entry[key].time = now;
+					var expireDate = new Date(now + (5 * 60 * 1000));
+					res.writeHead(200, {
+						'Content-Type': 'application/json',
+						'Expires': expireDate.toUTCString()
+					});
+					res.end(entry[key].json);
+				}
+				else
+				{
+					res.writeHead(500);
+					res.end('Could not fetch data from Perfect World.');
+				}
+			});
+
+			response.on('error', function() {
+				if(reqError)
+					return;
+
+				res.writeHead(500);
+				res.end('Could not fetch data from Perfect World.');
+			});
+		});
+
+		reqPW.on('error', function(e) {
+			reqError = true;
+			res.writeHead(500);
+			res.end('Could not fetch data from Perfect World.');
+		});
+	}
+	catch(e)
+	{
+		reqError = true;
+		res.writeHead(500);
+		res.end('Could not fetch data from Perfect World.');
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+function servePerfectWorldNews(req, res, next)
+{
+	servePerfectWorldStuff(req, res, next, s_cache.news);
+}
+
+function serveEmergencyBroadcast(req, res, next)
+{
+	servePerfectWorldStuff(req, res, next, s_cache.ebs);
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+function serverTime(req, res, next)
+{
+	var time = new Date().toUTCString();
+
+	res.writeHead(200);
+	res.write(time);
+	res.end();
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+handlers.getRealAddress = getRealAddress;
+handlers.generateTexture = generateTexture;
+handlers.generateHeadshot = generateHeadshot;
+handlers.serveResource = serveResource;
+handlers.serveResourceBundle = serveResourceBundle;
+handlers.serveEntityResourceBundle = serveEntityResourceBundle;
+handlers.doLogoutAndRedirect = doLogoutAndRedirect;
+handlers.doLogoutAndContinue = doLogoutAndContinue;
+handlers.checkLogin = checkLogin;
+handlers.handleLock = handleLock;
+handlers.serveEmergencyBroadcast = serveEmergencyBroadcast;
+handlers.servePerfectWorldNews = servePerfectWorldNews;
+handlers.serverTime = serverTime;
+handlers.handleHooks = handleHooks;
+handlers.addHook = addHook;
+handlers.removeHook = removeHook;
+
+// End of File

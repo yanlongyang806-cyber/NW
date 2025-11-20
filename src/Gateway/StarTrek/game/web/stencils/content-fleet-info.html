@@ -1,0 +1,37 @@
+<div data-path="guild">
+	<h2>Fleet Info</h2>
+
+	<div class="fleet-info-card desktopOnly">
+		<div class="fleet-info-emblem-box">
+			<img src="/img/fleet_emblem_generic.png" alt="" />
+		</div>
+	</div>
+
+
+	<div class="fleet-info-main">
+		<h2 class="desktopOnly" data-path=".name">The Super Awesome Fleet</h2>
+		<dl>
+
+			<dt class="mobileOnly">Name:</dt>
+			<dd class="mobileOnly" data-path=".name"></dd>
+
+			<dt>Founding Date:</dt>
+			<dd>Stardate <span data-path=".createdon.$stardate()"></span></dd>
+
+			<dt>Total Members:</dt>
+			<dd data-path=".totalmembers"></dd>
+
+			<dt data-if=".description">Description:</dt>
+			<dd data-if=".description" data-path=".description.$escapeForHTML()"></dd>
+
+			<dt data-if=".recruitmessage">Recruiting Message:</dt>
+			<dd data-if=".recruitmessage" data-path=".recruitmessage.$escapeForHTML()"></dd>
+
+			<dt>Minimum rank:</dt>
+			<dd data-path=".minimumrank"></dd>
+
+			<dt data-if=".website">Website:</dt>
+			<dd data-if=".website"><a data-path=".website" data-set-href="{.website.$httpify()}" target="_blank"></a></dd>
+		</dl>
+	</div>
+</div>

@@ -1,0 +1,147 @@
+'use strict';
+
+var clientUpdate = module.exports;
+
+//////////////////////////////////////////////////////////////////////////
+//
+//                     ######  ########  #######
+//                    ##    ##    ##    ##     ##
+//                    ##          ##    ##     ##
+//                     ######     ##    ##     ##
+//                          ##    ##    ##     ##
+//                    ##    ##    ##    ##     ##
+//                     ######     ##     #######
+//
+//                This file is for Star Trek Online.
+//
+
+var dbg = require('cryptic/dbg');
+
+clientUpdate.updateCallback = function(dictname, name, slot, diff)
+{
+	var e;
+	if(dictname === 'LoginEntity')
+	{
+		this.dataModel.model.loginInfo.loginentity = slot.container;
+		this.dataModel.renderUpdates(diff, 'loginInfo.loginentity');
+	}
+	else if(dictname === 'Entity')
+	{
+		this.updateModelEnt(slot.container);
+		this.dataModel.renderUpdates(diff, 'ent.main');
+
+		e = this.dataModel.model.ent;
+		if (e.ship && e.ship.idShip === e.main.currentpuppetid)
+		{
+			this.dataModel.renderUpdates(diff, 'ent.ship');
+		}
+		else if (e.captain && e.captain.idCaptain === e.main.currentpuppetid)
+		{
+			this.dataModel.renderUpdates(diff, 'ent.captain');
+		}
+	}
+	else if(dictname === 'GroupProject')
+	{
+		this.dataModel.model.guildproject = slot.container;
+		this.dataModel.renderUpdates(diff, 'guildproject');
+	}
+	else if(dictname === 'PersonalProject')
+	{
+		this.dataModel.model.personalproject = slot.container;
+		this.dataModel.renderUpdates(diff, 'personalproject');
+	}
+	else if(dictname === 'Pet')
+	{
+		var pet = slot.container;
+		if(pet)
+		{
+			e = this.dataModel.model.ent;
+			if(e.idShip && pet.id === e.ship.id)
+			{
+				this.dataModel.renderUpdates(diff, 'ent.ship');
+			}
+			else if(e.captain && pet.id === e.captain.id)
+			{
+				this.dataModel.renderUpdates(diff, 'ent.captain');
+			}
+			else
+			{
+				this.dataModel.renderUpdates(diff, 'ent.officers');
+			}
+		}
+	}
+	else if(dictname === 'CStore')
+	{
+		this.dataModel.model.cstore = slot.container;
+		this.dataModel.renderUpdates(diff, 'cstore');
+	}
+	else if(dictname === 'Guild')
+	{
+		this.dataModel.model.guild = slot.container;
+		this.dataModel.renderUpdates(diff, 'guild');
+	}
+}
+
+clientUpdate.updateModelEnt = function(entPlayer)
+{
+	if(entPlayer)
+	{
+		if(!this.dataModel.model.ent)
+		{
+			this.dataModel.model.ent = {};
+		}
+
+		this.dataModel.model.ent.main = entPlayer;
+	}
+
+	var entModel = this.dataModel.model.ent;
+
+	if(!entModel.main)
+		return;
+
+	var a = entModel.main.ownedcontainers;
+	if(a)
+	{
+		var slot;
+		entModel.officers = [];
+		for(var i = 0; i < a.length; i++)
+		{
+			if(a[i].ispuppet && a[i].puppetstate === 'ACTIVE')
+			{
+				if(a[i].puppettype === 1 && a[i].categorysetname === 'Largecraft')
+				{
+					entModel.idShip = a[i].id;
+					slot = this.dataModel.cmgr.findPet(entModel.idShip);
+					entModel.ship = slot ? slot.container : null;
+				}
+				else if(a[i].puppettype === 2)
+				{
+					entModel.idCaptain = a[i].id;
+					slot = this.dataModel.cmgr.findPet(entModel.idCaptain);
+					entModel.captain = slot ? slot.container : null;
+				}
+			}
+			else if(!a[i].ispuppet)
+			{
+				slot = this.dataModel.cmgr.findPet(a[i].id);
+				if(slot && slot.container)
+				{
+					entModel.officers.push(slot.container);
+				}
+			}
+		}
+
+		if (entModel.idShip === entPlayer.currentpuppetid)
+		{
+			entModel.ship = entModel.main;
+		}
+		else if (entModel.idCaptain === entPlayer.currentpuppetid)
+		{
+			entModel.captain = entModel.main;
+		}
+	}
+}
+
+///////////////////////////////////////////////////////////////////////////
+
+// End of File

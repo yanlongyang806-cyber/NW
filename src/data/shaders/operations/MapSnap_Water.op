@@ -1,0 +1,26 @@
+OperationDef
+	Name "MapSnap_Water" // Name of the operation
+	Description "map water"
+	Type CUSTOM
+
+	Input
+		Name ColorParam
+		Description "Water color"
+		Float 4
+		Type Normal
+	EndInput
+	
+	Output
+		Name LitColorOut
+		Description "Color and alpha"
+		Float 4
+		AlphaFrom ColorParam
+	EndOutput
+
+	Output
+		Name UnlitColor
+		Description "UnlitColor"
+		Float 3
+	EndOutput
+	
+EndOperationDef

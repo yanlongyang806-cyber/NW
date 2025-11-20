@@ -1,0 +1,46 @@
+'use strict';
+
+var cutils = require('cryptic/cutils');
+
+//////////////////////////////////////////////////////////////////////////
+
+function CompanionDefs(def)
+{
+	this.index = {};
+}
+
+CompanionDefs.prototype.add = function (def)
+{
+	var c = cutils.extend({}, def);
+
+	// Expected params
+	//    id*
+	//    die* or slots*. (die will be turned into slots)
+	//    hitPoints
+	//    icon
+
+	if(c.die)
+	{
+		c.slots = c.die;
+		delete c.die;
+	}
+
+	c.hitPoints = +c.hitPoints;
+
+	this.index[c.id] = c;
+}
+
+CompanionDefs.prototype.get = function (id)
+{
+	return this.index[id];
+}
+
+//////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
+
+
+module.exports = CompanionDefs;
+
+//////////////////////////////////////////////////////////////////////////
+
+// End of File

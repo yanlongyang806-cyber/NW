@@ -1,0 +1,116 @@
+OperationDef
+	Name "TextureNormal_6" // Name of the operation
+	ParentName "TextureNormal_2+"
+	OptionName "6 texture coords"
+	Description "Texture fetch"
+	Type TEXTURE
+
+	Input
+		Name TexCoord
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord2
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord3
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord4
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord5
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+	Input
+		Name TexCoord6
+		Description "Texture Coordinates"
+		Float 2
+		Type TexCoord
+		Default
+			Type TexCoord0
+		EndDefault
+	EndInput
+		
+	Input
+		Name NormalMap // String input in editor, integer texture unit number output to shader
+		Description "Texture name"
+		Type TextureNormal
+		Default
+			Strings "default_bump"
+		EndDefault
+		Texture 1
+	EndInput
+	
+	Output
+		Name Result
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result2
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result3
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result4
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result5
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+	Output
+		Name Result6
+		Description "Normal from the texture"
+		Float 4
+		Type Normal
+		AlphaFrom NormalMap
+	EndOutput
+
+EndOperationDef

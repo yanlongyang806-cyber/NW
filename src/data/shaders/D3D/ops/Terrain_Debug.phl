@@ -1,0 +1,30 @@
+// Terrain_Debug.phl (used with terrain_heightmap.vhl, only in the Terrain Editor)
+{
+#ifndef DEPTH_ONLY
+	// Tint from map
+	float4 color = sampleTex2D(TexSampler%ColorTexture%, v.texcoords.xy);
+	
+	// Detail textures
+	float4 detail_0 = sampleTex2D(TexSampler%DetailTexture1%, v.texcoords.zw * %UVScale1%.xy); // Detail 0
+	float4 detail_1 = sampleTex2D(TexSampler%DetailTexture2%, v.texcoords.zw * %UVScale1%.zw); // Detail 1
+	float4 detail_2 = sampleTex2D(TexSampler%DetailTexture3%, v.texcoords.zw * %UVScale2%.xy); // Detail 2
+	float4 detail_3 = sampleTex2D(TexSampler%DetailTexture4%, v.texcoords.zw * %UVScale2%.zw); // Detail 3
+
+	float4 detail =	v.color0.x * detail_0 + 
+					v.color0.y * detail_1 + 
+					v.color0.z * detail_2 + 
+					v.color0.w * detail_3;
+
+	color.rgb = detail.rgb + (2 * detail.a) * color.rgb;
+
+	%SpecularValueOut% = dot(%SpecularValueIn%, v.color0);
+	%SpecularExponentOut% = dot(%SpecularExponentIn%, v.color0);
+
+	%ColorOut% = color;
+
+#else
+
+	%ColorOut% = 1;
+
+#endif
+}

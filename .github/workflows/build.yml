@@ -24,9 +24,9 @@ jobs:
         run: |
           echo "Running code generation..."
           # !!! 请务必将下面的路径替换成你真实的生成脚本路径 !!!
-          # 例如，如果脚本在项目根目录下，就写成: call generate.bat
-          # 如果脚本在 tools 文件夹下，就写成: call tools/generate.bat
-          call tools/generate_code.bat
+          # 例如，如果脚本在项目根目录下，就写成: generate.bat
+          # 如果脚本在 tools 文件夹下，就写成: tools/generate.bat
+          tools/generate_code.bat
         # 如果脚本执行失败（返回非0值），就让这个步骤失败
         continue-on-error: false
 

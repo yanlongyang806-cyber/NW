@@ -17,8 +17,65 @@ jobs:
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v1.3.1
 
+      - name: Run code generation
+        shell: cmd
+        run: |
+          echo Running code generation...
+          if exist tools\generate_code.bat (
+            call tools\generate_code.bat
+          ) else (
+            echo tools\generate_code.bat not found, skipping code generation
+          )
+
+      - name: Fix XML format issues
+        shell: powershell
+        run: |
+          Write-Host "Fixing XML format issues in .vcxproj files..."
+          $files = Get-ChildItem -Path src -Recurse -Filter *.vcxproj -ErrorAction SilentlyContinue | Select-Object -First 20
+          $fixedCount = 0
+          foreach ($file in $files) {
+            try {
+              $content = Get-Content $file.FullName -Raw -ErrorAction Stop
+              $fixed = $content -replace '(?s)(<PreBuildEvent>\s*<Command>)(.*?)(</Command>\s*</PreBuildEvent>)', {
+                $pre = $matches[1]
+                $cmd = ($matches[2] -replace '\s+', ' ' -replace ' & ', ' &amp; ' -replace '&(?!amp;)', '&amp;').Trim()
+                $post = $matches[3]
+                "$pre$cmd$post"
+              }
+              if ($fixed -ne $content) {
+                Set-Content -Path $file.FullName -Value $fixed -NoNewline -ErrorAction Stop
+                Write-Host "Fixed: $($file.Name)"
+                $fixedCount++
+              }
+            } catch {
+              Write-Host "Warning: Could not process $($file.FullName): $_"
+            }
+          }
+          Write-Host "Fixed $fixedCount project files"
+
+      - name: List project structure
+        shell: cmd
+        run: |
+          echo Checking project structure...
+          if exist src\Night\GameServer\NNOGameServer.sln (
+            echo [OK] Solution file exists
+          ) else (
+            echo [ERROR] Solution file not found!
+            dir src\Night\GameServer\ /b
+            exit /b 1
+          )
+
       - name: Build NNOGameServer (Debug Configuration)
-        run: msbuild src/Night/GameServer/NNOGameServer.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /m /v:minimal /p:WarningLevel=0 /p:TreatWarningsAsErrors=false /p:RunCodeAnalysis=false
+        shell: cmd
+        run: |
+          echo Building NNOGameServer...
+          msbuild src/Night/GameServer/NNOGameServer.sln /p:Configuration=Debug /p:Platform=Win32 /p:PlatformToolset=v143 /p:UseMultiToolTask=true /p:EnforceProcessCountAcrossBuilds=true /m /v:normal /p:WarningLevel=0 /p:TreatWarningsAsErrors=false /p:RunCodeAnalysis=false /fl /flp:logfile=build.log;verbosity=normal
+          if %ERRORLEVEL% neq 0 (
+            echo Build failed with error code %ERRORLEVEL%
+            echo Showing last 50 lines of build log:
+            powershell -Command "Get-Content build.log -Tail 50"
+            exit /b %ERRORLEVEL%
+          )
         continue-on-error: false
 
       - name: Upload GameServer.exe

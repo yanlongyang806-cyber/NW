@@ -27,6 +27,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -35,6 +36,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -68,11 +70,13 @@
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <TreatWarningAsError>false</TreatWarningAsError>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
     </ClCompile>
     <Lib>
     </Lib>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0
+</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>
@@ -91,18 +95,21 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>.;./StaticWorld;../../3rdparty/PhysX-2.8.1/SDKs/Foundation/include;../../3rdparty/PhysX-2.8.1/SDKs/physics/include;../../3rdparty/PhysX-2.8.1/SDKs/cooking/include;../../3rdparty/PhysX-2.8.1/SDKs/PhysXLoader/include;../../3rdParty/PhysX-2.8.1/SDKS/NxCharacter/include;../../3rdParty/speedtree/include;../SoundLib/pub;../UtilitiesLib/net;../../3rdParty/nvdxt/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_FULLDEBUG;_LIB;_WINDOWS;_CRTDBG_MAP_ALLOC=1;USEZLIB=1;WORLDLIB=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <EnableCodeAnalysis>false</EnableCodeAnalysis>
     </ClCompile>
     <Lib>
     </Lib>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Full Debug|x64'">
@@ -117,7 +124,8 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <PreBuildEvent>
-      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath)</Command>
+      <Command>..\..\utilities\bin\structparser X $(ProjectDir) X $(ProjectFileName) X $(Platform) X $(Configuration) X $(VCInstallDir) X $(SolutionPath) &amp; exit /b 0
+</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
